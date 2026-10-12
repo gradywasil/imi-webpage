@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" data-style="pixel">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a2a1c">
+  <title>Side Games · Infinite Monkey Industries</title>
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="mg.css">
+  <style>
+    body.mg { place-items: start center; overflow-y: auto; touch-action: pan-y; }
+    .hub { position: relative; z-index: 2; width: min(920px, 100%); padding: 56px 16px 40px; text-align: center; }
+    .hub h1 { margin: 0 0 6px; font: 400 clamp(18px, 4vw, 30px)/1.3 var(--font-px); color: var(--banana); text-shadow: 4px 4px 0 var(--wood-dark); }
+    .hub .lede { margin: 0 0 26px; font-size: 26px; color: var(--cream); text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink); }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; text-align: left; }
+    .card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 14px; color: var(--cream); text-decoration: none; background: rgba(10, 42, 28, .82); border: 4px solid var(--ink); box-shadow: inset 0 0 0 3px var(--wood), 0 6px 0 rgba(0, 0, 0, .4); transition: transform .12s steps(2); }
+    a.card:hover { transform: translateY(-6px); box-shadow: inset 0 0 0 3px var(--banana), 0 12px 0 rgba(0, 0, 0, .4); }
+    .card h2 { margin: 0; font: 400 13px/1.4 var(--font-px); color: var(--banana); }
+    .card p { margin: 0; font-size: 22px; line-height: 1.1; }
+    .card .tag { align-self: flex-start; font: 400 9px/1 var(--font-px); padding: 5px 6px; background: var(--leaf); color: #fff; text-shadow: 1px 1px 0 var(--ink); }
+    .card.concept { opacity: .78; } .card.concept .tag { background: var(--wood-dark); color: var(--cream); }
+    .card .how { font-size: 18px; color: rgba(255, 246, 214, .7); }
+    .card .art { height: 66px; display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body class="mg">
+  <nav class="mg-nav"><a href="../index.html" title="Back to the game" aria-label="Back to the game">&lt;</a></nav>
+  <main class="hub">
+    <h1>SIDE GAMES</h1>
+    <p class="lede">Quick breaks from the typewriter floor. Standalone for now.</p>
+    <div class="cards" id="cards"></div>
+  </main>
+  <script src="../pixel.js"></script>
+  <script src="mg-art.js"></script>
+  <script src="mg-core.js"></script>
+  <script>
+    MG.boot();
+    const A = MGArt.build();
+    const games = [
+      { href: 'barrel-catch.html', name: 'BANANA BARREL', tag: 'PLAYABLE', art: [A.barrelFront, A.banana, MGArt.bundle('K', 'E', 'Y'), A.diamond],
+        text: 'Hold the barrel overhead and scamper to catch bananas and letter bundles. Dodge coconuts. Watch for the rare Diamond Banana. Has a Fruit Fall mode too.', how: '← → / A D · drag · mouse follows' },
+      { name: 'VINE SWING', tag: 'CONCEPT', art: [A.banana, A.golden],
+        text: 'One button. Swing from vine to vine over the river: release at the top of the arc to fly, grab the next vine. Bananas hang in the air along the perfect arc.', how: 'tap / space = let go & grab' },
+      { name: 'COCONUT SHUFFLE', tag: 'CONCEPT', art: [A.coconut, A.coconut, A.coconut],
+        text: 'A banana goes under one of three coconut shells, then the shells swap faster and faster. Follow it with your eyes and tap the right one. Streaks pay out.', how: 'tap a shell' },
+      { name: 'KEY WHACK', tag: 'CONCEPT', art: [MGArt.tile('A'), MGArt.tile('Q'), MGArt.tile('Z')],
+        text: 'Typewriter keys pop up with letters; tap or press the matching key before it snaps back. Gremlin ink blots hide among them. Doubles as typing practice.', how: 'tap / type the letter' },
+      { name: 'PEEL DASH', tag: 'CONCEPT', art: [A.rotten, A.banana],
+        text: 'Auto-run down a jungle path in three lanes. Hop logs, slide under vines, grab bananas and dodge peels. Lane changes by swipe or arrow keys.', how: 'swipe / ← → ↑ ↓' },
+      { name: 'BANANA STACK', tag: 'CONCEPT', art: [A.banana, A.banana, A.banana],
+        text: 'A crate swings above the tower; tap to drop it. Perfectly aligned crates keep their size and chain a combo; slivers shrink the stack. Reach the canopy.', how: 'tap / space' },
+      { name: 'RAIN LEAF', tag: 'CONCEPT', art: [PXA.spr.leaf.cv, PXA.spr.drop.cv],
+        text: 'Hold a big leaf umbrella and catch rain for the letter garden, dodge the lightning. A cozy cousin of Banana Barrel tied to the weather system.', how: 'drag / ← →' },
+    ];
+    const root = document.getElementById('cards');
+    games.forEach(gm => {
+      const el = MG.h(gm.href ? 'a' : 'div', 'card' + (gm.href ? '' : ' concept'));
+      if (gm.href) el.href = gm.href;
+      const art = MG.h('div', 'art'); gm.art.forEach(c => art.appendChild(MG.spriteImg(c, c.width > 24 ? 2 : 3)));
+      el.append(art, MG.h('span', 'tag', gm.tag), MG.h('h2', '', gm.name), MG.h('p', '', gm.text), MG.h('p', 'how', gm.how));
+      root.appendChild(el);
+    });
+  </script>
+</body>
+</html>
