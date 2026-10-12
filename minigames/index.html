@@ -39,20 +39,32 @@
   <script src="mg-core.js"></script>
   <script>
     MG.boot();
-    const A = MGArt.build();
+    const A = MGArt.build(), keyArt = ch => MGArt.tile(ch);
     const games = [
       { href: 'barrel-catch.html', name: 'BANANA BARREL', tag: 'PLAYABLE', art: [A.barrelFront, A.banana, MGArt.bundle('K', 'E', 'Y'), A.diamond],
         text: 'Hold the barrel overhead and scamper to catch bananas and letter bundles. Dodge coconuts. Watch for the rare Diamond Banana. Has a Fruit Fall mode too.', how: '← → / A D · drag · mouse follows' },
+      { href: 'key-whack.html', name: 'KEY WHACK', tag: 'PLAYABLE', art: [MGArt.tile('K'), MGArt.tile('E'), MGArt.tile('Y')],
+        text: 'Typewriter keys light up; press or tap the matching key before it snaps back. Each hit stamps its letter on the paper. Avoid ink blots, grab the banana space bar, and hunt the Diamond key for a full-keyboard mash.', how: 'type letters · space · tap keys' },
       { name: 'VINE SWING', tag: 'CONCEPT', art: [A.banana, A.golden],
         text: 'One button. Swing from vine to vine over the river: release at the top of the arc to fly, grab the next vine. Bananas hang in the air along the perfect arc.', how: 'tap / space = let go & grab' },
       { name: 'COCONUT SHUFFLE', tag: 'CONCEPT', art: [A.coconut, A.coconut, A.coconut],
         text: 'A banana goes under one of three coconut shells, then the shells swap faster and faster. Follow it with your eyes and tap the right one. Streaks pay out.', how: 'tap a shell' },
-      { name: 'KEY WHACK', tag: 'CONCEPT', art: [MGArt.tile('A'), MGArt.tile('Q'), MGArt.tile('Z')],
-        text: 'Typewriter keys pop up with letters; tap or press the matching key before it snaps back. Gremlin ink blots hide among them. Doubles as typing practice.', how: 'tap / type the letter' },
       { name: 'PEEL DASH', tag: 'CONCEPT', art: [A.rotten, A.banana],
         text: 'Auto-run down a jungle path in three lanes. Hop logs, slide under vines, grab bananas and dodge peels. Lane changes by swipe or arrow keys.', how: 'swipe / ← → ↑ ↓' },
       { name: 'BANANA STACK', tag: 'CONCEPT', art: [A.banana, A.banana, A.banana],
         text: 'A crate swings above the tower; tap to drop it. Perfectly aligned crates keep their size and chain a combo; slivers shrink the stack. Reach the canopy.', how: 'tap / space' },
+      { name: 'BANANA SLICE', tag: 'IDEA', art: [A.banana, A.golden, A.coconut],
+        text: 'Bananas are tossed up in arcs; swipe through them for points, never the coconuts. Swipe three at once for a combo splash.', how: 'swipe / drag' },
+      { name: 'PAPER PLANE', tag: 'IDEA', art: [MGArt.tile('P'), MGArt.tile('L')],
+        text: 'Drag to steer a paper plane through jungle gaps on the updraft, scooping up letters. Flappy-style, but one finger and forgiving.', how: 'drag up / down' },
+      { name: 'BANANA PLINKO', tag: 'IDEA', art: [A.banana, A.diamond],
+        text: 'Drop a banana down a pegboard made of typewriter keys and watch it bounce into scoring bins. Where you release is your only choice.', how: 'tap to drop' },
+      { name: 'DRUM CIRCLE', tag: 'IDEA', art: [A.coconut, A.coconut],
+        text: 'Rhythm lanes: coconuts drop onto four bongos in time to a jungle beat. Tap or press D F J K on the beat. Perfect hits glow.', how: 'D F J K / tap lanes' },
+      { name: 'SIMON SAYS MONKEY', tag: 'IDEA', art: [keyArt('A'), keyArt('S'), keyArt('D')],
+        text: 'Three monkeys on typewriter keys play back a growing sequence of notes. Repeat it. Gets long fast.', how: 'tap / A S D' },
+      { name: 'WORD MATCH', tag: 'IDEA', art: [MGArt.tile('W'), MGArt.tile('O'), MGArt.tile('R'), MGArt.tile('D')],
+        text: 'Match-3 on letter tiles from the garden: swap to line up letters, bonus when a run spells a real word. Ties straight into the word economy.', how: 'tap / drag tiles' },
       { name: 'RAIN LEAF', tag: 'CONCEPT', art: [PXA.spr.leaf.cv, PXA.spr.drop.cv],
         text: 'Hold a big leaf umbrella and catch rain for the letter garden, dodge the lightning. A cozy cousin of Banana Barrel tied to the weather system.', how: 'drag / ← →' },
     ];

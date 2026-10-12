@@ -47,6 +47,9 @@
       start() { [440, 554, 659, 880].forEach((f, i) => tone(f, f, .1, 'square', .05, i * .08)); },
       over() { [440, 370, 311, 220].forEach((f, i) => tone(f, f * .96, .22, 'triangle', .07, i * .16)); },
       tick() { tone(900, 900, .03, 'square', .03); },
+      clack(n = 0) { noise(.03, .07, 2600); tone(240 + n * 12, 130, .05, 'square', .05); },
+      bell() { tone(1760, 1760, .5, 'sine', .07); tone(2349, 2349, .35, 'sine', .03); },
+      typo() { tone(170, 140, .12, 'sawtooth', .05); },
     };
   })();
 
@@ -101,5 +104,41 @@
   const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   function spriteImg(cv, mult = 3, cls = '') { const i = h('canvas', 'mg-ico ' + cls); i.width = cv.width; i.height = cv.height; i.getContext('2d').drawImage(cv, 0, 0); i.style.width = cv.width * mult + 'px'; i.style.height = cv.height * mult + 'px'; return i; }
 
-  window.MG = { rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg };
+  /* ---------- shared HUD + overlay: score, hearts, combo chip, meter, banner, flash, floating text ---------- */
+  function ui(host, st, scoreIcon, maxHearts = 3) {
+    const A = MGArt.build(), q = {};
+    const hud = h('div', 'mg-hud'); host.appendChild(hud);
+    const scBox = h('div', 'sc'); scBox.append(spriteImg(scoreIcon || A.banana, 2), h('b', '', '0')); hud.appendChild(scBox);
+    const scNum = scBox.querySelector('b'), hearts = h('div', 'mg-hearts'); hud.appendChild(hearts);
+    const heartEls = Array.from({ length: maxHearts }, () => { const e = spriteImg(A.heart, 2); hearts.appendChild(e); return e; });
+    q.combo = h('div', 'mg-combo'); host.appendChild(q.combo);
+    q.meter = h('div', 'mg-meter', '<b></b>'); host.appendChild(q.meter); q.meterFill = q.meter.firstChild;
+    const banner = h('div', 'mg-banner'); host.appendChild(banner);
+    const flash = h('div', 'mg-flash'); host.appendChild(flash);
+    q.over = h('div', 'mg-over'); host.appendChild(q.over);
+    const retrigger = (e, c) => { e.classList.remove(c); void e.offsetWidth; e.classList.add(c); };
+    q.say = (html, cls = '') => { banner.className = 'mg-banner ' + cls; banner.innerHTML = html; void banner.offsetWidth; banner.classList.add('show'); };
+    q.hideBanner = () => { banner.className = 'mg-banner'; };
+    q.floatText = (x, y, txt, cls = '') => {
+      if (host.querySelectorAll('.mg-float').length > 14) return;
+      const e = h('div', 'mg-float ' + cls, txt); e.style.left = x * st.sc + 'px'; e.style.top = y * st.sc + 'px';
+      host.appendChild(e); e.addEventListener('animationend', () => e.remove());
+    };
+    q.doFlash = (col = '#fff') => { flash.style.background = col; retrigger(flash, 'go'); };
+    q.bump = () => retrigger(scBox, 'bump');
+    q.pulseCombo = () => retrigger(q.combo, 'pulse');
+    q.setScore = n => { scNum.textContent = n; };
+    q.setHearts = (n, animate) => heartEls.forEach((e, i) => {
+      const on = i < n ? '1' : '0'; if (e.dataset.on === on) return; e.dataset.on = on;
+      const c = e.getContext('2d'); c.clearRect(0, 0, 9, 8); c.drawImage(on === '1' ? A.heart : A.heartOff, 0, 0);
+      if (animate && on === '0') retrigger(e, 'lose');
+    });
+    q.setCombo = (n, m) => { q.combo.classList.toggle('on', n >= 3); q.combo.innerHTML = `${n} COMBO${m > 1 ? ` <i>x${m}</i>` : ''}`; };
+    q.setMeter = (frac, ice) => { q.meter.classList.toggle('on', frac > 0); q.meter.classList.toggle('dia', !!ice); q.meterFill.style.transform = `scaleX(${frac})`; };
+    q.btn = (label, cls, fn) => { const b = h('a', 'banana-btn ' + (cls || ''), `<span>${label}</span>`); b.href = '#'; b.addEventListener('click', e => { e.preventDefault(); fn(); }); return b; };
+    q.mult = c => 1 + Math.min(4, Math.floor(c / 6)) * .5;
+    return q;
+  }
+
+  window.MG = { ui, rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg };
 })();

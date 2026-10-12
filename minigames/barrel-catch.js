@@ -19,27 +19,8 @@
   const A = MGArt.build();
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
 
-  /* ---------- DOM: HUD, overlays ---------- */
-  const hud = h('div', 'mg-hud'); host.appendChild(hud);
-  const scBox = h('div', 'sc'); scBox.append(spriteImg(A.banana, 2), h('b', '', '0')); hud.appendChild(scBox);
-  const scNum = scBox.querySelector('b'), hearts = h('div', 'mg-hearts'); hud.appendChild(hearts);
-  const heartEls = [0, 1, 2].map(() => { const e = spriteImg(A.heart, 2); hearts.appendChild(e); return e; });
-  const combo = h('div', 'mg-combo'); host.appendChild(combo);
-  const meter = h('div', 'mg-meter', '<b></b>'); host.appendChild(meter);
-  const meterFill = meter.firstChild;
-  const banner = h('div', 'mg-banner'); host.appendChild(banner);
-  const flash = h('div', 'mg-flash'); host.appendChild(flash);
-  const over = h('div', 'mg-over'); host.appendChild(over);
-
-  function say(html, cls = '', ms = 2000) {
-    banner.className = 'mg-banner ' + cls; banner.innerHTML = html; void banner.offsetWidth; banner.classList.add('show');
-  }
-  function floatText(x, y, txt, cls = '') {
-    if (host.querySelectorAll('.mg-float').length > 14) return;
-    const e = h('div', 'mg-float ' + cls, txt); e.style.left = x * st.sc + 'px'; e.style.top = y * st.sc + 'px';
-    host.appendChild(e); e.addEventListener('animationend', () => e.remove());
-  }
-  function doFlash(col = '#fff') { flash.style.background = col; flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); }
+  const ui = MG.ui(host, st, A.banana);
+  const { combo, over, say, floatText, doFlash, bump, pulseCombo } = ui;
 
   /* ---------- state ---------- */
   let mode = 'bananas', phase = 'title', G = null;
@@ -59,16 +40,8 @@
   newGame();
   function best() { return store.get('barrel:' + mode, 0); }
 
-  function renderHud(initial) {
-    scNum.textContent = G.score;
-    heartEls.forEach((e, i) => { const was = e.dataset.on; const on = i < G.hearts ? '1' : '0'; if (was !== on) { e.dataset.on = on; const c = e.getContext('2d'); c.clearRect(0, 0, 9, 8); c.drawImage(on === '1' ? A.heart : A.heartOff, 0, 0); if (!initial && on === '0') { e.classList.remove('lose'); void e.offsetWidth; e.classList.add('lose'); } } });
-    const m = mult();
-    combo.classList.toggle('on', G.combo >= 3);
-    combo.innerHTML = `${G.combo} COMBO${m > 1 ? ` <i>x${m}</i>` : ''}`;
-  }
+  function renderHud(initial) { ui.setScore(G.score); ui.setHearts(G.hearts, !initial); ui.setCombo(G.combo, mult()); }
   function mult() { return 1 + Math.min(4, Math.floor(G.combo / 6)) * .5; }
-  function bump() { scBox.classList.remove('bump'); void scBox.offsetWidth; scBox.classList.add('bump'); }
-  function pulseCombo() { combo.classList.remove('pulse'); void combo.offsetWidth; combo.classList.add('pulse'); }
 
   /* ---------- spawning ---------- */
   function pickType() {
@@ -150,7 +123,6 @@
     floatText(bp.x, bp.y - 16, (cls ? '' : '+') + pts + (m > 1 && !cls ? ` x${m}` : ''), cls || (m > 1 ? 'gold' : ''));
     if (txt) floatText(bp.x, bp.y - 26, txt, cls || '');
     if (G.combo > 0 && G.combo % 6 === 0 && G.combo <= 24) { floatText(bp.x, bp.y - 34, `COMBO x${mult()}!`, 'gold big'); sfx.golden(); pulseCombo(); }
-    if (G.jackpot > 0) meter.classList.add('dia'); else meter.classList.remove('dia');
     renderHud();
   }
 
@@ -165,7 +137,7 @@
     if (G.golden > 0) G.golden = Math.max(0, G.golden - dt);
     if (G.jackpot > 0) G.jackpot = Math.max(0, G.jackpot - dt);
     const bonus = G.jackpot > 0 ? G.jackpot / 8 : G.golden > 0 ? G.golden / 7 : 0;
-    meter.classList.toggle('on', bonus > 0); meterFill.style.transform = `scaleX(${bonus})`;
+    ui.setMeter(bonus, G.jackpot > 0);
     if (G.deadT > 0) { G.deadT -= rdt; if (G.deadT <= 0) showOver(); }
 
     /* monkey */
@@ -317,9 +289,9 @@
     mode = m || mode; newGame(); phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); sfx.start();
     monkey.tx = monkey.x = W / 2; say(mode === 'fruit' ? 'FRUIT FALL' : 'BANANA RUN', '', 1200);
   }
-  function endGame() { G.deadT = 1.1; sfx.over(); G.slow = .5; G.slowT = 1; combo.classList.remove('on'); meter.classList.remove('on'); }
+  function endGame() { G.deadT = 1.1; sfx.over(); G.slow = .5; G.slowT = 1; combo.classList.remove('on'); ui.setMeter(0); }
   function showOver() {
-    phase = 'over'; host.classList.add('menu-open'); banner.className = 'mg-banner';
+    phase = 'over'; host.classList.add('menu-open'); ui.hideBanner();
     const prev = store.get('barrel:' + mode, 0), isNew = G.score > prev; if (isNew) store.set('barrel:' + mode, G.score);
     over.hidden = false; over.innerHTML = '';
     const stats = h('div', 'mg-stats');

@@ -115,7 +115,9 @@
   }
   const rampMap = (r, cuts = [.7, .88]) => lum => hex(lum < cuts[0] ? r[0] : lum < cuts[1] ? r[1] : r[2]);
 
+  let built = null;
   function build() {
+    if (built) return built;
     const S = {}, banana = PXA.spr.banana.cv;
     S.banana = banana;
     S.golden = halo(recolor(banana, rampMap(['#c46a00', '#ffb000', '#fff7a8'], [.66, .86]), lum => lum < .3 ? hex('#6a3c00') : null), '#fff08c', '#ffffff');
@@ -151,8 +153,8 @@
       px.shape(and(sub(ell(15, 6, 14, 5.6), ell(15, 6.6, 11.6, 3.6)), (x, y) => y >= 6.2), R.woodL, 4);
     });
     S.cloudPuff = make(5, 5, px => { px.shape(ell(2.5, 2.5, 2.2, 2.2), R.paper, 1); });
-    return S;
+    return (built = S);
   }
 
-  window.MGArt = { R, DEF, ramps, Px, make, render, tile, bundle, LETTERS, build, hex, shapes: { ell, box, cap, poly, and, or, sub } };
+  window.MGArt = { FONT, R, DEF, ramps, Px, make, render, tile, bundle, LETTERS, build, hex, shapes: { ell, box, cap, poly, and, or, sub } };
 })();
