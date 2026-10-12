@@ -3,7 +3,7 @@
 The writing-room game is the whole site: a title menu and a full-screen game (`index.html` / `classic.html`; shell in `core.js`, game in `ops.js` + `ops.css`).
 Titles sell once for a lump sum; this roadmap turns that into a long-term idle loop. Phases are meant to be built in order.
 
-Implemented batch: [Brother playtest roadmap](docs/plan/14-playtest-roadmap.md). It covers keyboard clarity, required first-run progression, condensed upgrade cards, collectible background bananas, and a larger banana economy. The source changes and automated acceptance are complete; follow-up player feedback remains. `gemini-art/` is outside that batch. See [measured results](docs/plan/playtest-results.md).
+Implemented batch: [Brother playtest roadmap](docs/plan/14-playtest-roadmap.md). It covers keyboard clarity, required first-run progression, condensed upgrade cards, collectible background bananas, and a larger banana economy. The source changes and automated acceptance are complete; follow-up player feedback remains. The art lab (formerly `gemini-art/`) is outside that batch; see `art/`. See [measured results](docs/plan/playtest-results.md).
 
 - [x] **1. Royalties + golden bananas**: every sold title pays bananas per second (Publishing deals multiply it); the header shows the rate; golden and rotten bananas drift across the page; a global buff bar.
 - [x] **2. Ticker, Awards, stats**: a news ticker that reacts to game state; a trophy row under the bookshelf with small permanent bonuses; a stats page; buy x10 / x100 and big-number abbreviations.

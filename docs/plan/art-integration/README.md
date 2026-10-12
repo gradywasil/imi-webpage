@@ -4,6 +4,8 @@
 
 Date written: 2026-10-07. Status: **plan only, nothing executed.**
 
+> **Update 2026-10-11:** the `gemini-art/` lab folder was deleted. What survived lives in `art/`: `assets/<category>/*.js` (the 143 art-v2 pixel assets, which self-register on `ArtV2.assets`), `resolve.js` and `palette.js` (the art-v2 kit), and `typewriter-engine.js` + `typewriter-styles.js` (the typewriter renderer and its 6 models x 3 tiers). The 30 monkey variants are already in `crew-art.js`. Everywhere below, read `gemini-art/` as "the old lab, now `art/` (or `crew-art.js` for monkeys)"; the lab's pages, PNG exports, sheets, concept art and its own docs are gone (recoverable from git history before this commit).
+
 ## Goal
 
 Replace the pixel edition's typewriter stage and, later, its icons and decor with the hand-authored art in `gemini-art/` (30 monkey variants, 6 typewriters x 3 restoration tiers, and the `art-v2/` asset set), **without changing a single game mechanic**.

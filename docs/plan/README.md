@@ -4,7 +4,7 @@ This folder is the work queue. Each `NN-*.md` file is one self-contained task fo
 
 ## Order of work
 
-The implemented batch is [14: Brother playtest implementation and roadmap](14-playtest-roadmap.md). It records completed work packets, acceptance evidence, and follow-up player checks. Its required first-run introduction supersedes task 09's older Skip and immediate-Train requirements. Keep `gemini-art/` outside this work.
+The implemented batch is [14: Brother playtest implementation and roadmap](14-playtest-roadmap.md). It records completed work packets, acceptance evidence, and follow-up player checks. Its required first-run introduction supersedes task 09's older Skip and immediate-Train requirements. Keep `art/` (the old `gemini-art/` lab) outside this work.
 
 | # | Task | Size | Depends on |
 |---|---|---|---|
