@@ -1,6 +1,7 @@
 /* ============================================================
    VINE SWING: hold to grab a vine and swing, release to fly, hold again to catch the next one. One button.
-   Bananas hang along the arcs; bats knock you off; the river below ends the run. The longer you stay on a vine the harder you swing.
+   Bananas hang along the arcs; bats knock you off; fall in the river and you lose a heart (three and you're out). The longer you hold a vine the harder you swing,
+   and a dotted preview shows where you'd land if you let go right now: release when the dots touch the next vine.
    Rare: the Golden Banana widens your grab, the Diamond Banana pulls every banana to you for a few seconds.
    Controls: hold mouse / finger / Space. Standalone: no connection to the main game's save yet.
    ============================================================ */
@@ -14,8 +15,7 @@
   PXA.monkeySets.vs = { k: .5, max: 42, step: 7 }; { const s = PXA.monkeySets.vs; s.angles = []; for (let a = -s.max; a <= s.max; a += s.step) s.angles.push(a); s.cache = {}; }
   const A = MGArt.build(), { R, make, shapes: { ell, poly, box } } = MGArt;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
-  const ui = MG.ui(host, st, A.banana, 0), fx = MG.fx();
-  document.querySelector('.mg-hearts').style.display = 'none';
+  const ui = MG.ui(host, st, A.banana, 3), fx = MG.fx();
 
   const batSpr = [0, 1].map(f => make(13, 8, px => {
     px.shape(ell(6.5, 4.5, 2, 2.4), R.ink, 2);
@@ -29,23 +29,23 @@
   const m = { x: 0, y: 0, vx: 0, vy: 0, vine: null, th: 0, om: 0, r: 60, cd: 0, stun: 0, armed: false, last: null, expr: 'normal', et: 0, blink: 0 };
 
   function newVine(prev) {
-    const d = prev ? prev.ax : 0, tough = clamp(d / 3000, 0, 1);
-    return { ax: prev ? prev.ax + rng(lerp(34, 46, tough), lerp(46, 64, tough)) : 40, ay: -6, len: rng(58, 80), th: 0, ph: rng(6.28) };
+    const d = prev ? prev.ax : 0, tough = clamp(d / 4200, 0, 1);
+    return { ax: prev ? prev.ax + rng(lerp(28, 40, tough), lerp(38, 58, tough)) : 40, ay: -6, len: rng(58, 80), th: 0, ph: rng(6.28) };
   }
   function newGame() {
-    G = { t: 0, vines: [], picks: [], bats: [], cam: 0, dist: 0, bananas: 0, goldens: 0, diamonds: 0, score: 0, assist: 0, magnet: 0, shake: 0, dead: 0, best: 0, genX: 0, splash: null, grabs: 0, bestSwing: 0 };
+    G = { t: 0, vines: [], picks: [], bats: [], cam: 0, dist: 0, bananas: 0, goldens: 0, diamonds: 0, score: 0, assist: 0, magnet: 0, shake: 0, dead: 0, best: 0, genX: 0, splash: null, grabs: 0, bestSwing: 0, hearts: 3, pred: null, hint: 0 };
     let v = newVine(null); G.vines.push(v); for (let i = 0; i < 6; i++) { v = newVine(v); G.vines.push(v); }
     G.vines.forEach(decorate);
-    const v0 = G.vines[0]; m.vine = v0; m.r = 56; m.th = .75; m.om = 0; m.armed = false; m.cd = 0; m.stun = 0; m.last = v0; m.x = v0.ax + Math.sin(m.th) * m.r; m.y = v0.ay + Math.cos(m.th) * m.r;
+    const v0 = G.vines[0]; m.vine = v0; m.r = 56; m.th = .95; m.om = 0; m.armed = false; m.cd = 0; m.stun = 0; m.last = v0; m.x = v0.ax + Math.sin(m.th) * m.r; m.y = v0.ay + Math.cos(m.th) * m.r;
     G.cam = m.x - 60; fx.clear(); ui.setScore(0); ui.setCombo(0, 1);
-    ui.say('HOLD TO SWING<small>release to fly · hold to catch</small>');
+    ui.setHearts(3); ui.say('HOLD TO SWING<small>let go when the dots touch the next vine</small>');
   }
   /* each new vine brings bananas along the arc after it, and sometimes a bat or a rare banana */
   function decorate(v, i, arr) {
     const nx = arr[i + 1] || null; if (!nx || v.done) return; v.done = true;
     const gap = nx.ax - v.ax, d = v.ax / 10, n = 1 + Math.floor(Math.random() * 2) + (Math.random() < .2 ? 1 : 0);
     for (let k = 0; k < n; k++) { const t = (k + 1) / (n + 1), type = Math.random() < .018 + RARE * .3 && d > 20 ? 'golden' : Math.random() < .006 + RARE * .3 && d > 40 ? 'diamond' : 'banana'; G.picks.push({ x: v.ax + gap * t, y: 28 + Math.sin(t * Math.PI) * -14 + rng(18, 44), type, got: false, ph: Math.random() * 6 }); }
-    if (d > 30 && Math.random() < clamp(.25 + d / 600, 0, .55)) G.bats.push({ x: v.ax + gap * rng(.35, .65), y: rng(34, 70), ph: Math.random() * 6, amp: rng(8, 18), spd: rng(1.5, 3), hit: false });
+    if (d > 40 && Math.random() < clamp(.15 + d / 900, 0, .45)) G.bats.push({ x: v.ax + gap * rng(.35, .65), y: rng(34, 70), ph: Math.random() * 6, amp: rng(8, 18), spd: rng(1.5, 3), hit: false });
   }
   function extend() { const last = G.vines[G.vines.length - 1]; if (last.ax < G.cam + W + 140) { const v = newVine(last); G.vines.push(v); decorate(last, G.vines.length - 2, G.vines); } }
 
@@ -63,13 +63,18 @@
     if (G.dead <= 0) {
       if (want) m.armed = true;
       if (m.vine) {
-        const v = m.vine; m.om += (-(SWING_G / m.r) * Math.sin(m.th) - .12 * m.om) * dt;
-        if (want && Math.abs(m.om) < 3.6) m.om += Math.sign(m.om || 1) * 1.05 * dt;       /* holding builds the swing */
+        const v = m.vine; m.om += (-(SWING_G / m.r) * Math.sin(m.th) - .07 * m.om) * dt;
+        if (want && Math.abs(m.om) < 4.3) m.om += Math.sign(m.om || 1) * 1.9 * dt;       /* holding builds the swing */
         m.th += m.om * dt; v.th = m.th; m.x = v.ax + m.r * Math.sin(m.th); m.y = v.ay + m.r * Math.cos(m.th);
         if (!want && m.armed) release();
+        G.pred = predict();
       } else {
         m.vy += GRAV * dt; m.x += m.vx * dt; m.y += m.vy * dt;
-        if (want && m.cd <= 0 && m.stun <= 0) tryGrab();
+        G.pred = null;
+        if (want && m.cd <= 0 && m.stun <= 0) {
+          for (const v of G.vines) { const dx = v.ax - m.x, dy = m.y - v.ay; if (v === m.last && Math.abs(m.x - (m.from || 0)) < 14) continue; if (Math.abs(dx) < 17 && dy > 14 && dy < v.len + 4 && Math.sign(dx) === Math.sign(m.vx || dx)) { m.vx += clamp(dx, -1, 1) * 70 * dt; break; } }
+          tryGrab();
+        }
         if (m.y + 20 > WATER) die();
       }
     }
@@ -96,11 +101,11 @@
     m.from = m.x; fx.burst(m.x, m.y, ['#74c648', '#2f8a35'], 4, 24, 60, .3);
   }
   function tryGrab() {
-    const reach = G.assist > 0 ? 10 : 6;
+    const reach = G.assist > 0 ? 14 : 9;
     for (const v of G.vines) {
       if (v === m.last && Math.abs(m.x - m.from) < 12) continue;
       const dx = m.x - v.ax, dy = m.y - v.ay; if (Math.abs(dx) > reach || dy < 14 || dy > v.len + 4) continue;
-      m.vine = v; m.r = clamp(Math.hypot(dx, dy), 22, v.len); m.th = Math.atan2(dx, dy); m.om = (m.vx * Math.cos(m.th) - m.vy * Math.sin(m.th)) / m.r; m.last = v; G.grabs++;
+      m.vine = v; m.r = clamp(Math.hypot(dx, dy), 22, v.len); m.th = Math.atan2(dx, dy); m.om = (m.vx * Math.cos(m.th) - m.vy * Math.sin(m.th)) / m.r; { const need = 62 / m.r; if (Math.abs(m.om) < need) m.om = need * (m.vx >= 0 ? 1 : -1); else m.om *= 1.08; } m.last = v; G.grabs++;
       G.bestSwing = Math.max(G.bestSwing, (m.x - (m.from || m.x)) / 8);
       sfx.clack(Math.min(10, G.grabs)); fx.burst(m.x, m.y, ['#74c648', '#a8ec76'], 5, 30, 60, .3);
       if (Math.abs(dx) < 2.2) { ui.floatText(m.x - G.cam, m.y - 14, 'NICE CATCH', 'gold'); G.score += 0; }
@@ -115,7 +120,22 @@
     ui.bump();
   }
   function die() {
-    G.dead = 1; sfx.over(); G.shake = 4; G.splash = { x: m.x, t: 0 }; m.vx = 0; m.vy = 0; fx.burst(m.x, WATER, ['#7ec8f0', '#d6f0ff', '#3a8ec8'], 24, 90, 220, .8); fx.ring(m.x, WATER, '#d6f0ff', 24); m.expr = 'scared'; m.et = 2;
+    G.hearts--; G.shake = 4; sfx.bonk(); fx.burst(m.x, WATER, ['#7ec8f0', '#d6f0ff', '#3a8ec8'], 24, 90, 220, .8); fx.ring(m.x, WATER, '#d6f0ff', 24); ui.setHearts(G.hearts, true); ui.doFlash('#184c78');
+    if (G.hearts <= 0) { G.dead = 1; sfx.over(); G.splash = { x: m.x, t: 0 }; m.vx = 0; m.vy = 0; m.expr = 'scared'; m.et = 2; return; }
+    ui.floatText(clamp(m.x - G.cam, 20, W - 20), 70, 'SPLASH! -1', 'bad');
+    /* the crocodile spits you back onto the nearest vine ahead of where you fell */
+    const v = G.vines.find(q => q.ax > m.x - 12) || m.last || G.vines[0];
+    m.vine = v; m.r = Math.min(v.len, 54); m.th = -.7; m.om = 1.2; m.armed = false; m.cd = .3; m.stun = 0; m.last = v; m.from = v.ax; m.x = v.ax + Math.sin(m.th) * m.r; m.y = v.ay + Math.cos(m.th) * m.r; m.expr = 'scared'; m.et = .8;
+  }
+  /* where would a release right now take you? returns the dotted path and the vine it would catch, if any */
+  function predict() {
+    let x = m.x, y = m.y, vx = m.r * Math.cos(m.th) * m.om, vy = -m.r * Math.sin(m.th) * m.om; const pts = [], reach = G.assist > 0 ? 14 : 9; let hit = null;
+    for (let i = 0; i < 44; i++) {
+      vy += GRAV * .04; x += vx * .04; y += vy * .04; if (y + 20 > WATER) break; pts.push([x, y]);
+      if (i > 3) for (const v of G.vines) { if (v === m.vine) continue; const dx = x - v.ax, dy = y - v.ay; if (Math.abs(dx) <= reach && dy >= 14 && dy <= v.len + 4) { hit = v; break; } }
+      if (hit) break;
+    }
+    return { pts, hit };
   }
   /* dev autoplayer: hold on the way up, release on a forward upswing, aim for a vine ahead */
   function botHold() {
@@ -148,7 +168,12 @@
     g.fillStyle = 'rgba(10,42,28,.55)'; for (let i = -1; i < 6; i++) { const x = ((i * 53 - cam * .45) % (W + 60) + W + 60) % (W + 60) - 20; g.fillRect(Math.round(x), 0, 6 + (i & 1) * 3, WATER); }
     g.fillStyle = '#0c3012'; g.fillRect(0, 0, W, 5); g.fillStyle = '#1f6a2a'; for (let x = -((cam * .9) % 14); x < W; x += 14) { g.fillRect(Math.round(x), 4, 9, 3); g.fillRect(Math.round(x) + 3, 7, 4, 2); }
     g.save(); g.translate(-cam, 0);
-    for (const v of G.vines) vineLine(v.ax, v.ay, v.th, v.len, v === m.vine);
+    const pr = G.pred && m.vine ? G.pred : null;
+    for (const v of G.vines) vineLine(v.ax, v.ay, v.th, v.len, v === m.vine || (pr && pr.hit === v));
+    if (pr) {
+      pr.pts.forEach(([px, py], i) => { if (i % 2) return; g.fillStyle = 'rgba(26,15,20,.55)'; g.fillRect(Math.round(px) - 1, Math.round(py) - 1, 3, 3); g.fillStyle = pr.hit ? '#fff08c' : '#fff6d6'; g.fillRect(Math.round(px), Math.round(py), 2, 2); });
+      if (pr.hit && pr.pts.length) { const [qx, qy] = pr.pts[pr.pts.length - 1]; const f = Math.floor(performance.now() / 150) % 2; g.fillStyle = '#fff08c'; g.fillRect(Math.round(qx) - 3 - f, Math.round(qy), 2, 1); g.fillRect(Math.round(qx) + 2 + f, Math.round(qy), 2, 1); g.fillRect(Math.round(qx), Math.round(qy) - 3 - f, 1, 2); g.fillRect(Math.round(qx), Math.round(qy) + 2 + f, 1, 2); }
+    }
     /* pickups */
     for (const p of G.picks) {
       const bob = Math.round(Math.sin(G.t * 4 + p.ph) * 1.5), sp = p.type === 'diamond' ? gem : p.type === 'golden' ? gold : A.banana;
@@ -158,7 +183,7 @@
     for (const b of G.bats) { if (b.cy == null) continue; g.drawImage(batSpr[Math.floor(G.t * 9 + b.ph) % 2], Math.round(b.x - 6), Math.round(b.cy - 4)); }
     /* monkey */
     if (!(G.splash && G.dead > 0)) {
-      const air = !m.vine, a = m.vine ? -m.th : clamp(m.vx / 140, -.6, .6), ex = m.et > 0 ? m.expr : m.stun > 0 ? 'scared' : m.blink > 0 ? 'blink' : 'normal';
+      const air = !m.vine, a = clamp(m.vine ? -m.th : m.vx / 140, -.733, .733), ex = m.et > 0 ? m.expr : m.stun > 0 ? 'scared' : m.blink > 0 ? 'blink' : 'normal';
       const f = PXA.monkeyFrame('vs', ex, a, false, air ? Math.floor(G.t * 6) % 2 : 0, 0), k = .5, ac = Math.cos(a), as = Math.sin(a);
       const loc = (lx, ly) => [m.x + lx * ac - ly * as, m.y + lx * as + ly * ac], P = loc(0, 7);
       const hx = Math.round(m.x), hy = Math.round(m.y - 1), sh = [loc(-3, 7 + 9), loc(3, 7 + 9)];

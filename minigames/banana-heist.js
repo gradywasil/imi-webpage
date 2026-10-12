@@ -17,7 +17,8 @@
   host.style.cursor = 'pointer';
   const ui = MG.ui(host, st, A.banana), fx = MG.fx();
 
-  const keeperSpr = make(11, 11, px => { px.shape(ell(5.5, 8.4, 5, 2.8), R.leaf, 1); px.shape(ell(5.5, 5, 3.2, 3.2), R.skin, 2); px.shape(or(ell(5.5, 3.2, 3.8, 1.8), box(2, 3, 7, 1.2)), R.leafD, 3); });
+  const keeperOf = body => make(11, 11, px => { px.shape(ell(5.5, 8.4, 5, 2.8), body, 1); px.shape(ell(5.5, 5, 3.2, 3.2), R.skin, 2); px.shape(or(ell(5.5, 3.2, 3.8, 1.8), box(2, 3, 7, 1.2)), R.leafD, 3); });
+  const KSPR = { sweeper: keeperOf(R.leaf), post: keeperOf(R.red), patrol: keeperOf(R.grape) }, keeperSpr = KSPR.sweeper;
   const sackSpr = make(10, 10, px => { px.shape(or(ell(5, 6, 4.5, 3.8), poly([[3, 3], [7, 3], [6, 0.5], [4, 0.5]])), R.paper, 1); px.tone(4, 5, 2, 1); });
   const bunch = { normal: A.banana, golden: A.golden, diamond: A.diamond };
 
@@ -43,9 +44,19 @@
       if (G.covers.some(c => Math.abs(c.x + c.w / 2 - x - w / 2) < (c.w + w) / 2 + 8 && Math.abs(c.y + c.h / 2 - y - h / 2) < (c.h + h) / 2 + 12)) continue;
       G.covers.push({ x, y, w, h });
     }
-    const kn = Math.min(4, 1 + Math.floor((r - 1) / 2));
-    const spots = [[6, 80], [W - 6, 110], [6, 140], [W - 6, 60]];
-    for (let i = 0; i < kn; i++) { const [kx, ky] = spots[i], left = kx < W / 2; G.keepers.push({ x: kx, y: ky + rng(-8, 8), base: left ? -.35 : Math.PI + .35, amp: rng(.55, .9), spd: (.55 + r * .05) * rng(.85, 1.2) * (i % 2 ? -1 : 1), ph: rng(6.28), a: 0 }); }
+    /* the crew: sweepers from round 1, then watchtower guards who see the whole yard, then patrols who walk their beat */
+    const crew = ['sweeper'];
+    if (r >= 2) crew.push('post'); if (r >= 3) crew.push('patrol'); if (r >= 5) crew.push('patrol'); if (r >= 6) crew.push('sweeper'); if (r >= 7) crew.push('post'); if (r >= 9) crew.push('patrol');
+    const spots = [[6, 80], [W - 6, 110], [6, 140], [W - 6, 60]]; let si = 0;
+    crew.slice(0, 6).forEach((type, i) => {
+      if (type === 'sweeper') { const [kx, ky] = spots[si++ % 4], left = kx < W / 2; G.keepers.push({ type, x: kx, y: ky + rng(-8, 8), range: RANGE, half: HALF, base: left ? -.35 : Math.PI + .35, amp: rng(.55, .9), spd: (.55 + r * .05) * rng(.85, 1.2) * (i % 2 ? -1 : 1), ph: rng(6.28), a: 0 }); }
+      else if (type === 'post') { const kx = Math.random() < .5 ? 5 : W - 5, ky = rng(86, 170); G.keepers.push({ type, x: kx, y: ky, range: 320, half: .42, base: Math.atan2(100 - ky, W / 2 - kx), amp: 1, spd: 0, ph: rng(6.28), a: 0 }); }
+      else {
+        const vert = Math.random() < .35; let lane = 0;
+        for (let t = 0; t < 12; t++) { lane = vert ? rng(14, W - 14) : rng(62, 166); if (!G.covers.some(c => vert ? lane > c.x - 8 && lane < c.x + c.w + 8 : lane > c.y - 8 && lane < c.y + c.h + 8)) break; }
+        G.keepers.push({ type, vert, x: vert ? lane : rng(10, 30), y: vert ? rng(66, 90) : lane, x0: vert ? lane : 8, x1: vert ? lane : W - 8, y0: 62, y1: 168, dir: Math.random() < .5 ? 1 : -1, pause: 0, range: 66, half: .33, spd: 20 + r * 1.6, ph: rng(6.28), a: 0 });
+      }
+    });
     ui.say(`HEIST ${r}<small>${G.stand === 'diamond' ? 'DIAMOND BUNCH · x10' : G.stand === 'golden' ? 'golden bunch · x3' : 'grab the bananas'}</small>`, G.stand === 'diamond' ? 'ice' : '');
     if (G.stand !== 'normal') sfx.golden();
   }
@@ -57,10 +68,11 @@
     return true;
   }
   const blocked = (kx, ky, px, py) => G.covers.some(c => segRect(kx, ky, px, py, c));
-  function lit(k, px, py) {
-    const dx = px - k.x, dy = py - k.y, d = Math.hypot(dx, dy); if (d > RANGE || d < 1) return false;
-    let da = Math.atan2(dy, dx) - k.a; da = Math.atan2(Math.sin(da), Math.cos(da)); return Math.abs(da) < HALF && !blocked(k.x, k.y, px, py);
+  function inCone(k, px, py) {
+    const dx = px - k.x, dy = py - k.y, d = Math.hypot(dx, dy); if (d > k.range || d < 1) return false;
+    let da = Math.atan2(dy, dx) - k.a; da = Math.atan2(Math.sin(da), Math.cos(da)); return Math.abs(da) < k.half;
   }
+  const lit = (k, px, py) => inCone(k, px, py) && !blocked(k.x, k.y, px, py);
 
   /* ---------- update ---------- */
   function update(rdt) {
@@ -69,7 +81,19 @@
     const dt = rdt; G.t += dt; G.roundT += dt; G.shake = Math.max(0, G.shake - rdt * 18); if (G.stun > 0) G.stun -= dt; if (G.hurry > 0) G.hurry -= dt;
     if (G.dead > 0) { G.dead -= dt; if (G.dead <= 0) { G.over = true; S.finish([['HEISTS', G.heists], ['GHOST RUNS', G.ghosts], ['BEST CHAIN', G.bestCombo], ['TIMES CAUGHT', G.caught], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`]]); } return; }
     const k = G.hurry > 0 ? 1.7 : 1;
-    for (const kp of G.keepers) kp.a = kp.base + Math.sin(G.t * kp.spd * k + kp.ph) * kp.amp;
+    for (const kp of G.keepers) {
+      if (kp.type === 'sweeper') kp.a = kp.base + Math.sin(G.t * kp.spd * k + kp.ph) * kp.amp;
+      else if (kp.type === 'post') kp.a = kp.base + Math.sin(G.t * .5 * k + kp.ph) * .2;
+      else {
+        const fwd = kp.vert ? (kp.dir > 0 ? Math.PI / 2 : -Math.PI / 2) : (kp.dir > 0 ? 0 : Math.PI);
+        if (kp.pause > 0) { kp.pause -= dt * k; kp.a = fwd + Math.sin(G.t * 3 + kp.ph) * .8; }
+        else {
+          if (kp.vert) { kp.y += kp.dir * kp.spd * k * dt; if (kp.y > kp.y1) { kp.y = kp.y1; kp.dir = -1; kp.pause = 1.1; } if (kp.y < kp.y0) { kp.y = kp.y0; kp.dir = 1; kp.pause = 1.1; } }
+          else { kp.x += kp.dir * kp.spd * k * dt; if (kp.x > kp.x1) { kp.x = kp.x1; kp.dir = -1; kp.pause = 1.1; } if (kp.x < kp.x0) { kp.x = kp.x0; kp.dir = 1; kp.pause = 1.1; } }
+          kp.a = fwd + Math.sin(G.t * 2 + kp.ph) * .2;
+        }
+      }
+    }
     /* the monkey creeps while you hold */
     const want = botOn ? botHold() : hold || keyHold;
     m.move = false;
@@ -87,7 +111,7 @@
     /* detection */
     let exposed = false, rate = 0;
     for (const kp of G.keepers) if (lit(kp, m.x, m.y - 3)) { exposed = true; rate = Math.max(rate, m.move ? 1 : .22); }
-    G.exposed = exposed; m.hide = G.keepers.length && !exposed && G.keepers.some(kp => Math.hypot(m.x - kp.x, m.y - kp.y) < RANGE && Math.abs(((Math.atan2(m.y - kp.y, m.x - kp.x) - kp.a + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) < HALF && blocked(kp.x, kp.y, m.x, m.y - 3)) ? 1 : 0;
+    G.exposed = exposed; m.hide = !exposed && G.keepers.some(kp => inCone(kp, m.x, m.y - 3) && blocked(kp.x, kp.y, m.x, m.y - 3)) ? 1 : 0;
     if (exposed) { G.alert += rate * dt / 1.05; G.maxAlert = Math.max(G.maxAlert, G.alert); if (rate > .9 && Math.floor(G.t * 8) % 2 === 0) sfx.tick(); } else G.alert = Math.max(0, G.alert - dt * .55);
     if (G.alert >= 1) caught();
     if (botOn) m.vx = m.vx;
@@ -110,7 +134,10 @@
   /* dev autoplayer: creep when the way is clear, freeze when a beam is about to cross */
   function botHold() {
     const dir = m.loot ? 1 : -1, ny = m.y + dir * 14;
-    for (const kp of G.keepers) { const a2 = kp.base + Math.sin((G.t + .5) * kp.spd + kp.ph) * kp.amp, ka = kp.a; for (const pt of [[m.x, m.y - 3], [m.x + m.vx * .3, ny - 3]]) { for (const aa of [ka, a2]) { const kk = { x: kp.x, y: kp.y, a: aa }; if (lit(kk, pt[0], pt[1])) return false; } } }
+    for (const kp of G.keepers) {
+      const angles = kp.type === 'sweeper' ? [kp.a, kp.base + Math.sin((G.t + .5) * kp.spd + kp.ph) * kp.amp] : [kp.a];
+      for (const pt of [[m.x, m.y - 3], [m.x + m.vx * .3, ny - 3]]) for (const aa of angles) if (lit({ x: kp.x, y: kp.y, a: aa, range: kp.range, half: kp.half }, pt[0], pt[1])) return false;
+    }
     return true;
   }
   function botX() { const tgt = m.loot ? W / 2 : W / 2; for (const c of G.covers) if (Math.abs(c.x + c.w / 2 - m.x) < c.w / 2 + 6 && Math.abs(c.y - m.y) < 22) return m.x + (m.x < c.x + c.w / 2 ? -20 : 20); return tgt; }
@@ -130,16 +157,22 @@
     g.fillStyle = '#17481f'; g.fillRect(0, HOME_Y + 8, W, H - HOME_Y - 8); g.fillStyle = '#2f8a35'; for (let x = 0; x < W; x += 6) g.fillRect(x, HOME_Y + 8 + (x % 12 ? 1 : 0), 5, 4); g.fillStyle = '#74c648'; for (let x = 2; x < W; x += 9) g.fillRect(x, HOME_Y + 9, 2, 1);
     /* the keepers' flashlight beams, blocked by crates (drawn in chunky 2px blocks) */
     for (const kp of G.keepers) {
-      const c = Math.cos(kp.a), s = Math.sin(kp.a), x0 = Math.floor(kp.x - RANGE), y0 = Math.floor(kp.y - RANGE);
-      for (let y = Math.max(0, y0); y < Math.min(H, kp.y + RANGE); y += 2) for (let x = Math.max(0, x0); x < Math.min(W, kp.x + RANGE); x += 2) {
-        const dx = x - kp.x, dy = y - kp.y, d = Math.hypot(dx, dy); if (d > RANGE || d < 3) continue; let da = Math.atan2(dy, dx) - kp.a; da = Math.atan2(Math.sin(da), Math.cos(da)); if (Math.abs(da) > HALF) continue;
-        if (blocked(kp.x, kp.y, x, y)) continue; g.fillStyle = `rgba(255,240,150,${(.36 * (1 - d / RANGE) + .08).toFixed(2)})`; g.fillRect(x, y, 2, 2);
+      const x0 = Math.max(0, Math.floor(kp.x - kp.range)), y0 = Math.max(0, Math.floor(kp.y - kp.range)), x1 = Math.min(W, kp.x + kp.range), y1 = Math.min(H, kp.y + kp.range), fade = Math.min(kp.range, 90), tint = kp.type === 'post' ? '255,170,150' : kp.type === 'patrol' ? '200,170,255' : '255,240,150';
+      for (let y = y0 - (y0 & 1); y < y1; y += 2) for (let x = x0 - (x0 & 1); x < x1; x += 2) {
+        const dx = x - kp.x, dy = y - kp.y, d = Math.hypot(dx, dy); if (d > kp.range || d < 3) continue; let da = Math.atan2(dy, dx) - kp.a; da = Math.atan2(Math.sin(da), Math.cos(da)); if (Math.abs(da) > kp.half) continue;
+        if (blocked(kp.x, kp.y, x, y)) continue; g.fillStyle = `rgba(${tint},${(.3 * (1 - Math.min(1, d / fade)) + .07).toFixed(2)})`; g.fillRect(x, y, 2, 2);
       }
     }
     /* crates */
     for (const c of G.covers) { g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(c.x + 2, c.y + c.h, c.w, 3); g.fillStyle = '#1a0f14'; g.fillRect(c.x - 1, c.y - 1, c.w + 2, c.h + 2); g.fillStyle = '#b57d3e'; g.fillRect(c.x, c.y, c.w, c.h); g.fillStyle = '#e8b878'; g.fillRect(c.x, c.y, c.w, 1); g.fillStyle = '#7a4a1e'; g.fillRect(c.x, c.y + c.h - 2, c.w, 2); for (let x = c.x + 5; x < c.x + c.w - 3; x += 6) g.fillRect(Math.round(x), c.y + 1, 1, c.h - 3); g.fillStyle = '#b8b8c4'; g.fillRect(c.x, c.y, 2, 2); g.fillRect(c.x + c.w - 2, c.y, 2, 2); }
     /* keepers */
-    for (const kp of G.keepers) { g.drawImage(keeperSpr, Math.round(kp.x - 5.5), Math.round(kp.y - 5.5)); g.fillStyle = '#ffd23a'; g.fillRect(Math.round(kp.x + Math.cos(kp.a) * 6), Math.round(kp.y + Math.sin(kp.a) * 6), 2, 2); if (G.exposed && Math.floor(G.t * 6) % 2) { g.fillStyle = '#e83a3a'; g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 10, 2, 4); g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 5, 2, 1); } }
+    for (const kp of G.keepers) {
+      g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(Math.round(kp.x) - 4, Math.round(kp.y) + 4, 9, 2);
+      g.drawImage(KSPR[kp.type], Math.round(kp.x - 5.5), Math.round(kp.y - 5.5));
+      g.fillStyle = '#ffd23a'; g.fillRect(Math.round(kp.x + Math.cos(kp.a) * 6), Math.round(kp.y + Math.sin(kp.a) * 6), 2, 2);
+      if (kp.type === 'post') { g.fillStyle = '#1a0f14'; g.fillRect(Math.round(kp.x) - 3, Math.round(kp.y) - 8, 7, 2); g.fillStyle = '#9ce0ff'; g.fillRect(Math.round(kp.x) - 2, Math.round(kp.y) - 8, 2, 1); g.fillRect(Math.round(kp.x) + 1, Math.round(kp.y) - 8, 2, 1); }
+      if (G.exposed && Math.floor(G.t * 6) % 2) { g.fillStyle = '#e83a3a'; g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 12, 2, 4); g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 7, 2, 1); }
+    }
     /* the monkey, with the sack when carrying */
     if (!(G.stun > 0 && Math.floor(G.t * 20) % 2)) {
       const sp = A.monkeyS[m.move && m.ph ? 1 : 0], hid = m.hide && !m.move, bob = G.grab > 0 ? Math.round(Math.sin(G.t * 30)) : 0;
@@ -155,7 +188,7 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'heist', title: 'BANANA<span>HEIST</span>', sub: 'Creep in. Grab the bunch. Slip out.',
-    legend: [[A.monkeyS[0], '<em>hold</em> to creep · release = freeze'], [keeperSpr, '<em class="bad">light</em> + moving = busted'], [sackSpr, '<em>crates</em> block the beam'], [A.golden, '<em>x3</em> golden bunch'], [A.diamond, '<em class="ice">x10</em> diamond bunch'], [A.heart, '<em>ghost run</em> = x2']],
+    legend: [[A.monkeyS[0], '<em>hold</em> to creep · release = freeze'], [KSPR.sweeper, '<em class="bad">sweeper</em> swings its beam'], [KSPR.post, '<em class="bad">watchman</em> sees the whole yard'], [KSPR.patrol, '<em class="bad">patrol</em> walks a beat'], [sackSpr, '<em>crates</em> block the beam'], [sackSpr, '<em>crates</em> block every beam'], [A.diamond, '<em class="ice">x10</em> diamond bunch']],
     hint: 'hold mouse / finger / Space / ↑ · steer to your finger or ← →', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
   });
   const dn = (ev, on) => { hold = on; if (on) { tx = clamp(st.toArt(ev)[0], 6, W - 6); sfx.unlock(); } };
@@ -171,7 +204,7 @@
   addEventListener('blur', () => { hold = false; keyHold = false; });
 
   newGame(); S.title();
-  if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
+  if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); if (params.get('round')) { G.round = +params.get('round') - 1; nextRound(); } for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   if (params.get('dbg')) setInterval(() => { document.title = `round=${G.round} heists=${G.heists} hearts=${G.hearts} score=${G.score} caught=${G.caught}`; }, 200);
   MG.loop(update, draw);
   window.BH = { get G() { return G; }, S, m };
