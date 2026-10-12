@@ -22,26 +22,36 @@ A typewriter keyboard (QWERTY rows plus space bar); keys pop up lit and you pres
 - **Rules:** a lit key that expires costs a heart; pressing an unlit key is a typo (breaks combo only). 3 hearts, same combo scale as Banana Barrel. Concurrent lit keys grow from 1 to 4, and lifetimes shrink.
 - Dev flags: `?autostart=1&bot=1&rare=1&warp=30`.
 
-## Pitches (not built)
+### Coconut Shuffle (`coconut-shuffle.html`)
+Banana under a coconut shell, shells swap faster each round (3 shells, 4 from round 4, 5 from round 9). Tap a shell, or 1-5 / arrows + Space. Quick picks (under 2.2s) get +25%. Golden round (x5, +heart) and Diamond round (x10; the banana only shows for 0.45s and the shuffle is twice as long and fast). A wrong pick costs a heart.
 
-| Game | Loop | Input | Why it fits |
-| --- | --- | --- | --- |
-| **Vine Swing** | Pendulum timing: release at the top of the arc, grab the next vine; bananas trace the ideal arc. | one button | Uses the vines already in the backdrop. |
-| **Coconut Shuffle** | Banana hides under one of three shells, shells swap faster each round. | tap | Pure thumb game, great reward pops. |
-| **Peel Dash** | Three-lane auto-runner: hop logs, slide under vines, avoid peels. | swipe / arrows | Classic endless-runner shape, easy to juice. |
-| **Banana Stack** | Swinging crate, tap to drop; perfect drops keep full width. | tap | Tiny, endlessly replayable, shows the canopy climbing. |
-| **Rain Leaf** | Barrel-catch cousin: catch rain with a leaf, dodge lightning. | drag / arrows | Could read the live weather from `weather.js`. |
+### Banana Stack (`banana-stack.html`)
+Monkey rides a swinging crate; tap to drop. Overhang is sliced off; perfect drops (within about 1.5px) keep full width and chain, and 3 in a row grow the crate back. Every 10th crate is Golden (+50, +6 width); a rare Diamond crate gives +200 and restores full width. A complete miss ends the run. The camera climbs and the tower sways.
 
-### More ideas (rougher)
+### Banana Slice (`banana-slice.html`)
+Drag to slice tossed bananas. Slicing a coconut or dropping a banana costs a heart. 3+ in one swipe is a bonus. Golden = 6s frenzy (no miss penalty, x2); Diamond = 3.5s slow-mo (25 per banana).
+
+### Banana Plinko (`banana-plinko.html`)
+10 balls; aim with the mouse/finger, tap/Space to drop. Bins 100/25/10/5/10/25/100; edge bins refund a ball. Peg hits play rising notes. Golden ball x3; Diamond ball splits into five on its first bounce (each x5).
+
+### Vine Swing (`vine-swing.html`)
+Hold = grab/swing (staying on builds the swing), release = fly, hold again near a vine to catch it. Bats knock you off; the river ends the run. Golden banana = wider grab, Diamond banana = banana magnet. Score is distance + bananas. Landscape stage.
+
+### Peel Dash (`peel-dash.html`)
+Three lanes, speed ramps up. Swipe/arrows to change lane, swipe up/Space to jump. Rocks must be dodged; logs and peels can be jumped. A hit costs a heart and slows you. Golden = 5s invincible dash that smashes obstacles; Diamond = 5s banana river (x3).
+
+### Road Hop (`road-hop.html`)
+Crossy-Road-style hopper in the city: sidewalks, grass and roads with cars, trucks and buses. Fruit scores, garbage costs points and stuns you, trees/bushes/bins block hops. A garbage truck creeps up from behind (the camera floor rises), so you have to keep moving. Golden = traffic crawls; Diamond = traffic stops and all garbage becomes bananas.
+
+## Remaining ideas
+
 | Game | Loop | Input |
 | --- | --- | --- |
-| **Banana Slice** | Bananas arc up; swipe through them, avoid coconuts, multi-slice splash. | swipe |
 | **Paper Plane** | Steer a paper plane through jungle gaps on updrafts, scooping letters. | drag |
-| **Banana Plinko** | Drop a banana down a pegboard of typewriter keys into scoring bins. | tap |
 | **Drum Circle** | Four-lane rhythm game on coconut bongos, perfect hits glow. | D F J K / tap |
 | **Simon Says Monkey** | Growing sequence of notes played on three typewriter keys; repeat it. | tap / A S D |
 | **Word Match** | Match-3 on letter tiles, bonus for runs that spell real words (ties into the word economy). | tap / drag |
-| **Lily-pad Hop** | Frogger: hop across river logs and lily pads with a banana in hand. | swipe / arrows |
+| **Rain Leaf** | Barrel-catch cousin: catch rain with a leaf, dodge lightning; could read `weather.js`. | drag / arrows |
 | **Fishing for Letters** | Lower a banana hook through the pond, reel in letter tiles, avoid piranhas. | hold / release |
 | **Arm Wrestle** | Mash a button to out-pull a rival monkey; stamina meter. | tap / mash |
 
