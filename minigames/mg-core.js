@@ -140,5 +140,75 @@
     return q;
   }
 
-  window.MG = { ui, rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg };
+  /* ---------- shell: title / pause / game-over flow, best scores, Esc + blur pause, mute button ---------- */
+  function shell(o) {
+    const { host, ui } = o, over = ui.over, modes = o.modes || [{ k: 'main', label: 'START' }];
+    const S = { phase: 'title', mode: modes[0].k, get playing() { return S.phase === 'play'; } };
+    const bestKey = m => o.id + ':' + m;
+    S.best = m => store.get(bestKey(m || S.mode), 0);
+    S.title = () => {
+      S.phase = 'title'; host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
+      const leg = h('div', 'mg-legend');
+      (o.legend || []).forEach(([cv, label]) => { const d = h('div'); d.append(spriteImg(cv, cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
+      const btns = h('div', 'mg-modes'); modes.forEach(m => btns.appendChild(ui.btn(m.label, m.cls || '', () => { sfx.unlock(); S.start(m.k); })));
+      const best = modes.map(m => (modes.length > 1 ? m.label.split(' ')[0] + ' ' : '') + S.best(m.k)).join('  ·  ');
+      over.append(h('h1', 'mg-title', o.title), h('p', 'mg-sub', o.sub || ''), leg, btns, h('p', 'mg-hint', o.hint || ''), h('p', 'mg-best', 'BEST  ' + best));
+      if (o.onTitle) o.onTitle();
+    };
+    S.start = m => {
+      S.mode = m || S.mode; S.phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); ui.hideBanner(); sfx.start(); o.onStart(S.mode);
+    };
+    S.finish = stats => {
+      S.phase = 'over'; host.classList.add('menu-open'); ui.hideBanner(); ui.setMeter(0); ui.combo.classList.remove('on');
+      const score = o.score(), prev = S.best(), isNew = score > prev; if (isNew) store.set(bestKey(S.mode), score);
+      over.hidden = false; over.innerHTML = '';
+      const grid = h('div', 'mg-stats'); (stats || []).forEach(([k, v]) => grid.append(h('span', '', k), h('b', '', v)));
+      over.append(h('p', 'mg-sub', o.overTitle || "THAT'S A WRAP"), h('h2', 'mg-big', String(score)), isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', 'BEST ' + Math.max(prev, score)), grid,
+        ui.btn('AGAIN', '', () => S.start()), ui.btn(modes.length > 1 ? 'MODES' : 'MENU', 'banana-btn-green', () => { if (o.onMenu) o.onMenu(); S.title(); }));
+    };
+    S.pause = () => { if (S.phase !== 'play') return; S.phase = 'pause'; host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', '', S.resume)); };
+    S.resume = () => { if (S.phase === 'pause') { S.phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); if (o.onResume) o.onResume(); } };
+    addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Escape') { S.phase === 'play' ? S.pause() : S.resume(); return; }
+      if ((e.key === 'Enter' || (e.key === ' ' && o.spaceStarts !== false)) && !e.repeat) {
+        if (S.phase === 'title' || S.phase === 'over') { sfx.unlock(); S.start(); e.preventDefault(); } else if (S.phase === 'pause') { S.resume(); e.preventDefault(); }
+      }
+    });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) S.pause(); });
+    addEventListener('blur', S.pause);
+    const mute = document.getElementById('mute');
+    if (mute) { const sync = () => mute.classList.toggle('off', !sfx.on); mute.addEventListener('click', () => { sfx.set(!sfx.on); sync(); sfx.unlock(); sfx.tick(); }); sync(); }
+    addEventListener('pointerdown', () => sfx.unlock());
+    return S;
+  }
+
+  /* ---------- particles: pixel squares + expanding rings, shared by every game ---------- */
+  function fx() {
+    let P = [], Rg = [];
+    return {
+      burst(x, y, cols, n, spd = 50, grav = 120, life = .5) {
+        for (let i = 0; i < n; i++) { const a = rng(Math.PI * 2), s = rng(spd * .3, spd); P.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * .4, g: grav, t: 0, life: life * rng(.7, 1.2), col: cols[i % cols.length] }); }
+      },
+      spark(x, y, col = '#fff08c') { P.push({ x: x + rng(-8, 8), y: y + rng(-8, 8), vx: rng(-6, 6), vy: rng(-14, 2), g: 0, t: 0, life: rng(.3, .65), col, plus: true }); },
+      ring(x, y, col, max = 22) { Rg.push({ x, y, t: 0, col, max }); },
+      update(dt) {
+        for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt; if (p.t >= p.life) P.splice(i, 1); }
+        for (let i = Rg.length - 1; i >= 0; i--) { Rg[i].t += dt; if (Rg[i].t > .5) Rg.splice(i, 1); }
+      },
+      draw(g) {
+        for (const p of P) {
+          const k = 1 - p.t / p.life; g.fillStyle = p.col; g.globalAlpha = Math.min(1, k * 2.2);
+          if (p.plus) { g.fillRect(Math.round(p.x), Math.round(p.y) - 1, 1, 3); g.fillRect(Math.round(p.x) - 1, Math.round(p.y), 3, 1); }
+          else { const s = k > .5 ? 2 : 1; g.fillRect(Math.round(p.x), Math.round(p.y), s, s); }
+        }
+        g.globalAlpha = 1;
+        for (const r of Rg) { const k = r.t / .5; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = 1; g.beginPath(); g.arc(r.x + .5, r.y + .5, Math.round(r.max * k), 0, Math.PI * 2); g.stroke(); }
+        g.globalAlpha = 1;
+      },
+      clear() { P = []; Rg = []; },
+    };
+  }
+
+  window.MG = { fx, shell, ui, rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg };
 })();
