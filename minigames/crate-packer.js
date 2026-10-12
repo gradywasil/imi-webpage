@@ -1,23 +1,24 @@
 /* ============================================================
-   CRATE PACKER: you have a loading bay and three odd-shaped stacks of banana crates. Drag them onto the 8x8 floor; every full row or column ships out.
-   Chain shipments for a bigger combo multiplier. The game ends when none of your three stacks fit anywhere.
-   Rare: a Golden crate ships its whole row and column (+100); the Diamond crate ships the entire bay (+500).
-   Controls: drag a stack onto the floor, or press 1-3 to pick, arrows to move, Space to place. Standalone: no connection to the main game's save yet.
+   CRATE PACKER: Tetris with a spin. Each job is a truck with its own loading bay (box truck, pickup, van with wheel wells, flatbed, dump truck, semi).
+   Odd-shaped stacks of banana crates ride in on a conveyor belt; rotate them and pack the bay completely. Every set of stacks is cut from the real bay,
+   so a perfect pack always exists, but the belt keeps coming, and if it backs up the oldest stack falls off the end.
+   85% full and the truck leaves; a perfect pack pays double. Rare: the Golden crate fits any single gap, the Diamond crate fills whatever is left.
+   Controls: drag a stack into the bay. Tap a stack, press R, right-click or scroll to rotate. Z undoes, N / the arrow button sends the next stack.
+   Keyboard: 1-4 pick a stack, arrows move, Space places. Standalone: no connection to the main game's save yet.
    ============================================================ */
 (() => {
   'use strict';
   const { rng, clamp, lerp, sfx, h } = MG;
-  const W = 120, H = 208, N = 8, CELL = 13, GX = (W - N * CELL) / 2, GY = 32, TRAY_Y = 152, MINI = 7;
+  const W = 120, H = 208, BELT_Y = 142, SLOT_X = [15, 41, 67, 93], BELT_MAX = 4;
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
   const A = MGArt.build();
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'grab';
-  const ui = MG.ui(host, st, A.banana, 0), fx = MG.fx();
-  document.querySelector('.mg-hearts').style.display = 'none';
+  const ui = MG.ui(host, st, A.banana, 3), fx = MG.fx();
 
-  /* ---------- crate cells ---------- */
+  /* ---------- crates ---------- */
   const PAL = [['#e8b878', '#b57d3e', '#7a4a1e'], ['#a8ec76', '#4aa23c', '#1f6a2a'], ['#9ce0ff', '#3a8ec8', '#184c78'], ['#e4b0ff', '#8c58c8', '#4a2a78'], ['#ffaba0', '#d8403a', '#781c16'], ['#fff7b0', '#ffd23a', '#b38004'], ['#ffffff', '#9be8ff', '#2a86b8']];
   const cellCache = {};
   function cell(ci, s) {
@@ -25,161 +26,239 @@
     const c = document.createElement('canvas'); c.width = c.height = s; const x = c.getContext('2d'), p = PAL[ci];
     x.fillStyle = '#1a0f14'; x.fillRect(0, 0, s, s); x.fillStyle = p[1]; x.fillRect(1, 1, s - 2, s - 2);
     x.fillStyle = p[0]; x.fillRect(1, 1, s - 2, 1); x.fillRect(1, 1, 1, s - 2); x.fillStyle = p[2]; x.fillRect(1, s - 2, s - 2, 1); x.fillRect(s - 2, 1, 1, s - 2);
-    if (s >= 11) { x.fillStyle = p[2]; x.fillRect(2, Math.floor(s / 2), s - 4, 1); x.fillStyle = '#b8b8c4'; x.fillRect(2, 2, 2, 2); x.fillRect(s - 4, 2, 2, 2); x.fillRect(2, s - 4, 2, 2); x.fillRect(s - 4, s - 4, 2, 2); if (ci < 5) { x.fillStyle = '#ffd23a'; x.fillRect(Math.floor(s / 2) - 1, 5, 3, 2); } }
+    if (s >= 10) { x.fillStyle = p[2]; x.fillRect(2, Math.floor(s / 2), s - 4, 1); x.fillStyle = '#b8b8c4'; x.fillRect(2, 2, 2, 2); x.fillRect(s - 4, 2, 2, 2); x.fillRect(2, s - 4, 2, 2); x.fillRect(s - 4, s - 4, 2, 2); if (ci < 5) { x.fillStyle = '#ffd23a'; x.fillRect(Math.floor(s / 2) - 1, Math.floor(s / 2) - 3, 3, 2); } }
     if (ci === 5) { x.fillStyle = '#fff'; x.fillRect(3, 3, 2, 1); } if (ci === 6) { x.fillStyle = '#fff'; x.fillRect(3, 3, 2, 2); }
     return (cellCache[id] = c);
   }
 
-  /* ---------- the stacks (every rotation is generated) ---------- */
-  const BASE = [
-    [[0, 0]], [[0, 0], [0, 1]], [[0, 0], [0, 1], [0, 2]], [[0, 0], [0, 1], [0, 2], [0, 3]], [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]],
-    [[0, 0], [0, 1], [1, 0], [1, 1]], [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]], [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
-    [[0, 0], [1, 0], [1, 1]], [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2]], [[0, 0], [0, 1], [0, 2], [1, 1]], [[0, 1], [0, 2], [1, 0], [1, 1]], [[0, 0], [0, 1], [1, 1], [1, 2]],
-    [[0, 0], [1, 0], [2, 0], [2, 1]], [[0, 0], [0, 1], [1, 0], [2, 0]],
+  /* ---------- the trucks: '#' is cargo space, '.' is wheel well / cab / bulkhead ---------- */
+  const TRUCKS = [
+    { name: 'BOX TRUCK', body: '#e8e8f0', mask: ['######', '######', '######', '######'] },
+    { name: 'PICKUP', body: '#d8403a', mask: ['#######', '#######', '######.'] },
+    { name: 'VAN', body: '#3a6ad8', mask: ['######', '######', '######', '######', '#.##.#'] },
+    { name: 'FLATBED', body: '#e8c43a', mask: ['#########', '#########', '#########'] },
+    { name: 'DUMP TRUCK', body: '#3aa85a', mask: ['.#######.', '#########', '#########', '#########'] },
+    { name: 'SEMI', body: '#8c58c8', mask: ['#########', '#########', '#########', '#########', '##.###.##'] },
   ];
-  const WEIGHT = [3, 5, 5, 3, 1.5, 5, 2.5, 1.2, 5, 2, 3, 3, 3, 3, 3];
+
+  /* ---------- piece geometry ---------- */
   const norm = cs => { const mr = Math.min(...cs.map(c => c[0])), mc = Math.min(...cs.map(c => c[1])); return cs.map(([r, c]) => [r - mr, c - mc]).sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
-  const rotate = cs => norm(cs.map(([r, c]) => [c, -r]));
-  const SHAPES = []; BASE.forEach((b, i) => { const seen = new Set(); let cur = norm(b); for (let k = 0; k < 4; k++) { const key = JSON.stringify(cur); if (!seen.has(key)) { seen.add(key); SHAPES.push({ cells: cur, w: WEIGHT[i] / 1 }); } cur = rotate(cur); } });
-  const size = cs => [Math.max(...cs.map(c => c[0])) + 1, Math.max(...cs.map(c => c[1])) + 1];
+  const rot90 = cs => norm(cs.map(([r, c]) => [c, -r]));
+  const rotCCW = cs => norm(cs.map(([r, c]) => [-c, r]));
+  const dims = cs => [Math.max(...cs.map(c => c[0])) + 1, Math.max(...cs.map(c => c[1])) + 1];
+
+  /* cut the bay into stacks of ~4 crates by growing random regions; leftovers join a neighbour */
+  function partition(mask) {
+    const R = mask.length, C = mask[0].length, id = Array.from({ length: R }, () => Array(C).fill(-1)), regions = [];
+    const open = (r, c) => r >= 0 && r < R && c >= 0 && c < C && mask[r][c] === '#';
+    const cells = []; for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (open(r, c)) cells.push([r, c]);
+    cells.sort(() => Math.random() - .5);
+    for (const [r0, c0] of cells) {
+      if (id[r0][c0] >= 0) continue; const reg = [[r0, c0]], k = regions.length; id[r0][c0] = k; const target = Math.random() < .25 ? 3 : Math.random() < .15 ? 5 : 4;
+      while (reg.length < target) {
+        const fr = []; for (const [r, c] of reg) for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (open(r + dr, c + dc) && id[r + dr][c + dc] < 0) fr.push([r + dr, c + dc]);
+        if (!fr.length) break; const [nr, nc] = fr[Math.floor(Math.random() * fr.length)]; id[nr][nc] = k; reg.push([nr, nc]);
+      }
+      regions.push(reg);
+    }
+    for (let k = regions.length - 1; k >= 0; k--) {                                   // fold tiny regions into a neighbour
+      if (regions[k].length >= 3) continue; let to = -1;
+      for (const [r, c] of regions[k]) for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const n = open(r + dr, c + dc) ? id[r + dr][c + dc] : -1; if (n >= 0 && n !== k && regions[n].length < 6) to = n; }
+      if (to >= 0) { regions[k].forEach(([r, c]) => { id[r][c] = to; regions[to].push([r, c]); }); regions[k] = []; }
+    }
+    return regions.filter(r => r.length).map(reg => { let cs = norm(reg); for (let i = Math.floor(Math.random() * 4); i > 0; i--) cs = rot90(cs); return cs; });
+  }
 
   /* ---------- state ---------- */
-  let G = null, botOn = false, drag = null, cursor = { slot: -1, r: 3, c: 3 };
+  let G = null, botOn = false, drag = null, cursor = { sel: -1, r: 0, c: 0 };
+  const mkPiece = (cells, ci, kind) => ({ cells, ci, kind: kind || null, slot: 0, x: W + 20, y: BELT_Y + 28, drop: 0 });
   function newGame() {
-    G = { board: Array.from({ length: N }, () => Array(N).fill(-1)), tray: [], score: 0, streak: 0, noClear: 0, bestStreak: 0, placed: 0, shipped: 0, goldens: 0, diamonds: 0, perfects: 0, shake: 0, flash: [], dead: 0, t: 0, over: false };
-    deal(); fx.clear(); render();
+    G = { score: 0, hearts: 3, streak: 0, bestStreak: 0, round: 0, trucks: 0, perfects: 0, placed: 0, lost: 0, goldens: 0, diamonds: 0, t: 0, shake: 0, belt: [], queue: [], deliverT: 0, undo: [], bay: null, phase: 'in', phaseT: 0, over: false, dead: 0, sent: 0 };
+    nextTruck(); fx.clear(); render();
   }
   const mult = () => ui.mult(G.streak);
-  function render() { ui.setScore(G.score); ui.setCombo(G.streak, mult()); }
-  function fits(cells, r, c) { return cells.every(([dr, dc]) => { const rr = r + dr, cc = c + dc; return rr >= 0 && rr < N && cc >= 0 && cc < N && G.board[rr][cc] < 0; }); }
-  function canPlaceAnywhere(p) { if (p.kind) { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (G.board[r][c] < 0) return true; return false; } for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (fits(p.cells, r, c)) return true; return false; }
-  function makePiece() {
-    if (G.placed > 6 && Math.random() < .045 + RARE * .5) return { cells: [[0, 0]], kind: 'gold', ci: 5 };
-    if (G.placed > 14 && Math.random() < .012 + RARE * .4) return { cells: [[0, 0]], kind: 'ice', ci: 6 };
-    let tot = SHAPES.reduce((a, s) => a + s.w, 0), r = Math.random() * tot, s = SHAPES[0]; for (const sh of SHAPES) { r -= sh.w; if (r <= 0) { s = sh; break; } }
-    return { cells: s.cells, ci: Math.floor(Math.random() * 5) };
-  }
-  function deal() {
-    let tries = 0, t;
-    do { t = [makePiece(), makePiece(), makePiece()]; tries++; } while (tries < 40 && !t.some(canPlaceAnywhere));
-    G.tray = t.map((p, i) => ({ ...p, used: false, pop: .3 + i * .08 }));
-    if (!G.tray.some(canPlaceAnywhere)) endGame();
-  }
+  function render(anim) { ui.setScore(G.score); ui.setHearts(G.hearts, anim); ui.setCombo(G.streak, mult()); }
 
-  /* ---------- placing + shipping ---------- */
-  function place(slot, r, c) {
-    const p = G.tray[slot]; if (!p || p.used) return false;
-    const rwd = p.kind ? G.board[r] && G.board[r][c] < 0 : fits(p.cells, r, c); if (!rwd) return false;
-    p.used = true; G.placed++; let pts = p.cells.length, lines = 0; const cleared = [];
-    p.cells.forEach(([dr, dc]) => { G.board[r + dr][c + dc] = p.ci; });
-    sfx.clack(3); p.cells.forEach(([dr, dc]) => fx.burst(GX + (c + dc) * CELL + 6, GY + (r + dr) * CELL + 6, ['#c9b88a', '#fff6d6'], 2, 18, 30, .2));
-    const rowsFull = [], colsFull = [];
-    for (let i = 0; i < N; i++) { if (G.board[i].every(v => v >= 0)) rowsFull.push(i); if (G.board.every(row => row[i] >= 0)) colsFull.push(i); }
-    const killCells = new Set(); rowsFull.forEach(i => { for (let j = 0; j < N; j++) killCells.add(i * N + j); }); colsFull.forEach(j => { for (let i = 0; i < N; i++) killCells.add(i * N + j); });
-    lines = rowsFull.length + colsFull.length;
-    if (p.kind === 'gold') { for (let j = 0; j < N; j++) { killCells.add(r * N + j); killCells.add(j * N + c); } lines = Math.max(lines, 2); G.goldens++; pts += 100; sfx.golden(); ui.say('GOLDEN CRATE<small>row + column shipped</small>'); fx.ring(GX + c * CELL + 6, GY + r * CELL + 6, '#ffd23a', 50); }
-    if (p.kind === 'ice') { for (let i = 0; i < N * N; i++) killCells.add(i); lines = Math.max(lines, 8); G.diamonds++; pts += 500; sfx.diamond(); ui.doFlash('#e8fbff'); ui.say('DIAMOND CRATE<small>the whole bay ships out! +500</small>', 'ice'); G.shake = 6; fx.ring(W / 2, GY + 52, '#9be8ff', 70); }
-    if (killCells.size) {
-      G.noClear = 0; G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); G.shipped += killCells.size;
-      const m = mult(); pts += Math.round(10 * lines * lines * m * (killCells.size >= 16 ? 1.5 : 1));
-      killCells.forEach(k => { const rr = Math.floor(k / N), cc = k % N, ci = G.board[rr][cc]; if (ci >= 0) { G.flash.push({ r: rr, c: cc, ci, t: 0 }); fx.burst(GX + cc * CELL + 6, GY + rr * CELL + 6, [PAL[ci][0], PAL[ci][1], '#fff6d6'], 4, 50, 120, .5); G.board[rr][cc] = -1; } });
-      if (!p.kind) { sfx.letters(); if (lines >= 2) sfx.golden(); ui.floatText(W / 2, GY + 56, lines === 1 ? 'SHIPPED!' : lines + ' LINES!', 'gold big'); G.shake = Math.max(G.shake, 2 + lines); }
-      if (G.streak >= 2) { ui.floatText(W / 2, GY + 70, `CHAIN x${G.streak}`, 'gold'); ui.pulseCombo(); }
-      if (G.board.every(row => row.every(v => v < 0))) { G.perfects++; pts += 300; ui.floatText(W / 2, GY + 40, 'EMPTY BAY +300', 'ice big'); sfx.diamond(); fx.ring(W / 2, GY + 52, '#9be8ff', 70); }
-    } else { G.noClear++; if (G.noClear >= 3) G.streak = 0; }
-    G.score += pts; ui.bump(); ui.floatText(GX + c * CELL + 6, GY + r * CELL - 2, '+' + pts, killCells.size ? 'gold' : ''); render();
-    if (G.tray.every(q => q.used)) deal(); else if (!G.tray.some(q => !q.used && canPlaceAnywhere(q))) endGame();
-    return true;
+  function nextTruck() {
+    G.round++; const pool = G.round <= TRUCKS.length ? [TRUCKS[G.round - 1]] : TRUCKS.slice(Math.min(2, G.round % 3));
+    const tr = pool[Math.floor(Math.random() * pool.length)]; const rows = tr.mask.length, cols = tr.mask[0].length, cs = clamp(Math.floor(104 / cols), 10, 16);
+    const bay = { tr, rows, cols, cs, x: Math.round((W - cols * cs) / 2), y: 38, fill: Array.from({ length: rows }, () => Array(cols).fill(-1)), total: tr.mask.join('').split('#').length - 1, filled: 0, slide: -140 };
+    G.bay = bay; G.belt = []; G.undo = []; cursor.sel = -1;
+    const parts = partition(tr.mask); G.queue = parts.map((cells, i) => mkPiece(cells, (i + G.round) % 5));
+    if (Math.random() < .08 + RARE * .6 && G.round > 1) G.queue.splice(Math.floor(Math.random() * G.queue.length), 0, mkPiece([[0, 0]], 5, 'gold'));
+    if (G.round > 2 && Math.random() < .03 + RARE * .6) G.queue.splice(Math.floor(Math.random() * G.queue.length), 0, mkPiece([[0, 0]], 6, 'ice'));
+    G.queue.sort(() => Math.random() - .5); G.deliverT = 0; G.phase = 'in'; G.phaseT = 0;
+    ui.say(`JOB ${G.round}: ${tr.name}<small>${G.queue.length} stacks · rotate and pack it full</small>`);
   }
-  function endGame() { if (G.over) return; G.over = true; G.dead = 1.1; sfx.over(); ui.say('NO ROOM!', ''); G.shake = 4; }
-  const hint = () => { for (const [i, p] of G.tray.entries()) { if (p.used) continue; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const ok = p.kind ? G.board[r][c] < 0 : fits(p.cells, r, c); if (ok) return [i, r, c]; } } return null; };
+  const interval = () => lerp(8, 3.6, clamp((G.round - 1) / 9, 0, 1));
+
+  /* ---------- bay logic ---------- */
+  const inMask = (r, c) => r >= 0 && r < G.bay.rows && c >= 0 && c < G.bay.cols && G.bay.tr.mask[r][c] === '#';
+  function canPlace(p, r, c) {
+    if (p.kind === 'ice') return inMask(r, c) && G.bay.fill[r][c] < 0;
+    return p.cells.every(([dr, dc]) => inMask(r + dr, c + dc) && G.bay.fill[r + dr][c + dc] < 0);
+  }
+  function place(p, r, c) {
+    const b = G.bay; if (!canPlace(p, r, c) || G.phase !== 'play') return false;
+    const cells = []; let pts;
+    if (p.kind === 'ice') { for (let rr = 0; rr < b.rows; rr++) for (let cc = 0; cc < b.cols; cc++) if (inMask(rr, cc) && b.fill[rr][cc] < 0) { b.fill[rr][cc] = 6; cells.push([rr, cc]); b.filled++; } G.diamonds++; pts = 300; sfx.diamond(); ui.doFlash('#e8fbff'); ui.say('DIAMOND CRATE<small>fills everything that is left!</small>', 'ice'); fx.ring(W / 2, b.y + 20, '#9be8ff', 60); G.shake = 5; }
+    else { p.cells.forEach(([dr, dc]) => { b.fill[r + dr][c + dc] = p.ci; cells.push([r + dr, c + dc]); b.filled++; }); pts = p.cells.length * 4; if (p.kind === 'gold') { pts += 50; G.goldens++; sfx.golden(); fx.ring(b.x + (c + .5) * b.cs, b.y + (r + .5) * b.cs, '#ffd23a', 30); } else sfx.clack(4 + G.placed % 6); }
+    cells.forEach(([rr, cc]) => fx.burst(b.x + (cc + .5) * b.cs, b.y + (rr + .5) * b.cs, ['#c9b88a', '#fff6d6'], 2, 20, 40, .25));
+    G.placed++; G.score += pts; ui.bump(); ui.floatText(b.x + (c + .5) * b.cs, b.y + r * b.cs - 4, '+' + pts, p.kind ? 'gold' : '');
+    G.belt.splice(G.belt.indexOf(p), 1); G.undo.push({ p, cells, r, c }); if (G.undo.length > 6) G.undo.shift(); cursor.sel = -1; render();
+    checkDone(); return true;
+  }
+  function undo() {
+    if (!S.playing || G.phase !== 'play' || !G.undo.length || G.belt.length >= BELT_MAX) { sfx.miss(); return; }
+    const u = G.undo.pop(), b = G.bay; if (u.p.kind === 'ice') { sfx.miss(); G.undo.push(u); return; }
+    u.cells.forEach(([r, c]) => { b.fill[r][c] = -1; b.filled--; }); G.score = Math.max(0, G.score - 6); G.belt.unshift(u.p); u.p.x = SLOT_X[0]; sfx.tick(); render();
+  }
+  function deliver() {
+    if (!G.queue.length) return; const p = G.queue.shift(); p.x = W + 18; G.belt.push(p); G.sent++; sfx.tick();
+    if (G.belt.length > BELT_MAX) { const lost = G.belt.shift(); G.lost++; G.shake = 4; sfx.bonk(); ui.floatText(SLOT_X[0], BELT_Y - 4, 'DROPPED!', 'bad'); fx.burst(SLOT_X[0], BELT_Y + 20, ['#8a5a2b', '#c9b88a'], 8, 50, 100, .5); if (cursor.sel >= 0) cursor.sel = -1; }
+  }
+  function checkDone() {
+    const b = G.bay; if (b.filled >= b.total) { finishTruck(true); return; }
+    if (!G.queue.length && (!G.belt.length || !G.belt.some(fitsAnywhere))) finishTruck(false);      /* nothing left that could still go in */
+  }
+  function fitsAnywhere(p) {
+    let cells = p.cells; for (let k = 0; k < (p.kind || p.cells.length === 1 ? 1 : 4); k++) { const q = { ...p, cells }; for (let r = 0; r < G.bay.rows; r++) for (let c = 0; c < G.bay.cols; c++) if (canPlace(q, r, c)) return true; cells = rot90(cells); }
+    return false;
+  }
+  function finishTruck(full) {
+    if (G.phase !== 'play') return; const b = G.bay, cov = b.filled / b.total, ok = cov >= .85;
+    G.phase = 'out'; G.phaseT = 0; G.queue = []; G.belt = []; const perfect = cov >= 1;
+    if (ok) {
+      G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); G.trucks++; const base = b.filled * 10, pts = Math.round(base * (perfect ? 2 : 1) * mult() * (1 + Math.max(0, G.round) * 0));
+      G.score += pts; ui.bump(); sfx.letters(); sfx.golden(); ui.floatText(W / 2, b.y + b.rows * b.cs / 2, `${Math.round(cov * 100)}% +${pts}`, perfect ? 'ice big' : 'gold big'); if (perfect) { G.perfects++; ui.say('PERFECT PACK!<small>x2 · every corner filled</small>', 'ice'); sfx.diamond(); fx.ring(W / 2, b.y + 20, '#9be8ff', 56); } else ui.say(`TRUCK AWAY!<small>${Math.round(cov * 100)}% packed</small>`);
+      fx.burst(W / 2, b.y + 20, ['#ffd23a', '#fff08c', '#74c648'], 20, 90, 60, .9); if (G.streak > 1) ui.pulseCombo(); if (perfect && G.hearts < 3) { G.hearts++; ui.floatText(W / 2, 70, '+HEART', 'gold'); }
+    } else { G.streak = 0; G.hearts--; G.shake = 5; sfx.bonk(); ui.doFlash('#c0392b'); ui.say(`REJECTED<small>only ${Math.round(cov * 100)}% packed</small>`); if (G.hearts <= 0) { G.dead = 1.3; sfx.over(); } }
+    render(!ok);
+  }
 
   /* ---------- update ---------- */
   function update(rdt) {
     fx.update(rdt);
     if (!G || !S.playing) return;
-    G.t += rdt; G.shake = Math.max(0, G.shake - rdt * 16);
-    for (let i = G.flash.length - 1; i >= 0; i--) { G.flash[i].t += rdt; if (G.flash[i].t > .3) G.flash.splice(i, 1); }
-    G.tray.forEach(p => { if (p.pop > 0) p.pop -= rdt; });
-    if (G.dead > 0) { G.dead -= rdt; if (G.dead <= 0) { G.dead = 0; S.finish([['CRATES PLACED', G.placed], ['SHIPPED', G.shipped], ['BEST CHAIN', G.bestStreak], ['EMPTY BAYS', G.perfects], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`]]); } }
-    if (botOn && !G.over) { G.bt = (G.bt || 0) + rdt; if (G.bt > .22) { G.bt = 0; const h2 = hint(); if (h2) place(h2[0], h2[1], h2[2]); } }
+    const dt = rdt; G.t += dt; G.shake = Math.max(0, G.shake - rdt * 16); G.phaseT += dt; const b = G.bay;
+    if (G.dead > 0) { G.dead -= dt; if (G.dead <= 0) { G.dead = 0; S.finish([['TRUCKS PACKED', G.trucks], ['PERFECT PACKS', G.perfects], ['STACKS PLACED', G.placed], ['STACKS DROPPED', G.lost], ['BEST STREAK', G.bestStreak], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`]]); } return; }
+    if (G.phase === 'in') { b.slide = lerp(b.slide, 0, 1 - Math.pow(.0004, dt)); if (G.phaseT > .8) { b.slide = 0; G.phase = 'play'; G.phaseT = 0; deliver(); G.deliverT = interval(); } }
+    else if (G.phase === 'out') { b.slide += (60 + G.phaseT * 260) * dt; if (G.phaseT > 1.1) { if (G.hearts <= 0) return; nextTruck(); } }
+    else if (G.phase === 'play') {
+      G.deliverT -= dt; if (G.queue.length && G.deliverT <= 0) { deliver(); G.deliverT = interval(); checkDone(); }
+      if (!G.queue.length) checkDone();
+      if (botOn) botStep(dt);
+    }
+    G.belt.forEach((p, i) => { p.x += (SLOT_X[i] - p.x) * Math.min(1, dt * 9); });
+  }
+  let botT = 0;
+  function botStep(dt) {
+    botT += dt; if (botT < .5 || !G.belt.length) return; botT = 0;
+    for (const p of G.belt.slice()) { let cells = p.cells; for (let k = 0; k < 4; k++) { const q = { ...p, cells }; for (let r = 0; r < G.bay.rows; r++) for (let c = 0; c < G.bay.cols; c++) if (canPlace(q, r, c)) { p.cells = cells; place(p, r, c); return; } cells = rot90(cells); } }
   }
 
   /* ---------- draw ---------- */
-  function slotX(i) { return 20 + i * 40; }
-  function trayScale(p) { const [rr, cc] = size(p.cells); return Math.min(MINI, Math.floor(34 / Math.max(rr, cc))); }
-  function ghostPos() {
-    if (!drag) return null; const p = G.tray[drag.slot], [rr, cc] = size(p.cells); const c = Math.round((drag.x - cc * CELL / 2 - GX) / CELL), r = Math.round((drag.y - 14 - rr * CELL / 2 - GY) / CELL);
-    return { r, c, ok: p.kind ? G.board[r] && G.board[r][c] < 0 : fits(p.cells, r, c) };
+  function ghost() {
+    if (!drag) return null; const p = drag.p, b = G.bay, [rr, cc] = dims(p.cells), lift = 14;
+    const c = Math.round((drag.x - cc * b.cs / 2 - b.x) / b.cs), r = Math.round((drag.y - lift - rr * b.cs / 2 - b.y) / b.cs); return { r, c, ok: canPlace(p, r, c) };
+  }
+  function drawPiece(p, cx, cy, s, alpha = 1) {
+    const [rr, cc] = dims(p.cells), x0 = Math.round(cx - cc * s / 2), y0 = Math.round(cy - rr * s / 2), sp = cell(p.ci, s); g.globalAlpha = alpha;
+    p.cells.forEach(([r, c]) => g.drawImage(sp, x0 + c * s, y0 + r * s)); g.globalAlpha = 1;
+    if (p.kind && Math.floor(performance.now() / 120) % 2 === 0) fx.spark(cx, cy, p.kind === 'ice' ? '#9be8ff' : '#fff08c');
+  }
+  function drawTruck() {
+    const b = G.bay, tr = b.tr, ox = Math.round(b.slide), x = b.x + ox, y = b.y, w = b.cols * b.cs, hh = b.rows * b.cs;
+    g.save(); g.translate(ox, 0);
+    /* rear view: body, door frame, bumper, tail lights, wheels, plate */
+    g.fillStyle = '#1a0f14'; g.fillRect(b.x - 7, y - 7, w + 14, hh + 22); g.fillStyle = tr.body; g.fillRect(b.x - 6, y - 6, w + 12, hh + 20); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(b.x - 6, y - 6, w + 12, 2); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(b.x - 6, y + hh + 11, w + 12, 3);
+    g.fillStyle = '#1a0f14'; g.fillRect(b.x - 2, y - 2, w + 4, hh + 4); g.fillStyle = '#2a170b'; g.fillRect(b.x - 1, y - 1, w + 2, hh + 2);
+    for (let r = 0; r < b.rows; r++) for (let c = 0; c < b.cols; c++) {
+      const px = b.x + c * b.cs, py = y + r * b.cs;
+      if (tr.mask[r][c] !== '#') { g.fillStyle = '#4a4458'; g.fillRect(px, py, b.cs, b.cs); g.fillStyle = '#3a3448'; g.fillRect(px + 1, py + 1, b.cs - 2, b.cs - 2); continue; }
+      g.fillStyle = (r + c) % 2 ? '#34200f' : '#2a170b'; g.fillRect(px, py, b.cs, b.cs);
+      const v = b.fill[r][c]; if (v >= 0) g.drawImage(cell(v, b.cs), px, py);
+    }
+    g.fillStyle = '#e83a3a'; g.fillRect(b.x - 6, y + hh + 2, 4, 4); g.fillRect(b.x + w + 2, y + hh + 2, 4, 4); g.fillStyle = '#b8b8c4'; g.fillRect(b.x, y + hh + 8, w, 3); g.fillStyle = '#1a0f14'; g.fillRect(b.x + Math.round(w / 2) - 8, y + hh + 4, 16, 5); g.fillStyle = '#fff6d6'; g.fillRect(b.x + Math.round(w / 2) - 7, y + hh + 5, 14, 3);
+    g.fillStyle = '#1a0f14'; g.fillRect(b.x - 4, y + hh + 11, 12, 8); g.fillRect(b.x + w - 8, y + hh + 11, 12, 8); g.fillStyle = '#3a3a48'; g.fillRect(b.x - 3, y + hh + 12, 10, 6); g.fillStyle = '#8c8670'; g.fillRect(b.x, y + hh + 14, 4, 2); g.fillRect(b.x + w - 5, y + hh + 14, 4, 2);
+    /* the job's name on the door */
+    const name = tr.name, nw = name.length * 4; g.fillStyle = '#1a0f14'; g.fillRect(Math.round(b.x + w / 2 - nw / 2) - 2, y - 14, nw + 3, 8); g.fillStyle = '#fff6d6'; g.fillRect(Math.round(b.x + w / 2 - nw / 2) - 1, y - 13, nw + 1, 6);
+    g.fillStyle = '#1a0f14'; name.split('').forEach((ch, k) => { const f = MGArt.FONT[ch]; if (f) f.split('').forEach((bb, i) => { if (bb === '1') g.fillRect(Math.round(b.x + w / 2 - nw / 2) + k * 4 + (i % 3), y - 12 + Math.floor(i / 3), 1, 1); }); });
+    g.restore();
+    /* fill gauge */
+    if (G.phase === 'play') { const cov = b.filled / b.total, gx = 8, gw = W - 16; g.fillStyle = '#1a0f14'; g.fillRect(gx - 1, BELT_Y - 12, gw + 2, 6); g.fillStyle = '#34200f'; g.fillRect(gx, BELT_Y - 11, gw, 4); g.fillStyle = cov >= .85 ? '#74c648' : '#ffd23a'; g.fillRect(gx, BELT_Y - 11, Math.round(gw * cov), 4); g.fillStyle = '#fff6d6'; g.fillRect(gx + Math.round(gw * .85), BELT_Y - 12, 1, 6); }
   }
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
-    /* the bay: wooden frame around a dark floor with a grid */
-    g.fillStyle = '#1a0f14'; g.fillRect(GX - 4, GY - 4, N * CELL + 8, N * CELL + 8); g.fillStyle = '#5a3517'; g.fillRect(GX - 3, GY - 3, N * CELL + 6, N * CELL + 6); g.fillStyle = '#b57d3e'; g.fillRect(GX - 3, GY - 3, N * CELL + 6, 1);
-    g.fillStyle = '#2a170b'; g.fillRect(GX, GY, N * CELL, N * CELL);
-    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { g.fillStyle = (r + c) % 2 ? '#34200f' : '#2a170b'; g.fillRect(GX + c * CELL, GY + r * CELL, CELL, CELL); }
-    const gp = ghostPos(), p0 = drag && G.tray[drag.slot], willClear = new Set();
-    if (gp && gp.ok) {
-      /* preview which rows/columns would ship */
-      const tmp = G.board.map(r => r.slice()); p0.cells.forEach(([dr, dc]) => { tmp[gp.r + dr][gp.c + dc] = 1; });
-      for (let i = 0; i < N; i++) { if (tmp[i].every(v => v >= 0)) for (let j = 0; j < N; j++) willClear.add(i * N + j); if (tmp.every(row => row[i] >= 0)) for (let j = 0; j < N; j++) willClear.add(j * N + i); }
-      if (p0.kind === 'gold') for (let j = 0; j < N; j++) { willClear.add(gp.r * N + j); willClear.add(j * N + gp.c); } if (p0.kind === 'ice') for (let i = 0; i < N * N; i++) willClear.add(i);
-    }
-    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const v = G.board[r][c]; if (v >= 0) { g.drawImage(cell(v, CELL), GX + c * CELL, GY + r * CELL); if (willClear.has(r * N + c)) { g.fillStyle = 'rgba(255,246,214,' + (.25 + .2 * Math.sin(G.t * 12)) + ')'; g.fillRect(GX + c * CELL, GY + r * CELL, CELL, CELL); } } }
-    for (const f of G.flash) { const k = 1 - f.t / .3; g.globalAlpha = k; g.fillStyle = '#fff'; g.fillRect(GX + f.c * CELL, GY + f.r * CELL, CELL, CELL); g.globalAlpha = 1; }
-    /* ghost on the floor */
-    if (gp) { const col = gp.ok ? 'rgba(255,246,214,.45)' : 'rgba(200,60,40,.45)'; p0.cells.forEach(([dr, dc]) => { const rr = gp.r + dr, cc = gp.c + dc; if (rr < 0 || rr >= N || cc < 0 || cc >= N) return; g.fillStyle = col; g.fillRect(GX + cc * CELL, GY + rr * CELL, CELL, CELL); }); }
-    /* the tray */
-    g.fillStyle = '#1a0f14'; g.fillRect(2, TRAY_Y - 6, W - 4, 52); g.fillStyle = '#3a2210'; g.fillRect(3, TRAY_Y - 5, W - 6, 50); g.fillStyle = '#5a3517'; g.fillRect(3, TRAY_Y - 5, W - 6, 1);
-    G.tray.forEach((p, i) => {
-      if (p.used || (drag && drag.slot === i)) { if (drag && drag.slot === i) { g.globalAlpha = .3; drawPiece(p, slotX(i), TRAY_Y + 20, trayScale(p)); g.globalAlpha = 1; } return; }
-      const k = p.pop > 0 ? 1 - p.pop / .38 : 1, sc = trayScale(p), off = Math.round((1 - k) * 12);
-      const sel = cursor.slot === i; if (sel) { g.fillStyle = 'rgba(255,210,58,.3)'; g.fillRect(slotX(i) - 19, TRAY_Y - 3, 38, 46); }
-      g.globalAlpha = canPlaceAnywhere(p) ? 1 : .35; drawPiece(p, slotX(i), TRAY_Y + 20 + off, sc); g.globalAlpha = 1;
+    drawTruck();
+    /* ghost in the bay */
+    const gp = ghost(), b = G.bay;
+    if (gp) { const p = drag.p, col = gp.ok ? 'rgba(255,246,214,.5)' : 'rgba(200,60,40,.5)'; (p.kind === 'ice' ? [[0, 0]] : p.cells).forEach(([dr, dc]) => { const rr = gp.r + dr, cc = gp.c + dc; if (!inMask(rr, cc) && !(rr >= 0 && rr < b.rows && cc >= 0 && cc < b.cols)) return; g.fillStyle = col; g.fillRect(b.x + cc * b.cs, b.y + rr * b.cs, b.cs, b.cs); }); }
+    /* the conveyor belt */
+    g.fillStyle = '#1a0f14'; g.fillRect(2, BELT_Y - 2, W - 4, 58); g.fillStyle = '#3a3a48'; g.fillRect(3, BELT_Y - 1, W - 6, 56); g.fillStyle = '#2a2a38'; g.fillRect(3, BELT_Y + 6, W - 6, 44);
+    const off = Math.floor(G.t * 16) % 8; g.fillStyle = '#4a4a5a'; for (let x = 3 - off; x < W - 3; x += 8) { const xx = Math.max(3, x); g.fillRect(xx, BELT_Y + 6, Math.min(2, W - 3 - xx), 44); }
+    g.fillStyle = '#8c8670'; g.fillRect(3, BELT_Y - 1, W - 6, 2); g.fillRect(3, BELT_Y + 50, W - 6, 2);
+    G.belt.forEach((p, i) => {
+      if (drag && drag.p === p) { drawPiece(p, p.x, BELT_Y + 28, 6, .25); return; }
+      const [rr, cc] = dims(p.cells), s = Math.min(7, Math.floor(26 / Math.max(rr, cc))); const sel = cursor.sel === i || (G.sel === p);
+      if (sel) { g.fillStyle = 'rgba(255,210,58,.3)'; g.fillRect(Math.round(p.x) - 13, BELT_Y + 3, 27, 48); }
+      drawPiece(p, p.x, BELT_Y + 28, s);
     });
+    if (G.belt.length >= BELT_MAX && Math.floor(G.t * 4) % 2) { g.fillStyle = '#e83a3a'; g.fillRect(3, BELT_Y - 1, 3, 54); }
+    /* controls: next-delivery timer + send button, rotate and undo */
+    const sx = W - 14, nextT = G.queue.length ? clamp(1 - G.deliverT / interval(), 0, 1) : 0;
+    g.fillStyle = '#1a0f14'; g.fillRect(sx - 6, BELT_Y + 30, 14, 20); g.fillStyle = G.queue.length ? '#ffd23a' : '#5a5a6a'; g.fillRect(sx - 5, BELT_Y + 49 - Math.round(18 * nextT), 12, Math.round(18 * nextT)); g.fillStyle = '#1a0f14'; g.fillRect(sx - 2, BELT_Y + 34, 6, 1); g.fillRect(sx - 1, BELT_Y + 35, 4, 1); g.fillRect(sx, BELT_Y + 36, 2, 1);
+    for (const [bx, lab] of [[sx, 'R']]) { g.fillStyle = '#1a0f14'; g.fillRect(bx - 6, BELT_Y + 4, 14, 22); g.fillStyle = '#3a6ad8'; g.fillRect(bx - 5, BELT_Y + 5, 12, 20); g.fillStyle = '#fff6d6'; g.fillRect(bx - 3, BELT_Y + 10, 8, 2); g.fillRect(bx + 3, BELT_Y + 10, 2, 5); g.fillRect(bx - 3, BELT_Y + 18, 8, 2); g.fillRect(bx - 3, BELT_Y + 14, 2, 5); g.fillRect(bx + 2, BELT_Y + 8, 3, 1); }
+    /* the stack in your hand */
+    if (drag) drawPiece(drag.p, drag.x, drag.y - 14, G.bay.cs);
     /* keyboard cursor */
-    if (cursor.slot >= 0 && !drag && G.tray[cursor.slot] && !G.tray[cursor.slot].used) { const p = G.tray[cursor.slot], ok = p.kind ? G.board[cursor.r][cursor.c] < 0 : fits(p.cells, cursor.r, cursor.c); p.cells.forEach(([dr, dc]) => { const rr = cursor.r + dr, cc = cursor.c + dc; if (rr < N && cc < N) { g.fillStyle = ok ? 'rgba(255,246,214,.5)' : 'rgba(200,60,40,.5)'; g.fillRect(GX + cc * CELL, GY + rr * CELL, CELL, CELL); } }); }
-    /* the piece in your hand */
-    if (drag) { const p = G.tray[drag.slot]; drawPiece(p, drag.x, drag.y - 14, CELL); }
+    if (cursor.sel >= 0 && !drag && G.belt[cursor.sel]) { const p = G.belt[cursor.sel], ok = canPlace(p, cursor.r, cursor.c); (p.kind === 'ice' ? [[0, 0]] : p.cells).forEach(([dr, dc]) => { const rr = cursor.r + dr, cc = cursor.c + dc; if (rr < b.rows && cc < b.cols && rr >= 0 && cc >= 0) { g.fillStyle = ok ? 'rgba(255,246,214,.5)' : 'rgba(200,60,40,.5)'; g.fillRect(b.x + cc * b.cs, b.y + rr * b.cs, b.cs, b.cs); } }); }
+    if (G.undo.length && G.phase === 'play') { g.fillStyle = 'rgba(255,246,214,.5)'; const t = 'Z UNDO'; t.split('').forEach((ch, k) => { const f = MGArt.FONT[ch]; if (f) f.split('').forEach((bb, i) => { if (bb === '1') g.fillRect(6 + k * 4 + (i % 3), BELT_Y + 56 + Math.floor(i / 3), 1, 1); }); }); }
     fx.draw(g); g.restore();
   }
-  function drawPiece(p, cx, cy, s) {
-    const [rr, cc] = size(p.cells), x0 = Math.round(cx - cc * s / 2), y0 = Math.round(cy - rr * s / 2), sp = cell(p.ci, s);
-    p.cells.forEach(([r, c]) => g.drawImage(sp, x0 + c * s, y0 + r * s));
-    if (p.kind && Math.floor(performance.now() / 120) % 2 === 0) fx.spark(cx, cy, p.kind === 'ice' ? '#9be8ff' : '#fff08c');
-  }
 
-  /* ---------- shell + input ---------- */
+  /* ---------- rotate / pick / drop ---------- */
+  function rotate(p, dir = 1) { if (!p || p.kind === 'ice' || p.cells.length === 1) return; p.cells = dir > 0 ? rot90(p.cells) : rotCCW(p.cells); sfx.tick(); }
+  function beltAt(px, py) { if (py < BELT_Y || py > BELT_Y + 52) return -1; let best = -1, bd = 1e9; G.belt.forEach((p, i) => { const d = Math.abs(px - p.x); if (d < bd) { bd = d; best = i; } }); return best >= 0 && bd < 15 ? best : -1; }
   const S = MG.shell({
-    host, ui, id: 'packer', title: 'CRATE<span>PACKER</span>', sub: 'Fill the bay. Ship the lines.',
-    legend: [[cell(0, 13), '<em>full row/col</em> ships'], [cell(2, 13), '<em>chain</em> shipments = combo'], [cell(5, 13), '<em>+100</em> golden: row + col'], [cell(6, 13), '<em class="ice">+500</em> diamond: all']],
-    hint: 'drag stacks onto the floor · or 1-3, arrows, Space', onStart: () => { newGame(); cursor = { slot: -1, r: 3, c: 3 }; }, score: () => G.score, spaceStarts: false,
+    host, ui, id: 'packer', title: 'CRATE<span>PACKER</span>', sub: 'Pack the whole truck. Rotate to fit.',
+    legend: [[cell(0, 13), '<em>drag</em> a stack into the bay'], [cell(2, 13), '<em>R</em> / tap / right-click rotates'], [cell(4, 13), '<em>85%</em> full = truck leaves'], [cell(5, 13), '<em>+50</em> golden: fits any gap'], [cell(6, 13), '<em class="ice">+300</em> diamond fills the rest'], [A.heart, '<em>belt full</em> = a stack drops']],
+    hint: 'drag · R rotate · Z undo · N sends the next stack', onStart: () => { newGame(); drag = null; }, score: () => G.score, spaceStarts: false,
   });
+  addEventListener('contextmenu', e => { if (S.playing) { e.preventDefault(); const p = drag ? drag.p : G.belt[cursor.sel]; rotate(p); } });
+  addEventListener('wheel', e => { if (S.playing && drag) { rotate(drag.p, e.deltaY > 0 ? 1 : -1); } }, { passive: true });
   addEventListener('pointerdown', ev => {
-    if (!S.playing || G.over || ev.target.closest('.mg-over,.mg-nav')) return; const [px, py] = st.toArt(ev); if (py < TRAY_Y - 8) return;
-    let best = -1, bd = 1e9; G.tray.forEach((p, i) => { if (p.used) return; const d = Math.abs(px - slotX(i)); if (d < bd) { bd = d; best = i; } });
-    if (best >= 0 && bd < 21) { drag = { slot: best, x: px, y: py }; host.style.cursor = 'grabbing'; cursor.slot = -1; sfx.tick(); }
+    if (!S.playing || G.over || G.phase !== 'play' || ev.target.closest('.mg-over,.mg-nav')) return; if (ev.button === 2) return; const [px, py] = st.toArt(ev);
+    if (px > W - 21 && py >= BELT_Y + 3 && py < BELT_Y + 27) { rotate(G.sel || G.belt[0]); return; }                             // rotate button acts on the selected stack
+    if (px > W - 21 && py >= BELT_Y + 28 && py < BELT_Y + 52) { if (G.queue.length) { deliver(); G.deliverT = interval(); G.score += 1; checkDone(); } return; }        // send next
+    const i = beltAt(px, py); if (i >= 0) { const p = G.belt[i]; drag = { p, x: px, y: py, sx: px, sy: py, moved: false, wasSel: G.sel === p }; G.sel = p; host.style.cursor = 'grabbing'; sfx.tick(); cursor.sel = -1; }
   });
-  addEventListener('pointermove', ev => { if (!drag) return; const [px, py] = st.toArt(ev); drag.x = px; drag.y = py; });
+  addEventListener('pointermove', ev => { if (!drag) return; const [px, py] = st.toArt(ev); drag.x = px; drag.y = py; if (Math.hypot(px - drag.sx, py - drag.sy) > 3) drag.moved = true; });
   addEventListener('pointerup', () => {
-    if (!drag) return; const gp = ghostPos(), d = drag; drag = null; host.style.cursor = 'grab';
-    if (gp && gp.ok) place(d.slot, gp.r, gp.c); else if (gp) { sfx.miss(); }
+    if (!drag) return; const d = drag; drag = null; host.style.cursor = 'grab'; const gp = d.moved ? (() => { drag = d; const q = ghost(); drag = null; return q; })() : null;
+    if (!d.moved) { if (d.wasSel) rotate(d.p); return; }                                     // a tap on the selected stack rotates it
+    if (gp && gp.ok) place(d.p, gp.r, gp.c); else if (gp) sfx.miss();
   });
   addEventListener('keydown', e => {
-    if (!S.playing || G.over) return; const k = e.key.toLowerCase();
-    if (k >= '1' && k <= '3') { const i = +k - 1; if (G.tray[i] && !G.tray[i].used) { cursor.slot = i; const [rr, cc] = size(G.tray[i].cells); cursor.r = clamp(cursor.r, 0, N - rr); cursor.c = clamp(cursor.c, 0, N - cc); sfx.tick(); } e.preventDefault(); return; }
-    if (cursor.slot < 0) { if ([' ', 'enter'].includes(k)) { const i = G.tray.findIndex(p => !p.used); if (i >= 0) cursor.slot = i; e.preventDefault(); } return; }
-    const p = G.tray[cursor.slot], [rr, cc] = p ? size(p.cells) : [1, 1];
-    if (k === 'arrowleft' || k === 'a') cursor.c = Math.max(0, cursor.c - 1); else if (k === 'arrowright' || k === 'd') cursor.c = Math.min(N - cc, cursor.c + 1);
-    else if (k === 'arrowup' || k === 'w') cursor.r = Math.max(0, cursor.r - 1); else if (k === 'arrowdown' || k === 's') cursor.r = Math.min(N - rr, cursor.r + 1);
-    else if (k === ' ' || k === 'enter') { if (place(cursor.slot, cursor.r, cursor.c)) { const n = G.tray.findIndex(q => !q.used); cursor.slot = n; } else sfx.miss(); }
-    else return; e.preventDefault();
+    if (!S.playing || G.over || G.phase !== 'play') return; const k = e.key.toLowerCase();
+    if (k >= '1' && k <= '4') { const i = +k - 1; if (G.belt[i]) { cursor.sel = i; G.sel = G.belt[i]; const [rr, cc] = dims(G.belt[i].cells); cursor.r = clamp(cursor.r, 0, Math.max(0, G.bay.rows - rr)); cursor.c = clamp(cursor.c, 0, Math.max(0, G.bay.cols - cc)); sfx.tick(); } e.preventDefault(); return; }
+    const p = cursor.sel >= 0 ? G.belt[cursor.sel] : null;
+    if (k === 'r' || k === 'e') { rotate(p || G.sel || G.belt[0]); e.preventDefault(); }
+    else if (k === 'q') { rotate(p || G.sel || G.belt[0], -1); e.preventDefault(); }
+    else if (k === 'z') { undo(); e.preventDefault(); }
+    else if (k === 'n' || k === 'enter') { if (G.queue.length) { deliver(); G.deliverT = interval(); G.score += 1; checkDone(); } e.preventDefault(); }
+    else if (p) {
+      const [rr, cc] = dims(p.cells);
+      if (k === 'arrowleft' || k === 'a') cursor.c = Math.max(0, cursor.c - 1); else if (k === 'arrowright' || k === 'd') cursor.c = Math.min(G.bay.cols - cc, cursor.c + 1);
+      else if (k === 'arrowup' || k === 'w') cursor.r = Math.max(0, cursor.r - 1); else if (k === 'arrowdown' || k === 's') cursor.r = Math.min(G.bay.rows - rr, cursor.r + 1);
+      else if (k === ' ') { if (place(p, cursor.r, cursor.c)) { cursor.sel = G.belt.length ? 0 : -1; } else sfx.miss(); } else return; e.preventDefault();
+    } else if (k === ' ' && G.belt.length) { cursor.sel = 0; G.sel = G.belt[0]; e.preventDefault(); }
   });
 
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
-  if (params.get('dbg')) setInterval(() => { document.title = `score=${G.score} placed=${G.placed} shipped=${G.shipped} over=${G.over}`; }, 200);
+  if (params.get('dbg')) setInterval(() => { document.title = `trucks=${G.trucks} placed=${G.placed} lost=${G.lost} hearts=${G.hearts} score=${G.score} round=${G.round} phase=${G.phase} q=${G.queue.length} belt=${G.belt.length} fill=${G.bay.filled}/${G.bay.total} dt=${G.deliverT.toFixed(1)}`; }, 200);
   MG.loop(update, draw);
   window.CP = { get G() { return G; }, S, place };
 })();

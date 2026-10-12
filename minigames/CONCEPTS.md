@@ -23,7 +23,7 @@ A typewriter keyboard (QWERTY rows plus space bar); keys pop up lit and you pres
 - Dev flags: `?autostart=1&bot=1&rare=1&warp=30`.
 
 ### Coconut Shuffle (`coconut-shuffle.html`)
-Banana under a coconut shell, shells swap faster each round (3 shells, 4 from round 4, 5 from round 9). Tap a shell, or 1-5 / arrows + Space. Quick picks (under 2.2s) get +25%. Golden round (x5, +heart) and Diamond round (x10; the banana only shows for 0.45s and the shuffle is twice as long and fast). A wrong pick costs a heart.
+Banana under a coconut shell. 3 shells in round 1, 4 from round 2, 5 from round 4. Swaps get faster (down to 0.085s), from round 3 two swaps happen at once, from round 4 some are fake-outs (the shells slide halfway and snap back), and from round 5 you have a pick timer. The banana is shown for less time each round. Golden round x5 (+heart), Diamond round x10 (the banana only flashes). A wrong pick or a timeout costs a heart.
 
 ### Banana Stack (`banana-stack.html`)
 Monkey rides a swinging crate; tap to drop. Overhang is sliced off; perfect drops (within about 1.5px) keep full width and chain, and 3 in a row grow the crate back. Every 10th crate is Golden (+50, +6 width); a rare Diamond crate gives +200 and restores full width. A complete miss ends the run. The camera climbs and the tower sways.
@@ -32,10 +32,10 @@ Monkey rides a swinging crate; tap to drop. Overhang is sliced off; perfect drop
 Drag to slice tossed bananas. Slicing a coconut or dropping a banana costs a heart. 3+ in one swipe is a bonus. Golden = 6s frenzy (no miss penalty, x2); Diamond = 3.5s slow-mo (25 per banana).
 
 ### Banana Plinko (`banana-plinko.html`)
-10 balls; aim with the mouse/finger, tap/Space to drop. Bins 100/25/10/5/10/25/100; edge bins refund a ball. Peg hits play rising notes. Golden ball x3; Diamond ball splits into five on its first bounce (each x5).
+The chip is a banana: a rigid crescent body with spin, friction and five collision circles along its curve, so it hooks on wooden pegs, pivots and flips. Three coconut bumpers fire it away pinball-style (scoring on the first three bumps per banana), a worker monkey paces a ledge with a crate and shoves it, and two monkeys swing on vines across the middle. 10 bananas; edge bins (100) refund one. Golden banana x3; the Diamond banana bursts into five on its first peg.
 
 ### Vine Swing (`vine-swing.html`)
-Hold = grab/swing (staying on builds the swing), release = fly, hold again near a vine to catch it. Bats knock you off; the river ends the run. Golden banana = wider grab, Diamond banana = banana magnet. Score is distance + bananas. Landscape stage.
+Hold = grab/swing (staying on builds the swing), release = fly, hold again near a vine to catch it (a gentle magnet helps, and a catch always keeps at least a decent speed). A dotted preview shows where a release right now would take you; it turns gold and highlights the vine when it would catch one. Three hearts: falling in the river costs one and puts you back on the nearest vine. Bats knock you off. Golden banana = wider grab, Diamond = banana magnet. Landscape stage.
 
 ### Peel Dash (`peel-dash.html`)
 Three lanes, speed ramps up. Swipe/arrows to change lane, swipe up/Space to jump. Rocks must be dodged; logs and peels can be jumped. A hit costs a heart and slows you. Golden = 5s invincible dash that smashes obstacles; Diamond = 5s banana river (x3).
@@ -47,19 +47,19 @@ Crossy-Road-style hopper in the city: sidewalks, grass and roads with cars, truc
 Real ten-frame bowling scoring (strikes, spares, tenth-frame bonus balls). A throw is three taps: the coconut slides along the foul line, the aim arrow swings, the power bar fills. Steer a little while it rolls (arrows or the pointer). Pins are simulated as circles with simple collisions. A Golden pin is +50; the rare Diamond pin is +200 and makes your next coconut heavier and faster. Scores shown are bowling score plus bonus.
 
 ### Crate Packer (`crate-packer.html`)
-Block-Blast-style: three stacks at a time dragged onto an 8x8 bay (or 1-3, arrows, Space). Full rows/columns ship; the multiplier follows a chain (resets after 3 placements without a shipment). Golden crate = ships its row and column (+100); Diamond crate = ships the whole bay (+500). Clearing the bay is +300. Ends when none of the three stacks fit.
+Tetris with a spin: every job is a truck (box truck, pickup, van with wheel wells, flatbed, dump truck, semi) seen from behind with its own loading bay mask. Stacks of 3-5 crates are cut from the real bay shape, so a perfect pack always exists, and arrive on a conveyor (up to 4 waiting; if it backs up the oldest falls off). Rotate with R / Q / tapping the selected stack / right-click / scroll / the on-screen button; Z undoes; N or the send button advances the belt. 85% full and the truck leaves; 100% is a perfect pack (x2, +heart); less loses a heart. Golden crate fits any single gap (+50); Diamond crate fills whatever is left (+300).
 
 ### Banana Heist (`banana-heist.html`)
-Top-down stealth. Hold to creep (steer toward your finger / arrows); release to freeze. Keepers' flashlights sweep; moving in the beam fills the alert bar fast, standing still slowly, crates block the beam. Grab the bunch at the stall, then carry it back down. Caught = lose a heart and start over. Under 30% alert on a heist is a GHOST run (x2). Golden bunch x3, Diamond bunch x10.
+Top-down stealth. Hold to creep (steer toward your finger / arrows); release to freeze. Three kinds of guard: sweepers swing a short beam, watchmen on the walls see across the entire yard with a wide cone and barely move, and patrols walk a beat (horizontal or vertical) and pause to look around. Crates block every beam. Moving in a beam fills the alert bar fast, standing still slowly. Rounds add guards (round 2 a watchman, round 3 a patrol, and so on). Under 30% alert is a GHOST run (x2). Golden bunch x3, Diamond bunch x10.
 
 ### Typewriter Rhythm (`typewriter-rhythm.html`)
 Four lanes (D F J K or arrow keys, or tap a lane). Three tunes: Jungle Groove (96 BPM), Carriage Return (118), Banana Rush (146). The backing track is synthesised and scheduled just ahead of the playhead; each hit plays a pentatonic note. Misses drain the ink bar; empty = out. Golden key = x2 for 8s, Diamond key = auto-play for 6s. Ends with a rank (S/A/B/C).
 
 ### Fruit Stall (`fruit-stall.html`)
-Customers (monkey, orangutan, gorilla, parrot) order 1-3 fruits; tap a bin (or 1-5) and the fruit goes to the most impatient customer who needs it. Fast service earns tips; leaving costs a heart. Rush hour every 35s. Golden VIP (3 items, x3, heart) and Diamond customer (one of everything, x10, full hearts).
+Customers order up to four fruits; tap a bin (or 1-5) and the fruit goes to the most impatient customer who needs it. Each bin holds 5 and must be restocked with a tap when empty. Difficulty ramps over about 50 seconds (shorter patience, faster arrivals, bigger orders); rush hour every 22s. Fast service earns tips; leaving costs a heart. Golden VIP and Diamond customer as before.
 
 ### Library Tidy (`library-tidy.html`)
-Real Library titles (a 70-title-per-shelf snapshot in `library-titles.js`, rebuilt with `python minigames/tools/make-titles.py`) fall toward the floor; tap the right shelf (books, films, songs, TV, kids, radio, sketches; a run uses 5 of the 7, starting with 3). Spines are colour-coded early and fade out over ~75s. Full shelf = bonus. Golden Edition x3 and slows the room; Diamond First Edition tidies everything on screen.
+Real Library titles (a 70-title-per-shelf snapshot in `library-titles.js`, rebuilt with `python minigames/tools/make-titles.py`) fall in quick succession (up to 7 at once, faster over about 55s); tap the shelf each belongs on. Spines are always colour-coded to their shelf. A run uses 5 of the 7 shelves, starting with 3 (4th at 14s, 5th at 34s). Full shelf = bonus. Golden Edition x3 and slows the room; Diamond First Edition tidies everything on screen.
 
 ## Remaining ideas
 
