@@ -26,15 +26,15 @@
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
       o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + .02);
     }
-    function noise(dur, vol = .08, lp = 900) {
+    function noise(dur, vol = .08, lp = 900, delay = 0) {
       if (!on) return; const a = ctx(); if (!a) return;
       const n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
       const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
-      f.type = 'lowpass'; f.frequency.value = lp; g.gain.value = vol; s.buffer = buf; s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+      f.type = 'lowpass'; f.frequency.value = lp; g.gain.value = vol; s.buffer = buf; s.connect(f); f.connect(g); g.connect(a.destination); s.start(a.currentTime + delay);
     }
     return {
-      get on() { return on; }, set(v) { on = v; store.set('sound', v); },
+      get on() { return on; }, set(v) { on = v; store.set('sound', v); }, tone, noise,
       unlock() { ctx(); },
       ding(n = 0) { tone(660 + n * 55, 990 + n * 80, .09, 'square', .05); },
       letters() { tone(520, 520, .05, 'square', .04); tone(780, 780, .06, 'square', .04, .05); tone(1040, 1040, .08, 'square', .04, .1); },
