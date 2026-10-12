@@ -61,6 +61,14 @@ Customers order up to four fruits; tap a bin (or 1-5) and the fruit goes to the 
 ### Library Tidy (`library-tidy.html`)
 Real Library titles (a 70-title-per-shelf snapshot in `library-titles.js`, rebuilt with `python minigames/tools/make-titles.py`) fall in quick succession (up to 7 at once, faster over about 55s); tap the shelf each belongs on. Spines are always colour-coded to their shelf. A run uses 5 of the 7 shelves, starting with 3 (4th at 14s, 5th at 34s). Full shelf = bonus. Golden Edition x3 and slows the room; Diamond First Edition tidies everything on screen.
 
+## Shared look and feel (mg-core.js / mg.css)
+- **One shell for every game:** title, 3-2-1-GO countdown (any tap skips it), pause (Esc, the on-screen pause button, or losing focus) with RESUME and QUIT TO MENU, game over with a rolling final score, staggered stats, confetti on a new best, and per-mode best scores.
+- **Responsive UI:** text and buttons scale with `--u` (stage width / 360, clamped), so nothing overflows on a phone or a big monitor. Overlays scroll instead of clipping, and long titles shrink to fit. The stage fit accounts for the wooden frame and the nav buttons.
+- **HUD:** always one row, score | combo | hearts. The score rolls up to its new value, hearts pop when lost or regained, floating text pops in with an overshoot and drifts.
+- **Pixel icon nav:** back, sound and pause buttons are drawn as pixel icons (no font glyphs).
+- **Juice toolkit:** `MG.hitstop(sec)` freezes the sim for a few frames on big hits (not used in the rhythm game, where timing matters); `fx.shock`, `fx.confetti`, `fx.puff`, `fx.trail` join `burst`, `spark` and `ring`.
+- Dev flag: add `&count=1` to an `autostart` URL to see the countdown.
+
 ## Remaining ideas
 
 | Game | Loop | Input |

@@ -19,11 +19,11 @@
   const A = MGArt.build();
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
 
-  const ui = MG.ui(host, st, A.banana);
+  const ui = MG.ui(host, st, A.banana), fx = MG.fx();
   const { combo, over, say, floatText, doFlash, bump, pulseCombo } = ui;
 
   /* ---------- state ---------- */
-  let mode = 'bananas', phase = 'title', G = null;
+  let mode = 'bananas', G = null;
   const monkey = { x: W / 2, tx: W / 2, vx: 0, ph: 0, phT: 0, blink: 0, stun: 0, expr: 'normal', exprT: 0, face: 0 };
   const keys = { l: false, r: false };
   let usingKeys = false, botOn = false;     /* ?bot=1 is a dev autoplayer for testing */
@@ -92,7 +92,7 @@
     const m = mult();
     it.hit = true; G.sinks.push({ it, t: 0, fromX: it.x, y: it.y });
     if (it.type === 'coconut') {
-      G.hearts--; G.bonks++; G.combo = 0; G.shake = 7; monkey.stun = .7; monkey.expr = 'scared'; monkey.exprT = .9;
+      MG.hitstop(.09); fx.puff(bp.x, bp.y - 4, '#c9b88a', 5); fx.shock(bp.x, bp.y, '#ff7a6a', 24); G.hearts--; G.bonks++; G.combo = 0; G.shake = 7; monkey.stun = .7; monkey.expr = 'scared'; monkey.exprT = .9;
       sfx.bonk(); doFlash('#c0392b'); burst(bp.x, bp.y, ['#86592e', '#563418', '#fff6d6'], 14, 70, 220, .55);
       floatText(bp.x, bp.y - 16, 'OUCH', 'bad'); G.sinks.pop(); it.dead = true;
       if (G.hearts <= 0) endGame();
@@ -109,20 +109,21 @@
     else if (it.type === 'fruit') { base = 12; sfx.ding(Math.min(10, G.combo)); burst(bp.x, bp.y - 4, ['#fff6d6', '#ffd23a', '#e86a50'], 7, 46, 150, .4); }
     else if (it.type === 'bundle') { base = 25; G.bundles++; G.letters += 3; sfx.letters(); burst(bp.x, bp.y - 4, ['#fff6d6', '#ede0b8', '#1a0f14'], 10, 50, 120, .5); txt = '+3 LTRS'; }
     else if (it.type === 'golden') {
-      base = 100; G.goldens++; G.golden = 7; cls = 'gold'; sfx.golden(); G.shake = 3; ring(bp.x, bp.y, '#ffd23a', 40);
+      MG.hitstop(.06); fx.confetti(bp.x, bp.y - 6, 16, ['#ffd23a', '#fff08c', '#fffbe0']); base = 100; G.goldens++; G.golden = 7; cls = 'gold'; sfx.golden(); G.shake = 3; ring(bp.x, bp.y, '#ffd23a', 40);
       burst(bp.x, bp.y - 4, ['#ffd23a', '#fff08c', '#fffbe0'], 22, 90, 80, .8); monkey.expr = 'screech'; monkey.exprT = 1.2;
       say('GOLDEN HOUR<small>wider barrel · banana rain</small>'); if (G.hearts < 3) { G.hearts++; txt = '+HEART'; }
     }
     else if (it.type === 'diamond') {
-      base = 500; G.diamonds++; G.jackpot = 8; G.golden = 0; cls = 'ice'; sfx.diamond(); G.shake = 5; G.slow = .3; G.slowT = 1.1;
+      MG.hitstop(.12); fx.confetti(bp.x, bp.y - 6, 34); fx.shock(bp.x, bp.y, '#9be8ff', 46); base = 500; G.diamonds++; G.jackpot = 8; G.golden = 0; cls = 'ice'; sfx.diamond(); G.shake = 5; G.slow = .3; G.slowT = 1.1;
       ring(bp.x, bp.y, '#9be8ff', 60); ring(bp.x, bp.y, '#fff', 36); doFlash('#e8fbff');
       burst(bp.x, bp.y - 4, ['#9be8ff', '#ffffff', '#2a86b8', '#fff08c'], 40, 130, 60, 1.1); monkey.expr = 'screech'; monkey.exprT = 2;
       say('DIAMOND BANANA!<small>jackpot rain · 8 seconds</small>', 'ice'); if (G.hearts < 3) G.hearts++;
     }
+    const centre = Math.abs(it.x - bp.x) < 2.4 && base < 100; if (centre) { base += 5; fx.spark(bp.x, bp.y - 6, '#fff'); fx.spark(bp.x, bp.y - 6, '#ffd23a'); txt = txt || 'CENTRE!'; }
     const pts = Math.round(base * m); G.score += pts; bump();
     floatText(bp.x, bp.y - 16, (cls ? '' : '+') + pts + (m > 1 && !cls ? ` x${m}` : ''), cls || (m > 1 ? 'gold' : ''));
     if (txt) floatText(bp.x, bp.y - 26, txt, cls || '');
-    if (G.combo > 0 && G.combo % 6 === 0 && G.combo <= 24) { floatText(bp.x, bp.y - 34, `COMBO x${mult()}!`, 'gold big'); sfx.golden(); pulseCombo(); }
+    if (G.combo > 0 && G.combo % 6 === 0 && G.combo <= 24) { floatText(bp.x, bp.y - 34, `COMBO x${mult()}!`, 'gold big'); sfx.golden(); pulseCombo(); fx.confetti(bp.x, bp.y - 8, 12); fx.shock(bp.x, bp.y - 4, '#ffd23a', 30); }
     renderHud();
   }
 
@@ -130,7 +131,9 @@
 
   /* ---------- update ---------- */
   function update(rdt) {
-    if (phase !== 'play') { menuFx(rdt); return; }
+    fx.update(rdt);
+    if (S.playing && G.combo >= 12 && Math.random() < .5) { const b0 = barrelPos(); fx.burst(b0.x + rng(-9, 9), b0.y - 6, G.combo >= 24 ? ['#9be8ff', '#fff'] : ['#ff8a2a', '#ffd23a', '#fff08c'], 1, 22, -40, .4); }
+    if (!S.playing) { menuFx(rdt); return; }
     if (G.slowT > 0) { G.slowT -= rdt; if (G.slowT <= 0) G.slow = 1; }
     const dt = rdt * G.slow;
     G.t += dt; G.sinceDiamond += dt;
@@ -157,7 +160,7 @@
     if (!dying && G.spawnT <= 0) {
       const d = clamp(G.t / 100, 0, 1), fast = G.jackpot > 0 ? .3 : G.golden > 0 ? .5 : 1;
       G.spawnT = lerp(.95, .36, d) * fast * rng(.7, 1.25);
-      if (G.t > 25 && Math.random() < .09 * d) { for (let i = 0; i < 3; i++) setTimeout(() => G && phase === 'play' && spawn(), i * 130); }
+      if (G.t > 25 && Math.random() < .09 * d) { for (let i = 0; i < 3; i++) setTimeout(() => G && S.playing && spawn(), i * 130); }
       spawn();
     }
 
@@ -177,7 +180,7 @@
         if (it.type === 'coconut' && !it.bounced) { it.bounced = true; it.vy = -it.vy * .42; it.y = GROUND - it.hh; sfx.thud(); burst(it.x, GROUND, ['#563418', '#86592e'], 5, 30, 120, .3); continue; }
         if (it.bounced && it.vy < 0) continue;
         if (it.type === 'coconut' || it.type === 'rotten') { burst(it.x, GROUND, ['#563418', '#6a5a1c'], 5, 28, 120, .3); G.items.splice(i, 1); continue; }
-        if (it.type !== 'coconut') { G.missed++; if (it.type === 'diamond' || it.type === 'golden') { floatText(it.x, GROUND - 14, 'SO CLOSE!', 'bad'); burst(it.x, GROUND, ['#9be8ff', '#ffd23a'], 12, 50, 120, .5); } else sfx.miss(); breakCombo(); burst(it.x, GROUND, ['#fff6d6', '#ffd23a'], 4, 24, 100, .3); }
+        if (it.type !== 'coconut') { G.missed++; fx.puff(it.x, GROUND, '#c9b88a', 4); if (it.type === 'diamond' || it.type === 'golden') { floatText(it.x, GROUND - 14, 'SO CLOSE!', 'bad'); burst(it.x, GROUND, ['#9be8ff', '#ffd23a'], 12, 50, 120, .5); } else sfx.miss(); breakCombo(); burst(it.x, GROUND, ['#fff6d6', '#ffd23a'], 4, 24, 100, .3); }
         G.items.splice(i, 1);
       }
       if (it.bounced) it.vy += 460 * dt;
@@ -191,13 +194,13 @@
     for (let i = G.rings.length - 1; i >= 0; i--) { const r = G.rings[i]; r.t += rdt; if (r.t > .5) G.rings.splice(i, 1); }
     G.shake = Math.max(0, G.shake - rdt * 22);
   }
-  function dust(x, y) { if (phase === 'play') G.parts.push({ x: x + rng(-3, 3), y: y - 1, vx: rng(-8, 8), vy: rng(-14, -4), g: 0, t: 0, life: .3, col: '#c9b88a', size: 1 }); }
+  function dust(x, y) { if (S.playing) G.parts.push({ x: x + rng(-3, 3), y: y - 1, vx: rng(-8, 8), vy: rng(-14, -4), g: 0, t: 0, life: .3, col: '#c9b88a', size: 1 }); }
 
   /* the title screen shows a few ambient items falling behind the overlay */
   let ambT = 0;
   function menuFx(dt) {
     if (!G) return; ambT -= dt;
-    if (ambT <= 0 && phase === 'title') { ambT = .7; const t = ['banana', 'bundle', 'coconut', 'banana'][Math.floor(Math.random() * 4)]; if (G.items.length < 6) { const it = spawn(t === 'bundle' && mode === 'fruit' ? 'banana' : t); it.vy *= .8; } }
+    if (ambT <= 0 && S.phase === 'title') { ambT = .7; const t = ['banana', 'bundle', 'coconut', 'banana'][Math.floor(Math.random() * 4)]; if (G.items.length < 6) { const it = spawn(t === 'bundle' && mode === 'fruit' ? 'banana' : t); it.vy *= .8; } }
     G.items.forEach(it => { it.y += it.vy * dt; });
     G.items = G.items.filter(it => it.y < H + 10);
     monkey.tx = W / 2 + Math.sin(performance.now() / 1100) * 26; monkey.vx += (clamp((monkey.tx - monkey.x) * 5, -80, 80) - monkey.vx) * .1; monkey.x += monkey.vx * dt;
@@ -228,7 +231,11 @@
     if (G.golden > 0 || G.jackpot > 0) { g.fillStyle = G.jackpot > 0 ? 'rgba(155,232,255,.18)' : 'rgba(255,210,58,.14)'; g.fillRect(0, 0, W, H); }
 
     /* falling things */
+    for (const it of G.items) {                                            /* a growing shadow shows where it will land */
+      if (it.hit || it.bounced || it.y < 12) continue; const k = clamp(it.y / GROUND, 0, 1), w = 3 + Math.round(k * 8); g.fillStyle = `rgba(0,0,0,${(.1 + k * .22).toFixed(2)})`; g.fillRect(Math.round(it.x - w / 2), GROUND + 1, w, 2);
+    }
     for (const it of G.items) {
+      if (it.type === 'coconut' && Math.floor(it.age * 5) % 2) { g.save(); g.translate(Math.round(it.x), 0); g.scale(-1, 1); g.drawImage(it.cv, -it.cv.width / 2 | 0, Math.round(it.y - it.cv.height / 2)); g.restore(); continue; }
       if (it.type === 'golden' || it.type === 'diamond') { const k = Math.floor(it.age * 8) % 2; if (k) { g.globalAlpha = .35; blit(it.cv, it.x - 1, it.y); g.globalAlpha = 1; } }
       blit(it.cv, it.x, it.y);
     }
@@ -261,83 +268,41 @@
       const k = r.t / .5, rad = r.max * k; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = 1;
       g.beginPath(); g.arc(r.x + .5, r.y + .5, Math.round(rad), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
     }
+    fx.draw(g);
     /* stun stars */
     if (monkey.stun > 0) { for (let i = 0; i < 3; i++) { const ang = performance.now() / 120 + i * 2.09; g.drawImage(PXA.spr.star.cv, Math.round(monkey.x + Math.cos(ang) * 9 - 2), Math.round(by + 12 + Math.sin(ang) * 3)); } }
     g.restore();
   }
 
   /* ---------- flow ---------- */
-  function title() {
-    phase = 'title'; host.classList.add('menu-open'); document.body.classList.add('mg-menu');
-    over.hidden = false; over.innerHTML = '';
-    const t = h('h1', 'mg-title', 'BANANA<span>BARREL</span>');
-    const sub = h('p', 'mg-sub', 'Catch what falls. Dodge the coconuts.');
-    const leg = h('div', 'mg-legend');
-    const item = (cv, label, cls = '') => { const d = h('div'); d.append(spriteImg(cv, 2), h('span', '', label)); leg.appendChild(d); };
-    item(A.banana, '<em>10</em> banana'); item(MGArt.bundle('M', 'K', 'Y'), '<em>25</em> letters');
-    item(A.golden, '<em>100</em> golden'); item(A.diamond, '<em class="ice">500</em> diamond');
-    item(A.coconut, '<em class="bad">-1 heart</em>'); item(A.rotten, '<em class="bad">-15</em> rotten');
-    const modes = h('div', 'mg-modes');
-    Object.keys(MODES).forEach(k => {
-      const b = h('a', 'banana-btn' + (k === 'fruit' ? ' banana-btn-green' : ''), `<span>${MODES[k]}</span>`); b.href = '#'; b.dataset.mode = k;
-      b.addEventListener('click', e => { e.preventDefault(); sfx.unlock(); start(k); }); modes.appendChild(b);
-    });
-    const best2 = store.get('barrel:fruit', 0), best1 = store.get('barrel:bananas', 0);
-    over.append(t, sub, leg, modes, h('p', 'mg-hint', '← → or A D · or drag / move the mouse'), h('p', 'mg-best', `BEST  RUN ${best1}  ·  FALL ${best2}`));
-  }
-  function start(m) {
-    mode = m || mode; newGame(); phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); sfx.start();
-    monkey.tx = monkey.x = W / 2; say(mode === 'fruit' ? 'FRUIT FALL' : 'BANANA RUN', '', 1200);
-  }
+  const S = MG.shell({
+    host, ui, id: 'barrel', title: 'BANANA<span>BARREL</span>', sub: 'Catch what falls. Dodge the coconuts.',
+    legend: [[A.banana, '<em>10</em> banana'], [MGArt.bundle('M', 'K', 'Y'), '<em>25</em> letters'], [A.golden, '<em>100</em> golden'], [A.diamond, '<em class="ice">500</em> diamond'], [A.coconut, '<em class="bad">-1 heart</em> coconut'], [A.rotten, '<em class="bad">-15</em> rotten']],
+    modes: [{ k: 'bananas', label: 'BANANA RUN' }, { k: 'fruit', label: 'FRUIT FALL', cls: 'alt' }], hint: '← → or A D · or drag / move the mouse',
+    onStart: m => { mode = m; newGame(); monkey.tx = monkey.x = W / 2; }, onMenu: () => newGame(), score: () => G.score,
+  });
   function endGame() { G.deadT = 1.1; sfx.over(); G.slow = .5; G.slowT = 1; combo.classList.remove('on'); ui.setMeter(0); }
-  function showOver() {
-    phase = 'over'; host.classList.add('menu-open'); ui.hideBanner();
-    const prev = store.get('barrel:' + mode, 0), isNew = G.score > prev; if (isNew) store.set('barrel:' + mode, G.score);
-    over.hidden = false; over.innerHTML = '';
-    const stats = h('div', 'mg-stats');
-    [['BANANAS & CO', G.caught], ['LETTERS', G.letters], ['BEST COMBO', G.bestCombo], ['GOLDEN', G.goldens], ['DIAMOND', G.diamonds], ['TIME', Math.round(G.t) + 's']].forEach(([k, v]) => stats.append(h('span', '', k), h('b', '', v)));
-    const again = h('a', 'banana-btn', '<span>AGAIN</span>'); again.href = '#'; again.addEventListener('click', e => { e.preventDefault(); start(); });
-    const menu = h('a', 'banana-btn banana-btn-green', '<span>MODES</span>'); menu.href = '#'; menu.addEventListener('click', e => { e.preventDefault(); newGame(); title(); });
-    over.append(h('p', 'mg-sub', 'THAT\'S A WRAP'), h('h2', 'mg-big', String(G.score)), isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', `BEST ${Math.max(prev, G.score)}`), stats, again, menu);
-  }
-  function pause() {
-    if (phase !== 'play') return;
-    phase = 'pause'; host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
-    const r = h('a', 'banana-btn', '<span>RESUME</span>'); r.href = '#'; r.addEventListener('click', e => { e.preventDefault(); resume(); });
-    over.append(h('h2', 'mg-big', 'PAUSED'), r);
-  }
-  function resume() { if (phase === 'pause') { phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); } }
-  const doPause = on => on ? pause() : resume();
+  function showOver() { S.finish([['BANANAS & CO', G.caught], ['LETTERS', G.letters], ['BEST COMBO', G.bestCombo], ['GOLDEN', G.goldens], ['DIAMOND', G.diamonds], ['TIME', Math.round(G.t) + 's']]); }
 
   /* ---------- input ---------- */
-  function point(ev) { if (phase !== 'play') return; usingKeys = false; monkey.tx = clamp(st.toArt(ev)[0], 17, W - 17); }
+  function point(ev) { if (!S.playing) return; usingKeys = false; monkey.tx = clamp(st.toArt(ev)[0], 17, W - 17); }
   addEventListener('pointermove', point);
   addEventListener('pointerdown', ev => { if (ev.target.closest('.mg-over,.mg-nav')) return; point(ev); sfx.unlock(); });
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
     if (k === 'arrowleft' || k === 'a') { keys.l = true; usingKeys = true; e.preventDefault(); }
     else if (k === 'arrowright' || k === 'd') { keys.r = true; usingKeys = true; e.preventDefault(); }
-    else if (k === 'escape' || k === 'p') { phase === 'play' ? doPause(true) : phase === 'pause' && doPause(false); }
-    else if ((k === ' ' || k === 'enter') && !e.repeat) {
-      if (phase === 'title') start(); else if (phase === 'over') start(); else if (phase === 'pause') doPause(false); e.preventDefault();
-    }
   });
   addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (k === 'arrowleft' || k === 'a') keys.l = false; if (k === 'arrowright' || k === 'd') keys.r = false; });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) doPause(true); });
-  addEventListener('blur', () => doPause(true));
-  const mute = document.getElementById('mute');
-  const syncMute = () => mute.classList.toggle('off', !sfx.on);
-  mute.addEventListener('click', () => { sfx.set(!sfx.on); syncMute(); sfx.unlock(); sfx.tick(); }); syncMute();
-
   /* pre-warm the monkey frames so the first lean doesn't hitch */
   ['normal', 'scared', 'screech', 'blink'].forEach(e => PXA.monkeySets.mini.angles.forEach(a => [0, 1].forEach(p => PXA.monkeyFrame('mini', e, a * Math.PI / 180, false, p, 0))));
 
-  title();
+  S.title();
   if (params.get('autostart')) {
-    start(params.get('mode') || 'bananas');
+    S.start(params.get('mode') || 'bananas');
     if (params.get('bot')) botOn = true;
     for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60);
   }
   MG.loop(update, draw);
-  window.BB = { get G() { return G; }, get monkey() { return monkey; }, spawn, start, get phase() { return phase; } };
+  window.BB = { get G() { return G; }, get monkey() { return monkey; }, spawn, start: S.start, get phase() { return S.phase; } };
 })();

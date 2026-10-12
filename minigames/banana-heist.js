@@ -27,7 +27,7 @@
   const m = { x: W / 2, y: HOME_Y, vx: 0, ph: 0, phT: 0, move: false, loot: null, face: 0, hide: 0 };
 
   function newGame() {
-    G = { round: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, t: 0, alert: 0, maxAlert: 0, covers: [], keepers: [], stand: 'normal', loot: 0, shake: 0, caught: 0, heists: 0, ghosts: 0, goldens: 0, diamonds: 0, grab: 0, dead: 0, stun: 0, hurry: 0, over: false, roundT: 0, freezeT: 0, exposed: false };
+    G = { round: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, t: 0, alert: 0, maxAlert: 0, covers: [], keepers: [], stand: 'normal', loot: 0, shake: 0, caught: 0, heists: 0, ghosts: 0, goldens: 0, diamonds: 0, grab: 0, dead: 0, stun: 0, hurry: 0, over: false, roundT: 0, freezeT: 0, exposed: false, prints: [], spotted: 0 };
     nextRound(); fx.clear(); render();
   }
   const mult = () => ui.mult(G.combo);
@@ -104,13 +104,16 @@
       nx = clamp(nx, 6, W - 6); ny = clamp(ny, STALL_Y, HOME_Y);
       const hit = (x, y) => G.covers.some(c => x > c.x - 4 && x < c.x + c.w + 4 && y > c.y - 3 && y < c.y + c.h + 5);
       if (!hit(nx, m.y)) m.x = nx; if (!hit(m.x, ny)) m.y = ny; else if (!hit(nx, m.y) === false) { /* wedged: slide sideways around the crate */ m.x += (m.x < W / 2 ? -1 : 1) * 12 * dt; }
-      m.move = true; m.phT -= dt; if (m.phT <= 0) { m.ph ^= 1; m.phT = .2; }
+      m.move = true; m.phT -= dt; if (m.phT <= 0) { m.ph ^= 1; m.phT = .2; G.prints.push({ x: m.x + (m.ph ? -2 : 2), y: m.y + 5, t: 0 }); if (m.loot && G.stand !== 'normal') fx.spark(m.x, m.y - 14, G.stand === 'diamond' ? '#9be8ff' : '#fff08c'); }
       if (!m.loot && m.y <= STALL_Y + 1) { G.grab = .7; m.y = STALL_Y; }
       if (m.loot && m.y >= HOME_Y - 1) heistDone();
     } else m.vx = 0;
     /* detection */
     let exposed = false, rate = 0;
     for (const kp of G.keepers) if (lit(kp, m.x, m.y - 3)) { exposed = true; rate = Math.max(rate, m.move ? 1 : .22); }
+    if (exposed && !G.exposed && m.move) { G.spotted = .5; sfx.tone(780, 1040, .12, 'square', .05); G.shake = Math.max(G.shake, 1.5); }
+    if (G.spotted > 0) G.spotted -= dt;
+    for (let i = G.prints.length - 1; i >= 0; i--) { G.prints[i].t += dt; if (G.prints[i].t > 1.8) G.prints.splice(i, 1); }
     G.exposed = exposed; m.hide = !exposed && G.keepers.some(kp => inCone(kp, m.x, m.y - 3) && blocked(kp.x, kp.y, m.x, m.y - 3)) ? 1 : 0;
     if (exposed) { G.alert += rate * dt / 1.05; G.maxAlert = Math.max(G.maxAlert, G.alert); if (rate > .9 && Math.floor(G.t * 8) % 2 === 0) sfx.tick(); } else G.alert = Math.max(0, G.alert - dt * .55);
     if (G.alert >= 1) caught();
@@ -118,14 +121,14 @@
   }
   let keyHold = false;
   function caught() {
-    G.alert = 0; G.hearts--; G.caught++; G.combo = 0; G.shake = 6; sfx.bonk(); sfx.miss(); ui.doFlash('#c0392b'); ui.floatText(m.x, m.y - 12, 'CAUGHT!', 'bad'); fx.burst(m.x, m.y, ['#ffd23a', '#fff6d6', '#c0392b'], 14, 70, 100, .6);
+    MG.hitstop(.1); fx.shock(m.x, m.y, '#ff7a6a', 34); G.alert = 0; G.hearts--; G.caught++; G.combo = 0; G.shake = 6; sfx.bonk(); sfx.miss(); ui.doFlash('#c0392b'); ui.floatText(m.x, m.y - 12, 'CAUGHT!', 'bad'); fx.burst(m.x, m.y, ['#ffd23a', '#fff6d6', '#c0392b'], 14, 70, 100, .6);
     m.x = tx = W / 2; m.y = HOME_Y; m.loot = null; G.stun = .8; G.hurry = 2.2; render(true);
     if (G.hearts <= 0) { G.dead = 1.1; sfx.over(); }
   }
   function heistDone() {
     const ghost = G.maxAlert < .3, k = G.stand === 'diamond' ? 10 : G.stand === 'golden' ? 3 : 1; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.heists++;
     const quick = Math.max(0, 1 - G.roundT / 40), pts = Math.round(G.loot * (1 + quick * .5) * (ghost ? 2 : 1) * mult() / (k === 1 ? 1 : 1));
-    G.score += pts; ui.bump(); sfx.letters(); sfx.ding(Math.min(10, G.combo * 2)); fx.burst(m.x, HOME_Y, ['#ffd23a', '#fff08c', '#74c648'], 18, 80, 90, .8);
+    G.score += pts; ui.bump(); fx.confetti(m.x, HOME_Y - 6, ghost ? 36 : 20); if (G.stand !== 'normal') MG.hitstop(.08); sfx.letters(); sfx.ding(Math.min(10, G.combo * 2)); fx.burst(m.x, HOME_Y, ['#ffd23a', '#fff08c', '#74c648'], 18, 80, 90, .8);
     ui.floatText(m.x, HOME_Y - 20, '+' + pts, 'gold big'); if (ghost) { G.ghosts++; ui.floatText(m.x, HOME_Y - 34, 'GHOST x2', 'ice'); sfx.golden(); }
     if (G.stand === 'golden') { G.goldens++; sfx.golden(); } if (G.stand === 'diamond') { G.diamonds++; sfx.diamond(); ui.doFlash('#e8fbff'); fx.ring(m.x, HOME_Y, '#9be8ff', 60); }
     if (G.combo > 1) ui.pulseCombo(); if (G.hearts < 3 && G.combo % 4 === 0) { G.hearts++; ui.floatText(W / 2, 90, '+HEART', 'gold'); }
@@ -160,7 +163,7 @@
       const x0 = Math.max(0, Math.floor(kp.x - kp.range)), y0 = Math.max(0, Math.floor(kp.y - kp.range)), x1 = Math.min(W, kp.x + kp.range), y1 = Math.min(H, kp.y + kp.range), fade = Math.min(kp.range, 90), tint = kp.type === 'post' ? '255,170,150' : kp.type === 'patrol' ? '200,170,255' : '255,240,150';
       for (let y = y0 - (y0 & 1); y < y1; y += 2) for (let x = x0 - (x0 & 1); x < x1; x += 2) {
         const dx = x - kp.x, dy = y - kp.y, d = Math.hypot(dx, dy); if (d > kp.range || d < 3) continue; let da = Math.atan2(dy, dx) - kp.a; da = Math.atan2(Math.sin(da), Math.cos(da)); if (Math.abs(da) > kp.half) continue;
-        if (blocked(kp.x, kp.y, x, y)) continue; g.fillStyle = `rgba(${tint},${(.3 * (1 - Math.min(1, d / fade)) + .07).toFixed(2)})`; g.fillRect(x, y, 2, 2);
+        if (blocked(kp.x, kp.y, x, y)) continue; g.fillStyle = `rgba(${tint},${((.3 * (1 - Math.min(1, d / fade)) + .07) * (G.alert > .5 && Math.floor(G.t * 22) % 2 ? .6 : 1)).toFixed(2)})`; g.fillRect(x, y, 2, 2);
       }
     }
     /* crates */
@@ -173,12 +176,14 @@
       if (kp.type === 'post') { g.fillStyle = '#1a0f14'; g.fillRect(Math.round(kp.x) - 3, Math.round(kp.y) - 8, 7, 2); g.fillStyle = '#9ce0ff'; g.fillRect(Math.round(kp.x) - 2, Math.round(kp.y) - 8, 2, 1); g.fillRect(Math.round(kp.x) + 1, Math.round(kp.y) - 8, 2, 1); }
       if (G.exposed && Math.floor(G.t * 6) % 2) { g.fillStyle = '#e83a3a'; g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 12, 2, 4); g.fillRect(Math.round(kp.x) - 1, Math.round(kp.y) - 7, 2, 1); }
     }
+    for (const pr of G.prints) { g.globalAlpha = (1 - pr.t / 1.8) * .35; g.fillStyle = '#0a0a12'; g.fillRect(Math.round(pr.x), Math.round(pr.y), 2, 1); g.fillRect(Math.round(pr.x) + 3, Math.round(pr.y) - 1, 1, 1); } g.globalAlpha = 1;
     /* the monkey, with the sack when carrying */
     if (!(G.stun > 0 && Math.floor(G.t * 20) % 2)) {
       const sp = A.monkeyS[m.move && m.ph ? 1 : 0], hid = m.hide && !m.move, bob = G.grab > 0 ? Math.round(Math.sin(G.t * 30)) : 0;
       g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(Math.round(m.x - 4), Math.round(m.y + 5), 9, 2);
       if (hid) g.globalAlpha = .6;
       g.save(); g.translate(Math.round(m.x), 0); g.drawImage(sp, -6, Math.round(m.y - 11 + bob)); if (m.loot) { const b = bunch[m.loot]; g.drawImage(b, -b.width / 2 | 0, Math.round(m.y - 24)); } g.restore(); g.globalAlpha = 1;
+      if (G.spotted > 0) { const jy = -Math.round(Math.abs(Math.sin(G.spotted * 18)) * 4); g.fillStyle = '#1a0f14'; g.fillRect(Math.round(m.x) - 2, Math.round(m.y) - 40 + jy, 5, 9); g.fillStyle = '#e83a3a'; g.fillRect(Math.round(m.x) - 1, Math.round(m.y) - 39 + jy, 3, 5); g.fillRect(Math.round(m.x) - 1, Math.round(m.y) - 33 + jy, 3, 2); }
       if (G.alert > .02) { g.fillStyle = '#1a0f14'; g.fillRect(Math.round(m.x) - 8, Math.round(m.y) - 31, 17, 4); g.fillStyle = G.alert > .66 ? '#e83a3a' : G.alert > .33 ? '#ffd23a' : '#9be8ff'; g.fillRect(Math.round(m.x) - 7, Math.round(m.y) - 30, Math.round(15 * clamp(G.alert, 0, 1)), 2); }
     }
     if (G.alert > .35) { g.fillStyle = `rgba(200,40,30,${((G.alert - .3) * .35).toFixed(2)})`; g.fillRect(0, 0, W, H); }

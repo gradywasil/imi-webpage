@@ -115,18 +115,18 @@
   }
   function arrive() {
     const rw = rows.get(p.r), it = rw && rw.cells[p.c]; p.hop = 0;
-    fx.burst(p.c * C + C / 2, rowY(p.r) + C - 2, ['#c9b88a', '#8c8670'], 2, 14, 30, .2);
+    fx.burst(p.c * C + C / 2, rowY(p.r) + C - 2, ['#c9b88a', '#8c8670'], 2, 14, 30, .2); fx.puff(p.c * C + C / 2, rowY(p.r) + C - 1, '#c9b88a', 2); fx.shock(p.c * C + C / 2, rowY(p.r) + C - 2, 'rgba(255,255,255,.7)', 9);
     if (!it || it.block) return; const x = p.c * C + C / 2, y = rowY(p.r) + 6; rw.cells[p.c] = null; const m = mult();
-    if (it.k === 'fruit') { G.fruit++; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); const pts = Math.round((it.f === 4 ? 15 : 10) * mult()); G.score += pts; sfx.ding(Math.min(10, G.combo)); fx.burst(x, y, ['#ffd23a', '#fff08c', '#e86a50'], 7, 44, 90, .4); ui.floatText(x, y - 8, '+' + pts, m > 1 ? 'gold' : ''); ui.bump(); }
+    if (it.k === 'fruit') { fx.ring(x, y, '#ffd23a', 12); fx.confetti(x, y, 5, ['#ffd23a', '#fff08c', '#e86a50']); G.fruit++; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); const pts = Math.round((it.f === 4 ? 15 : 10) * mult()); G.score += pts; sfx.ding(Math.min(10, G.combo)); fx.burst(x, y, ['#ffd23a', '#fff08c', '#e86a50'], 7, 44, 90, .4); ui.floatText(x, y - 8, '+' + pts, m > 1 ? 'gold' : ''); ui.bump(); }
     else if (it.k === 'garb') { G.garb++; G.combo = 0; G.score = Math.max(0, G.score - 10); p.stun = .55; sfx.rotten(); fx.burst(x, y, ['#3a4a3a', '#6a5a1c', '#8c9a2a'], 10, 40, 80, .5); ui.floatText(x, y - 8, 'EW! -10', 'bad'); p.expr = 'scared'; p.et = .6; }
-    else if (it.k === 'golden') { G.goldens++; G.slowT = 6; G.score += Math.round(100 * m); G.combo++; sfx.golden(); fx.ring(x, y, '#ffd23a', 40); fx.burst(x, y, ['#ffd23a', '#fff08c', '#fffbe0'], 22, 90, 70, .8); ui.say('TRAFFIC JAM<small>cars crawl · 6 seconds</small>'); p.expr = 'screech'; p.et = 1.2; }
-    else if (it.k === 'diamond') { G.diamonds++; G.stopT = 8; G.sinceDia = 0; G.score += Math.round(300 * m); G.combo++; sfx.diamond(); ui.doFlash('#e8fbff'); fx.ring(x, y, '#9be8ff', 56); fx.burst(x, y, ['#9be8ff', '#fff', '#2a86b8'], 30, 110, 50, 1); ui.say('BANANA PARADE<small>traffic stops · garbage turns to bananas</small>', 'ice'); rows.forEach(rw2 => rw2.cells.forEach(c2 => { if (c2 && c2.k === 'garb') { c2.k = 'fruit'; c2.f = 4; } })); p.expr = 'screech'; p.et = 1.5; }
+    else if (it.k === 'golden') { MG.hitstop(.05); fx.confetti(x, y, 18, ['#ffd23a', '#fff08c', '#fffbe0']); G.goldens++; G.slowT = 6; G.score += Math.round(100 * m); G.combo++; sfx.golden(); fx.ring(x, y, '#ffd23a', 40); fx.burst(x, y, ['#ffd23a', '#fff08c', '#fffbe0'], 22, 90, 70, .8); ui.say('TRAFFIC JAM<small>cars crawl · 6 seconds</small>'); p.expr = 'screech'; p.et = 1.2; }
+    else if (it.k === 'diamond') { MG.hitstop(.1); fx.confetti(x, y, 34); fx.shock(x, y, '#9be8ff', 46); G.diamonds++; G.stopT = 8; G.sinceDia = 0; G.score += Math.round(300 * m); G.combo++; sfx.diamond(); ui.doFlash('#e8fbff'); fx.ring(x, y, '#9be8ff', 56); fx.burst(x, y, ['#9be8ff', '#fff', '#2a86b8'], 30, 110, 50, 1); ui.say('BANANA PARADE<small>traffic stops · garbage turns to bananas</small>', 'ice'); rows.forEach(rw2 => rw2.cells.forEach(c2 => { if (c2 && c2.k === 'garb') { c2.k = 'fruit'; c2.f = 4; } })); p.expr = 'screech'; p.et = 1.5; }
     render();
   }
   function rowY(r) { return Math.round(H - (r - G.cam + 1) * C); }
   function squish(why) {
     if (p.inv > 0 || p.squish > 0 || G.dead) return;
-    G.hearts--; G.hits++; G.combo = 0; G.shake = 6; p.squish = .8; sfx.bonk(); ui.doFlash('#c0392b'); ui.floatText(p.c * C + C / 2, rowY(p.r), why, 'bad'); fx.burst(p.c * C + C / 2, rowY(p.r) + 8, ['#6e4220', '#9a6232', '#fff6d6'], 14, 70, 120, .6); render(true);
+    MG.hitstop(.1); fx.shock(p.c * C + C / 2, rowY(p.r) + 8, '#ff7a6a', 24); G.hearts--; G.hits++; G.combo = 0; G.shake = 6; p.squish = .8; sfx.bonk(); ui.doFlash('#c0392b'); ui.floatText(p.c * C + C / 2, rowY(p.r), why, 'bad'); fx.burst(p.c * C + C / 2, rowY(p.r) + 8, ['#6e4220', '#9a6232', '#fff6d6'], 14, 70, 120, .6); render(true);
     if (G.hearts <= 0) { G.dead = 1.2; sfx.over(); }
   }
   function respawn() {
@@ -153,11 +153,14 @@
     for (let r = Math.floor(G.cam) - 1; r < G.cam + ROWS + 3; r++) if (r >= 0) row(r);
     for (const k of rows.keys()) if (k < G.cam - 6) rows.delete(k);
     if (!G.dead && p.r < G.cam + .15 && p.squish <= 0 && p.inv <= 0) { G.caught++; G.truckHit = true; squish('TRUCK!'); }
+    G.honkT = (G.honkT || 0) - dt;
+    if (Math.random() < .25) { const vr = rows.get(Math.floor(G.cam + 1 + Math.random() * (ROWS - 2))); if (vr && vr.type === 'road' && vr.veh.length) { const v = vr.veh[Math.floor(Math.random() * vr.veh.length)], x = vx(vr, v); if (x > 0 && x + v.w < W) fx.puff(vr.dir > 0 ? x : x + v.w, rowY(vr.r) + C - 3, 'rgba(200,200,210,.8)', 1); } }
     /* traffic */
     const rw = rows.get(p.r);
     if (rw && rw.type === 'road' && p.hop <= 0 && p.squish <= 0 && p.inv <= 0 && !G.dead) {
       const px = p.c * C + C / 2;
-      for (const v of rw.veh) { const x = vx(rw, v); if (px + 4 > x && px - 4 < x + v.w) { sfx.bonk(); squish('SPLAT!'); break; } }
+      for (const v of rw.veh) { const x = vx(rw, v); if (px + 4 > x && px - 4 < x + v.w) { sfx.bonk(); squish('SPLAT!'); break; }
+        const gap = Math.min(Math.abs(px - 4 - (x + v.w)), Math.abs(x - (px + 4))); if (gap < 7 && G.honkT <= 0 && Math.abs(G.tt - (G.lastHonk || -9)) > 1) { G.lastHonk = G.tt; G.honkT = .8; ui.floatText(clamp(x + v.w / 2, 14, W - 14), rowY(p.r) - 4, 'HONK!', 'bad'); sfx.tone(196, 196, .22, 'square', .06); sfx.tone(247, 247, .22, 'square', .05); G.shake = Math.max(G.shake, 1); } }
     }
     if (botOn) bot();
   }

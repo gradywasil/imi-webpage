@@ -16,7 +16,7 @@
   PXA.monkeySets.kw = { k: K, max: 0, step: 7 }; PXA.monkeySets.kw.angles = [0]; PXA.monkeySets.kw.cache = {};
   const A = MGArt.build(), { R, make, shapes: { ell, box, or, sub } } = MGArt, FONT = MGArt.FONT;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
-  const ui = MG.ui(host, st, MGArt.tile('K'));
+  const ui = MG.ui(host, st, MGArt.tile('K')), fx = MG.fx();
   const { over, say, floatText, doFlash, bump, pulseCombo } = ui;
 
   /* ---------- key sprites: round typewriter caps; faces recolour for hot / golden / diamond, plus blot ---------- */
@@ -49,7 +49,7 @@
   }
 
   /* ---------- state ---------- */
-  let phase = 'title', G = null, botOn = false;
+  let G = null, botOn = false;
   const monkey = { expr: 'normal', exprT: 0, hop: 0, blink: 0 };
   let keys = [];
   function buildKeys() {
@@ -59,7 +59,7 @@
   }
   function newGame() {
     G = {
-      t: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, spawnT: .7, shake: 0, parts: [], rings: [], paper: [''], stampT: 0,
+      t: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, spawnT: .7, shake: 0, parts: [], rings: [], flyers: [], paper: [''], stampT: 0,
       frenzy: 0, mash: 0, sinceDiamond: 0, deadT: 0, whacks: 0, misses: 0, typos: 0, blots: 0, bananas: 0, goldens: 0, diamonds: 0, slow: 1, slowT: 0,
     };
     buildKeys(); monkey.expr = 'normal'; monkey.exprT = 0; renderHud(true);
@@ -103,13 +103,13 @@
 
   /* ---------- pressing ---------- */
   function press(k) {
-    if (phase !== 'play' || G.hearts <= 0) return;
+    if (!S.playing || G.hearts <= 0) return;
     k.down = .09; const x = cx(k), y = cy(k), m = mult();
     if (k.s === 'idle') {
       G.typos++; k.bad = .22; G.combo = 0; sfx.typo(); burst(x, y, ['#c9b88a', '#8c8670'], 3, 20, 60, .25); renderHud(); return;
     }
     if (k.s === 'blot') {
-      G.hearts--; G.blots++; G.combo = 0; G.shake = 6; k.s = 'idle'; k.bad = .3; sfx.bonk(); doFlash('#2a1020');
+      MG.hitstop(.08); fx.puff(x, y, '#3a2a30', 6); G.hearts--; G.blots++; G.combo = 0; G.shake = 6; k.s = 'idle'; k.bad = .3; sfx.bonk(); doFlash('#2a1020');
       burst(x, y, ['#1a0f14', '#3a2a30', '#5c4650'], 16, 70, 160, .6); floatText(x, y - 10, 'BLOT! -1', 'bad'); express('scared', .8);
       renderHud(); if (G.hearts <= 0) endGame(); return;
     }
@@ -119,10 +119,10 @@
       pts = Math.round(50 * m); G.bananas++; sfx.golden(); burst(x, y - 4, ['#ffd23a', '#fff08c', '#c98f0e'], 14, 70, 90, .7); floatText(x, y - 14, '+' + pts, 'gold');
       if (G.hearts < 3) { G.hearts++; floatText(x, y - 24, '+HEART', 'gold'); }
     } else if (k.s === 'gold') {
-      pts = Math.round(100 * m); G.goldens++; G.frenzy = 6; sfx.golden(); G.shake = 3; ring(x, y, '#ffd23a', 40);
+      MG.hitstop(.06); fx.confetti(x, y - 4, 16, ['#ffd23a', '#fff08c', '#fffbe0']); pts = Math.round(100 * m); G.goldens++; G.frenzy = 6; sfx.golden(); G.shake = 3; ring(x, y, '#ffd23a', 40);
       burst(x, y, ['#ffd23a', '#fff08c', '#fffbe0'], 22, 90, 70, .8); express('screech', 1); say('GOLD FRENZY<small>more keys · more time · 6s</small>'); floatText(x, y - 14, '+' + pts, 'gold');
     } else if (k.s === 'ice' && k.diamond) {
-      pts = Math.round(100 * m); G.diamonds++; G.mash = 5; G.slow = .35; G.slowT = .9; G.shake = 5; sfx.diamond(); doFlash('#e8fbff');
+      MG.hitstop(.12); fx.confetti(x, y - 4, 34); fx.shock(x, y, '#9be8ff', 50); pts = Math.round(100 * m); G.diamonds++; G.mash = 5; G.slow = .35; G.slowT = .9; G.shake = 5; sfx.diamond(); doFlash('#e8fbff');
       ring(x, y, '#9be8ff', 56); ring(x, y, '#fff', 34); burst(x, y, ['#9be8ff', '#fff', '#2a86b8'], 36, 120, 50, 1);
       express('screech', 2); say('DIAMOND MASH!<small>smash every key · 5s</small>', 'ice'); floatText(x, y - 14, '+' + pts, 'ice');
       keys.forEach(o => { if (o !== k) { o.s = 'ice'; o.life = o.t = 5; o.diamond = false; } });
@@ -134,15 +134,16 @@
       floatText(x, y - 12, '+' + pts + (fast && G.mash <= 0 ? ' FAST' : ''), fast || m > 1 ? 'gold' : '');
     }
     k.s = 'idle'; k.diamond = false;
-    G.score += pts; bump(); stamp(k.ch); monkey.hop = .12;
-    if (G.combo % 6 === 0 && G.combo <= 24) { floatText(W / 2, 80, `COMBO x${mult()}!`, 'gold big'); sfx.golden(); pulseCombo(); express('screech', .5); }
+    G.score += pts; bump(); G.flyers.push({ ch: k.ch, x0: x, y0: y, t: 0 }); ring(x, y, '#fff08c', 11); monkey.hop = .12;
+    if (G.combo % 6 === 0 && G.combo <= 24) { floatText(W / 2, 80, `COMBO x${mult()}!`, 'gold big'); sfx.golden(); pulseCombo(); express('screech', .5); fx.confetti(W / 2, 84, 14); }
     renderHud();
   }
   const byChar = ch => keys.find(k => k.ch === ch);
 
   /* ---------- update ---------- */
   function update(rdt) {
-    if (phase !== 'play') { if (phase === 'title') ambient(rdt); return; }
+    fx.update(rdt);
+    if (!S.playing) { if (S.phase === 'title') ambient(rdt); return; }
     if (G.slowT > 0) { G.slowT -= rdt; if (G.slowT <= 0) G.slow = 1; }
     const dt = rdt * G.slow; G.t += dt; G.sinceDiamond += dt;
     if (G.frenzy > 0) G.frenzy = Math.max(0, G.frenzy - dt);
@@ -150,6 +151,7 @@
     const bonus = G.mash > 0 ? G.mash / 5 : G.frenzy > 0 ? G.frenzy / 6 : 0; ui.setMeter(bonus, G.mash > 0);
     if (G.deadT > 0) { G.deadT -= rdt; if (G.deadT <= 0) showOver(); }
     if (G.stampT > 0) G.stampT -= rdt;
+    for (let i = G.flyers.length - 1; i >= 0; i--) { const f = G.flyers[i]; f.t += rdt / .26; if (f.t >= 1) { G.flyers.splice(i, 1); stamp(f.ch); const row = G.paper[G.paper.length - 1]; fx.burst(PAPER.x + 4 + row.length * 4, PAPER.y + 4 + (G.paper.length - 1) * 7 + 3, ['#ffd23a', '#fff6d6'], 3, 20, 30, .25); } }
 
     G.spawnT -= dt;
     if (G.hearts > 0 && G.spawnT <= 0) { const d = clamp(G.t / 90, 0, 1); G.spawnT = lerp(.85, .38, d) * (G.frenzy > 0 ? .5 : 1) * rng(.75, 1.2); spawnKey(); }
@@ -209,7 +211,7 @@
         drawLetter(ch, PAPER.x + 4 + ci * 4, y + (last ? -1 : 0), last ? '#c98f0e' : '#1a0f14');
       });
     });
-    if (phase === 'play' && Math.floor(performance.now() / 350) % 2 === 0) { const row = rows[rows.length - 1], y = PAPER.y + 4 + (rows.length - 1) * 7; g.fillStyle = '#c0392b'; g.fillRect(PAPER.x + 4 + row.length * 4, y + 6, 3, 1); }
+    if (S.playing && Math.floor(performance.now() / 350) % 2 === 0) { const row = rows[rows.length - 1], y = PAPER.y + 4 + (rows.length - 1) * 7; g.fillStyle = '#c0392b'; g.fillRect(PAPER.x + 4 + row.length * 4, y + 6, 3, 1); }
 
     /* monkey on the machine, watching the paper */
     const ex = monkey.exprT > 0 ? monkey.expr : monkey.blink > 0 ? 'blink' : 'normal';
@@ -228,6 +230,7 @@
       g.drawImage(cv, k.x + wob, k.y + bob + (down ? 0 : 0));
       if (k.bad > 0) { g.fillStyle = 'rgba(192,57,43,.45)'; g.fillRect(k.x + 1 + wob, k.y + 1, k.w - 2, k.h - 2); }
       if (k.s === 'banana') g.drawImage(A.banana, Math.round(k.x + k.w / 2 - 9), k.y - 14 + bob);
+      if (raised && k.s !== 'blot') { const pul = .35 + .3 * Math.sin(performance.now() / 110 + k.x); g.fillStyle = k.s === 'ice' ? `rgba(155,232,255,${pul.toFixed(2)})` : `rgba(255,230,120,${pul.toFixed(2)})`; g.fillRect(k.x - 1 + wob, k.y + bob - 1, k.w + 2, 1); g.fillRect(k.x - 1 + wob, k.y + bob + k.h, k.w + 2, 1); g.fillRect(k.x - 1 + wob, k.y + bob, 1, k.h); g.fillRect(k.x + k.w + wob, k.y + bob, 1, k.h); }
       if (raised) {
         const frac = clamp(k.t / k.life, 0, 1), bw = Math.max(1, Math.round((k.ch === ' ' ? 40 : 11) * frac));
         g.fillStyle = '#1a0f14'; g.fillRect(k.x + (k.ch === ' ' ? 1 : 0), k.y + k.h + 1, (k.ch === ' ' ? 42 : 13), 3);
@@ -240,60 +243,46 @@
 
     for (const p of G.parts) { const kk = 1 - p.t / p.life, s = kk > .5 ? 2 : 1; g.fillStyle = p.col; g.fillRect(Math.round(p.x), Math.round(p.y), s, s); }
     for (const r of G.rings) { const kk = r.t / .5; g.globalAlpha = 1 - kk; g.strokeStyle = r.col; g.lineWidth = 1; g.beginPath(); g.arc(r.x + .5, r.y + .5, Math.round(r.max * kk), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    for (const f of G.flyers) {                                              /* a letter arcs from the key up to where it will be typed */
+      const row = G.paper[G.paper.length - 1], tx = PAPER.x + 4 + row.length * 4 + 1, ty = PAPER.y + 4 + (G.paper.length - 1) * 7 + 2, k = f.t, e = k * k * (3 - 2 * k);
+      const x = lerp(f.x0, tx, e), y = lerp(f.y0, ty, e) - Math.sin(k * Math.PI) * 14; fx.trail(x, y, '#fff08c'); g.fillStyle = '#1a0f14'; g.fillRect(Math.round(x) - 3, Math.round(y) - 4, 7, 9); g.fillStyle = '#fff6d6'; g.fillRect(Math.round(x) - 2, Math.round(y) - 3, 5, 7); drawLetter(f.ch, Math.round(x) - 1, Math.round(y) - 2, '#1a0f14');
+    }
+    fx.draw(g);
     if (G.frenzy > 0 || G.mash > 0) { g.fillStyle = G.mash > 0 ? 'rgba(155,232,255,.1)' : 'rgba(255,210,58,.09)'; g.fillRect(0, 0, W, H); }
     g.restore();
   }
 
   /* ---------- flow ---------- */
-  function title() {
-    phase = 'title'; host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
-    const leg = h('div', 'mg-legend');
-    const item = (cv, label) => { const d = h('div'); d.append(spriteImg(cv, 2), h('span', '', label)); leg.appendChild(d); };
-    item(keySprite('K', 'hot'), '<em>10-20</em> lit key'); item(keySprite('A', 'blot'), '<em class="bad">-1 heart</em> blot');
-    item(spaceSprite('hot'), '<em>50</em> banana bar'); item(keySprite('Q', 'gold'), '<em>100</em> frenzy');
-    item(keySprite('Z', 'ice'), '<em class="ice">100</em> mash!'); item(keySprite('M', 'up'), '<em class="bad">miss</em> = -1 heart');
-    over.append(h('h1', 'mg-title', 'KEY<span>WHACK</span>'), h('p', 'mg-sub', 'Hit the lit keys before they snap back.'), leg,
-      ui.btn('START', '', () => { sfx.unlock(); start(); }), h('p', 'mg-hint', 'type the letters · or tap the keys · space bar too'), h('p', 'mg-best', `BEST ${store.get('whack:best', 0)}`));
-  }
-  function start() { newGame(); phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); sfx.start(); ui.say('KEY WHACK', '', 1200); }
+  const S = MG.shell({
+    host, ui, id: 'whack', title: 'KEY<span>WHACK</span>', sub: 'Hit the lit keys before they snap back.',
+    legend: [[keySprite('K', 'hot'), '<em>10-20</em> lit key'], [keySprite('A', 'blot'), '<em class="bad">-1 heart</em> blot'], [spaceSprite('hot'), '<em>50</em> banana bar'], [keySprite('Q', 'gold'), '<em>100</em> frenzy'], [keySprite('Z', 'ice'), '<em class="ice">100</em> mash!'], [keySprite('M', 'up'), '<em class="bad">miss</em> = -1 heart']],
+    hint: 'type the letters · or tap the keys · space bar too', spaceStarts: false, onStart: () => newGame(), onMenu: () => newGame(), score: () => G.score,
+  });
   function endGame() { G.deadT = 1; sfx.over(); G.slow = .5; G.slowT = 1; ui.setMeter(0); ui.combo.classList.remove('on'); }
   function showOver() {
-    phase = 'over'; host.classList.add('menu-open'); ui.hideBanner();
-    const prev = store.get('whack:best', 0), isNew = G.score > prev; if (isNew) store.set('whack:best', G.score);
     const tries = G.whacks + G.misses + G.typos + G.blots, acc = tries ? Math.round(G.whacks / tries * 100) : 0;
-    over.hidden = false; over.innerHTML = '';
-    const stats = h('div', 'mg-stats');
-    [['WHACKS', G.whacks], ['ACCURACY', acc + '%'], ['BEST COMBO', G.bestCombo], ['LETTERS/MIN', Math.round(G.whacks / Math.max(1, G.t) * 60)], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`], ['TIME', Math.round(G.t) + 's']].forEach(([k, v]) => stats.append(h('span', '', k), h('b', '', v)));
-    over.append(h('p', 'mg-sub', 'END OF SHIFT'), h('h2', 'mg-big', String(G.score)), isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', `BEST ${Math.max(prev, G.score)}`), stats, ui.btn('AGAIN', '', start), ui.btn('MENU', 'banana-btn-green', () => { newGame(); title(); }));
+    S.finish([['WHACKS', G.whacks], ['ACCURACY', acc + '%'], ['BEST COMBO', G.bestStreak || G.bestCombo], ['LETTERS/MIN', Math.round(G.whacks / Math.max(1, G.t) * 60)], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`], ['TIME', Math.round(G.t) + 's']]);
   }
-  function pause() { if (phase !== 'play') return; phase = 'pause'; host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', '', resume)); }
-  function resume() { if (phase === 'pause') { phase = 'play'; over.hidden = true; host.classList.remove('menu-open'); } }
 
   /* ---------- input ---------- */
   addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key;
-    if (k === 'Escape') { phase === 'play' ? pause() : phase === 'pause' && resume(); return; }
-    if (phase === 'play') { const ch = k === ' ' ? ' ' : k.length === 1 ? k.toUpperCase() : ''; const key = ch && byChar(ch); if (key && !e.repeat) { press(key); e.preventDefault(); } else if (k === ' ') e.preventDefault(); return; }
-    if ((k === 'Enter' || k === ' ') && !e.repeat) { if (phase === 'title' || phase === 'over') start(); else if (phase === 'pause') resume(); e.preventDefault(); }
+    if (S.playing) { const ch = k === ' ' ? ' ' : k.length === 1 ? k.toUpperCase() : ''; const key = ch && byChar(ch); if (key && !e.repeat) { press(key); e.preventDefault(); } else if (k === ' ') e.preventDefault(); return; }
+    if (k === ' ' && !e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); e.preventDefault(); }
   });
   addEventListener('pointerdown', ev => {
-    if (ev.target.closest('.mg-over,.mg-nav')) return; sfx.unlock(); if (phase !== 'play') return;
+    if (ev.target.closest('.mg-over,.mg-nav')) return; sfx.unlock(); if (!S.playing) return;
     const [px, py] = st.toArt(ev); let best = null, bd = 1e9;
     for (const k of keys) { const dx = Math.max(k.x - 1 - px, 0, px - (k.x + k.w + 1)), dy = Math.max(k.y - 4 - py, 0, py - (k.y + k.h + 1)), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = k; } }
     if (best && bd < 36) press(best);
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
-  addEventListener('blur', pause);
-  const mute = document.getElementById('mute'), syncMute = () => mute.classList.toggle('off', !sfx.on);
-  mute.addEventListener('click', () => { sfx.set(!sfx.on); syncMute(); sfx.unlock(); sfx.tick(); }); syncMute();
-
   ['normal', 'scared', 'screech', 'blink'].forEach(e => [0, 1].forEach(p => PXA.monkeyFrame('kw', e, 0, false, p, 0)));
-  newGame(); title();
+  newGame(); S.title();
   if (params.get('autostart')) {
-    start(); botOn = !!params.get('bot');
+    S.start(); botOn = !!params.get('bot');
     for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60);
   }
   MG.loop(update, draw);
-  window.KW = { get G() { return G; }, keys: () => keys, press, get phase() { return phase; } };
+  window.KW = { get G() { return G; }, keys: () => keys, press, get phase() { return S.phase; } };
 })();

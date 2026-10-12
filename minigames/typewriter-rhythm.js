@@ -98,14 +98,15 @@
     if (n.kind === 'ice') { pts += 30; G.auto = 6; G.diamonds++; sfx.diamond(); ui.doFlash('#e8fbff'); ui.say('DIAMOND SOLO<small>the typewriter plays itself · 6s</small>', 'ice'); fx.ring(laneX(n.lane), HIT_Y, '#9be8ff', 50); fx.burst(laneX(n.lane), HIT_Y, ['#9be8ff', '#fff'], 24, 100, 50, 1); }
     pts = Math.round(pts * m); G.score += pts; G.ink = Math.min(100, G.ink + (perfect ? 2.2 : 1.2));
     sfx.tone(LANE_FREQ[n.lane] * (G.combo % 8 === 0 ? 2 : 1), LANE_FREQ[n.lane], .14, 'square', .06); sfx.noise(.02, .04, 3000);
+    fx.shock(laneX(n.lane), HIT_Y + 2, perfect ? '#fff08c' : '#9ce0ff', perfect ? 22 : 14); for (let i = 0; i < (perfect ? 5 : 2); i++) fx.burst(laneX(n.lane) + rng(-5, 5), HIT_Y - 2, perfect ? ['#fff08c', '#fff', '#ffd23a'] : ['#9ce0ff', '#fff'], 1, 26, -90, .5);
     keyFlash[n.lane] = .18; ui.bump(); G.typed = (G.typed + KEYS[n.lane]).slice(-14);
     fx.burst(laneX(n.lane), HIT_Y, perfect ? ['#fff08c', '#fff', '#ffd23a'] : ['#c9b88a', '#fff6d6'], perfect ? 7 : 4, 50, 80, .35);
     G.judge = { txt: label, t: .45, c: perfect ? '#fff08c' : '#9ce0ff', lane: n.lane }; mk.expr = perfect ? 'screech' : 'normal'; mk.t = .18;
-    if (G.combo % 10 === 0) { ui.floatText(W / 2, 90, `${G.combo} COMBO!`, 'gold big'); ui.pulseCombo(); sfx.golden(); G.bg = .5; }
+    if (G.combo % 10 === 0) { ui.floatText(W / 2, 90, `${G.combo} COMBO!`, 'gold big'); ui.pulseCombo(); sfx.golden(); G.bg = .5; fx.confetti(W / 2, 90, 18); fx.shock(W / 2, 88, '#ffd23a', 44); }
     render();
   }
   function missNote(n) {
-    n.miss = true; G.miss++; G.combo = 0; G.ink -= 9; sfx.miss(); G.judge = { txt: 'MISS', t: .5, c: '#ff7a6a', lane: n.lane }; mk.expr = 'scared'; mk.t = .4; G.shake = 1.5; render();
+    fx.puff(laneX(n.lane), HIT_Y, '#8c8670', 3); n.miss = true; G.miss++; G.combo = 0; G.ink -= 9; sfx.miss(); G.judge = { txt: 'MISS', t: .5, c: '#ff7a6a', lane: n.lane }; mk.expr = 'scared'; mk.t = .4; G.shake = 1.5; render();
     if (G.ink <= 0 && !G.over) { G.over = true; G.failed = true; G.done = 1; sfx.over(); ui.say('OUT OF INK!', ''); }
   }
   function press(lane) {
@@ -147,6 +148,7 @@
     /* the page the notes fall across */
     g.fillStyle = '#1a0f14'; g.fillRect(LX0 - 3, 0, LANES * LW + 6, H); g.fillStyle = '#fff6d6'; g.fillRect(LX0 - 1, 0, LANES * LW + 2, H); g.fillStyle = '#ede0b8'; for (let i = 0; i < LANES; i += 2) g.fillRect(LX0 + i * LW, 0, LW, H);
     g.fillStyle = '#c9b88a'; for (let i = 1; i < LANES; i++) g.fillRect(LX0 + i * LW, 0, 1, H); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = (G.song * 20) % 8; y < H; y += 8) g.fillRect(LX0, y, LANES * LW, 1);
+    if (mk.bob > .05) { g.fillStyle = `rgba(255,230,150,${(mk.bob * .13).toFixed(2)})`; g.fillRect(LX0, 0, LANES * LW, H); }
     if (G.bg > 0) { g.fillStyle = `rgba(255,210,58,${G.bg * .3})`; g.fillRect(LX0, 0, LANES * LW, H); }
     if (G.gold > 0) { g.fillStyle = 'rgba(255,210,58,.12)'; g.fillRect(LX0, 0, LANES * LW, H); } if (G.auto > 0) { g.fillStyle = 'rgba(155,232,255,.16)'; g.fillRect(LX0, 0, LANES * LW, H); }
     /* hit line + flashes */
@@ -159,6 +161,7 @@
     for (let i = G.notes.length - 1; i >= 0; i--) {
       const n = G.notes[i]; if (n.hit) continue; const dt = n.t - G.song; if (dt > fall + .1 || dt < -.5) continue;
       const y = HIT_Y - dt / fall * (HIT_Y - 22); if (y < 14) continue;
+      if (!n.miss) { for (let k = 1; k <= 7; k++) { g.fillStyle = `rgba(255,220,100,${(.32 - k * .04).toFixed(2)})`; g.fillRect(Math.round(laneX(n.lane)) - 3, Math.round(y) - 7 - k * 2, 6, 2); } }
       g.globalAlpha = n.miss ? .35 : 1; const kind = n.kind === 'gold' ? 'gold' : n.kind === 'ice' ? 'ice' : 'hot'; g.drawImage(cap(KEYS[n.lane], kind, false), Math.round(laneX(n.lane) - 6.5), Math.round(y - 7)); g.globalAlpha = 1;
       if (n.kind !== 'note' && Math.floor(G.song * 10 + n.lane) % 2 === 0) fx.spark(laneX(n.lane), y, n.kind === 'ice' ? '#9be8ff' : '#fff08c');
     }

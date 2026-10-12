@@ -33,7 +33,7 @@
     return { ax: prev ? prev.ax + rng(lerp(28, 40, tough), lerp(38, 58, tough)) : 40, ay: -6, len: rng(58, 80), th: 0, ph: rng(6.28) };
   }
   function newGame() {
-    G = { t: 0, vines: [], picks: [], bats: [], cam: 0, dist: 0, bananas: 0, goldens: 0, diamonds: 0, score: 0, assist: 0, magnet: 0, shake: 0, dead: 0, best: 0, genX: 0, splash: null, grabs: 0, bestSwing: 0, hearts: 3, pred: null, hint: 0 };
+    G = { t: 0, vines: [], picks: [], bats: [], cam: 0, dist: 0, bananas: 0, goldens: 0, diamonds: 0, score: 0, assist: 0, magnet: 0, shake: 0, dead: 0, best: 0, genX: 0, splash: null, grabs: 0, bestSwing: 0, hearts: 3, pred: null, hint: 0, streaks: [] };
     let v = newVine(null); G.vines.push(v); for (let i = 0; i < 6; i++) { v = newVine(v); G.vines.push(v); }
     G.vines.forEach(decorate);
     const v0 = G.vines[0]; m.vine = v0; m.r = 56; m.th = .95; m.om = 0; m.armed = false; m.cd = 0; m.stun = 0; m.last = v0; m.x = v0.ax + Math.sin(m.th) * m.r; m.y = v0.ay + Math.cos(m.th) * m.r;
@@ -78,6 +78,11 @@
         if (m.y + 20 > WATER) die();
       }
     }
+    { const spd = m.vine ? Math.abs(m.r * m.om) : Math.hypot(m.vx, m.vy);
+      if (spd > 95 && Math.random() < .5) fx.trail(m.x - Math.sign(m.vine ? m.om : m.vx || 1) * 4 + rng(-2, 2), m.y + 8 + rng(-3, 3), Math.random() < .5 ? '#74c648' : '#a8ec76');
+      if (spd > 130 && Math.random() < .35) G.streaks.push({ x: m.x + rng(-30, 30), y: m.y + rng(-18, 28), t: 0 });
+      if (m.y > WATER - 34 && Math.random() < .12) fx.puff(m.x + rng(-8, 8), WATER, '#d6f0ff', 1); }
+    for (let i = G.streaks.length - 1; i >= 0; i--) { G.streaks[i].t += dt; if (G.streaks[i].t > .22) G.streaks.splice(i, 1); }
     G.dist = Math.max(G.dist, (m.x - 40) / 8); if (G.dist > G.best) G.best = G.dist;
     G.score = Math.floor(G.dist) + G.bananas * 8 + G.goldens * 40 + G.diamonds * 150; ui.setScore(G.score);
     G.cam = lerp(G.cam, m.x - 62, 1 - Math.pow(.0005, dt)); extend();
@@ -91,7 +96,7 @@
     for (const b of G.bats) {
       b.y0 = b.y0 == null ? b.y : b.y0; b.cy = b.y0 + Math.sin(G.t * b.spd + b.ph) * b.amp;
       if (!b.hit && Math.hypot(b.x - m.x, b.cy - (m.y + 12)) < 10) {
-        b.hit = true; sfx.bonk(); G.shake = 5; ui.doFlash('#2a1020'); fx.burst(m.x, m.y, ['#6a48a8', '#1a0f14', '#fff6d6'], 10, 60, 120, .5); ui.floatText((m.x - G.cam), m.y - 10, 'BAT!', 'bad'); m.expr = 'scared'; m.et = .8;
+        b.hit = true; MG.hitstop(.08); sfx.bonk(); G.shake = 5; ui.doFlash('#2a1020'); fx.burst(m.x, m.y, ['#6a48a8', '#1a0f14', '#fff6d6'], 10, 60, 120, .5); ui.floatText((m.x - G.cam), m.y - 10, 'BAT!', 'bad'); m.expr = 'scared'; m.et = .8;
         if (m.vine) { m.vx = m.vine ? m.r * Math.cos(m.th) * m.om : 0; m.vy = 0; m.vine = null; } m.stun = .6; m.vx *= .6; m.vy = -30;
       }
     }
@@ -107,20 +112,20 @@
       const dx = m.x - v.ax, dy = m.y - v.ay; if (Math.abs(dx) > reach || dy < 14 || dy > v.len + 4) continue;
       m.vine = v; m.r = clamp(Math.hypot(dx, dy), 22, v.len); m.th = Math.atan2(dx, dy); m.om = (m.vx * Math.cos(m.th) - m.vy * Math.sin(m.th)) / m.r; { const need = 62 / m.r; if (Math.abs(m.om) < need) m.om = need * (m.vx >= 0 ? 1 : -1); else m.om *= 1.08; } m.last = v; G.grabs++;
       G.bestSwing = Math.max(G.bestSwing, (m.x - (m.from || m.x)) / 8);
-      sfx.clack(Math.min(10, G.grabs)); fx.burst(m.x, m.y, ['#74c648', '#a8ec76'], 5, 30, 60, .3);
+      sfx.clack(Math.min(10, G.grabs)); fx.burst(m.x, m.y, ['#74c648', '#a8ec76'], 9, 40, 70, .4); fx.shock(m.x, m.y, '#a8ec76', 16); MG.hitstop(.03); G.shake = Math.max(G.shake, 1.2);
       if (Math.abs(dx) < 2.2) { ui.floatText(m.x - G.cam, m.y - 14, 'NICE CATCH', 'gold'); G.score += 0; }
       return;
     }
   }
   function collect(p) {
-    p.got = true; const x = p.x - G.cam;
+    p.got = true; const x = p.x - G.cam; fx.ring(p.x, p.y, p.type === 'diamond' ? '#9be8ff' : '#ffd23a', 12);
     if (p.type === 'banana') { G.bananas++; sfx.ding(Math.min(10, G.bananas % 12)); fx.burst(p.x, p.y, ['#ffd23a', '#fff08c'], 6, 40, 80, .35); ui.floatText(x, p.y - 8, '+8'); }
     else if (p.type === 'golden') { G.goldens++; G.assist = 7; sfx.golden(); fx.ring(p.x, p.y, '#ffd23a', 30); fx.burst(p.x, p.y, ['#ffd23a', '#fff08c', '#fffbe0'], 18, 80, 60, .8); ui.say('GOLDEN GRIP<small>wide grab · 7 seconds</small>'); ui.floatText(x, p.y - 8, '+40', 'gold'); }
     else { G.diamonds++; G.magnet = 6; sfx.diamond(); ui.doFlash('#e8fbff'); fx.ring(p.x, p.y, '#9be8ff', 50); fx.burst(p.x, p.y, ['#9be8ff', '#fff', '#2a86b8'], 30, 110, 50, 1); ui.say('DIAMOND MAGNET<small>bananas fly to you · 6s</small>', 'ice'); ui.floatText(x, p.y - 8, '+150', 'ice'); }
     ui.bump();
   }
   function die() {
-    G.hearts--; G.shake = 4; sfx.bonk(); fx.burst(m.x, WATER, ['#7ec8f0', '#d6f0ff', '#3a8ec8'], 24, 90, 220, .8); fx.ring(m.x, WATER, '#d6f0ff', 24); ui.setHearts(G.hearts, true); ui.doFlash('#184c78');
+    MG.hitstop(.06); fx.shock(m.x, WATER, '#d6f0ff', 30); G.hearts--; G.shake = 4; sfx.bonk(); fx.burst(m.x, WATER, ['#7ec8f0', '#d6f0ff', '#3a8ec8'], 24, 90, 220, .8); fx.ring(m.x, WATER, '#d6f0ff', 24); ui.setHearts(G.hearts, true); ui.doFlash('#184c78');
     if (G.hearts <= 0) { G.dead = 1; sfx.over(); G.splash = { x: m.x, t: 0 }; m.vx = 0; m.vy = 0; m.expr = 'scared'; m.et = 2; return; }
     ui.floatText(clamp(m.x - G.cam, 20, W - 20), 70, 'SPLASH! -1', 'bad');
     /* the crocodile spits you back onto the nearest vine ahead of where you fell */
@@ -192,6 +197,8 @@
     }
     fx.draw(g);
     g.restore();
+    for (const sl of G.streaks) { g.globalAlpha = 1 - sl.t / .22; g.fillStyle = '#fff6d6'; g.fillRect(Math.round(sl.x - cam), Math.round(sl.y), 9, 1); }
+    g.globalAlpha = 1;
     /* river */
     g.fillStyle = '#184c78'; g.fillRect(0, WATER, W, H - WATER); g.fillStyle = '#3a8ec8'; g.fillRect(0, WATER, W, 2);
     for (let x = 0; x < W; x += 3) { const y = WATER + 1 + Math.round(Math.sin((x + cam) * .22 + G.t * 3) * 1); g.fillStyle = '#7ec8f0'; g.fillRect(x, y, 2, 1); }

@@ -54,11 +54,11 @@
     if (c.kind === 'ice') { magic(c, idx); return; }
     if (sh.k === c.cat) {
       const k = c.kind === 'gold' ? 3 : 1, pts = Math.round((10 + 10 * clamp(1 - (c.y + c.h) / FLOOR, 0, 1)) * mult() * k); G.score += pts; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.sorted++; c.pts = pts; send(c, idx, true);
-      ui.bump(); sfx.clack(Math.min(12, G.combo)); sfx.ding(Math.min(10, G.combo)); ui.floatText(shelfX(idx), SHELF_Y - 8, '+' + pts, k > 1 ? 'gold' : G.combo > 5 ? 'gold' : '');
+      ui.bump(); fx.burst(shelfX(idx), SHELF_Y + 2, [G.shelves[idx].col, '#fff6d6', '#fff08c'], 8, 50, 100, .4); fx.shock(shelfX(idx), SHELF_Y + 4, G.shelves[idx].col, 16); sfx.clack(Math.min(12, G.combo)); sfx.ding(Math.min(10, G.combo)); ui.floatText(shelfX(idx), SHELF_Y - 8, '+' + pts, k > 1 ? 'gold' : G.combo > 5 ? 'gold' : '');
       if (c.kind === 'gold') { G.goldens++; G.slowT = 6; sfx.golden(); fx.ring(c.x, c.y + c.h / 2, '#ffd23a', 40); fx.burst(c.x, c.y, ['#ffd23a', '#fff08c', '#fffbe0'], 18, 80, 60, .8); ui.say('GOLDEN EDITION<small>x3 · the room slows · 6s</small>'); if (G.hearts < 3) { G.hearts++; ui.floatText(W / 2, 60, '+HEART', 'gold'); } }
       if (G.combo % 6 === 0) { ui.pulseCombo(); ui.floatText(W / 2, 70, `STREAK x${mult()}`, 'gold'); sfx.golden(); }
     } else {
-      G.misfiled++; G.combo = 0; G.hearts--; G.shake = 5; send(c, idx, false); sfx.bonk(); ui.doFlash('#c0392b'); ui.floatText(shelfX(idx), SHELF_Y - 8, `THAT IS ${CATS.find(q => q.k === c.cat).label}`, 'bad'); fx.burst(shelfX(idx), SHELF_Y, ['#c0392b', '#fff6d6'], 10, 60, 100, .5);
+      MG.hitstop(.07); G.misfiled++; G.combo = 0; G.hearts--; G.shake = 5; send(c, idx, false); sfx.bonk(); ui.doFlash('#c0392b'); ui.floatText(shelfX(idx), SHELF_Y - 8, `THAT IS ${CATS.find(q => q.k === c.cat).label}`, 'bad'); fx.burst(shelfX(idx), SHELF_Y, ['#c0392b', '#fff6d6'], 10, 60, 100, .5);
       if (G.hearts <= 0) { G.dead = 1.1; sfx.over(); }
     }
     render(!(sh.k === c.cat));
@@ -70,7 +70,7 @@
   }
   function arrive(c) {
     const sh = G.shelves[c.si]; if (!sh) return; sh.n++; sh.tint.push(rng(0, 1)); sh.flash = .2; fx.burst(c.tx, c.ty, [sh.col, '#fff6d6'], 6, 40, 80, .35);
-    if (sh.n >= CAP) { const bonus = Math.round(100 * mult()); G.full++; G.score += bonus; G.combo++; sfx.golden(); ui.say(`${sh.label} SHELF FULL!<small>+${bonus}</small>`); fx.ring(shelfX(G.shelves.indexOf(sh)), SHELF_Y + 24, '#ffd23a', 40); fx.burst(shelfX(G.shelves.indexOf(sh)), SHELF_Y + 20, ['#ffd23a', '#fff08c', sh.col], 22, 90, 80, .9); sh.n = 0; sh.tint = []; ui.bump(); render(); }
+    if (sh.n >= CAP) { const bonus = Math.round(100 * mult()); G.full++; G.score += bonus; G.combo++; sfx.golden(); ui.say(`${sh.label} SHELF FULL!<small>+${bonus}</small>`); fx.ring(shelfX(G.shelves.indexOf(sh)), SHELF_Y + 24, '#ffd23a', 40); fx.burst(shelfX(G.shelves.indexOf(sh)), SHELF_Y + 20, ['#ffd23a', '#fff08c', sh.col], 22, 90, 80, .9); sh.n = 0; sh.tint = []; ui.bump(); fx.confetti(shelfX(G.shelves.indexOf(sh)), SHELF_Y + 10, 26); MG.hitstop(.05); render(); }
   }
 
   /* ---------- update ---------- */
@@ -87,7 +87,7 @@
     if (G.hearts > 0 && G.spawnT <= 0 && tail > 12 && G.cards.filter(c => c.state === 'fall').length < 7) { spawn(); if (d > .4 && Math.random() < d * .35) G.spawnT = .22; else G.spawnT = lerp(2.0, .62, d) * rng(.8, 1.2); }
     for (let i = G.cards.length - 1; i >= 0; i--) {
       const c = G.cards[i]; c.t += dt;
-      if (c.state === 'fall') { c.y += c.vy * dt; if (c.y + c.h >= FLOOR) { c.state = 'drop'; c.t = 0; G.dropped++; G.combo = 0; G.hearts--; G.shake = 4; sfx.thud(); sfx.miss(); ui.floatText(c.x, FLOOR - 8, 'DROPPED!', 'bad'); fx.burst(c.x, FLOOR, ['#c9b88a', '#fff6d6'], 8, 40, 80, .4); render(true); if (G.hearts <= 0 && !G.dead) { G.dead = 1.1; sfx.over(); } } }
+      if (c.state === 'fall') { c.y += c.vy * dt; if (c.y + c.h >= FLOOR) { c.state = 'drop'; c.t = 0; MG.hitstop(.07); G.dropped++; G.combo = 0; G.hearts--; G.shake = 4; sfx.thud(); sfx.miss(); ui.floatText(c.x, FLOOR - 8, 'DROPPED!', 'bad'); fx.burst(c.x, FLOOR, ['#c9b88a', '#fff6d6'], 8, 40, 80, .4); render(true); if (G.hearts <= 0 && !G.dead) { G.dead = 1.1; sfx.over(); } } }
       else if (c.state === 'fly') { const k = clamp(c.t / .26, 0, 1); c.x = lerp(c.sx, c.tx, k); c.y = lerp(c.sy, c.ty, k) - Math.sin(k * Math.PI) * 14; if (k >= 1) { c.state = 'gone'; arrive(c); } }
       else if (c.state === 'bounce') { const k = c.t / .5; c.x += (c.x < W / 2 ? -1 : 1) * 40 * dt; c.y += (-60 + c.t * 260) * dt; if (c.t > .6) c.state = 'gone'; }
       else if (c.state === 'drop') { c.y += 140 * dt; if (c.t > .5) c.state = 'gone'; }
@@ -105,7 +105,8 @@
     g.fillStyle = '#3a2418'; g.fillRect(0, 0, W, H); g.fillStyle = '#4a2e1e'; for (let x = 0; x < W; x += 12) g.fillRect(x, 0, 1, FLOOR);
     g.fillStyle = '#2a170b'; for (let y = 22; y < FLOOR; y += 24) g.fillRect(0, y, W, 2);
     g.fillStyle = 'rgba(255,230,160,.06)'; g.fillRect(20, 0, 22, FLOOR); g.fillRect(78, 0, 22, FLOOR);
-    g.fillStyle = '#1a0f14'; g.fillRect(0, FLOOR, W, 8); g.fillStyle = '#c0392b'; for (let x = 0; x < W; x += 6) g.fillRect(x, FLOOR + 1, 3, 2); g.fillStyle = '#7a4a1e'; g.fillRect(0, FLOOR + 3, W, 5);
+    const warn = G.cards.some(c => c.state === 'fall' && c.y + c.h > FLOOR - 26);
+    g.fillStyle = '#1a0f14'; g.fillRect(0, FLOOR, W, 8); g.fillStyle = warn && Math.floor(G.t * 8) % 2 ? '#ff6a5a' : '#c0392b'; for (let x = 0; x < W; x += 6) g.fillRect(x, FLOOR + 1, 3, 2); g.fillStyle = '#7a4a1e'; g.fillRect(0, FLOOR + 3, W, 5);
     /* shelves */
     const n = G.shelves.length, cw = colW();
     G.shelves.forEach((s, i) => {
@@ -126,6 +127,7 @@
       const spine = c.kind === 'gold' ? '#ffd23a' : c.kind === 'ice' ? '#9be8ff' : c.hint ? c.col : '#8c8670';
       g.fillStyle = c.kind === 'ice' ? '#e8fbff' : c.kind === 'gold' ? '#fff3b0' : '#fff6d6'; g.fillRect(x + shake, y, c.w, c.h); g.fillStyle = spine; g.fillRect(x + shake, y, 4, c.h); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 3 + shake, y, 1, c.h); g.fillStyle = '#c9b88a'; g.fillRect(x + shake, y + c.h - 1, c.w, 1);
       c.lines.forEach((ln, i) => text(ln, x + 7 + shake, y + 4 + i * 6, '#1a0f14'));
+      if (fall && c.y + c.h > FLOOR - 26) { g.fillStyle = `rgba(232,58,58,${(.25 + .2 * Math.sin(G.t * 20)).toFixed(2)})`; g.fillRect(x, y, c.w, c.h); }
       if (c.kind !== 'normal' && Math.floor(G.t * 10) % 2 === 0) fx.spark(x + c.w - 4, y + 3, c.kind === 'ice' ? '#9be8ff' : '#fff08c');
       if (c === act) { const b = Math.floor(performance.now() / 200) % 2; g.fillStyle = '#ffd23a'; g.fillRect(x - 5 - b, y + Math.floor(c.h / 2) - 2, 3, 5); g.fillRect(x + c.w + 2 + b, y + Math.floor(c.h / 2) - 2, 3, 5); }
     }

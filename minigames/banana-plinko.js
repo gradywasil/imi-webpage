@@ -115,9 +115,9 @@
     for (const p of pegs) {
       if (Math.abs(p.y - b.y) > 14 || Math.abs(p.x - b.x) > 14) continue;
       const r = contact(b, p.x, p.y, p.r, 0, 0, .32, 0);
-      if (r) { if (!p.post) { p.hot = .2; if (G.hitCd <= 0) { sfx.clack(p.row % 9); G.hitCd = .04; } } if (b.split) { b.split = false; ui.say('DIAMOND BURST!', 'ice'); sfx.diamond(); fx.ring(b.x, b.y, '#9be8ff', 30); for (let i = 0; i < 4; i++) G.live.push(Object.assign(newBody(b.x, b.y, (i - 1.5) * 34, -50 - rng(0, 25), 'diamond', false), { v: 5 })); } }
+      if (r) { if (!p.post) { p.hot = .2; if (G.hitCd <= 0) { sfx.clack(p.row % 9); G.hitCd = .04; } } if (b.split) { b.split = false; ui.say('DIAMOND BURST!', 'ice'); MG.hitstop(.08); fx.confetti(b.x, b.y, 24, ['#9be8ff', '#fff', '#2a86b8']); sfx.diamond(); fx.ring(b.x, b.y, '#9be8ff', 30); for (let i = 0; i < 4; i++) G.live.push(Object.assign(newBody(b.x, b.y, (i - 1.5) * 34, -50 - rng(0, 25), 'diamond', false), { v: 5 })); } }
     }
-    for (const bm of BUMPERS) { if (Math.abs(bm.y - b.y) > 16 || Math.abs(bm.x - b.x) > 16) continue; const r = contact(b, bm.x, bm.y, bm.r, 0, 0, .9, 215); if (r === 'kick') { bm.flash = .2; G.bumps++; b.bumpN = (b.bumpN || 0) + 1; const pts = Math.round((b.bumpN <= 3 ? 25 : 5) * mult()); G.score += pts; ui.floatText(bm.x, bm.y - 10, 'BUMP +' + pts, 'gold'); sfx.golden(); G.shake = Math.max(G.shake, 1.6); fx.burst(bm.x, bm.y, ['#ffd23a', '#fff08c', '#e86a50'], 10, 70, 30, .35); fx.ring(bm.x, bm.y, '#ffd23a', 14); ui.bump(); render(); } }
+    for (const bm of BUMPERS) { if (Math.abs(bm.y - b.y) > 16 || Math.abs(bm.x - b.x) > 16) continue; const r = contact(b, bm.x, bm.y, bm.r, 0, 0, .9, 215); if (r === 'kick') { bm.flash = .2; MG.hitstop(.035); fx.shock(bm.x, bm.y, '#ffd23a', 20); G.bumps++; b.bumpN = (b.bumpN || 0) + 1; const pts = Math.round((b.bumpN <= 3 ? 25 : 5) * mult()); G.score += pts; ui.floatText(bm.x, bm.y - 10, 'BUMP +' + pts, 'gold'); sfx.golden(); G.shake = Math.max(G.shake, 1.6); fx.burst(bm.x, bm.y, ['#ffd23a', '#fff08c', '#e86a50'], 10, 70, 30, .35); fx.ring(bm.x, bm.y, '#ffd23a', 14); ui.bump(); render(); } }
     for (const mv of movers(G.t)) { if (Math.abs(mv.y - b.y) > 18 || Math.abs(mv.x - b.x) > 18) continue; const r = contact(b, mv.x, mv.y, mv.r, mv.vx, mv.vy, .75, 0); if (r) { if (b.shoved !== mv.kind || G.t - (b.shoveT || 0) > .4) { b.shoved = mv.kind; b.shoveT = G.t; G.shoves++; sfx.thud(); fx.burst(mv.x, mv.y, ['#c9b88a', '#fff6d6'], 4, 36, 60, .3); } } }
     const sp = Math.hypot(b.vx, b.vy); if (sp > 300) { b.vx *= 300 / sp; b.vy *= 300 / sp; } b.w = clamp(b.w, -28, 28);
   }
@@ -129,7 +129,7 @@
     G.score += pts; ui.bump(); ui.floatText(x, BIN_TOP - 8, '+' + pts, b.kind === 'diamond' ? 'ice' : val >= 25 || b.v > 1 ? 'gold' : '');
     fx.burst(x, BIN_TOP + 2, b.kind === 'diamond' ? ['#9be8ff', '#fff'] : ['#ffd23a', '#fff08c', '#fff6d6'], val >= 25 ? 16 : 6, 60, 120, .5);
     if (b.kind === 'golden') G.goldens++; if (b.kind === 'diamond') G.diamonds++;
-    if (val >= 100) { G.edges++; G.balls++; G.shake = 3; sfx.golden(); fx.ring(x, BIN_TOP, '#ffd23a', 34); ui.floatText(x, BIN_TOP - 20, '+1 BANANA', 'gold'); }
+    if (val >= 100) { fx.confetti(x, BIN_TOP, 22); MG.hitstop(.05); G.edges++; G.balls++; G.shake = 3; sfx.golden(); fx.ring(x, BIN_TOP, '#ffd23a', 34); ui.floatText(x, BIN_TOP - 20, '+1 BANANA', 'gold'); }
     else if (val >= 25) sfx.letters(); else sfx.clack();
     if (G.combo > 0 && G.combo % 3 === 0) ui.pulseCombo();
     render();
@@ -147,6 +147,7 @@
       const b = G.live[i]; b.age += dt;
       for (let s = 0; s < 4; s++) stepBody(b, dt / 4);
       if (b.kind !== 'normal' && Math.floor(b.age * 14) % 2 === 0) fx.spark(b.x, b.y, b.kind === 'diamond' ? '#9be8ff' : '#fff08c');
+      if (Math.hypot(b.vx, b.vy) > 80 && Math.random() < .7) fx.trail(b.x + rng(-2, 2), b.y + rng(-2, 2), b.kind === 'diamond' ? '#9be8ff' : b.kind === 'golden' ? '#ffd23a' : '#fff08c');
       if (Math.hypot(b.vx, b.vy) < 9 && Math.abs(b.w) < 1.2) { b.still += dt; if (b.still > .6) { b.vx += rng(-45, 45); b.vy -= 35; b.w += rng(-6, 6); b.still = 0; } } else b.still = 0;
       if (b.age > 22) { b.vy = 120; b.vx = rng(-30, 30); }
       if (b.y > BIN_TOP + 10) { G.live.splice(i, 1); land(b); }
@@ -170,10 +171,10 @@
     /* aim marker */
     if (S.playing && G.balls > 0) { const x = Math.round(clamp(aimX, 10, W - 10)), bob = Math.floor(performance.now() / 260) % 2; g.drawImage(bananaSpr(G.nextKind, Math.PI * 1.5 + 0), x - 9, DROP_Y - 10 + bob); g.fillStyle = 'rgba(255,246,214,.35)'; for (let y = DROP_Y + 8; y < 44; y += 4) g.fillRect(x, y, 1, 2); }
     for (const p of pegs) { if (p.post) { g.fillStyle = '#1a0f14'; g.fillRect(Math.round(p.x) - 2, Math.round(p.y) - 2, 4, H - Math.round(p.y)); g.fillStyle = '#8a5a2b'; g.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, H - Math.round(p.y)); continue; } g.drawImage(p.hot > 0 ? pegHot : pegSpr, Math.round(p.x - 4.5), Math.round(p.y - 4.5)); }
-    for (const bm of BUMPERS) g.drawImage(bumpSpr[bm.flash > 0 ? 1 : 0], Math.round(bm.x - 7.5), Math.round(bm.y - 7.5));
+    for (const bm of BUMPERS) { const br = Math.round(Math.sin(performance.now() / 260 + bm.x) * 1 + (bm.flash > 0 ? 3 : 0)); g.fillStyle = bm.flash > 0 ? 'rgba(255,240,150,.55)' : 'rgba(255,200,80,.22)'; g.fillRect(Math.round(bm.x) - 9 - br, Math.round(bm.y) - 1, 2, 3); g.fillRect(Math.round(bm.x) + 8 + br, Math.round(bm.y) - 1, 2, 3); g.fillRect(Math.round(bm.x) - 1, Math.round(bm.y) - 9 - br, 3, 2); g.fillRect(Math.round(bm.x) - 1, Math.round(bm.y) + 8 + br, 3, 2); g.drawImage(bumpSpr[bm.flash > 0 ? 1 : 0], Math.round(bm.x - 7.5), Math.round(bm.y - 7.5)); }
     /* working monkey + the two swingers */
     const T = G.t, wx = worker.cx + Math.sin(T * worker.om + worker.ph) * worker.amp, wdir = Math.cos(T * worker.om + worker.ph) >= 0 ? 1 : -1;
-    g.save(); g.translate(Math.round(wx), 0); if (wdir < 0) g.scale(-1, 1); g.drawImage(A.monkeyS[Math.floor(T * 5) % 2], -6, worker.y - 11); g.restore(); g.drawImage(crateSpr, Math.round(wx - 4), worker.y - 16);
+    g.save(); g.translate(Math.round(wx), 0); if (wdir < 0) g.scale(-1, 1); g.drawImage(A.monkeyS[Math.floor(T * 5) % 2], -6, worker.y - 11); g.restore(); g.drawImage(crateSpr, Math.round(wx - 4), worker.y - 16 - Math.round(Math.abs(Math.sin(T * 5)) * 1.5));
     for (const sw of [SW1, SW2]) { const th = sw.amp * Math.sin(T * sw.om + sw.ph), tx = sw.ax + sw.len * Math.sin(th), ty = sw.ay + sw.len * Math.cos(th); const n = Math.ceil(sw.len); for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sw.ax, tx, i / n)), y = Math.round(lerp(sw.ay, ty, i / n)); g.fillStyle = '#17481f'; g.fillRect(x - 1, y, 3, 1); g.fillStyle = '#2f8a35'; g.fillRect(x, y, 1, 1); } g.drawImage(A.monkeyS[1], Math.round(tx - 6), Math.round(ty - 4)); }
     /* bins */
     VALUES.forEach((v, i) => {

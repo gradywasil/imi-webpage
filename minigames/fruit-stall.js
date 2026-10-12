@@ -56,7 +56,7 @@
   }
 
   function serve(fruit) {
-    if (!S.playing || G.dead) return; G.binPress[fruit] = .12;
+    if (!S.playing || G.dead) return; G.binPress[fruit] = .12; fx.burst(4 + fruit * (BINW + 1) + BINW / 2, BIN_Y + 6, [KEYC[fruit], '#fff6d6'], 3, 30, 90, .3);
     if (G.restock[fruit] > 0) return;
     if (G.stock[fruit] <= 0) { G.restock[fruit] = .75; sfx.tick(); ui.floatText(4 + fruit * (BINW + 1) + BINW / 2, BIN_Y - 6, 'RESTOCKING', ''); return; }
     let best = null; for (const c of G.cust) { if (!c || c.state !== 'wait') continue; if (c.need.some((n, i) => n === fruit && !c.got[i])) { if (!best || c.patience < best.patience) best = c; } }
@@ -71,7 +71,7 @@
   function finishOrder(c) {
     G.served++; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); const m = mult(), frac = c.patience / c.max, k = c.kind === 'diamond' ? 10 : c.kind === 'golden' ? 3 : 1;
     const base = c.need.length * 10, tip = Math.round(base * frac * .8), pts = Math.round((base + tip) * m * k);
-    G.score += pts; ui.bump(); c.state = 'happy'; c.t = 0; sfx.letters(); sfx.golden();
+    G.score += pts; ui.bump(); c.state = 'happy'; c.t = 0; sfx.letters(); sfx.golden(); fx.confetti(c.x, COUNTER_Y - 20, k > 1 ? 30 : 12, ['#ffd23a', '#fff08c', '#c98f0e']); if (k > 1) MG.hitstop(.07);
     ui.floatText(c.x, COUNTER_Y - 38, '+' + pts, k > 1 ? (c.kind === 'diamond' ? 'ice big' : 'gold big') : m > 1 ? 'gold' : ''); if (tip > 4) ui.floatText(c.x, COUNTER_Y - 50, `TIP +${tip}`, 'gold');
     fx.ring(c.x, COUNTER_Y - 16, c.kind === 'diamond' ? '#9be8ff' : '#ffd23a', 30); fx.burst(c.x, COUNTER_Y - 18, c.kind === 'diamond' ? ['#9be8ff', '#fff'] : ['#ffd23a', '#fff08c', '#74c648'], 14, 70, 60, .7);
     if (c.kind === 'golden') { G.goldens++; if (G.hearts < 3) { G.hearts++; ui.floatText(c.x, COUNTER_Y - 62, '+HEART', 'gold'); } }
@@ -118,7 +118,7 @@
     g.fillStyle = '#5a3517'; g.fillRect(0, COUNTER_Y + 12, W, H - COUNTER_Y - 12); g.fillStyle = '#4a2c14'; for (let y = COUNTER_Y + 16; y < H; y += 10) g.fillRect(0, y, W, 1);
     /* customers */
     for (const c of G.cust) {
-      if (!c) continue; const cx = Math.round(c.x), sp = CRE[c.type], bob = c.state === 'wait' ? Math.round(Math.sin(G.t * 4 + c.slot) * .6) : c.state === 'happy' ? -Math.abs(Math.round(Math.sin(c.t * 14) * 3)) : 0;
+      if (!c) continue; const cx = Math.round(c.x), sp = CRE[c.type], bob = c.state === 'in' ? -Math.round(Math.abs(Math.sin(c.t * 15)) * 3) : c.state === 'wait' ? Math.round(Math.sin(G.t * (c.patience / c.max < .35 ? 14 : 4) + c.slot) * (c.patience / c.max < .35 ? 1.2 : .6)) : c.state === 'happy' ? -Math.abs(Math.round(Math.sin(c.t * 14) * 3)) : 0;
       const top = COUNTER_Y - 4 + bob - 36, y = top;              /* customers are drawn at 2x so you can read them */
       g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(cx - 14, COUNTER_Y - 4, 29, 3);
       const t = cust2x; t.clearRect(0, 0, 17, 28); const X = 8, Y = 10;

@@ -102,13 +102,13 @@
         if (!G.gutter) { ball.vx += G.steer * 42 * h * (ball.y > 110 ? 1 : 0); }
         if (G.hit) ball.vy = Math.min(ball.vy, -32);       /* after the first hit the ball keeps rolling on into the pit */
         ball.x += ball.vx * h; ball.y += ball.vy * h;
-        if (!G.gutter && Math.abs(ball.x - CX) > LANE + 1) { G.gutter = true; G.gutters++; ball.vx = 0; ball.x = CX + Math.sign(ball.x - CX) * (LANE + 5); ui.floatText(ball.x, ball.y - 6, 'GUTTER', 'bad'); sfx.miss(); mk.expr = 'scared'; mk.t = 1.4; }
+        if (!G.gutter && Math.abs(ball.x - CX) > LANE + 1) { G.gutter = true; G.gutters++; fx.puff(ball.x, ball.y, '#8c8670', 5); ball.vx = 0; ball.x = CX + Math.sign(ball.x - CX) * (LANE + 5); ui.floatText(ball.x, ball.y - 6, 'GUTTER', 'bad'); sfx.miss(); mk.expr = 'scared'; mk.t = 1.4; }
         if (G.gutter) ball.x = CX + Math.sign(ball.x - CX) * (LANE + 5);
         if (ball.y <= PIT) { G.rolling = false; ball.vx = ball.vy = 0; }
       }
       for (const pn of G.pins) {
         if (!pn.up) continue;
-        if (G.rolling && collide(ball, pn, mass, 1, .85)) { if (!G.hit) { G.hit = true; sfx.thud(); } if (Math.hypot(pn.vx, pn.vy) > 8) pn.down = true; G.shake = Math.max(G.shake, G.dia ? 3 : 1.4); sfx.clack(Math.min(14, G.fell++)); }
+        if (G.rolling && collide(ball, pn, mass, 1, .85)) { if (!G.hit) { G.hit = true; sfx.thud(); MG.hitstop(.06); fx.shock(ball.x, ball.y, '#fff6d6', 22); fx.confetti(ball.x, ball.y, 6, ['#fff6d6', '#e8b878']); } if (Math.hypot(pn.vx, pn.vy) > 8) pn.down = true; G.shake = Math.max(G.shake, G.dia ? 3 : 1.4); sfx.clack(Math.min(14, G.fell++)); }
         pn.x += pn.vx * h; pn.y += pn.vy * h; const damp = Math.max(0, 1 - 2.4 * h); pn.vx *= damp; pn.vy *= damp;
         if (pn.y < PIT + 4) { pn.y = PIT + 4; pn.vy = Math.abs(pn.vy) * .2; }
         if (Math.hypot(pn.x - HOME[pn.i][0], pn.y - HOME[pn.i][1]) > 4.5 || Math.hypot(pn.vx, pn.vy) > 20) { if (!pn.down) { pn.down = true; } }
@@ -149,8 +149,8 @@
     G.next = { full: nextFull }; G.stage = 'between'; G.st = 0;
   }
   function cheer(label) {
-    if (label === 'STRIKE') { sfx.golden(); G.shake = 5; ui.say('STRIKE!', ''); fx.ring(CX, 60, '#ffd23a', 50); fx.burst(CX, 60, ['#ffd23a', '#fff08c', '#fff6d6', '#74c648'], 30, 100, 80, 1); mk.expr = 'screech'; mk.t = 1.6; ui.doFlash('#fff6d6'); }
-    else { sfx.letters(); ui.say('SPARE!', ''); fx.burst(CX, 60, ['#74c648', '#a8ec76', '#fff'], 18, 70, 70, .8); mk.expr = 'screech'; mk.t = 1; }
+    if (label === 'STRIKE') { MG.hitstop(.12); fx.confetti(CX, 62, 40); fx.shock(CX, 60, '#ffd23a', 60); sfx.golden(); G.shake = 5; ui.say('STRIKE!', ''); fx.ring(CX, 60, '#ffd23a', 50); fx.burst(CX, 60, ['#ffd23a', '#fff08c', '#fff6d6', '#74c648'], 30, 100, 80, 1); mk.expr = 'screech'; mk.t = 1.6; ui.doFlash('#fff6d6'); }
+    else { fx.confetti(CX, 62, 18, ['#74c648', '#a8ec76', '#fff']); sfx.letters(); ui.say('SPARE!', ''); fx.burst(CX, 60, ['#74c648', '#a8ec76', '#fff'], 18, 70, 70, .8); mk.expr = 'screech'; mk.t = 1; }
   }
 
   /* ---------- update ---------- */
@@ -166,7 +166,8 @@
     else if (G.stage === 'angle') G.ang = Math.sin(G.st * 3.6 * m) * .33;
     else if (G.stage === 'power') G.pow = (Math.sin(G.st * 3.4 * m - Math.PI / 2) + 1) / 2;
     else if (G.stage === 'roll') {
-      physics(dt); if (G.rolling && !G.gutter) { G.trail.push([G.bx, G.by]); if (G.trail.length > 8) G.trail.shift(); }
+      physics(dt); if (G.rolling && !G.gutter) { G.trail.push([G.bx, G.by]); if (G.trail.length > 8) G.trail.shift(); if (Math.random() < .5) fx.puff(G.bx + rng(-2, 2), G.by + 5, G.dia ? '#9be8ff' : '#e8c890', 1); }
+      for (const pn of G.pins) if (pn.up && pn.down && Math.hypot(pn.vx, pn.vy) > 30 && Math.random() < .5) fx.trail(pn.x, pn.y, '#fff6d6');
       if (!moving()) { G.settle += dt; if (G.settle > .55) { G.stage = 'resolve'; endRoll(); } } else G.settle = 0;
     }
     else if (G.stage === 'between') { if (G.st > 1.1) { setRack(G.next.full); G.stage = 'pos'; G.st = 0; G.x = CX; G.pow = 0; render(); } }

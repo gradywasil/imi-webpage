@@ -73,7 +73,7 @@
   let G = null, botOn = false, drag = null, cursor = { sel: -1, r: 0, c: 0 };
   const mkPiece = (cells, ci, kind) => ({ cells, ci, kind: kind || null, slot: 0, x: W + 20, y: BELT_Y + 28, drop: 0 });
   function newGame() {
-    G = { score: 0, hearts: 3, streak: 0, bestStreak: 0, round: 0, trucks: 0, perfects: 0, placed: 0, lost: 0, goldens: 0, diamonds: 0, t: 0, shake: 0, belt: [], queue: [], deliverT: 0, undo: [], bay: null, phase: 'in', phaseT: 0, over: false, dead: 0, sent: 0 };
+    G = { score: 0, hearts: 3, streak: 0, bestStreak: 0, round: 0, trucks: 0, perfects: 0, placed: 0, lost: 0, goldens: 0, diamonds: 0, t: 0, shake: 0, belt: [], falls: [], queue: [], deliverT: 0, undo: [], bay: null, phase: 'in', phaseT: 0, over: false, dead: 0, sent: 0 };
     nextTruck(); fx.clear(); render();
   }
   const mult = () => ui.mult(G.streak);
@@ -82,7 +82,7 @@
   function nextTruck() {
     G.round++; const pool = G.round <= TRUCKS.length ? [TRUCKS[G.round - 1]] : TRUCKS.slice(Math.min(2, G.round % 3));
     const tr = pool[Math.floor(Math.random() * pool.length)]; const rows = tr.mask.length, cols = tr.mask[0].length, cs = clamp(Math.floor(104 / cols), 10, 16);
-    const bay = { tr, rows, cols, cs, x: Math.round((W - cols * cs) / 2), y: 38, fill: Array.from({ length: rows }, () => Array(cols).fill(-1)), total: tr.mask.join('').split('#').length - 1, filled: 0, slide: -140 };
+    const bay = { tr, rows, cols, cs, x: Math.round((W - cols * cs) / 2), y: 38, fill: Array.from({ length: rows }, () => Array(cols).fill(-1)), total: tr.mask.join('').split('#').length - 1, filled: 0, slide: -140, pop: {} };
     G.bay = bay; G.belt = []; G.undo = []; cursor.sel = -1;
     const parts = partition(tr.mask); G.queue = parts.map((cells, i) => mkPiece(cells, (i + G.round) % 5));
     if (Math.random() < .08 + RARE * .6 && G.round > 1) G.queue.splice(Math.floor(Math.random() * G.queue.length), 0, mkPiece([[0, 0]], 5, 'gold'));
@@ -103,7 +103,7 @@
     const cells = []; let pts;
     if (p.kind === 'ice') { for (let rr = 0; rr < b.rows; rr++) for (let cc = 0; cc < b.cols; cc++) if (inMask(rr, cc) && b.fill[rr][cc] < 0) { b.fill[rr][cc] = 6; cells.push([rr, cc]); b.filled++; } G.diamonds++; pts = 300; sfx.diamond(); ui.doFlash('#e8fbff'); ui.say('DIAMOND CRATE<small>fills everything that is left!</small>', 'ice'); fx.ring(W / 2, b.y + 20, '#9be8ff', 60); G.shake = 5; }
     else { p.cells.forEach(([dr, dc]) => { b.fill[r + dr][c + dc] = p.ci; cells.push([r + dr, c + dc]); b.filled++; }); pts = p.cells.length * 4; if (p.kind === 'gold') { pts += 50; G.goldens++; sfx.golden(); fx.ring(b.x + (c + .5) * b.cs, b.y + (r + .5) * b.cs, '#ffd23a', 30); } else sfx.clack(4 + G.placed % 6); }
-    cells.forEach(([rr, cc]) => fx.burst(b.x + (cc + .5) * b.cs, b.y + (rr + .5) * b.cs, ['#c9b88a', '#fff6d6'], 2, 20, 40, .25));
+    cells.forEach(([rr, cc]) => { fx.burst(b.x + (cc + .5) * b.cs, b.y + (rr + .5) * b.cs, ['#c9b88a', '#fff6d6'], 2, 20, 40, .25); fx.puff(b.x + (cc + .5) * b.cs, b.y + (rr + 1) * b.cs - 1, '#c9b88a', 1); b.pop[rr * 20 + cc] = 0; });
     G.placed++; G.score += pts; ui.bump(); ui.floatText(b.x + (c + .5) * b.cs, b.y + r * b.cs - 4, '+' + pts, p.kind ? 'gold' : '');
     G.belt.splice(G.belt.indexOf(p), 1); G.undo.push({ p, cells, r, c }); if (G.undo.length > 6) G.undo.shift(); cursor.sel = -1; render();
     checkDone(); return true;
@@ -115,7 +115,7 @@
   }
   function deliver() {
     if (!G.queue.length) return; const p = G.queue.shift(); p.x = W + 18; G.belt.push(p); G.sent++; sfx.tick();
-    if (G.belt.length > BELT_MAX) { const lost = G.belt.shift(); G.lost++; G.shake = 4; sfx.bonk(); ui.floatText(SLOT_X[0], BELT_Y - 4, 'DROPPED!', 'bad'); fx.burst(SLOT_X[0], BELT_Y + 20, ['#8a5a2b', '#c9b88a'], 8, 50, 100, .5); if (cursor.sel >= 0) cursor.sel = -1; }
+    if (G.belt.length > BELT_MAX) { const lost = G.belt.shift(); G.falls.push({ p: lost, x: lost.x, y: BELT_Y + 28, vy: -30 }); G.lost++; G.shake = 4; sfx.bonk(); ui.floatText(SLOT_X[0], BELT_Y - 4, 'DROPPED!', 'bad'); fx.burst(SLOT_X[0], BELT_Y + 20, ['#8a5a2b', '#c9b88a'], 8, 50, 100, .5); if (cursor.sel >= 0) cursor.sel = -1; }
   }
   function checkDone() {
     const b = G.bay; if (b.filled >= b.total) { finishTruck(true); return; }
@@ -131,8 +131,8 @@
     if (ok) {
       G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); G.trucks++; const base = b.filled * 10, pts = Math.round(base * (perfect ? 2 : 1) * mult() * (1 + Math.max(0, G.round) * 0));
       G.score += pts; ui.bump(); sfx.letters(); sfx.golden(); ui.floatText(W / 2, b.y + b.rows * b.cs / 2, `${Math.round(cov * 100)}% +${pts}`, perfect ? 'ice big' : 'gold big'); if (perfect) { G.perfects++; ui.say('PERFECT PACK!<small>x2 · every corner filled</small>', 'ice'); sfx.diamond(); fx.ring(W / 2, b.y + 20, '#9be8ff', 56); } else ui.say(`TRUCK AWAY!<small>${Math.round(cov * 100)}% packed</small>`);
-      fx.burst(W / 2, b.y + 20, ['#ffd23a', '#fff08c', '#74c648'], 20, 90, 60, .9); if (G.streak > 1) ui.pulseCombo(); if (perfect && G.hearts < 3) { G.hearts++; ui.floatText(W / 2, 70, '+HEART', 'gold'); }
-    } else { G.streak = 0; G.hearts--; G.shake = 5; sfx.bonk(); ui.doFlash('#c0392b'); ui.say(`REJECTED<small>only ${Math.round(cov * 100)}% packed</small>`); if (G.hearts <= 0) { G.dead = 1.3; sfx.over(); } }
+      fx.burst(W / 2, b.y + 20, ['#ffd23a', '#fff08c', '#74c648'], 20, 90, 60, .9); fx.confetti(W / 2, b.y + 14, perfect ? 44 : 20); if (perfect) { MG.hitstop(.08); fx.shock(W / 2, b.y + 20, '#9be8ff', 50); } if (G.streak > 1) ui.pulseCombo(); if (perfect && G.hearts < 3) { G.hearts++; ui.floatText(W / 2, 70, '+HEART', 'gold'); }
+    } else { G.streak = 0; G.hearts--; G.shake = 5; MG.hitstop(.08); sfx.bonk(); ui.doFlash('#c0392b'); ui.say(`REJECTED<small>only ${Math.round(cov * 100)}% packed</small>`); if (G.hearts <= 0) { G.dead = 1.3; sfx.over(); } }
     render(!ok);
   }
 
@@ -150,6 +150,9 @@
       if (botOn) botStep(dt);
     }
     G.belt.forEach((p, i) => { p.x += (SLOT_X[i] - p.x) * Math.min(1, dt * 9); });
+    for (const k in G.bay.pop) { G.bay.pop[k] += dt / .32; if (G.bay.pop[k] >= 1) delete G.bay.pop[k]; }
+    for (let i = G.falls.length - 1; i >= 0; i--) { const f = G.falls[i]; f.vy += 420 * dt; f.y += f.vy * dt; f.x -= 14 * dt; if (f.y > H + 30) G.falls.splice(i, 1); }
+    if (G.phase === 'out' && Math.random() < .6) fx.puff(G.bay.x + G.bay.slide - 8, G.bay.y + G.bay.rows * G.bay.cs + 15, 'rgba(190,190,200,.9)', 1);
   }
   let botT = 0;
   function botStep(dt) {
@@ -177,10 +180,10 @@
       const px = b.x + c * b.cs, py = y + r * b.cs;
       if (tr.mask[r][c] !== '#') { g.fillStyle = '#4a4458'; g.fillRect(px, py, b.cs, b.cs); g.fillStyle = '#3a3448'; g.fillRect(px + 1, py + 1, b.cs - 2, b.cs - 2); continue; }
       g.fillStyle = (r + c) % 2 ? '#34200f' : '#2a170b'; g.fillRect(px, py, b.cs, b.cs);
-      const v = b.fill[r][c]; if (v >= 0) g.drawImage(cell(v, b.cs), px, py);
+      const v = b.fill[r][c]; if (v >= 0) { const pt = b.pop[r * 20 + c], off = pt != null ? -Math.round(Math.sin(pt * Math.PI) * 3) : 0; g.drawImage(cell(v, b.cs), px, py + off); if (pt != null && pt < .35) { g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(px + 1, py + 1 + off, b.cs - 2, b.cs - 2); } }
     }
     g.fillStyle = '#e83a3a'; g.fillRect(b.x - 6, y + hh + 2, 4, 4); g.fillRect(b.x + w + 2, y + hh + 2, 4, 4); g.fillStyle = '#b8b8c4'; g.fillRect(b.x, y + hh + 8, w, 3); g.fillStyle = '#1a0f14'; g.fillRect(b.x + Math.round(w / 2) - 8, y + hh + 4, 16, 5); g.fillStyle = '#fff6d6'; g.fillRect(b.x + Math.round(w / 2) - 7, y + hh + 5, 14, 3);
-    g.fillStyle = '#1a0f14'; g.fillRect(b.x - 4, y + hh + 11, 12, 8); g.fillRect(b.x + w - 8, y + hh + 11, 12, 8); g.fillStyle = '#3a3a48'; g.fillRect(b.x - 3, y + hh + 12, 10, 6); g.fillStyle = '#8c8670'; g.fillRect(b.x, y + hh + 14, 4, 2); g.fillRect(b.x + w - 5, y + hh + 14, 4, 2);
+    g.fillStyle = '#1a0f14'; g.fillRect(b.x - 4, y + hh + 11, 12, 8); g.fillRect(b.x + w - 8, y + hh + 11, 12, 8); g.fillStyle = '#3a3a48'; g.fillRect(b.x - 3, y + hh + 12, 10, 6); g.fillStyle = '#8c8670'; const sp = G.phase === 'out' ? Math.floor(G.t * 24) % 3 : 0; g.fillRect(b.x, y + hh + 13 + sp, 4, 2); g.fillRect(b.x + w - 5, y + hh + 13 + sp, 4, 2);
     /* the job's name on the door */
     const name = tr.name, nw = name.length * 4; g.fillStyle = '#1a0f14'; g.fillRect(Math.round(b.x + w / 2 - nw / 2) - 2, y - 14, nw + 3, 8); g.fillStyle = '#fff6d6'; g.fillRect(Math.round(b.x + w / 2 - nw / 2) - 1, y - 13, nw + 1, 6);
     g.fillStyle = '#1a0f14'; name.split('').forEach((ch, k) => { const f = MGArt.FONT[ch]; if (f) f.split('').forEach((bb, i) => { if (bb === '1') g.fillRect(Math.round(b.x + w / 2 - nw / 2) + k * 4 + (i % 3), y - 12 + Math.floor(i / 3), 1, 1); }); });
@@ -203,8 +206,9 @@
       if (drag && drag.p === p) { drawPiece(p, p.x, BELT_Y + 28, 6, .25); return; }
       const [rr, cc] = dims(p.cells), s = Math.min(7, Math.floor(26 / Math.max(rr, cc))); const sel = cursor.sel === i || (G.sel === p);
       if (sel) { g.fillStyle = 'rgba(255,210,58,.3)'; g.fillRect(Math.round(p.x) - 13, BELT_Y + 3, 27, 48); }
-      drawPiece(p, p.x, BELT_Y + 28, s);
+      drawPiece(p, p.x, BELT_Y + 28 + Math.round(Math.sin(G.t * 3 + i * 1.7) * .8), s);
     });
+    for (const f of G.falls) drawPiece(f.p, f.x, f.y, 6);
     if (G.belt.length >= BELT_MAX && Math.floor(G.t * 4) % 2) { g.fillStyle = '#e83a3a'; g.fillRect(3, BELT_Y - 1, 3, 54); }
     /* controls: next-delivery timer + send button, rotate and undo */
     const sx = W - 14, nextT = G.queue.length ? clamp(1 - G.deliverT / interval(), 0, 1) : 0;
