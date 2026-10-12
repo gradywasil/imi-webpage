@@ -10,7 +10,7 @@
 
   function position() {
     const size = 48, travels = IMI.reduceMotion || IMI.fx.low ? [0] : [60, 0];
-    const blockers = [...document.querySelectorAll('#rail, #oTw, #oTray, #oGoal, #oDesks, .o-typist, .tour-bub, button, a, input, select, textarea')]
+    const blockers = [...document.querySelectorAll('#rail, #oTw, #oTray, #oGoal, #oDesks, .o-hopper, .tour-bub, button, a, input, select, textarea')]
       .filter(el => el.getClientRects().length && !el.closest('[hidden]'))
       .map(el => el.getBoundingClientRect());
     const left = (document.querySelector('#rail')?.getBoundingClientRect().right || 0) + 6;

@@ -1,0 +1,14 @@
+/* ============ PIXEL EDITION: extra flash (pairs with pixel-fx.js) ============
+   The canvas is drawn at one pixel per art pixel and scaled up with hard edges. Max adds a static CRT pass over the room: scanlines and a vignette,
+   one layer that never animates. Reduced motion gets none of it. */
+#pfxc { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 405; image-rendering: pixelated; }
+.pfx-word { position: fixed; z-index: 406; pointer-events: none; white-space: nowrap; font-family: var(--font-px); font-size: clamp(18px, 3.6vw, 34px); letter-spacing: 2px; color: var(--c);
+  text-shadow: 3px 0 0 #1a0f14, -3px 0 0 #1a0f14, 0 3px 0 #1a0f14, 0 -3px 0 #1a0f14, 3px 3px 0 #1a0f14, -3px 3px 0 #1a0f14, 3px -3px 0 #1a0f14, -3px -3px 0 #1a0f14, 0 6px 0 #1a0f14; }
+.pfx-stop, .pfx-stop * { animation-play-state: paused !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-fxmax] .o-stagewrap::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px), radial-gradient(ellipse 75% 70% at 50% 45%, transparent 55%, rgba(6,14,10,.55)); }
+  html[data-fxmax] .o-stage[data-heat="3"] .o-tw { animation: pfx-rumble .12s steps(2) infinite alternate; }
+  @keyframes pfx-rumble { from { translate: -3px 0; } to { translate: 3px 0; } }
+}

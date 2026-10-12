@@ -1,9 +1,9 @@
 /* Service worker: makes the site installable and playable offline.
    Network first (so a deploy is picked up as soon as you are online), falling back to the last copy we saw.
    The game shell is stored up front; everything else (library texts, archives, fonts) is stored the first time it is used. */
-const VERSION = 'imi-v6';
-const SHELL = ['./', 'index.html', 'classic.html', 'library.html', 'styles.css', 'classic.css', 'ops.css', 'pickups.css', 'library.css',
-  'economy.js', 'core.js', 'app.js', 'classic.js', 'pixel.js', 'ops.js', 'tour.js', 'pickups.js', 'weather.js', 'mood.js', 'world.js', 'style-swap.js', 'readers.js', 'readers-kids.js', 'readers-w5.js', 'readers-w7.js', 'readers-w9.js', 'library.js', 'pwa.js',
+const VERSION = 'imi-v11';
+const SHELL = ['./', 'index.html', 'classic.html', 'library.html', 'styles.css', 'classic.css', 'ops.css', 'pickups.css', 'classic-fx.css', 'pixel-fx.css', 'library.css',
+  'economy.js', 'core.js', 'app.js', 'classic.js', 'classic-fx.js', 'pixel-fx.js', 'pixel.js', 'crew-art.js', 'crew-svg.js', 'ops.js', 'tour.js', 'pickups.js', 'weather.js', 'mood.js', 'world.js', 'style-swap.js', 'readers.js', 'readers-kids.js', 'readers-w5.js', 'readers-w7.js', 'readers-w9.js', 'library.js', 'pwa.js',
   'manifest.webmanifest', 'favicon.ico', 'icons/favicon-32.png', 'icons/favicon-48.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 const RUNTIME = VERSION + '-runtime', MAX_RUNTIME = 300;
 

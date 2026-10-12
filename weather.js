@@ -65,6 +65,17 @@
     });
     return out;
   }
+  /* the side rail, department pages and the desk strip are a roof: rain splashes on their top edge and never falls across the text */
+  function shelters() {
+    if (document.documentElement.dataset.screen !== 'game') return [];
+    const out = [];
+    document.querySelectorAll('#rail, .o-pane:not([hidden]):not(#o-floor), .o-wrap:not([data-tab="floor"]) .o-desks').forEach(el => {
+      const r = el.getBoundingClientRect(); if (r.width && r.bottom > 0 && r.top < H) out.push(r);
+    });
+    return out;
+  }
+  let surfC = [], roofC = [], rectsAt = -1;
+  addEventListener('resize', () => { rectsAt = -1; });
   function splash(x, y, n) {
     for (let k = 0; k < n && splashes.length < 420; k++) splashes.push({ x, y, vx: rand(-90, 90), vy: -rand(90, 230), age: 0, max: rand(.25, .5) });
   }
@@ -79,11 +90,13 @@
       carry -= 1; const z = rand(.55, 1);
       drops.push({ x: rand(-120, W + 120) - lv.wind * .6, y: rand(-30, -4), vy: rand(700, 980) * z, vx: lv.wind * rand(.85, 1.15) * z, z });
     }
-    const surf = (Weather.state > 0 || drops.length) ? surfaces() : [];
+    if (Weather.state > 0 || drops.length) { if (t - rectsAt > .5 || t < rectsAt) { rectsAt = t; surfC = surfaces(); roofC = shelters(); } } else { surfC = roofC = []; }   // measured twice a second, not every frame: each read forces a layout
+    const surf = surfC, roof = drops.length ? roofC : [];
     for (let i = drops.length - 1; i >= 0; i--) {
       const d = drops[i], py = d.y; d.x += d.vx * dt; d.y += d.vy * dt;
       let hit = false;
-      for (const r of surf) if (py <= r.top && d.y >= r.top && d.x >= r.left && d.x <= r.right) { splash(d.x, r.top, 3); hit = true; break; }
+      for (const r of roof) if (d.x >= r.left && d.x <= r.right && d.y >= r.top && d.y <= r.bottom) { if (py <= r.top) splash(d.x, r.top, 2); hit = true; break; }
+      if (!hit) for (const r of surf) if (py <= r.top && d.y >= r.top && d.x >= r.left && d.x <= r.right) { splash(d.x, r.top, 3); hit = true; break; }
       if (!hit && level > 1) { const sy = H - level + waveBase(d.x, t); if (d.y >= sy) { if (ripples.length < 16 && Math.random() < .4) ripples.push({ x: d.x, age: 0, amp: rand(.8, 2) }); splash(d.x, sy, 1); hit = true; } }
       else if (!hit && d.y >= H - 3) { splash(d.x, H - 3, 2); hit = true; }
       if (hit || d.y > H + 60 || d.x < -260 || d.x > W + 260) { drops[i] = drops[drops.length - 1]; drops.pop(); }

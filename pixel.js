@@ -26,6 +26,9 @@
     far1: ['#134a2a', '#1d6a38', '#2e8a48'], far2: ['#1a5e36', '#27804a', '#3da05a'],
     drop: ['#3a8ec8', '#7ec8f0', '#d6f0ff'], star: ['#c8b84a', '#fff7b0', '#ffffff'],
     sky: ['#4a98c8', '#7ed0f4', '#c8ecff'], blue: ['#1c2c78', '#2e44a8', '#5470d8'], storm: ['#252b45', '#454f6e', '#6a7796'],
+    /* the six machines (ops.js DESKS colours) */
+    dmint: ['#2f8a5a', '#78d9a0', '#c4f4d4'], drose: ['#a8456a', '#f08aa4', '#ffd0dc'], dblue: ['#2c62a8', '#5fa8f0', '#bfe0ff'],
+    damber: ['#a8681a', '#f2b23a', '#ffe28a'], dorchid: ['#6a48a8', '#b58cf0', '#e4d4ff'], dmoon: ['#7a80a0', '#dfe3f2', '#ffffff'],
   };
   const ramps = [null], R = {};
   for (const k in DEF) { R[k] = ramps.length; ramps.push(DEF[k].map(rgb)); }
@@ -333,6 +336,109 @@
     px.shape(poly([[13, 1], [14.5, 2.5], [8, 10], [5, 11], [6, 8]]), R.white, 1);
     px.shape(cap(5.5, 10.5, 2, 14.5, .8), R.ink, 2);
   }));
+
+  /* ---------- card art for the department pages (ops.js ICO_PX): upgrades, deals, shop tools, and every machine at each restoration ---------- */
+  const keycap = (px, x, y, w = 8, h = 7) => { px.shape(box(x, y + 1, w, h - 1), R.gray, 1); px.shape(box(x, y, w, h - 2), R.paper, 2); };
+  reg('u-fing', make(16, 16, px => {
+    px.shape(or(ell(9, 11, 4.2, 3.6), box(5, 9, 8, 4)), R.skin, 1); px.shape(cap(7, 9, 7, 2.5, 1.3), R.skin, 2);
+    px.shape(or(box(12, 3, 3, 1), box(11, 6, 4, 1)), R.white, 3);
+  }));
+  reg('u-rapid', make(16, 16, px => { keycap(px, 2, 6, 12, 9); px.shape(poly([[9, 1], [5, 8.5], [8, 8.5], [6.5, 14], [11.5, 6.5], [8.5, 6.5]]), R.banY, 3); }));
+  reg('u-vowel', make(16, 16, px => {
+    keycap(px, 2, 3, 12, 12);
+    px.shape(or(cap(5.5, 12, 8, 5, .7), cap(10.5, 12, 8, 5, .7), box(6.3, 9.4, 3.6, 1)), R.leafD, 3);
+  }));
+  reg('u-ink', make(16, 16, px => {
+    px.shape(or(box(4, 6, 8, 9), ell(8, 6.5, 4, 1.6)), R.blue, 1); px.shape(box(6, 2, 4, 3.5), R.metal, 2);
+    px.shape(box(5, 9, 6, 3), R.paper, 3); px.shape(ell(8, 10.5, 1, 1), R.blue, 4);
+  }));
+  reg('u-practice', make(16, 16, px => {
+    px.shape(poly([[1, 4], [7.5, 5], [7.5, 14], [1, 13]]), R.paper, 1); px.shape(poly([[8.5, 5], [15, 4], [15, 13], [8.5, 14]]), R.paper, 1);
+    px.shape(box(7.5, 5, 1, 9.5), R.woodD, 2);
+    [7, 9, 11].forEach(y => { px.shape(box(2.5, y, 4, .8), R.ink, 3); px.shape(box(9.5, y, 4, .8), R.ink, 3); });
+  }));
+  reg('u-stock', make(16, 16, px => {
+    px.shape(box(2, 6, 12, 9), R.woodL, 1); px.shape(or(box(2, 9.5, 12, 1), box(2, 12.5, 12, 1)), R.wood, 2);
+    px.shape(box(4, 2, 8, 4.5), R.paper, 3); px.shape(box(5, 3.5, 6, .8), R.ink, 4);
+  }));
+  reg('u-ribbon', make(16, 16, px => {
+    px.shape(or(ell(4.5, 9, 3.6, 3.6), ell(11.5, 9, 3.6, 3.6)), R.metal, 1);
+    px.shape(or(ell(4.5, 9, 2.4, 2.4), ell(11.5, 9, 2.4, 2.4)), R.red, 2); px.shape(box(4.5, 6.6, 7, 1.3), R.red, 3);
+    px.shape(or(ell(4.5, 9, .8, .8), ell(11.5, 9, .8, .8)), R.ink, 4);
+  }));
+  reg('d-reprints', make(16, 16, px => {
+    px.shape(box(2, 11, 12, 3), R.red, 1); px.shape(box(3, 7.5, 11, 3), R.blue, 2); px.shape(box(2, 4, 12, 3), R.banY, 3);
+    [12, 8.5, 5].forEach(y => px.shape(box(11, y, 2, 1), R.paper, 4));
+  }));
+  reg('d-tour', make(16, 16, px => {
+    px.shape(box(7, 3, 2, 12.5), R.woodD, 1);
+    px.shape(poly([[3, 3], [12, 3], [14, 5], [12, 7], [3, 7]]), R.woodL, 2); px.shape(poly([[13, 8], [4, 8], [2, 10], [4, 12], [13, 12]]), R.wood, 2);
+  }));
+  reg('d-translations', make(16, 16, px => {
+    px.shape(ell(8, 8, 6.6, 6.6), R.drop, 1);
+    px.shape(or(ell(5.5, 6, 2.6, 2), ell(10.5, 10.5, 2.4, 2.6), ell(11, 4.5, 1.4, 1)), R.leaf, 2);
+  }));
+  reg('d-clubs', make(16, 16, px => {
+    px.shape(or(ell(6, 6, 5, 3.6), poly([[3, 8], [5, 8], [2, 11.5]])), R.white, 1);
+    px.shape(or(ell(10.5, 10, 4.4, 3.2), poly([[12, 12], [14, 12], [14.5, 15]])), R.banIn, 2);
+    [4, 6, 8].forEach(x => px.dot(x, 6, R.ink, 1, 3));
+  }));
+  reg('d-option', make(16, 16, px => {
+    px.shape(box(2, 7, 12, 8), R.ink, 1); px.shape(poly([[2, 3.5], [13.5, 1], [14, 4], [2.5, 6.5]]), R.ink, 2);
+    [[4, 3.5], [8, 2.6], [12, 1.8]].forEach(([x, y]) => px.shape(poly([[x, y], [x + 1.6, y - .4], [x + 2.4, y + 2.4], [x + .8, y + 2.8]]), R.white, 3));
+    px.shape(box(3.5, 9, 9, 1), R.white, 3);
+  }));
+  reg('s-hold', make(16, 16, px => { keycap(px, 1, 9, 14, 6); px.shape(cap(8, 2, 8, 8.5, 1.8), R.skin, 3); px.shape(or(box(3, 5, 2, 1), box(11, 5, 2, 1)), R.white, 4); }));
+  reg('s-metro', make(16, 16, px => {
+    px.shape(poly([[5, 1.5], [11, 1.5], [14, 15], [2, 15]]), R.wood, 1); px.shape(poly([[6.5, 4], [9.5, 4], [11, 13], [5, 13]]), R.woodL, 2);
+    px.shape(cap(8, 12, 11, 3.5, .6), R.metal, 3); px.shape(box(9.6, 5.5, 2.4, 1.6), R.banY, 4);
+  }));
+  reg('s-dbl', make(16, 16, px => { keycap(px, 0.5, 6, 7, 8); keycap(px, 8.5, 6, 7, 8); px.shape(or(cap(4, 1, 4, 5, 1.2), cap(12, 1, 12, 5, 1.2)), R.skin, 3); }));
+  reg('s-contracts', make(16, 16, px => {
+    px.shape(box(3, 2.5, 10, 11.5), R.paper, 1); px.shape(or(ell(3, 2.5, 1.6, 1.4), ell(13, 14, 1.6, 1.4)), R.woodL, 2);
+    [5, 7, 9].forEach(y => px.shape(box(5, y, 6, .8), R.ink, 3)); px.shape(ell(10.5, 11.5, 2, 2), R.red, 4);
+  }));
+  reg('s-lamp', make(16, 16, px => {
+    px.shape(poly([[4, 2], [12, 2], [14.5, 8], [1.5, 8]]), R.banY, 1); px.shape(box(7, 8, 2, 5), R.metal, 2);
+    px.shape(box(3.5, 13, 9, 2.5), R.woodD, 3); px.shape(box(6, 8, 4, 1.2), R.fruit, 4);
+  }));
+  reg('s-agent', make(16, 16, px => {
+    px.shape(box(1.5, 5.5, 13, 9.5), R.woodD, 1); px.shape(sub(box(5, 2, 6, 4), box(6.5, 3.5, 3, 2.5)), R.woodD, 2);
+    px.shape(box(1.5, 9, 13, 1), R.wood, 3); px.shape(box(7, 8.5, 2, 2.5), R.banY, 4);
+  }));
+  reg('s-analyst', make(16, 16, px => {
+    px.shape(box(1.5, 1.5, 13, 13), R.paper, 1);
+    px.shape(box(3.5, 9, 2.4, 4), R.banG, 2); px.shape(box(7, 7, 2.4, 6), R.banG, 2); px.shape(box(10.5, 4.5, 2.4, 8.5), R.banG, 2);
+    px.shape(or(cap(3.5, 8, 7.5, 5.5, .55), cap(7.5, 5.5, 12.5, 3, .55)), R.red, 3);
+  }));
+  reg('s-baro', make(16, 16, px => {
+    px.shape(ell(8, 8, 7, 7), R.wood, 1); px.shape(ell(8, 8, 5, 5), R.paper, 2);
+    px.shape(cap(8, 8, 11, 5, .6), R.red, 3); px.shape(ell(8, 8, 1, 1), R.ink, 4);
+    [[4.5, 8], [8, 4.5], [11.5, 8]].forEach(([x, y]) => px.dot(x, y, R.ink, 1, 4));
+  }));
+  reg('s-pub', make(16, 16, px => {
+    px.shape(box(6.5, 1.5, 3, 7), R.wood, 1); px.shape(ell(8, 2.5, 2.6, 1.8), R.woodL, 2);
+    px.shape(box(3, 8.5, 10, 3), R.woodD, 3); px.shape(box(2, 12.5, 12, 2.5), R.red, 4);
+  }));
+  reg('s-garden', make(16, 16, px => {
+    px.shape(poly([[3, 9], [13, 9], [11.5, 15], [4.5, 15]]), R.woodL, 1); px.shape(box(2.5, 8.5, 11, 2), R.wood, 2);
+    px.shape(cap(8, 9, 8, 4, .7), R.leafD, 3); px.shape(or(ell(5.5, 4.5, 2.6, 1.4), ell(10.5, 3.5, 2.6, 1.4)), R.leaf, 4);
+  }));
+  reg('s-keeper', make(16, 16, px => {
+    px.shape(box(1.5, 8, 13, 7), R.woodL, 1); px.shape(box(2.5, 9, 11, 2), R.wood, 2);
+    [[3, 4], [7, 2.5], [11, 4.5]].forEach(([x, y]) => px.shape(box(x, y, 3, 4), R.paper, 3));
+    px.dot(4, 5.5, R.ink, 1, 4); px.dot(8, 4, R.ink, 1, 4); px.dot(12, 6, R.ink, 1, 4);
+  }));
+  /* a machine per desk colour and restoration: Mk II adds brass trim, Mk III a gold bell and a shine */
+  ['mint', 'rose', 'blue', 'amber', 'orchid', 'moon'].forEach(c => [0, 1, 2].forEach(mk => reg(`tw-${c}-${mk}`, make(26, 20, px => {
+    const body = R['d' + c];
+    px.shape(box(6, 1, 14, 6), R.paper, 1); px.shape(or(box(7, 3, 9, .8), box(7, 4.8, 6, .8)), R.ink, 2);
+    px.shape(box(2, 6, 22, 2.4), mk ? R.banY : R.metal, 3); px.shape(or(ell(2, 7.2, 1.8, 1.8), ell(24, 7.2, 1.8, 1.8)), R.ink, 4);
+    px.shape(poly([[3, 9], [23, 9], [25, 19], [1, 19]]), body, 3);
+    if (mk) px.shape(box(2.6, 17, 21, 1), R.banY, 4);
+    for (let r = 0; r < 3; r++) for (let k = 0; k < 7 - r; k++) px.dot(5 + r + k * 2.6, 11 + r * 2.2, R.paper, 2, 5);
+    if (mk >= 2) { px.shape(ell(21.5, 4, 1.8, 1.6), R.banY, 5); px.dot(4, 10, R.star, 2, 6); px.dot(5, 10, R.star, 2, 6); }
+  }))));
 
   /* ---------- 9-slice frames (16x16, slice 6) ---------- */
   function frame(ring, corners, nails) {

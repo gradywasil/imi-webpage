@@ -248,7 +248,7 @@ window.Core = (() => {
       const cur = (window.StyleSwap && StyleSwap.current) || art.edition;
       const row = (label, body) => `<div class="set-row"><span class="set-lab">${label}</span>${body}</div>`;
       pop.innerHTML = row('Style', `<span class="set-seg"><button type="button" data-style="pixel" aria-pressed="${cur === 'pixel'}">Pixel</button><button type="button" data-style="classic" aria-pressed="${cur === 'classic'}">Classic</button></span>`)
-        + row('Effects', '<span class="set-seg" title="Low turns off looping decoration and trims particles so the game runs smoother. Auto switches to Low on weak phones or when the game cannot hold its frame rate.">' + ['auto', 'high', 'low'].map(m => `<button type="button" data-fx="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join('') + '</span>')
+        + row('Effects', '<span class="set-seg" title="Max adds glow, extra particles, trails and screen shake for fast machines. Low turns off looping decoration and trims particles so the game runs smoother. Auto switches to Low on weak phones or when the game cannot hold its frame rate; it never picks Max.">' + ['auto', 'max', 'high', 'low'].map(m => `<button type="button" data-fx="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join('') + '</span>')
         + row('Sound', '<button type="button" class="set-btn" data-set="sound"></button>')
         + row('Tutorial', '<button type="button" class="set-btn" data-set="tour">Replay</button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
         + row('Tips', '<button type="button" class="set-btn" data-set="tips"></button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
@@ -299,16 +299,19 @@ window.Core = (() => {
     const emit = (n, d) => { (bus[n] || []).slice().forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
 
     /* ---------- effects level ----------
+       Max = High plus the heavy extras (html[data-fxmax], IMI.fx.max): glow, more particles, trails, screen shake. Only ever chosen by hand.
        High = everything. Low = no looping decoration (CSS keys off html[data-fx="low"]), fewer particles, lighter typist drawing (ops.js reads IMI.fx.low).
        Auto (the default) starts on Low for very weak phones, and drops to Low if the frame rate stays poor while you play; it never switches back up on its own. */
     const FXK = 'imi-fx', FXA = 'imi-fx-auto';
-    const fx = { mode: 'auto', low: false };
+    const fx = { mode: 'auto', low: false, max: false };
     const weakDevice = () => (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
     function applyFx() {
-      const m = localStorage.getItem(FXK), was = fx.low; fx.mode = m === 'high' || m === 'low' ? m : 'auto';
+      const m = localStorage.getItem(FXK), was = fx.low, wasMax = fx.max; fx.mode = m === 'high' || m === 'low' || m === 'max' ? m : 'auto';
       fx.low = fx.mode === 'low' || (fx.mode === 'auto' && (localStorage.getItem(FXA) === '1' || !!weakDevice()));
+      fx.max = fx.mode === 'max';
       html.dataset.fx = fx.low ? 'low' : 'high';
-      if (fx.low !== was) emit('fx', { low: fx.low });
+      if (fx.max) html.dataset.fxmax = ''; else delete html.dataset.fxmax;
+      if (fx.low !== was || fx.max !== wasMax) emit('fx', { low: fx.low, max: fx.max });
     }
     function paintFx() {
       document.querySelectorAll('.set-pop [data-fx]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.fx === fx.mode)); if (b.dataset.fx === 'auto') b.textContent = fx.mode === 'auto' && fx.low ? 'Auto: Low' : 'Auto'; });
@@ -337,7 +340,7 @@ window.Core = (() => {
       on, off, emit,
       edition: art.edition, reduceMotion, sfx, centerOf, fmt, fmtRate, exact, say, banner, heroSay: art.heroSay,
       fx, setFx, bananaEl: art.bananaEl, forecastText,
-      burst: (x, y, names, n = 12) => art.burst(x, y, names, fx.low ? Math.max(2, Math.ceil(n / 3)) : n),     // Low: a third of the particles
+      burst: (x, y, names, n = 12) => art.burst(x, y, names, fx.low ? Math.max(2, Math.ceil(n / 3)) : fx.max ? Math.round(n * 1.6) : n),     // Low: a third of the particles, Max: more
       fall: (x, y, name, life) => { if (fx.low && Math.random() < .5) return; art.fall(x, y, name, life); },
       bananas: { get: () => score, add: n => { score += n; paintScore(false); }, spend, earn, watch: f => watchers.push(f) },
       screen: () => html.dataset.screen,

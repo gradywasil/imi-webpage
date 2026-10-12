@@ -997,28 +997,28 @@ body.night .o-wall { filter: brightness(.6) saturate(.8); }
 .o-stage[data-desk="mint"] .o-prop::after { left: calc(2% + 12px); bottom: 220px; width: 30px; height: 12px; background: #74c648; clip-path: polygon(0 50%, 100% 0, 70% 100%); }
 
 /* Hibiscus Ribbon: blush wallpaper sprinkled with flowers */
-.o-stage[data-desk="rose"] .o-wall { background: radial-gradient(circle, #f08aa4 0 3px, #ffd23a 3px 4px, transparent 5px) 0 0 / 46px 46px, radial-gradient(circle, rgba(240,138,164,.5) 0 2px, transparent 3px) 23px 23px / 46px 46px, linear-gradient(180deg, #4a1a2c, #2e0f1c); }
+:is(.o-stage, .o-room)[data-desk="rose"] .o-wall { background: radial-gradient(circle, #f08aa4 0 3px, #ffd23a 3px 4px, transparent 5px) 0 0 / 46px 46px, radial-gradient(circle, rgba(240,138,164,.5) 0 2px, transparent 3px) 23px 23px / 46px 46px, linear-gradient(180deg, #4a1a2c, #2e0f1c); }
 .o-stage[data-desk="rose"] .o-prop::before { right: 4%; bottom: 66px; width: 46px; height: 38px; background: #b5602a; clip-path: polygon(10% 0, 90% 0, 78% 100%, 22% 100%); box-shadow: inset 0 6px 0 #8a4420; }
 .o-stage[data-desk="rose"] .o-prop::after { right: calc(4% - 10px); bottom: 100px; width: 66px; height: 50px; background: radial-gradient(circle at 30% 50%, #ff5d73 0 10px, transparent 11px), radial-gradient(circle at 70% 40%, #f08aa4 0 12px, transparent 13px), radial-gradient(circle at 50% 70%, #2f8a35 0 14px, transparent 15px); }
 
 /* Lagoon Sprint: sea-glass walls, a window onto the water */
-.o-stage[data-desk="blue"] .o-wall { background: repeating-linear-gradient(170deg, transparent 0 22px, rgba(160,220,255,.07) 22px 26px), linear-gradient(180deg, #0c3448, #072230); }
+:is(.o-stage, .o-room)[data-desk="blue"] .o-wall { background: repeating-linear-gradient(170deg, transparent 0 22px, rgba(160,220,255,.07) 22px 26px), linear-gradient(180deg, #0c3448, #072230); }
 .o-stage[data-desk="blue"] .o-win-sky { background: radial-gradient(circle at 74% 28%, #fff6a0 0 9px, transparent 10px), linear-gradient(180deg, #7fd0ff 0 46%, #2b8fd0 46% 60%, #1d6fb0 60% 76%, #145590 76%) !important; }
 .o-stage[data-desk="blue"] .o-prop::before { right: 5%; bottom: 74px; width: 54px; height: 54px; border: 6px solid #b5602a; border-radius: 50%; box-shadow: inset 0 0 0 4px #fff6d6, 0 0 0 3px #1a0f14; }
 
 /* Honeycomb Ledger: honeycomb wallpaper and a honey pot */
-.o-stage[data-desk="amber"] .o-wall { background: radial-gradient(circle at 50% 50%, transparent 0 9px, rgba(255,200,80,.12) 9px 11px, transparent 12px) 0 0 / 26px 22px, radial-gradient(circle at 50% 50%, transparent 0 9px, rgba(255,200,80,.12) 9px 11px, transparent 12px) 13px 11px / 26px 22px, linear-gradient(180deg, #3e2a0a, #241604); }
+:is(.o-stage, .o-room)[data-desk="amber"] .o-wall { background: radial-gradient(circle at 50% 50%, transparent 0 9px, rgba(255,200,80,.12) 9px 11px, transparent 12px) 0 0 / 26px 22px, radial-gradient(circle at 50% 50%, transparent 0 9px, rgba(255,200,80,.12) 9px 11px, transparent 12px) 13px 11px / 26px 22px, linear-gradient(180deg, #3e2a0a, #241604); }
 .o-stage[data-desk="amber"] .o-prop::before { right: 5%; bottom: 66px; width: 44px; height: 44px; background: radial-gradient(circle at 35% 30%, #ffe680 0 6px, #f2b23a 7px 70%, #b57d1a 71%); border-radius: 40% 40% 30% 30%; box-shadow: 0 -10px 0 -14px #000; }
 .o-stage[data-desk="amber"] .o-prop::after { right: calc(5% + 8px); bottom: 106px; width: 28px; height: 10px; background: #8a5a2b; box-shadow: 0 0 0 2px #1a0f14; }
 
 /* Orchid Imperial: violet damask and heavy curtains */
-.o-stage[data-desk="orchid"] .o-wall { background: radial-gradient(ellipse 8px 12px, rgba(220,190,255,.14) 0 6px, transparent 7px) 0 0 / 34px 40px, radial-gradient(ellipse 8px 12px, rgba(220,190,255,.14) 0 6px, transparent 7px) 17px 20px / 34px 40px, linear-gradient(180deg, #2c1a44, #1a0e2c); }
+:is(.o-stage, .o-room)[data-desk="orchid"] .o-wall { background: radial-gradient(ellipse 8px 12px, rgba(220,190,255,.14) 0 6px, transparent 7px) 0 0 / 34px 40px, radial-gradient(ellipse 8px 12px, rgba(220,190,255,.14) 0 6px, transparent 7px) 17px 20px / 34px 40px, linear-gradient(180deg, #2c1a44, #1a0e2c); }
 .o-stage[data-desk="orchid"] .o-prop::before, .o-stage[data-desk="orchid"] .o-prop::after { top: 0; bottom: 0; width: 8%; background: repeating-linear-gradient(90deg, #7a3fb0 0 10px, #5a2a88 10px 16px); box-shadow: inset 0 -16px 0 #ffd23a; }
 .o-stage[data-desk="orchid"] .o-prop::before { left: 0; }
 .o-stage[data-desk="orchid"] .o-prop::after { right: 0; }
 
 /* Moonflower Grand: midnight walls with stars, a moon always in the window */
-.o-stage[data-desk="moon"] .o-wall { background: radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 2px) 0 0 / 37px 29px, radial-gradient(circle, rgba(223,227,242,.4) 0 1px, transparent 2px) 18px 14px / 53px 41px, linear-gradient(180deg, #141a3a, #0a0d22); }
+:is(.o-stage, .o-room)[data-desk="moon"] .o-wall { background: radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 2px) 0 0 / 37px 29px, radial-gradient(circle, rgba(223,227,242,.4) 0 1px, transparent 2px) 18px 14px / 53px 41px, linear-gradient(180deg, #141a3a, #0a0d22); }
 .o-stage[data-desk="moon"] .o-win-sky { background: radial-gradient(circle at 70% 32%, #fff6d6 0 11px, transparent 12px), radial-gradient(circle, #fff 0 1px, transparent 2px) 0 0 / 17px 15px, linear-gradient(180deg, #0e1640, #1e2c70) !important; }
 .o-stage[data-desk="moon"] .o-prop::before { left: 50%; top: 0; width: 4px; height: 26px; background: #dfe3f2; }
 .o-stage[data-desk="moon"] .o-prop::after { left: calc(50% - 30px); top: 24px; width: 64px; height: 22px; background: radial-gradient(circle, #fff6a0 0 4px, transparent 5px) 0 0 / 16px 22px repeat-x; filter: drop-shadow(0 0 6px rgba(255,246,160,.8)); }
@@ -1507,3 +1507,110 @@ html[data-style="classic"] .toy-eta { font-family: var(--font-display); font-siz
 .o-skycard .o-row { gap: 10px; }
 .o-skycard b { font-weight: 400; min-width: 44px; color: var(--banana, #ffd93b); }
 @media (max-height: 640px) { .o-sky { display: none; } }
+
+/* ---- card art: a picture beside each upgrade, deal, tool and machine heading (sprites in pixel.js, emoji/SVG in classic) ---- */
+.o-card h3:has(> .o-cart) { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.o-cart { flex: none; }
+html[data-style="pixel"] .o-cart { image-rendering: pixelated; filter: drop-shadow(3px 3px 0 rgba(0,0,0,.45)); }
+html[data-style="classic"] .o-cart { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 21px; line-height: 1;
+  background: radial-gradient(circle at 35% 30%, #c08a4a, #7a4a1e 70%); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.25), 0 3px 6px rgba(0,0,0,.35); }
+html[data-style="classic"] .o-cart.tw { width: 54px; height: 40px; border-radius: 10px; background: none; box-shadow: none; filter: drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+@media (prefers-reduced-motion: no-preference) {
+  /* cards you can afford: the picture bobs; hovering a card makes it hop */
+  html[data-fx="high"] .o-card.can .o-cart { animation: o-cart-bob 1.6s ease-in-out infinite; }
+  html[data-fx="high"][data-style="pixel"] .o-card.can .o-cart { animation-timing-function: steps(2); }
+  @keyframes o-cart-bob { 50% { translate: 0 -3px; } }
+  .o-card:hover .o-cart { animation: o-cart-hop .45s cubic-bezier(.3,1.6,.5,1); }
+  html[data-style="pixel"] .o-card:hover .o-cart { animation-timing-function: steps(4); }
+  @keyframes o-cart-hop { 0% { translate: 0 0; rotate: 0deg; } 40% { translate: 0 -7px; rotate: -8deg; } 70% { translate: 0 1px; rotate: 4deg; } 100% { translate: 0 0; rotate: 0deg; } }
+}
+
+/* ---- the crew on the keyboard (ops.js stepTypists): each monkey stands on a key and hops to the letter it types ---- */
+.o-crewlayer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.o-hopper { position: absolute; left: 0; top: 0; will-change: transform; contain: layout style; }
+.o-hopper .o-mk { display: block; transform-origin: 50% 86%; }
+html[data-style="pixel"] .o-hopper canvas { image-rendering: pixelated; }
+
+
+.o-hopper.left .o-mk { scale: -1 1; }
+.o-hopper .o-nm { position: absolute; left: 50%; top: 86%; margin: 0; translate: -50% 0; opacity: .8; }
+.o-hopper .o-say { left: 50%; top: 22%; translate: 0 -100%; }
+html[data-style="pixel"] .o-hopper.shiny canvas { filter: sepia(.5) saturate(2.2) hue-rotate(-12deg) brightness(1.15) drop-shadow(0 0 4px rgba(255,230,120,.9)); }
+html[data-style="classic"] .o-hopper.shiny .o-mk { filter: drop-shadow(0 0 6px rgba(255,214,90,.95)); }
+.o-hopper.shiny .o-nm { border-color: #ffd23a; color: #ffe680; }
+html[data-fx="low"] .o-hopper .o-mk { filter: none !important; }
+/* crew cards: the monkey's look (cropped to the figure) beside its name and trait */
+.o-crewlook { display: flex; align-items: center; gap: 12px; }
+.o-lookpic { flex: none; width: 76px; height: 84px; overflow: hidden; position: relative; }
+.o-lookpic > img, .o-lookpic > svg { position: absolute; width: 128px; height: 128px; left: -26px; top: -14px; }
+html[data-style="pixel"] .o-lookpic img { image-rendering: pixelated; }
+html[data-style="pixel"] .o-crewlook { background: rgba(0,0,0,.25); box-shadow: inset 0 0 0 3px rgba(0,0,0,.35); padding: 4px 8px 4px 4px; }
+html[data-style="classic"] .o-crewlook { background: rgba(255,255,255,.06); border-radius: 14px; padding: 4px 10px 4px 4px; }
+html[data-style="classic"] .o-lookpic { border-radius: 12px; background: radial-gradient(circle at 50% 70%, rgba(255,214,120,.25), transparent 70%); }
+.o-lookname { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.o-lookname b { font-size: 1.05em; color: var(--banana, #ffd93b); }
+html[data-style="pixel"] .o-lookname b { font-family: var(--font-px); font-size: 9px; line-height: 1.6; }
+/* the classic crew's faces: the hopper's data-expr picks the eyes and mouth (crew-svg.js) */
+.cs-wink, .cs-open { display: none; }
+[data-expr="wink"] .cs-eyes { display: none; } [data-expr="wink"] .cs-wink { display: inline; }
+[data-expr="screech"] .cs-smile { display: none; } [data-expr="screech"] .cs-open { display: inline; }
+@media (max-width: 720px) { .o-hopper .o-nm { display: none; } }
+
+/* ============================================================
+   THE ROOM IS THE PAGE: on the Floor the selected machine's room (its wall and desk) fills the whole screen, behind the rail and the
+   strips, and the stage loses its frame and backdrop, so the machine, the crew and the readouts sit in one space instead of a box.
+   ops.js sets html[data-room] (the desk id) on the Floor and --desk-top (the desk surface, measured from the stage so the machine stands on it).
+   ============================================================ */
+.o-room { display: none; position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+html[data-room] .o-room { display: block; }
+html[data-room] #game > :not(.o-room) { position: relative; z-index: 1; }
+.o-room > .o-wall { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 12px, transparent 12px 24px), linear-gradient(180deg, #0f3a26, #0a2a1c); }   /* Bamboo, and the base the others replace */
+:where(html[data-style="classic"]) .o-room > .o-wall { background: radial-gradient(ellipse 70% 60% at 50% 35%, rgba(120,217,160,.12), transparent 70%), linear-gradient(180deg, #1c4a2c, #0c2616); }
+.o-room > .o-desktop { top: var(--desk-top, 78%); height: auto; }
+.o-room > .o-desktop::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 40%; background: radial-gradient(ellipse 40% 100% at 50% 0, rgba(0,0,0,.28), transparent 70%); }   /* the machine's shadow on the desk */
+.o-room.fade > * { animation: o-fade .45s; }
+html[data-room] .o-stage { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; overflow: visible; }
+html[data-room] .o-stage > .o-scene { overflow: visible; }
+html[data-room] .o-stage .o-wall { display: none; }
+html[data-room] .o-stage .o-desktop { visibility: hidden; }        /* kept for its size: the room's desk lines up with it */
+html[data-room] .o-scene::after { display: none; }
+html[data-room] .o-lamp::before { top: -70vh; height: calc(70vh + 34px); }   /* the cord hangs from the top of the screen */
+html[data-room] .o-stage[data-desk="moon"] .o-prop::before { top: -70vh; height: calc(70vh + 26px); }
+html[data-room] .o-stage[data-desk="orchid"] .o-prop::before, html[data-room] .o-stage[data-desk="orchid"] .o-prop::after { top: -70vh; }
+/* the strips float over the room */
+html[data-room][data-style="pixel"] :is(.o-desks .o-desk, .o-focus, .o-info) { background-color: rgba(26,15,20,.62); }
+html[data-room][data-style="pixel"] .o-desk { background: rgba(26,15,20,.62) padding-box; }
+html[data-room][data-style="classic"] :is(.o-desks .o-desk, .o-focus, .o-info) { background: rgba(6,18,10,.42); }
+html[data-room][data-style="pixel"] .rail-in { background: linear-gradient(90deg, rgba(26,15,20,.78), rgba(26,15,20,.6)); border-right-color: rgba(26,15,20,.85); }
+html[data-room][data-style="classic"] .rail-in { background: linear-gradient(180deg, rgba(6,18,10,.7), rgba(6,18,10,.5)); }
+/* indoors: the rain is seen through the window, not falling across the room (lightning still flashes) */
+html[data-screen="game"][data-room] .wx-rain { visibility: hidden; }
+html[data-room] :is(.o-ticker, .o-desks, .o-focus, .o-info) { position: relative; z-index: 7; }   /* the strips sit above the lamp cord and props */
+html[data-room][data-style="pixel"] .o-ticker { background-color: rgba(26,15,20,.62); }
+html[data-room][data-style="classic"] .o-ticker { background: rgba(6,18,10,.42); }
+
+/* ---- rarity: Common, Rare (blue), Epic (violet), Legendary (gold) ---- */
+.o-rar.r-c { opacity: .8; } .o-rar.r-r { color: #5fc8ff; border-color: #5fc8ff; } .o-rar.r-e { color: #c9a0ff; border-color: #c9a0ff; } .o-rar.r-l { color: #ffd23a; border-color: #ffd23a; }
+.o-card[data-r="r"] .o-lookpic { box-shadow: inset 0 0 0 3px #5fc8ff; } .o-card[data-r="e"] .o-lookpic { box-shadow: inset 0 0 0 3px #c9a0ff, inset 0 0 18px rgba(201,160,255,.45); } .o-card[data-r="l"] .o-lookpic { box-shadow: inset 0 0 0 3px #ffd23a, inset 0 0 22px rgba(255,210,58,.55); }
+.o-rarh.r-r { color: #5fc8ff; } .o-rarh.r-e { color: #c9a0ff; } .o-rarh.r-l { color: #ffd23a; }
+/* the look book */
+.o-looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.o-lookcard { align-items: center; text-align: center; gap: 6px; }
+.o-lookcard b { color: var(--banana, #ffd93b); line-height: 1.25; }
+html[data-style="pixel"] .o-lookcard b { font-family: var(--font-px); font-size: 9px; line-height: 1.6; }
+.o-lookcard .o-lookpic { width: 96px; height: 96px; }
+.o-lookcard .o-lookpic > img, .o-lookcard .o-lookpic > svg { width: 160px; height: 160px; left: -32px; top: -18px; }
+.o-lookcard.veiled .o-lookpic { background: rgba(255,246,214,.1); }
+.o-lookcard.veiled .o-lookpic > * { filter: brightness(0) opacity(.7); }
+.o-lookcard.veiled b { color: inherit; opacity: .6; }
+@media (prefers-reduced-motion: no-preference) {
+  html[data-fx="high"] .o-lookcard[data-r="l"]:not(.veiled) .o-lookpic { animation: o-legend 2.4s ease-in-out infinite alternate; }
+  html[data-fx="high"][data-style="pixel"] .o-lookcard[data-r="l"]:not(.veiled) .o-lookpic { animation-timing-function: steps(4); }
+  @keyframes o-legend { to { box-shadow: inset 0 0 0 3px #fff6a0, inset 0 0 30px rgba(255,230,120,.8); } }
+}
+/* on the floor: a glow under rare looks (a gradient, not a filter, so it stays cheap) */
+.o-hopper[data-r="r"]::before, .o-hopper[data-r="e"]::before, .o-hopper[data-r="l"]::before { content: ''; position: absolute; left: 22%; right: 22%; top: 72%; height: 22%; border-radius: 50%; pointer-events: none; z-index: -1; }
+.o-hopper[data-r="r"]::before { background: radial-gradient(closest-side, rgba(95,200,255,.45), transparent); }
+.o-hopper[data-r="e"]::before { background: radial-gradient(closest-side, rgba(201,160,255,.6), transparent); }
+.o-hopper[data-r="l"]::before { background: radial-gradient(closest-side, rgba(255,214,90,.75), transparent); }
+@media (prefers-reduced-motion: no-preference) { html[data-fx="high"] .o-hopper[data-r="l"]::before { animation: o-aura 1.2s ease-in-out infinite alternate; } @keyframes o-aura { from { opacity: .55; scale: .85 1; } to { opacity: 1; scale: 1.15 1; } } }

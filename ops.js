@@ -170,7 +170,7 @@
     up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0 },
     keeper: { owned: i === 0, on: true, def: 0, targets: {}, lv: 0 }
   });
-  const fresh = () => ({ economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  const fresh = () => ({ economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
   let S = (() => {
     try {
       const saved = Economy.loadState();
@@ -225,6 +225,66 @@
     scout: { name: 'Scout', desc: 'Spots golden bananas a little sooner.' }
   };
   const TRAIT_IDS = Object.keys(TRAITS);
+  /* thirty looks (crew-art.js in pixel, the vector monkey in classic). The look decides the trait, so a monkey's skill is written on its costume,
+     and every look throws its own particles when it lands on a key (fx.k: the kind, fx.c: colours; pixel-fx.js and classic-fx.js draw them).
+     A hire rolls a random look; a re-roll rolls a new look (and with it the trait) plus a new talent. */
+  const LOOKS = [
+    { id: 'v01', name: 'Stomper Runner', trait: 'speedy', r: 'c', fx: { k: 'dust', c: ['#e8d8b8', '#c9b48a'] } },
+    { id: 'v02', name: 'Southpaw Boxer', trait: 'speedy', r: 'c', fx: { k: 'stars', c: ['#ffd23a', '#fff6d6'] } },
+    { id: 'v03', name: 'Acrobat Gymnast', trait: 'speedy', r: 'c', fx: { k: 'dust', c: ['#ffffff', '#e8eef4'] } },
+    { id: 'v04', name: 'Street Skater', trait: 'speedy', r: 'c', fx: { k: 'dust', c: ['#b58cf0', '#d8c8f0'] } },
+    { id: 'v05', name: 'Velodrome Cyclist', trait: 'speedy', r: 'c', fx: { k: 'dust', c: ['#ffd23a', '#fff08c'] } },
+    { id: 'v06', name: 'Lucha Libre Champion', trait: 'lucky', r: 'e', fx: { k: 'confetti', c: ['#2fd0e0', '#ffd23a', '#ff5d73'] } },
+    { id: 'v07', name: 'Carriage Slammer Dockworker', trait: 'rainy', r: 'c', fx: { k: 'drops', c: ['#7ec8f0', '#d6f0ff'] } },
+    { id: 'v08', name: 'Iron Forge Blacksmith', trait: 'vowel', r: 'c', fx: { k: 'sparks', c: ['#ff9a3a', '#ffd23a', '#fff6d6'] } },
+    { id: 'v09', name: 'Carbide Miner', trait: 'owl', r: 'c', fx: { k: 'dust', c: ['#3a3a44', '#6a6a78'] } },
+    { id: 'v10', name: 'Timber Carpenter', trait: 'vowel', r: 'c', fx: { k: 'chips', c: ['#c08a4a', '#e8b878', '#8a5a2b'] } },
+    { id: 'v11', name: 'Arc Welder', trait: 'vowel', r: 'r', fx: { k: 'sparks', c: ['#9fe8ff', '#ffffff', '#5fa8f0'] } },
+    { id: 'v12', name: 'Steam Railroad Engineer', trait: 'owl', r: 'c', fx: { k: 'steam', c: ['#ffffff', '#d8dde4'] } },
+    { id: 'v13', name: 'Platen Inspector', trait: 'scout', r: 'r', fx: { k: 'stars', c: ['#fff6d6', '#ffe680'] } },
+    { id: 'v14', name: 'Tenured Professor', trait: 'wordsmith', r: 'c', fx: { k: 'ink', c: ['#1a0f14', '#3a2a60'] } },
+    { id: 'v15', name: 'Horologist Clockmaker', trait: 'scout', r: 'r', fx: { k: 'chips', c: ['#ffd23a', '#c98f0e', '#d8dde4'] } },
+    { id: 'v16', name: 'Safari Explorer', trait: 'rainy', r: 'c', fx: { k: 'leaves', c: ['#74c648', '#2f8a35', '#c8f08a'] } },
+    { id: 'v17', name: 'High Court Judge', trait: 'wordsmith', r: 'e', fx: { k: 'paper', c: ['#fff6d6', '#ffffff'] } },
+    { id: 'v18', name: 'Scoop Reporter', trait: 'scout', r: 'c', fx: { k: 'paper', c: ['#fff6d6', '#e8e0c8'] } },
+    { id: 'v19', name: 'Grease Mechanic', trait: 'vowel', r: 'c', fx: { k: 'ink', c: ['#1a1a1a', '#5a4a2a'] } },
+    { id: 'v20', name: 'Barnstorm Pilot', trait: 'scout', r: 'r', fx: { k: 'dust', c: ['#ffffff', '#c8ecff'] } },
+    { id: 'v21', name: 'Deep-Sea Diver', trait: 'rainy', r: 'l', fx: { k: 'bubbles', c: ['#9fe0ff', '#d6f0ff'] } },
+    { id: 'v22', name: 'Steampunk Tinkerer', trait: 'wordsmith', r: 'e', fx: { k: 'steam', c: ['#f0e8d8', '#ffd23a'] } },
+    { id: 'v23', name: 'Radio Operator', trait: 'owl', r: 'r', fx: { k: 'notes', c: ['#7be05a', '#5fc8ff'] } },
+    { id: 'v24', name: 'Alchemist', trait: 'wordsmith', r: 'r', fx: { k: 'bubbles', c: ['#b58cf0', '#7be05a'] } },
+    { id: 'v25', name: 'Mischief Sailor', trait: 'rainy', r: 'c', fx: { k: 'drops', c: ['#5fa8f0', '#ffffff'] } },
+    { id: 'v26', name: 'Pirate Captain', trait: 'lucky', r: 'e', fx: { k: 'coins', c: ['#ffd23a', '#c98f0e'] } },
+    { id: 'v27', name: 'Pastry Chef', trait: 'vowel', r: 'r', fx: { k: 'steam', c: ['#ffffff', '#ffe6c8'] } },
+    { id: 'v28', name: 'Stage Magician', trait: 'lucky', r: 'l', fx: { k: 'stars', c: ['#b58cf0', '#ff5d73', '#fff6d6'] } },
+    { id: 'v29', name: 'Shadow Ninja', trait: 'owl', r: 'e', fx: { k: 'smoke', c: ['#2a2a34', '#4a4a58'] } },
+    { id: 'v30', name: 'Lucky Cowboy', trait: 'lucky', r: 'c', fx: { k: 'coins', c: ['#ffd23a', '#e8b878'] } }
+  ];
+  const lookById = id => LOOKS.find(l => l.id === id) || LOOKS[0];
+  /* rarer looks are harder to roll and their trait works harder: every trait's bonus is multiplied by mul (see traitText) */
+  const RARITY = { c: { name: 'Common', odds: .71, mul: 1 }, r: { name: 'Rare', odds: .22, mul: 1.5 }, e: { name: 'Epic', odds: .06, mul: 2 }, l: { name: 'Legendary', odds: .01, mul: 3 } };
+  const rarOf = t => (t && t.look ? lookById(t.look).r : 'c') || 'c';
+  const trMul = t => RARITY[rarOf(t)].mul;
+  const FX_TEXT = { dust: 'Kicks up dust', sparks: 'Throws sparks', stars: 'Sees stars', drops: 'Splashes', bubbles: 'Blows bubbles', steam: 'Lets off steam', smoke: 'Vanishes in smoke', coins: 'Scatters coins', confetti: 'Throws confetti', chips: 'Sheds chips and parts', paper: 'Shuffles papers', ink: 'Splatters ink', leaves: 'Drops leaves', notes: 'Hums a tune' };
+  function traitText(t) {
+    const m = trMul(t), pc = x => Math.round(x * 100) + '%';
+    return { vowel: `Leans toward vowels after a consonant (${pc(Math.min(.9, .3 * m))} of the time).`, wordsmith: `Chases the focused title ${pc(.15 * m)} harder.`, speedy: `Types ${pc(.25 * m)} faster.`,
+      owl: `${pc(.4 * m)} faster at night, 10% slower by day.`, lucky: `${+(5 * m).toFixed(1)}% of presses type two letters.`, rainy: `${pc(.3 * m)} faster in rain, and ignores storms.`,
+      scout: `Spots golden bananas sooner (${pc(.03 * m)} each).` }[t.trait] || TRAITS[t.trait].desc;
+  }
+  const hashStr = str => { let h = 7; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  function rollLook(not) {                                         // draw a rarity first, then a look of that rarity
+    let x = rand(), tier = 'c'; for (const k of ['l', 'e', 'r']) { if (x < RARITY[k].odds) { tier = k; break; } x -= RARITY[k].odds; }
+    let pool = LOOKS.filter(l => l.r === tier && l.id !== not); if (!pool.length) pool = LOOKS.filter(l => l.id !== not);
+    return pool[Math.floor(rand() * pool.length)];
+  }
+  const portraits = {};
+  function lookArt(id, hat = 0) {
+    const k = id + ':' + hat;
+    if (!portraits[k]) portraits[k] = PX ? `<span class="o-lookpic"><img alt="" src="${window.CrewArt ? CrewArt.pose(id, 'idle', { hat }).toDataURL() : ''}"></span>` : `<span class="o-lookpic">${window.CrewSvg ? CrewSvg.svg(id, hat) : '🐒'}</span>`;
+    return portraits[k];
+  }
+  const seeLook = id => { (S.looks || (S.looks = {}))[id] = 1; };
   const LVL_XP = [0, 40, 120, 300, 650, 1300, 2400, 4200, 7000, 11000];
   const levelOf = xp => { let l = 1; while (l < LVL_XP.length && xp >= LVL_XP[l]) l++; return l; };
   const HATS = [
@@ -239,12 +299,18 @@
     const used = new Set(S.desks.flatMap(d => (d.crew || []).map(t => t.name)));
     const free = NAMES.filter(n => !used.has(n));
     const name = free.length ? free[Math.floor(rand() * free.length)] : NAMES[Math.floor(rand() * NAMES.length)] + ' ' + (used.size + 1);
-    return { name, trait: TRAIT_IDS[Math.floor(rand() * TRAIT_IDS.length)], talent: rollTalent(), coach: 0, rerolls: 0, xp: 0, lv: 1, hat: 0, shiny: rand() < .05 };   // 1 in 20 hires is shiny (cosmetic)
+    const look = rollLook(); ui.lastLook = { id: look.id, fresh: !(S.looks || {})[look.id] }; seeLook(look.id);
+    return { name, look: look.id, trait: look.trait, talent: rollTalent(), coach: 0, rerolls: 0, xp: 0, lv: 1, hat: 0, shiny: rand() < .05 };   // 1 in 20 hires is shiny (cosmetic)
   }
   function ensureCrew(d) {
     if (!d.crew) d.crew = [];
     while (d.crew.length < d.paws) d.crew.push(newTypist());
     if (d.crew.length > d.paws) d.crew.length = d.paws;
+    d.crew.forEach(t => {                                          // saves from before looks: dress each monkey in a look that matches the trait it already had
+      if (t.look && LOOKS.some(l => l.id === t.look)) return;
+      const fits = LOOKS.filter(l => l.trait === t.trait), pool = fits.length ? fits : LOOKS, look = pool[hashStr(t.name) % pool.length];
+      t.look = look.id; t.trait = look.trait; seeLook(look.id);
+    });
   }
   /* the sky for the game's rules comes from World (world.js), the same clock that drives the rain and the night class on screen.
      skyOv lets offline catch-up evaluate the sky at the moment it is simulating instead of now. */
@@ -254,11 +320,11 @@
   function typistSpeed(t) {
     if (!t) return 1;
     let m = 1 + .04 * (levelOf(t.xp) - 1);
-    if (t.trait === 'speedy') m *= 1.25;
-    if (t.trait === 'owl') m *= isNight() ? 1.4 : .9;
+    if (t.trait === 'speedy') m *= 1 + .25 * trMul(t);
+    if (t.trait === 'owl') m *= isNight() ? 1 + .4 * trMul(t) : .9;
     if (museOn('poe') && isNight()) m *= 1.25;
     m *= speedPerks() * (1 + ((t.talent || 0) + (t.coach || 0) * COACH_STEP) / 100);        // the monkey's talent roll plus coaching
-    if (t.trait === 'rainy') { if (sky().wx >= 1) m *= 1.3; if (stormy()) m *= 2; }
+    if (t.trait === 'rainy') { if (sky().wx >= 1) m *= 1 + .3 * trMul(t); if (stormy()) m *= 2; }
     return m;
   }
   const maxLevel = () => S.desks.reduce((m, d) => d.crew.reduce((a, t) => Math.max(a, levelOf(t.xp)), m), 1);
@@ -270,8 +336,8 @@
       IMI.sfx.tick();
       const k = typists.findIndex(x => x.ci === p);
       if (S.desks[S.sel] === d && ui.tab === 'floor' && k >= 0) {
-        const ty = typists[k], b = ty.el.querySelector('canvas, .o-mk').getBoundingClientRect(), x = b.left + b.width / 2, y = b.top + b.height / 2;
-        say(ty, 'LEVEL UP!'); ty.hop = 16; IMI.burst(x, y, ['star', 'spark'], 8); shock(x, y, '#7be05a'); floatText('LV ' + l, x, y - 30, '#7be05a', true);
+        const ty = typists[k], x = stageXY[0] + ty.x, y = stageXY[1] + ty.y - keyW;
+        say(ty, 'LEVEL UP!'); jump(ty); IMI.burst(x, y, ['star', 'spark'], 8); shock(x, y, '#7be05a'); floatText('LV ' + l, x, y - 30, '#7be05a', true);
       }
       if (l >= 4) { logIt(`${t.name} reached level ${l}.`); newsPush(`${t.name} has reached level ${l}. The banana is considered a raise.`); }
       mark();
@@ -432,13 +498,13 @@
   /* ================= typing ================= */
   function roll(d, i, auto, ty) {
     const up = d.up, k = d.keeper; let ch = null;
-    if (auto && focusRecipe(d) && rand() < Math.min(.98, UPV.practice[up.practice] + (ty && ty.trait === 'wordsmith' ? .15 : 0))) ch = pick(focusNeeds(d, i).missing);
+    if (auto && focusRecipe(d) && rand() < Math.min(.98, UPV.practice[up.practice] + (ty && ty.trait === 'wordsmith' ? .15 * trMul(ty) : 0))) ch = pick(focusNeeds(d, i).missing);
     if (!ch && auto && k.owned && up.stock && rand() < UPV.stock[up.stock]) ch = pick(completers(d, i, w => target(d, w) > 0 && stock(w) < target(d, w)));
     if (!ch && up.ink && rand() < UPV.ink[up.ink]) ch = pick(completers(d, i, w => !stock(w)));
     if (!ch) {
       const last = rt[i].sheet.slice(-1).toUpperCase();
       const lastCons = last && /[A-Z]/.test(last) && !VOWELS.includes(last);
-      if (lastCons && !chal('vowel') && (up.vowel || (ty && ty.trait === 'vowel') || museOn('dick')) && rand() < Math.max(UPV.vowel[up.vowel], ty && ty.trait === 'vowel' ? .3 : 0, museOn('dick') ? .3 : 0)) ch = pick(Object.fromEntries([...VOWELS].map(v => [v, FREQ[v]])));
+      if (lastCons && !chal('vowel') && (up.vowel || (ty && ty.trait === 'vowel') || museOn('dick')) && rand() < Math.max(UPV.vowel[up.vowel], ty && ty.trait === 'vowel' ? Math.min(.9, .3 * trMul(ty)) : 0, museOn('dick') ? .3 : 0)) ch = pick(Object.fromEntries([...VOWELS].map(v => [v, FREQ[v]])));
       else ch = pick(freqNow());
     }
     return ch;
@@ -450,7 +516,7 @@
     if (!auto && i === S.sel) comboHit();
     const ch = roll(d, i, auto, ty);
     addLetter(d, ch);
-    if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05) addLetter(d, roll(d, i, true, ty)); }
+    if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) addLetter(d, roll(d, i, true, ty)); }
     const st = S.stats; st.letters++; if (!auto) { st.manual++; introProgress(); IMI.emit('tap', { letters: st.letters }); } st.byLetter[ch] = (st.byLetter[ch] || 0) + 1;
     if (stormy()) st.storm++; if (isNight()) st.night++;
     if (!auto && buffOn('golden')) addLetter(d, roll(d, i, false));
@@ -485,6 +551,7 @@
     floatText(m.name + '!', cx, cy, '#ffd23a', true); floatText(m.desc, cx, cy + 46, '#fff6d6');
     IMI.burst(cx, cy, ['spark', 'banana', 'star', 'leaf'], 12 + Math.min(14, m.n / 8)); shock(cx, cy, m.n >= 100 ? '#ff5d73' : '#ffd23a', m.n >= 50); if (m.n >= 50) flash('#fff08c'); if (m.n >= 100) vignette(m.n >= 200 ? '#ff5d73' : '#ffd23a'); shake(m.n >= 100 ? 2 : 1); IMI.sfx.ding(); vib([12, 30, 12]);
     cheer(m.n >= 100 ? 2600 : 1400, m.n >= 100 ? 'WOW!' : 'YAY!');
+    IMI.emit('milestone', { n: m.n, x: cx, y: cy });
     mark();
   }
   function comboHit() {
@@ -503,6 +570,7 @@
       fx.meterAnim = fx.meter.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: 900, easing: PX ? 'steps(9)' : 'linear', fill: 'forwards' });
     }
     if (heat) ember(heat);
+    IMI.emit('combo', { n: combo.n, heat });
     const m = MILES.find(x => x.n === combo.n);
     if (m) { const b = stage.getBoundingClientRect(); award(m, b.left + b.width / 2, b.top + 150); }
     clearTimeout(combo.timer); combo.timer = setTimeout(() => { el.className = 'o-combo'; stage.dataset.heat = 0; combo.n = 0; if (fx && fx.meterAnim) fx.meterAnim.cancel(); mark(); }, 900);
@@ -524,6 +592,7 @@
     const r = document.createElement('i'); r.className = 'o-shock' + (big ? ' big' : tiny ? ' tiny' : '');
     r.style.cssText = `left:${x}px;top:${y}px;--sc:${color || '#ffd23a'}`;
     r.addEventListener('animationend', () => r.remove()); document.body.appendChild(r);
+    IMI.emit('shock', { x, y, color: color || '#ffd23a', big, tiny });
   }
   function flash(color) {
     if (IMI.reduceMotion) return;
@@ -560,7 +629,7 @@
     if (document.querySelector('.o-celebrate')) return;
     const el = document.createElement('div'); el.className = 'o-celebrate'; el.setAttribute('role', 'status');
     el.innerHTML = `<i class="o-cel-burst"></i><div class="o-cel-card"><small>${esc(sub)}</small><b>${esc(title)}</b>${extra || ''}<em>Tap to continue</em></div>`;
-    document.body.appendChild(el); document.body.classList.add('celebrating'); IMI.sfx.triumph && IMI.sfx.triumph(); vib([30, 40, 30, 40, 90]); flash('#fff6d6');
+    document.body.appendChild(el); document.body.classList.add('celebrating'); IMI.sfx.triumph && IMI.sfx.triumph(); vib([30, 40, 30, 40, 90]); flash('#fff6d6'); IMI.emit('celebrate', { title });
     const close = () => { if (!el.isConnected || el.classList.contains('out')) return; el.classList.add('out'); setTimeout(() => { el.remove(); document.body.classList.remove('celebrating'); }, IMI.reduceMotion ? 0 : 420); };
     el.addEventListener('click', close); setTimeout(close, 5600);
     if (!IMI.reduceMotion) for (let k = 0; k < 7; k++) setTimeout(() => {
@@ -953,30 +1022,30 @@
   const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, keeperLv(i)));
   function keeperCard(i, have) {
     const D = DESKS[i], lv = keeperLv(i), max = lv >= KEEPER_UP_MAX, cost = keeperUpCost(i), now = keeperPeriod(i);
-    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${D.name.split(' ')[0]} keeper</h3>${max ? '<span class="o-lvl">MAXED</span>' : price(cost)}</div>
+    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart('s-keeper')}${D.name.split(' ')[0]} keeper</h3>${max ? '<span class="o-lvl">MAXED</span>' : price(cost)}</div>
       ${pips(lv, KEEPER_UP_MAX)}<p class="o-upcurrent">One word every ${now.toFixed(2)}s</p><p>When enough letters are held.${museOn('hemi') ? ' Hemingwape doubles banking speed.' : ''}</p>
       ${max ? '' : `<p class="o-upnext">Next: one word every ${(now * KEEPER_UP_STEP).toFixed(2)}s</p>`}
       ${max ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="keeper" data-i="${i}" ${have < cost ? 'disabled' : ''}>Tune up</button>`}</div>`;
   }
   function baroCard(have) {
     const t = S.baro, descs = ['Names what the sky does next, two changes ahead, when you tap the weather or day/night gauge, and lists them on the Market page.', 'Four changes ahead, and the Market page says which titles each change will lift.'];
-    if (t >= 2) return `<div class="o-card"><div class="o-row"><h3>Barometer</h3><span class="o-lvl">MAXED</span></div>${pips(2, 2)}<p>Forecasts four changes ahead, with the titles each one lifts.</p></div>`;
+    if (t >= 2) return `<div class="o-card"><div class="o-row"><h3>${cart('s-baro')}Barometer</h3><span class="o-lvl">MAXED</span></div>${pips(2, 2)}<p>Forecasts four changes ahead, with the titles each one lifts.</p></div>`;
     const lock = soldCount() < 2 ? 'Needs 2 sold titles' : '';
-    return `<div class="o-card"><div class="o-row"><h3>${t ? 'Better barometer' : 'Barometer'}</h3>${price(BARO_COST[t])}</div>${pips(t, 2)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-baro')}${t ? 'Better barometer' : 'Barometer'}</h3>${price(BARO_COST[t])}</div>${pips(t, 2)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="baro" ${lock || have < BARO_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
   }
   function pubCard(have) {
     const t = S.pub.tier, names = ['Publisher’s assistant', 'Fast presses', 'Night shift'];
     const descs = [`Sells your finished titles for you, one every ${PUB_PERIOD[0]} seconds, at a price you choose (on the Titles page). It never sells a title you picked by hand.`,
       `The assistant sells a title every ${PUB_PERIOD[1]} seconds.`, 'The assistant keeps selling while you are away, at an average market price.'];
-    if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>Sells a title every ${PUB_PERIOD[1]} seconds, even while you are away.</p></div>`;
+    if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>Sells a title every ${PUB_PERIOD[1]} seconds, even while you are away.</p></div>`;
     const lock = t === 0 && soldCount() < 3 ? 'Needs 3 sold titles' : '';
-    return `<div class="o-card"><div class="o-row"><h3>${names[t]}</h3>${price(PUB_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}${names[t]}</h3>${price(PUB_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="pub" ${lock || have < PUB_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
   }
   function mkCard(i, have) {
     const D = DESKS[i], d = S.desks[i], next = MK_NAMES[d.mk + 1];
-    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${D.name}${d.mk ? ' ' + MK_NAMES[d.mk] : ''}</h3>${d.mk >= 2 ? '<span class="o-lvl">MAXED</span>' : price(mkCost(i))}</div>
+    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart(`tw-${D.id}-${d.mk || 0}`)}${D.name}${d.mk ? ' ' + MK_NAMES[d.mk] : ''}</h3>${d.mk >= 2 ? '<span class="o-lvl">MAXED</span>' : price(mkCost(i))}</div>
       <p>${d.mk >= 2 ? 'Fully restored: typists work 50% faster here and titles in this band sell for 10% more.' : `Restore to ${next}: typists here work ${d.mk ? '50' : '25'}% faster and titles in this band sell for ${d.mk ? '10' : '5'}% more.`}</p>
       ${d.mk >= 2 ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="mk" data-i="${i}" ${have < mkCost(i) ? 'disabled' : ''}>Restore</button>`}</div>`;
   }
@@ -1504,7 +1573,7 @@
       end(); if (!introActive()) goldEffect(roulette(rotten ? ROT_FX : GOLD_FX), x, y);
     });
     IMI.sfx.tick(); if (!rotten) IMI.emit('goldspawn');
-    if (!rotten && ui.tab === 'floor' && typists.length) { const t = typists[Math.floor(rand() * typists.length)]; say(t, 'GOLD!'); t.hop = 12; }
+    if (!rotten && ui.tab === 'floor' && typists.length) { const t = typists[Math.floor(rand() * typists.length)]; say(t, 'GOLD!'); jump(t); }
   }
   /* the header toys: core.js owns the buttons and their recharge, these are what they do */
   function perk(id, at) {
@@ -1625,13 +1694,14 @@
   }
   function rerollTypist(i, p) {
     const t = S.desks[i].crew[p]; if (!t || !bananas.spend(rerollCost(i, t))) return false;
-    t.prev = { trait: t.trait, talent: t.talent || 0 };                                    // one undo: the roll you just replaced
-    t.rerolls = (t.rerolls || 0) + 1; t.trait = TRAIT_IDS[Math.floor(rand() * TRAIT_IDS.length)]; t.talent = rollTalent();
-    IMI.sfx.ding(); logIt(`${t.name} was re-rolled: ${TRAITS[t.trait].name}, talent +${t.talent}%.`); mark(); save(); return true;
+    t.prev = { trait: t.trait, talent: t.talent || 0, look: t.look };                     // one undo: the roll you just replaced
+    const look = rollLook(t.look); ui.lastLook = { id: look.id, fresh: !(S.looks || {})[look.id] }; seeLook(look.id);
+    t.rerolls = (t.rerolls || 0) + 1; t.look = look.id; t.trait = look.trait; t.talent = rollTalent();
+    IMI.sfx.ding(); logIt(`${t.name} was re-rolled: now a ${look.name} (${TRAITS[t.trait].name}), talent +${t.talent}%.`); restyleTypist(p); mark(); save(); return true;
   }
   function unrollTypist(i, p) {
     const t = S.desks[i].crew[p]; if (!t || !t.prev) return false;
-    t.trait = t.prev.trait; t.talent = t.prev.talent; t.prev = null; IMI.sfx.tick(); mark(); save(); return true;
+    t.trait = t.prev.trait; t.talent = t.prev.talent; if (t.prev.look) t.look = t.prev.look; t.prev = null; IMI.sfx.tick(); restyleTypist(p); mark(); save(); return true;
   }
   const upLevel = (u, d, i) => (u.k === 'paw' ? Math.max(0, d.paws - (i ? 1 : 0)) : d.up[u.k]);
   const upMax = u => (u.k === 'paw' ? u.max : u.tier ? 5 : u.max);
@@ -1715,7 +1785,18 @@
 
   /* ================= icons ================= */
   const ICO_PX = { quill: 'i-quill', reel: 'i-reel', trophy0: 'trophy-0', trophy1: 'trophy-1', trophy2: 'trophy-2', type: 'i-type', monkey: 'i-monkey', coconut: 'i-coconut', palm: 'i-palm', log: 'i-log', banana: 'banana', leaf: 'leaf' };
-  const ICO_CL = { quill: '🪶', reel: '🎬', trophy0: '🥉', trophy1: '🥈', trophy2: '🏆', type: '⌨️', monkey: '🐒', coconut: '🥥', palm: '🌴', log: '🪵', banana: '🍌', leaf: '🍃' };
+  const ICO_CL = { quill: '🪶', reel: '🎬', trophy0: '🥉', trophy1: '🥈', trophy2: '🏆', type: '⌨️', monkey: '🐒', coconut: '🥥', palm: '🌴', log: '🪵', banana: '🍌', leaf: '🍃',
+    /* card art on the department pages; the pixel edition draws these as sprites of the same name in pixel.js */
+    'i-monkey': '🐵', 'u-fing': '👆', 'u-rapid': '⚡', 'u-vowel': '🅰️', 'u-ink': '🖋️', 'u-practice': '📖', 'u-stock': '📦', 'u-ribbon': '🎀',
+    'd-reprints': '📚', 'd-tour': '🚌', 'd-translations': '🌍', 'd-clubs': '☕', 'd-option': '🎬',
+    's-hold': '👇', 's-metro': '🎵', 's-dbl': '✌️', 's-contracts': '📜', 's-lamp': '💡', 's-agent': '💼', 's-analyst': '📈', 's-baro': '🌡️', 's-pub': '🖨️', 's-garden': '🌱', 's-keeper': '🗂️' };
+  /* the classic edition's machines: a little vector typewriter in the desk colour; restorations add brass, then a gold bell */
+  function twSvg(c, mk) {
+    const col = (DESKS.find(D => D.id === c) || DESKS[0]).color, trim = mk ? '#f2c23a' : '#b8b8c4';
+    const keys = [0, 1, 2].map(r => Array.from({ length: 7 - r }, (_, k) => `<circle cx="${13 + r * 2 + k * 6.4}" cy="${29 + r * 5}" r="2.1" fill="#fff6d6"/>`).join('')).join('');
+    return `<svg viewBox="0 0 64 48" width="100%" height="100%" aria-hidden="true"><rect x="16" y="3" width="32" height="15" rx="2" fill="#fff6d6" stroke="#3d2410" stroke-width="2"/><path d="M20 9h18M20 13h12" stroke="#3d2410" stroke-width="1.6"/><rect x="5" y="16" width="54" height="6" rx="3" fill="${trim}" stroke="#3d2410" stroke-width="2"/><path d="M9 22h46l5 22H4z" fill="${col}" stroke="#3d2410" stroke-width="2.4" stroke-linejoin="round"/><path d="M11 25h42" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>${keys}${mk ? '<path d="M7 41h50" stroke="#f2c23a" stroke-width="2.4"/>' : ''}${mk >= 2 ? '<circle cx="53" cy="9" r="4.5" fill="#ffd23a" stroke="#3d2410" stroke-width="2"/>' : ''}</svg>`;
+  }
+  const clArt = n => { const m = /^tw-([a-z]+)-([0-2])$/.exec(n); return m ? twSvg(m[1], +m[2]) : ICO_CL[n]; };
   /* panes re-render several times a second; patching the live DOM instead of replacing it keeps hover states,
      running CSS animations (shines, glints, stripes) and sprites intact. data-own marks a box another renderer fills. */
   const tpl = document.createElement('template');
@@ -1744,16 +1825,17 @@
     if (!y.hasAttribute('data-own')) patchKids(x, y);
   }
   const ico = (n, sz = 0) => `<i class="o-ico" data-ico="${n}" data-sz="${sz}"></i>`;
+  const cart = n => `<i class="o-ico o-cart${n.startsWith('tw-') ? ' tw' : ''}" data-ico="${n}" data-sz="${n.startsWith('tw-') ? 52 : 32}" aria-hidden="true"></i>`;     // card art in a card's heading
   const price = n => `<span class="o-price" title="${esc(Economy.exact(n))} bananas" aria-label="${esc(Economy.exact(n))} bananas">${ico('banana', 24)}${fmtBig(n)}</span>`;
   function hydrate(scope) {
     $$('[data-ico]', scope).forEach(el => {
       const n = el.dataset.ico, sz = +el.dataset.sz;
       if (PX) {
-        const sp = PXA.spr[ICO_PX[n]]; if (!sp) return;
+        const sp = PXA.spr[ICO_PX[n] || n]; if (!sp) return;
         const w = sz || sp.w * PXA.S, h = Math.round(w * sp.h / sp.w);
         el.classList.add('spr'); el.style.width = w + 'px'; el.style.height = h + 'px';
         el.style.backgroundImage = `url(${sp.url})`; el.style.backgroundSize = '100% 100%';
-      } else { el.textContent = ICO_CL[n]; if (sz) el.style.fontSize = sz * .9 + 'px'; }
+      } else { const v = clArt(n) || ''; if (v[0] === '<') el.innerHTML = v; else el.textContent = v; if (sz && !el.classList.contains('o-cart')) el.style.fontSize = sz * .9 + 'px'; }
       el.dataset.icoDone = n + ':' + el.dataset.sz; el.removeAttribute('data-ico');
     });
   }
@@ -1781,7 +1863,6 @@
           <div class="o-drips">${Array.from({ length: 6 }, (_, k) => `<i style="left:${8 + k * 16 + rand() * 8}%;--d:${1.1 + rand() * .9}s;--dl:${-rand() * 2}s"></i>`).join('')}</div>
           <div class="o-flies">${Array.from({ length: 7 }, () => `<i style="left:${5 + rand() * 90}%;top:${10 + rand() * 50}%;--d:${5 + rand() * 5}s;--dl:${-rand() * 8}s"></i>`).join('')}</div>
         </div>
-        <div class="o-dangle" id="oDangle" aria-hidden="true"></div>
         <div class="o-tw mk${cur().mk || 0} ${partsOf(cur())}" id="oTw">
           <div class="o-sheetwrap"><div class="o-sheet"><span id="oSheet"></span></div></div>
           <div class="o-carriage" id="oCar"><i class="o-bell"></i></div>
@@ -1791,6 +1872,7 @@
               <div class="o-krow"><b class="o-key o-space" data-k=" "></b></div></div>
           </div>
         </div>
+        <div class="o-crewlayer" id="oCrew" aria-hidden="true"></div>
       </div>
       <div class="o-fx">
         <div class="o-combo" id="oCombo" aria-hidden="true"><span id="oComboN"></span><i class="o-meter"><i id="oMeter"></i></i></div>
@@ -1808,9 +1890,18 @@
       bars: $$('.o-bar', pane), keys: {}, pops: [], richAt: 0, meterAnim: null };
     $$('.o-key[data-k]', pane).forEach(k => { fx.keys[k.dataset.k] = k; });
     rt[i].col = 0; typists = []; syncTypists(true);
+    dressRoom(DESKS[i].id);
     if (ui.dropIn) { ui.dropIn = false; const st = $('#oStage'); st.classList.add('drop'); st.addEventListener('animationend', () => st.classList.remove('drop'), { once: true }); }
     $('#oSheet').textContent = rt[i].sheet.slice(-48);
     paintWindow();
+  }
+  /* the room is the page: on the Floor the machine's wall and desk fill the whole screen (ops.css "THE ROOM IS THE PAGE") */
+  function dressRoom(id) {
+    let room = document.getElementById('oRoom');
+    const game = document.getElementById('game'); if (!room && !game) return;           // the balance harness has no #game
+    if (!room) { room = document.createElement('div'); room.id = 'oRoom'; room.className = 'o-room'; room.setAttribute('aria-hidden', 'true'); room.innerHTML = '<div class="o-wall"></div><div class="o-desktop"></div>'; game.prepend(room); }
+    if (room.dataset.desk !== id) { const had = !!room.dataset.desk; room.dataset.desk = id; if (had && !IMI.reduceMotion) { room.classList.remove('fade'); void room.offsetWidth; room.classList.add('fade'); } }
+    if (ui.tab === 'floor') document.documentElement.dataset.room = id;
   }
   /* switching machines: the old typewriter slides off the desk and the next one slides on */
   let swapT = 0;
@@ -1830,72 +1921,154 @@
     const w = $('#oWin'); if (!w) return;
     w.dataset.wx = typeof Weather !== 'undefined' ? Weather.state : 0;
   }
-  function syncTypists(initial) {
-    const box = $('#oDangle'); if (!box) return;
-    const n = Math.min(cur().paws, 8), had = typists.length;
-    if (had === n) return;
-    typists = []; box.innerHTML = '';
-    for (let k = 0; k < n; k++) {
-      const el = document.createElement('div'); el.className = 'o-typist' + ((cur().crew[k] || {}).shiny ? ' shiny' : '');
-      el.style.left = (100 / (n + 1)) * (k + 1) + '%'; el.style.setProperty('--rope', 16 + (k * 37) % 46 + 'px');
-      const nm = esc((cur().crew[k] || {}).name || '');
-      el.innerHTML = (PX ? '<i class="o-rope"></i><canvas></canvas>' : '<i class="o-rope"></i><span class="o-mk">🐒</span><span class="o-hat">🍃</span>') + `<span class="o-nm">${nm}</span>`;
-      if (!initial && n > had && k >= had) el.classList.add('drop');
-      box.appendChild(el);
-      typists.push({ ci: k, el, cv: el.querySelector('canvas'), a: 0, v: (k % 2 ? 1 : -1) * .05, seed: k * 1.7, ph: k % 2, expr: 'normal', until: 0, frame: null });
+  /* ================= the crew on the keyboard =================
+     Every visible typist (up to 8) stands on a key. When it types a letter it hops to that key and stomps it: the key goes down, and the
+     monkey's look throws its own particles (IMI 'land' event), when it lands. Poses come from crew-art.js in pixel and the vector monkey
+     (crew-svg.js) in classic. Positions are measured from the live keys, so the crew follows the machine at every size. */
+  const HOP = { crouch: 60, launch: 50, impact: 80, rebound: 60 };
+  const START_KEYS = ['G', 'D', 'K', 'S', 'J', 'F', 'L', 'H'];
+  let keyPos = {}, keyW = 30, crewScale = 2, measuredAt = 0, stageXY = [0, 0], stageBoxC = null, crewRO = null;
+  /* the effects layers read the stage and key positions from this cache instead of measuring the page on every tap (each measurement forces a layout) */
+  IMI.stageGeom = () => (fx && fx.stage.isConnected && stageBoxC ? { box: stageBoxC, key: ch => keyPos[ch] && [stageXY[0] + keyPos[ch].x, stageXY[1] + keyPos[ch].y], keys: Object.keys(keyPos) } : null);
+  function measureKeys() {
+    const st = fx && fx.stage; if (!st || !st.isConnected) return false;
+    const sr = st.getBoundingClientRect(); if (!sr.width) return false;
+    const dk = st.querySelector('.o-desktop'), gm = document.getElementById('game');
+    if (dk && gm) { const top = Math.round(dk.getBoundingClientRect().top - gm.getBoundingClientRect().top) + 'px'; if (gm.style.getPropertyValue('--desk-top') !== top) gm.style.setProperty('--desk-top', top); }
+    stageXY = [sr.left, sr.top]; stageBoxC = { left: sr.left, top: sr.top, width: sr.width, height: sr.height, right: sr.right, bottom: sr.bottom }; keyPos = {}; let w = 0, n = 0;
+    for (const ch in fx.keys) {
+      const r = fx.keys[ch].getBoundingClientRect();
+      keyPos[ch] = { x: r.left - sr.left + r.width / 2, y: r.top - sr.top + r.height * .62 };
+      if (ch !== ' ') { w += r.width; n++; }
     }
-    if (IMI.reduceMotion) stepTypists(performance.now());
+    keyW = n ? w / n : 30;
+    const want = keyW * (PX ? 1.3 : 1.1) / 24;                      // the monkey's body (about 24 art px wide) spans a key or so
+    crewScale = PX ? Math.max(1, Math.round(want)) : want;          // pixel: whole-number scale keeps the art crisp
+    measuredAt = performance.now();
+    typists.forEach(t => { const p = keyPos[t.at] || keyPos.G; if (!t.hop && p) { t.x = p.x; t.y = p.y; } sizeTypist(t); t.tr = ''; });
+    return true;
+  }
+  const spreadOf = t => (((t.ci * 5) % 7) / 6 - .5) * keyW * .7;     // each monkey stands a little to one side of its key, so a crowd on one key stays readable
+  function sizeTypist(t) {
+    const px = Math.round(64 * crewScale) + 'px'; t.mk.style.width = px; t.mk.style.height = px;
+    if (!PX) { const n = Math.round(64 * crewScale * Math.min(2, devicePixelRatio || 1)); if (t.cv.width !== n) { t.cv.width = t.cv.height = n; t.bmpKey = ''; } }   // classic: a bitmap at screen resolution
+  }
+  function paintLook(t) {                                           // (re)dress a typist in its look and hat
+    const c = cur().crew[t.ci] || {}; t.look = c.look || 'v01'; t.hat = c.hat || 0; t.frameKey = '';
+    t.fx = lookById(t.look).fx; t.r = lookById(t.look).r || 'c'; t.el.classList.toggle('shiny', !!c.shiny); t.el.dataset.look = t.look; t.el.dataset.r = t.r;
+  }
+  function restyleTypist(p) { const t = typists.find(x => x.ci === p); if (t) { paintLook(t); t.poof = true; } }
+  function syncTypists(initial) {
+    const box = $('#oCrew'); if (!box) return;
+    const crew = cur().crew, n = Math.min(cur().paws, 8), had = typists.length;
+    if (had === n && typists.every(t => t.el.isConnected)) return;
+    typists.slice(n).forEach(t => t.el.remove()); typists = typists.slice(0, n).filter(t => t.el.isConnected);
+    for (let k = typists.length; k < n; k++) {
+      const el = document.createElement('div'); el.className = 'o-hopper';
+      el.innerHTML = '<canvas class="o-mk" width="64" height="64"></canvas><span class="o-nm"></span>';
+      box.appendChild(el);
+      const t = { ci: k, el, mk: el.firstChild, cv: el.firstChild, nmEl: el.lastChild, at: START_KEYS[k % START_KEYS.length], x: 0, y: 0, hop: null, next: null, face: k % 2 ? -1 : 1, until: 0, seed: k * 1.7, tr: '' };
+      t.nmEl.textContent = (crew[k] || {}).name || '';
+      paintLook(t);
+      if (!initial && k >= had) t.drop = performance.now();         // a new hire drops in from above and lands on its key
+      typists.push(t);
+    }
+    if (!measureKeys()) requestAnimationFrame(() => measureKeys());
+    setTimeout(() => measureKeys(), 520);                            // again once the machine has finished sliding in
+    if (!crewRO && window.ResizeObserver) crewRO = new ResizeObserver(() => measureKeys());
+    if (crewRO && fx) { crewRO.disconnect(); crewRO.observe(fx.stage); }
+    stepTypists(performance.now());
+  }
+  /* o.press: the key goes down on landing. o.inPlace: a stomp on the spot. o.big: a cheer-height jump */
+  function hopTo(t, ch, o = {}) {
+    const to = o.inPlace ? { x: t.x, y: t.y } : keyPos[ch]; if (!to) return false;
+    if (t.hop) { if (o.press) t.next = ch; return true; }
+    const from = { x: t.x, y: t.y }, d = Math.hypot(to.x - from.x, to.y - from.y), sp = buffOn('frenzy') ? .7 : 1;
+    t.hop = { t0: performance.now(), ch: o.inPlace ? t.at : ch, from, to, sp, air: Math.min(330, 140 + d * .55) * sp, h: o.big ? keyW * 2.4 : Math.max(keyW * (o.inPlace ? .7 : 1.1), d * .32), press: !!o.press };
+    if (Math.abs(to.x - from.x) > 2) t.face = to.x > from.x ? 1 : -1;
+    return true;
+  }
+  /* a crew press: the typist who typed it heads for the key (when busy, it goes there next) */
+  function hopPress(p, ch) {
+    if (!typists.length || IMI.reduceMotion || p == null) return false;
+    const t = typists.find(x => x.ci === p) || typists[p % typists.length];
+    return hopTo(t, ch, { press: true, inPlace: ch === t.at && !t.hop });
+  }
+  function land(t, press) {
+    if (press) { const k = fx.keys[t.at]; if (k) { k.classList.add('down'); setTimeout(() => k.classList.remove('down'), 110); } }
+    if (LOW() || document.hidden) return;
+    IMI.emit('land', { x: stageXY[0] + t.x + spreadOf(t), y: stageXY[1] + t.y, fx: t.fx, look: t.look, w: keyW, r: t.r });
   }
   function kick(strong, ci) {
     if (!typists.length) return;
     const t = (ci != null && typists.find(x => x.ci === ci)) || typists[Math.floor(rand() * typists.length)];
-    t.v += (rand() < .5 ? -1 : 1) * (strong ? .13 : .06); t.ph ^= 1; t.expr = 'screech'; t.until = performance.now() + 170;
-    if (!IMI.reduceMotion && !LOW()) { const nm = t.nm || (t.nm = t.el.querySelector('.o-nm')); if (nm && performance.now() > (t.nmAt || 0)) { t.nmAt = performance.now() + 230; nm.animate([{ transform: 'none' }, { transform: 'translateY(-6px) scale(1.18)', color: '#ffd23a' }, { transform: 'none' }], { duration: 220, easing: PX ? 'steps(3)' : 'ease-out' }); } }
+    t.until = performance.now() + 170;
+    if (strong && !t.hop) hopTo(t, t.at, { inPlace: true });
+    if (!IMI.reduceMotion && !LOW() && performance.now() > (t.nmAt || 0)) { t.nmAt = performance.now() + 230; t.nmEl.animate([{ transform: 'none' }, { transform: 'translateY(-6px) scale(1.18)', color: '#ffd23a' }, { transform: 'none' }], { duration: 220, easing: PX ? 'steps(3)' : 'ease-out' }); }
     if (!strong && rand() < .012) say(t);
   }
-  function stepTypists(now, draw = true) {                          // physics runs every frame; the DOM/canvas writes only when `draw` (every other frame)
-    const hat = typeof Mood !== 'undefined' && Mood.hat, scared = typeof Mood !== 'undefined' && Mood.scared, crew = cur().crew, wild = buffOn('frenzy');
+  function jump(t) { if (t && !t.hop) hopTo(t, t.at, { inPlace: true, big: true }); }
+  function stepTypists(now, draw = true) {                          // movement runs every frame; the DOM/canvas writes only when `draw` (every other frame)
+    const crew = cur().crew, scared = typeof Mood !== 'undefined' && Mood.scared, wild = buffOn('frenzy'), still = IMI.reduceMotion;
+    if (!keyPos.G || now - measuredAt > 2500) measureKeys();
     for (const t of typists) {
-      if (wild && !IMI.reduceMotion) { t.v += Math.sin(now / 130 + t.seed * 3) * .016; if (rand() < .03) { t.hop = 10 + rand() * 8; t.ph ^= 1; t.expr = 'screech'; t.until = now + 160; } }
-      const worn = (crew[t.ci] || {}).hat || 0, hc = worn || (hat ? 1 : 0);
-      if (!IMI.reduceMotion) {
-        t.v += -t.a * .045 + Math.sin(now / 900 + t.seed) * .0011 + (scared ? Math.sin(now / 60) * .004 : 0); t.v *= .955; t.a = Math.max(-.7, Math.min(.7, t.a + t.v));
+      const c = crew[t.ci] || {};
+      if (c.look !== t.look || (c.hat || 0) !== t.hat) { paintLook(t); t.poof = true; }
+      if (c.name && t.nmEl.textContent !== c.name) t.nmEl.textContent = c.name;
+      if (t.poof) { t.poof = false; if (!still) jump(t); }
+      let x = t.x, y = t.y, lift = 0, pose = Math.floor(now / 600 + t.seed) % 2 ? 'breathe' : 'idle';
+      if (still) { t.hop = null; t.drop = 0; pose = 'idle'; }
+      if (t.drop) { const k = (now - t.drop) / 520; if (k >= 1) { t.drop = 0; land(t, false); pose = 'impact'; } else { lift = (1 - k * k) * keyW * 7; pose = 'fall'; } }
+      const h = t.hop;
+      if (h) {
+        const e = now - h.t0, A = HOP.crouch * h.sp, B = A + HOP.launch * h.sp, C = B + h.air, D = C + HOP.impact * h.sp, E = D + (t.next ? 0 : HOP.rebound * h.sp);
+        if (e < A) { pose = 'crouch'; x = h.from.x; y = h.from.y; }
+        else if (e < C) { const k = (e - A) / (C - A); x = h.from.x + (h.to.x - h.from.x) * k; y = h.from.y + (h.to.y - h.from.y) * k; lift = Math.sin(k * Math.PI) * h.h; pose = k < .28 ? 'launch' : k < .68 ? 'air' : 'fall'; }
+        else {
+          x = h.to.x; y = h.to.y; pose = e < D ? 'impact' : 'rebound';
+          if (!h.landed) { h.landed = true; t.x = x; t.y = y; t.at = h.ch; land(t, h.press); }
+          if (e >= E) { t.hop = null; if (t.next) { const nx = t.next; t.next = null; hopTo(t, nx, { press: true, inPlace: nx === t.at }); } }
+        }
+      } else if (!still && !t.drop) {
+        if (wild && rand() < .015) jump(t);
+        else if (scared) x += Math.round(Math.sin(now / 40 + t.seed));
       }
-      t.hop = (t.hop || 0) * .84;
       if (!draw) continue;
-      if ((crew[t.ci] || {}).shiny && now > (t.sparkAt || 0) && !IMI.reduceMotion) { t.sparkAt = now + 380 + rand() * 300; const b = t.cv ? t.cv.getBoundingClientRect() : t.el.getBoundingClientRect(); IMI.fall(b.left + b.width * (.2 + rand() * .6), b.top + b.height * (.3 + rand() * .5), 'spark', 900); }
-      t.el.classList.toggle('wild', wild); const hp = t.hop.toFixed(1); if (hp !== t.hopS) { t.hopS = hp; t.el.style.setProperty('--hop', hp); }
-      if (now > (t.blinkAt || 0)) { t.blinkAt = now + 2200 + rand() * 4200; t.blinkUntil = now + 150; }
-      const ex = now < t.until ? 'screech' : scared ? 'scared' : now < t.blinkUntil ? 'blink' : 'normal';
-      if (PX) {
-        const f = PXA.monkeyFrame('desk', ex, t.a, false, t.ph, hc);
-        if (f !== t.frame) { PXA.blit(t.cv, f); t.cv.style.marginLeft = -(f.W * PXA.S / 2) + 'px'; t.frame = f; }
-      } else {
-        const ag = Math.round(t.a * 250) / 250; if (ag !== t.angS) { t.angS = ag; t.el.style.setProperty('--ang', ag + 'rad'); }     // 0.004 rad steps: invisible, but the sway no longer dirties a typist every frame
-        if (t.hk !== hc) { t.hk = hc; const he = t.el.querySelector('.o-hat'); if (he) he.textContent = worn ? (hatById(worn) || {}).emoji : '🍃'; }
-        t.el.classList.toggle('rainy', !!hc); t.el.classList.toggle('scared', !!scared); t.el.classList.toggle('shout', ex === 'screech');
+      const expr = now < t.until ? 'screech' : !h && !t.drop && (now / 1000 + t.seed * 3) % 7 < .18 ? 'wink' : '';
+      const fk = pose + '|' + expr + '|' + t.look + '|' + t.hat;
+      if (fk !== t.frameKey) {
+        t.frameKey = fk;
+        if (PX) { const g = t.cv.getContext('2d'); g.clearRect(0, 0, 64, 64); g.drawImage(CrewArt.pose(t.look, pose, { expr: expr || undefined, hat: t.hat }), 0, 0); }
+        else {                                                       // classic: the pose is a squash/stretch of the cached bitmap; only the face swaps the image
+          const P = (window.CrewArt && CrewArt.POSES[pose]) || { sx: 1, sy: 1 }; t.mk.style.transform = `scale(${P.sx}, ${P.sy})`;
+          const face = expr || (pose === 'launch' || pose === 'impact' || pose === 'fall' ? 'screech' : ''), bk = face + t.look + t.hat + t.cv.width;
+          if (bk !== t.bmpKey) { const bmp = window.CrewSvg && CrewSvg.bitmap(t.look, t.hat, face, t.cv.width, () => { t.frameKey = ''; }); if (bmp) { t.bmpKey = bk; const g = t.cv.getContext('2d'); g.clearRect(0, 0, t.cv.width, t.cv.height); g.drawImage(bmp, 0, 0); } }
+        }
       }
+      const sc = crewScale, spread = spreadOf(t);
+      const tr = `translate(${Math.round(x + spread - 32 * sc)}px, ${Math.round(y - 55 * sc - lift)}px)`;
+      if (tr !== t.tr) { t.tr = tr; t.el.style.transform = tr; }
+      const z = Math.round(h ? Math.max(h.from.y, h.to.y) : t.y); if (z !== t.z) { t.z = z; t.el.style.zIndex = z; }
+      if (t.face !== t.faceS) { t.faceS = t.face; t.el.classList.toggle('left', t.face < 0); }
+      if (c.shiny && now > (t.sparkAt || 0) && !still && !LOW()) { t.sparkAt = now + 380 + rand() * 300; IMI.fall(stageXY[0] + x + (rand() - .5) * keyW, stageXY[1] + y - lift - keyW * (.4 + rand()), 'spark', 900); }
     }
   }
-  const CHATTER = ['OOK!', 'EEK!', 'TAP TAP', 'BANANA?', 'HOO HOO', 'NICE WORD'];
+  const CHATTER = ['OOK!', 'EEK!', 'TAP TAP', 'BANANA?', 'HOO HOO', 'NICE WORD', 'STOMP!', 'BOING'];
   function say(t, text) {
     if (t.el.querySelector('.o-say')) return;
     const b = document.createElement('i'); b.className = 'o-say'; b.textContent = text || CHATTER[Math.floor(rand() * CHATTER.length)];
     b.addEventListener('animationend', () => b.remove()); t.el.appendChild(b);
   }
-  /* group reactions: the whole crew jumps, shouts and throws bananas */
+  /* group reactions: the whole crew bounces on the keys, shouts and throws bananas */
   const cheerState = { until: 0, next: 0, said: true, text: '', throwAt: 0 };
   function cheer(ms, text) { const now = performance.now(); cheerState.until = Math.max(cheerState.until, now + ms); cheerState.text = text || ''; cheerState.said = !text; }
   function cheerStep(now) {
     if (now >= cheerState.until || !typists.length) return;
-    if (now >= cheerState.next) {
-      cheerState.next = now + 160;
-      typists.forEach((t, i) => { t.v += (i % 2 ? 1 : -1) * .09; t.hop = 13; t.expr = 'screech'; t.until = now + 220; t.ph ^= 1; });
-    }
+    if (now >= cheerState.next) { cheerState.next = now + 160; typists.forEach(t => { if (!t.hop && rand() < .5) jump(t); t.until = now + 220; }); }
     if (!cheerState.said) { cheerState.said = true; typists.slice(0, 3).forEach(t => say(t, cheerState.text)); }
     if (now >= cheerState.throwAt) {
       cheerState.throwAt = now + 520;
-      const t = typists[Math.floor(rand() * typists.length)], b = t.el.getBoundingClientRect(); IMI.burst(b.left + b.width / 2, b.bottom - 30, ['banana', 'spark'], 3);
+      const t = typists[Math.floor(rand() * typists.length)]; IMI.burst(stageXY[0] + t.x, stageXY[1] + t.y - keyW, ['banana', 'spark'], 3);
     }
   }
   let loopN = 0;
@@ -1911,17 +2084,19 @@
     r.col++; r.page = (r.page || 0) + 1;
     if (r.page >= 48 && now - (ui.tearAt || 0) > 1400) { r.page = 0; ui.tearAt = now; tearPage(r); }
     /* a big crew can press dozens of times a second: tapping always gets the full show, auto-typing is drawn at most ~14 times a second */
-    if (auto) { if (now - fx.richAt < (LOW() ? 160 : 70)) { kick(false, p); return; } fx.richAt = now; }
+    const hopped = auto && hopPress(p, ch);                          // the typist who typed it hops to the key (its landing presses the key)
+    if (auto) { if (now - fx.richAt < (LOW() ? 160 : 70)) { if (!hopped) kick(false, p); return; } fx.richAt = now; }
     IMI.sfx.key(1 + S.sel * .14);                                   // each machine has its own clack, higher up the range
+    const kp = keyPos[ch];
+    IMI.emit('press', { ch, auto, p, col: r.col, ding: r.col % 9 === 0, key: fx.keys[ch], desk: DESKS[S.sel].color, x: kp && stageXY[0] + kp.x, y: kp && stageXY[1] + kp.y - keyW * .1 });                // classic-fx.js draws the sparks
     const key = fx.keys[ch];
-    if (key) { key.classList.add('down'); setTimeout(() => key.classList.remove('down'), 90); }
+    if (key && !hopped) { key.classList.add('down'); setTimeout(() => key.classList.remove('down'), 90); }
     const bar = fx.bars[ch.charCodeAt(0) % fx.bars.length];
     bar.classList.add('hit'); setTimeout(() => bar.classList.remove('hit'), 70);
     const car = fx.car;
     car.style.transform = `translateX(${-(r.col % 9) * 2}px)`;
     if (r.col % 9 === 0) { car.classList.remove('ding'); fx.tw.classList.remove('ding'); void car.offsetWidth; car.classList.add('ding'); fx.tw.classList.add('ding'); }   // on the machine too: its sheet and bell key off it
-    kick(!auto, auto ? p : undefined);
-    if (auto && !LOW() && n % 6 === 0 && typists.length) { const t = typists[Math.floor(rand() * typists.length)], b = t.el.getBoundingClientRect(); IMI.fall(b.left + b.width / 2, b.bottom - 10, 'leaf', 1200); }
+    if (!hopped) kick(!auto, auto ? p : undefined);
     fx.sheet.textContent = r.sheet.slice(-48);
     const tw = fx.tw;
     if (!IMI.reduceMotion) {
@@ -2005,32 +2180,45 @@
   const pips = (n, max) => `<span class="o-pips">${Array.from({ length: Math.min(max, 12) }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
   const stat = (label, v) => `<span class="o-stat"><b>${v}</b> ${label}</span>`;
 
+  /* the look book: every look, grouped by rarity; the ones you have not found yet are silhouettes with only their rarity and trait showing */
+  function lookBook() {
+    const seen = S.looks || {}, onCrew = {};
+    S.desks.forEach(d => d.owned && d.crew.forEach(t => { onCrew[t.look] = (onCrew[t.look] || 0) + 1; }));
+    const tiers = ['l', 'e', 'r', 'c'];
+    return `<p class="o-lede">Every hire and re-roll draws a look, and the look decides the monkey's trait. Rarer looks are harder to find and their trait works harder: Rare x1.5, Epic x2, Legendary x3. Odds per roll: ${tiers.map(k => `${RARITY[k].name} ${Math.round(RARITY[k].odds * 100)}%`).join(' · ')}.</p>
+      ${tiers.map(k => { const ls = LOOKS.filter(l => l.r === k), n = ls.filter(l => seen[l.id]).length;
+        return `<h3 class="o-h o-rarh r-${k}">${RARITY[k].name} <span class="o-dim">${n}/${ls.length}</span></h3><div class="o-looks">${ls.map(l => seen[l.id]
+          ? `<div class="o-card o-lookcard" data-r="${k}">${lookArt(l.id)}<b>${l.name}</b><span class="o-chip trait">${TRAITS[l.trait].name}</span><span class="o-dim">${FX_TEXT[l.fx.k] || ''}${onCrew[l.id] ? ` · ${onCrew[l.id]} on your crew` : ''}</span></div>`
+          : `<div class="o-card o-lookcard veiled" data-r="${k}">${lookArt(l.id)}<b>???</b><span class="o-chip trait">${TRAITS[l.trait].name}</span><span class="o-dim">Not found yet</span></div>`).join('')}</div>`; }).join('')}`;
+  }
   function renderTraining() {
     const d = cur(), i = S.sel, have = totalLetters(d), want = buyWant();
-    morph($('#o-training'), `
+    const tsub = ui.sub.training || 'crew';
+    morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
       <p class="o-lede">Train hires and trains the monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>letters from this desk</b> (the biggest piles go first). You hold ${fmt(have)}.</p>
       ${keepersReady() ? `<div class="o-row o-left"><span class="o-dim">Keeper</span>${keeperSeg(i)}</div>` : '<p class="o-dim">Letters stay here until your keeper is introduced.</p>'}
       <div class="o-row o-left"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
       <div class="o-grid">${UPS.map(u => {
         const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), lock = upLock(u, d), done = lvl >= max, plan = upPlan(u, d, i, want);
         const first = u.k === 'paw' && i === 0 && d.paws === 0 && plan.n === 1;
-        return `<div class="o-card"><div class="o-row"><h3>${u.name}</h3><span class="o-lvl">${lvl}/${max}</span></div>
+        return `<div class="o-card"><div class="o-row"><h3>${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${lvl}/${max}</span></div>
           ${pips(lvl, max)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p><details class="o-updetail"><summary>How it works</summary><p>${u.desc}</p></details>${lock ? `<p class="o-warn">${lock}</p>` : ''}
           ${done ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${upEffect(u, d, lvl + (lock ? 1 : plan.n))}</p>`}
           <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || have < plan.cost ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button></div>`;
       }).join('')}</div>
-      <h3 class="o-h">The crew <span class="o-dim">(${d.crew.length})</span></h3>
+      <h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
       ${d.crew.length ? `<div class="o-grid o-crew">${d.crew.map((t, p) => {
         const l = levelOf(t.xp), nx = LVL_XP[l], pv = LVL_XP[l - 1], pct = nx ? Math.round(100 * (t.xp - pv) / (nx - pv)) : 100, hh = hatById(t.hat);
-        return `<div class="o-card o-crewcard${t.shiny ? ' shiny' : ''}"><div class="o-row"><button type="button" class="o-name" data-act="rename" data-p="${p}" title="Rename">${t.shiny ? '✦ ' : ''}${esc(t.name)}</button><span class="o-lvl">Lv ${l}</span></div>
-          <div class="o-chips"><span class="o-chip trait">${TRAITS[t.trait].name}</span><span class="o-chip" title="This monkey's roll when hired">Talent +${t.talent || 0}%</span>${t.coach ? `<span class="o-chip ok" title="Coaching">Coached +${t.coach * COACH_STEP}%</span>` : ''}</div><p class="o-dim">${TRAITS[t.trait].desc}</p>
+        return `<div class="o-card o-crewcard${t.shiny ? ' shiny' : ''}" data-r="${rarOf(t)}"><div class="o-row"><button type="button" class="o-name" data-act="rename" data-p="${p}" title="Rename">${t.shiny ? '✦ ' : ''}${esc(t.name)}</button><span class="o-lvl">Lv ${l}</span></div>
+          <div class="o-crewlook">${lookArt(t.look, t.hat || 0)}<div class="o-lookname"><b>${lookById(t.look).name}</b><span class="o-chip trait">${TRAITS[t.trait].name}</span><span class="o-chip o-rar r-${rarOf(t)}">${RARITY[rarOf(t)].name}</span></div></div>
+          <div class="o-chips"><span class="o-chip" title="This monkey's roll when hired">Talent +${t.talent || 0}%</span>${t.coach ? `<span class="o-chip ok" title="Coaching">Coached +${t.coach * COACH_STEP}%</span>` : ''}</div><p class="o-dim">${traitText(t)}</p>
           <span class="o-prog" role="img" aria-label="${pct}% to the next level"><i style="width:${pct}%"></i></span>
           <p class="o-upnext">Coaching now: +${(t.coach || 0) * COACH_STEP}% speed${(t.coach || 0) >= COACH_MAX ? ' (maxed)' : `. Next: +${((t.coach || 0) + 1) * COACH_STEP}%`}</p>
           <div class="o-row"><span class="o-dim">${fmt(t.xp)} xp${nx ? ' / ' + fmt(nx) : ' (max)'}</span><button type="button" class="o-btn sm" data-act="hat" data-p="${p}" ${HATS.some(hatOpen) ? '' : 'disabled'} title="${HATS.some(hatOpen) ? 'Change hat' : 'Earn awards to unlock hats'}">${hh ? hh.name : 'No hat'}</button></div>
           <div class="o-row o-left o-coach"><button type="button" class="o-btn sm" data-act="coach" data-p="${p}" ${(t.coach || 0) >= COACH_MAX || bananas.get() < coachCost(i, t) ? 'disabled' : ''} title="Coaching: +${COACH_STEP}% typing speed for this monkey (${t.coach || 0}/${COACH_MAX}). Cost: ${Economy.exact(coachCost(i, t))} bananas">${(t.coach || 0) >= COACH_MAX ? 'Fully coached' : `Coach ${ico('banana', 16)} ${fmtBig(coachCost(i, t))}`}</button>
             <button type="button" class="o-btn sm" data-act="reroll" data-p="${p}" ${bananas.get() < rerollCost(i, t) ? 'disabled' : ''} title="Re-roll this monkey's trait and talent. Coaching is kept. Cost: ${Economy.exact(rerollCost(i, t))} bananas">Reroll ${ico('banana', 16)} ${fmtBig(rerollCost(i, t))}</button>
-            ${t.prev ? `<button type="button" class="o-btn sm" data-act="unroll" data-p="${p}" title="Go back to the previous roll">Undo (was ${TRAITS[t.prev.trait].name} +${t.prev.talent}%)</button>` : ''}</div></div>`;
-      }).join('')}</div>` : '<p class="o-dim">Nobody works here yet. Hire a typist above.</p>'}`);
+            ${t.prev ? `<button type="button" class="o-btn sm" data-act="unroll" data-p="${p}" title="Go back to the previous roll">Undo (was ${t.prev.look ? lookById(t.prev.look).name : TRAITS[t.prev.trait].name} +${t.prev.talent}%)</button>` : ''}</div></div>`;
+      }).join('')}</div>` : '<p class="o-dim">Nobody works here yet. Hire a typist above.</p>'}`));
     hydrate($('#o-training'));
   }
 
@@ -2198,13 +2386,13 @@
 
   function gardenCard(have) {
     const n = S.garden.beds.length, nx = GARDEN_COSTS[n - 2];
-    return `<div class="o-card"><div class="o-row"><h3>Garden plots</h3><span class="o-lvl">${n}/6</span></div>${pips(n - 2, 4)}
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-garden')}Garden plots</h3><span class="o-lvl">${n}/6</span></div>${pips(n - 2, 4)}
       <p>More plots in the letter garden (on the Words page), so you can grow more letters at once.</p>
       ${nx ? `<button type="button" class="o-btn gold" data-act="buy" data-what="plot" ${have < nx ? 'disabled' : ''}>Add a plot · ${price(nx)}</button>` : '<span class="o-lvl">MAXED</span>'}</div>`;
   }
   function lampCard(have) {
     const nx = LAMP[S.lamp], capH = awayCap() / 3600, eff = Math.round(awayEff() * 100);
-    return `<div class="o-card"><div class="o-row"><h3>Night Lamp</h3><span class="o-lvl">${S.lamp}/${LAMP.length}</span></div>${pips(S.lamp, LAMP.length)}
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-lamp')}Night Lamp</h3><span class="o-lvl">${S.lamp}/${LAMP.length}</span></div>${pips(S.lamp, LAMP.length)}
       <p>Keeps typists, keepers and royalties going while you are away. Now: up to ${capH}h at ${eff}% effort.${nx ? ` Next: ${nx.cap}h at ${Math.round(nx.eff * 100)}%.` : ''}</p>
       ${nx ? `<button type="button" class="o-btn gold" data-act="buy" data-what="lamp" ${have < nx.cost ? 'disabled' : ''}>Upgrade · ${price(nx.cost)}</button>` : '<span class="o-lvl">MAXED</span>'}</div>`;
   }
@@ -2216,23 +2404,23 @@
       <p class="o-lede">The Shop spends the bananas your titles earn. Typewriters and room-wide upgrades are bought here.</p>
       <h3 class="o-h">Typewriters</h3><div class="o-grid">${DESKS.slice(1).map((D, n) => {
         const i = n + 1, d = S.desks[i];
-        return item(D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, chal('haiku') && i >= 2 ? 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
+        return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, chal('haiku') && i >= 2 ? 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
       }).join('')}</div>
-      <h3 class="o-h">Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span></h3><div class="o-grid">${DEALS.map(x => item(x.name, x.desc, x.cost, !!S.deals[x.id], soldCount() < x.need ? `Needs ${x.need} sold title${x.need > 1 ? 's' : ''}` : '', 'deal', x.id)).join('')}</div>
+      <h3 class="o-h">Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span></h3><div class="o-grid">${DEALS.map(x => item(cart('d-' + x.id) + x.name, x.desc, x.cost, !!S.deals[x.id], soldCount() < x.need ? `Needs ${x.need} sold title${x.need > 1 ? 's' : ''}` : '', 'deal', x.id)).join('')}</div>
       <h3 class="o-h">Restorations</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>
       <h3 class="o-h">Keepers</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? keeperCard(i, have) : '').join('')}</div>
       <h3 class="o-h">Garden</h3><div class="o-grid">${gardenCard(have)}</div>
       <h3 class="o-h">Market tools</h3><div class="o-grid">
         ${baroCard(have)}
         ${pubCard(have)}
-        ${item('Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'agent')}
-        ${item('Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'analyst')}
+        ${item(cart('s-agent') + 'Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'agent')}
+        ${item(cart('s-analyst') + 'Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'analyst')}
       </div>
       <h3 class="o-h">Room-wide upgrades</h3><div class="o-grid">
-        ${item('Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold')}
-        ${item('Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, blue ? '' : 'Unlocks with Lagoon Sprint', 'metro')}
-        ${item('Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, !blue ? 'Unlocks with Lagoon Sprint' : !S.hold ? 'Needs Hold to type' : '', 'dbl')}
-        ${item('Writing contracts', 'Adds 25% to future title rights income.', SHOP.contracts, S.contracts, blue ? '' : 'Unlocks with Lagoon Sprint', 'contracts')}
+        ${item(cart('s-hold') + 'Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold')}
+        ${item(cart('s-metro') + 'Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, blue ? '' : 'Unlocks with Lagoon Sprint', 'metro')}
+        ${item(cart('s-dbl') + 'Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, !blue ? 'Unlocks with Lagoon Sprint' : !S.hold ? 'Needs Hold to type' : '', 'dbl')}
+        ${item(cart('s-contracts') + 'Writing contracts', 'Adds 25% to future title rights income.', SHOP.contracts, S.contracts, blue ? '' : 'Unlocks with Lagoon Sprint', 'contracts')}
         ${lampCard(have)}
       </div>
       `);
@@ -2283,7 +2471,8 @@
     morph(buffBar, on.map(k => `<span class="o-buff ${k} ${BUFF_INFO[k][1]}">${BUFF_INFO[k][0]}${k === 'golden' ? ' · 2 letters/tap' : ''} ${Math.ceil((buffs[k] - now) / 1000)}s</span>`).join('') + (S.challenge ? `<span class="o-buff chal">OULIPO: ${esc(chDef(S.challenge.id).name)} ${chProgress()}</span>` : ''));
     if (buffBar.childElementCount) {                                 // float the chips over the room (under its stats), or at the top of the panel
       const st = ui.tab === 'floor' && $('#oStage');
-      buffBar.style.top = Math.round(st ? st.getBoundingClientRect().top + 10 : $('.o-panel').getBoundingClientRect().top + 8) + 'px';
+      const top = Math.round(st && stageBoxC ? stageBoxC.top + 10 : st ? st.getBoundingClientRect().top + 10 : $('.o-panel').getBoundingClientRect().top + 8) + 'px';   // the stage's cached box: no layout per render
+      if (buffBar.style.top !== top) buffBar.style.top = top;
     }
     const st = $('#oStage'); if (st) { st.classList.toggle('frenzy', buffOn('frenzy')); st.classList.toggle('golden', buffOn('golden')); }
     const r = royRate() + divRate(); hudRate.textContent = r > 0 ? `+${fmtRate(r)}/s` : ''; hudRate.hidden = r <= 0;
@@ -2313,6 +2502,8 @@
     const D = DESKS[S.sel];
     const wrap = $('.o-wrap');                                       // on .o-wrap itself: its own defaults would otherwise shadow these
     wrap.dataset.tab = ui.tab;
+    const roomId = ui.tab === 'floor' ? DESKS[S.sel].id : null;
+    if ((document.documentElement.dataset.room || null) !== roomId) { if (roomId) document.documentElement.dataset.room = roomId; else delete document.documentElement.dataset.room; }
     wrap.style.setProperty('--tw', D.color); wrap.style.setProperty('--tw-font', D.font); wrap.style.setProperty('--tw-fs', D.fs || '');
   }
   /* cards with something you can afford get a highlight. This used to be a :has() rule, which made the browser re-check every card (and
@@ -2376,6 +2567,25 @@
   root.addEventListener('focusout', e => { if (e.target.closest('#oStage')) holding = false; });
   IMI.onScreen(() => { holding = false; });
 
+  /* a purchase lands: the card squashes, the picture jumps and the newly filled pips pop (Web Animations, so the 4x/s morph() cannot cut them short) */
+  function boughtFx(el) {
+    const card = el.closest('.o-card'); if (!card || IMI.reduceMotion) return;
+    const had = card.querySelectorAll('.o-pips i.on').length, ease = PX ? 'steps(5)' : 'cubic-bezier(.3,1.5,.5,1)';
+    render();
+    card.animate([{ scale: '1' }, { scale: '1.045 .96', offset: .3 }, { scale: '.985 1.02', offset: .6 }, { scale: '1' }], { duration: 480, easing: ease });
+    const art = card.querySelector('.o-cart');
+    if (art) art.animate([{ translate: '0 0', rotate: '0deg' }, { translate: '0 -12px', rotate: '-12deg', offset: .35 }, { translate: '0 2px', rotate: '6deg', offset: .7 }, { translate: '0 0', rotate: '0deg' }], { duration: 560, easing: PX ? 'steps(6)' : 'cubic-bezier(.3,1.6,.5,1)' });
+    [...card.querySelectorAll('.o-pips i.on')].slice(had).forEach((p, k) => p.animate([{ scale: '.2', filter: 'brightness(3)' }, { scale: '1.7', filter: 'brightness(1.8)', offset: .5 }, { scale: '1', filter: 'none' }], { duration: 520, delay: k * 50, easing: PX ? 'steps(4)' : 'cubic-bezier(.3,1.8,.5,1)' }));
+  }
+  const RAR_COL = { c: '#fff6d6', r: '#5fc8ff', e: '#c9a0ff', l: '#ffd23a' };
+  function revealLook(at, dy) {                                     // the name floats up in its rarity colour; Rare+ and first finds get a banner, Epic+ a celebration
+    const lk = lookById(ui.lastLook.id), r = lk.r || 'c', fresh = ui.lastLook.fresh;
+    floatText(lk.name.toUpperCase(), at[0], at[1] + dy, RAR_COL[r], true);
+    if (r === 'l') { IMI.banner(PX ? 'LEGENDARY LOOK!' : 'Legendary look!'); flash('#fff08c'); shock(at[0], at[1], '#ffd23a', true); IMI.burst(at[0], at[1], ['star', 'banana', 'spark'], 24); cheer(2400, 'WOW!'); vib([30, 40, 30, 40, 90]); }
+    else if (r === 'e') { IMI.banner(PX ? 'EPIC LOOK!' : 'Epic look!'); shock(at[0], at[1], '#c9a0ff', true); IMI.burst(at[0], at[1], ['star', 'spark'], 16); cheer(1400, 'OOH!'); }
+    else if (r === 'r') { IMI.banner(fresh ? (PX ? 'NEW RARE LOOK!' : 'New rare look!') : (PX ? 'RARE LOOK!' : 'Rare look!')); shock(at[0], at[1], '#5fc8ff'); }
+    else if (fresh) IMI.banner(PX ? 'NEW LOOK!' : 'New look!');
+  }
   const ACTIONS = {
     keyhelp: () => {
       if (document.querySelector('.o-modal')) return;
@@ -2386,7 +2596,7 @@
     go: el => setTab(el.dataset.tab),
     sel: el => { const to = +el.dataset.i, from = S.sel; S.sel = to; el.scrollIntoView({ inline: 'nearest', block: 'nearest' }); if (ui.tab === 'floor') swapStage(to === from ? 0 : to > from ? 1 : -1); mark(); save(); },
     coach: el => { const at = IMI.centerOf(el); if (coachTypist(S.sel, +el.dataset.p)) { IMI.burst(at[0], at[1], ['spark', 'star'], 8); floatText('+' + COACH_STEP + '%', at[0], at[1] - 10, '#7be05a'); } },
-    reroll: el => { const at = IMI.centerOf(el); if (rerollTypist(S.sel, +el.dataset.p)) { IMI.burst(at[0], at[1], ['spark', 'leaf', 'star'], 10); floatText('NEW ROLL', at[0], at[1] - 10, '#ffd23a', true); } },
+    reroll: el => { const at = IMI.centerOf(el); if (rerollTypist(S.sel, +el.dataset.p)) { IMI.burst(at[0], at[1], ['spark', 'leaf', 'star'], 10); if (ui.lastLook) revealLook(at, -10); else floatText('NEW ROLL', at[0], at[1] - 10, '#ffd23a', true); } },
     unroll: el => { unrollTypist(S.sel, +el.dataset.p); },
     hat: el => {
       const t = cur().crew[+el.dataset.p]; if (!t) return;
@@ -2431,9 +2641,9 @@
       IMI.sfx.ding(); logIt(`Legacy upgrade: ${u.name} level ${lv + 1}.`); mark(); save();
     },
     buyn: el => { ui.buyN = el.dataset.n === 'max' ? 'max' : +el.dataset.n; mark(); },
-    up: el => { const at = IMI.centerOf(el), had = JSON.stringify(cur().up) + cur().paws; buyUp(el.dataset.k); if (JSON.stringify(cur().up) + cur().paws !== had) { IMI.burst(at[0], at[1], ['spark', 'leaf', 'star'], 10); vib(25); if (el.dataset.k === 'paw') { const nt = cur().crew[cur().crew.length - 1]; if (nt && nt.shiny) { floatText(`SHINY ${nt.name.toUpperCase()}!`, at[0], at[1] - 40, '#ffe680', true); shock(at[0], at[1], '#ffe680', true); flash('#fff6a0'); newsPush(`A SHINY typist joins the crew: ${nt.name} glitters faintly and refuses to explain why.`); } cheer(900, 'HI!'); newsPush('A new typist swings in. HR hands over a name tag and a banana.'); } } },
+    up: el => { const at = IMI.centerOf(el), had = JSON.stringify(cur().up) + cur().paws; buyUp(el.dataset.k); if (JSON.stringify(cur().up) + cur().paws !== had) { IMI.burst(at[0], at[1], ['spark', 'leaf', 'star'], 10); vib(25); boughtFx(el); if (el.dataset.k === 'paw') { const nt = cur().crew[cur().crew.length - 1]; if (nt && nt.shiny) { floatText(`SHINY ${nt.name.toUpperCase()}!`, at[0], at[1] - 40, '#ffe680', true); shock(at[0], at[1], '#ffe680', true); flash('#fff6a0'); newsPush(`A SHINY typist joins the crew: ${nt.name} glitters faintly and refuses to explain why.`); } cheer(900, 'HI!'); if (nt && ui.lastLook) revealLook(at, -70); newsPush('A new typist swings in. HR hands over a name tag and a banana.'); } } },
     bankword: el => { const at = IMI.centerOf(el); if (bankWord(cur(), el.dataset.w)) { IMI.sfx.key(); vib(8); shock(at[0], at[1], '#7be05a'); floatText('+' + el.dataset.w, at[0], at[1] - 10); } },
-    buy: el => { const at = IMI.centerOf(el), before = bananas.get(); buy(el.dataset.what, el.dataset.i); if (bananas.get() < before) { IMI.burst(at[0], at[1], ['banana', 'spark', 'star'], 12); vib(25); } },
+    buy: el => { const at = IMI.centerOf(el), before = bananas.get(); buy(el.dataset.what, el.dataset.i); if (bananas.get() < before) { IMI.burst(at[0], at[1], ['banana', 'spark', 'star'], 12); vib(25); boughtFx(el); } },
     write: el => writeTitle(el.dataset.id, el),
     focus: el => { const r = RBY[el.dataset.id]; if (!r || lockedDesk(r) !== undefined) return; S.focus = el.dataset.id; S.autoFocus = false; mark(); save(); IMI.emit('focus', { id: S.focus }); },
     unfocus: () => { S.focus = null; S.autoFocus = true; pickAutoFocus(); mark(); save(); },
@@ -2507,7 +2717,7 @@
     coinClock += dt; if (coinClock >= 1.1) { coinClock = 0; royCoins(); }
     if (divCount(DIVS[4])) { premiereClock += dt; if (premiereClock >= 300) { premiereClock = 0; premiere(); } }
     royFloat -= dt; if (royFloat <= 0) { royFloat = 2.4; royPing(); }
-    if (!document.hidden) { goldIn -= dt * (museOn('christie') ? 1.3 : 1) * (1 + .25 * legLvl('golden')) * (1 + .03 * S.desks.reduce((a, d) => a + d.crew.filter(t => t.trait === 'scout').length, 0)); if (goldIn <= 0) { goldIn = 55 + rand() * 80; spawnGold(); } }
+    if (!document.hidden) { goldIn -= dt * (museOn('christie') ? 1.3 : 1) * (1 + .25 * legLvl('golden')) * (1 + .03 * S.desks.reduce((a, d) => a + d.crew.reduce((b, t) => b + (t.trait === 'scout' ? trMul(t) : 0), 0), 0)); if (goldIn <= 0) { goldIn = 55 + rand() * 80; spawnGold(); } }
     if (S.pub.tier && S.pub.on) { pubClock += dt; if (pubClock >= pubPeriod()) { pubClock = 0; pubSell(); } } else pubClock = 0;
     renderT += dt;
     if (renderT >= renderGap && dirty) {                           // renders are spaced by how long they take, so a slow phone spends a fixed share of its time here
