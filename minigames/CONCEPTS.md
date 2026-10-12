@@ -43,6 +43,24 @@ Three lanes, speed ramps up. Swipe/arrows to change lane, swipe up/Space to jump
 ### Road Hop (`road-hop.html`)
 Crossy-Road-style hopper in the city: sidewalks, grass and roads with cars, trucks and buses. Fruit scores, garbage costs points and stuns you, trees/bushes/bins block hops. A garbage truck creeps up from behind (the camera floor rises), so you have to keep moving. Golden = traffic crawls; Diamond = traffic stops and all garbage becomes bananas.
 
+### Coconut Bowling (`coconut-bowling.html`)
+Real ten-frame bowling scoring (strikes, spares, tenth-frame bonus balls). A throw is three taps: the coconut slides along the foul line, the aim arrow swings, the power bar fills. Steer a little while it rolls (arrows or the pointer). Pins are simulated as circles with simple collisions. A Golden pin is +50; the rare Diamond pin is +200 and makes your next coconut heavier and faster. Scores shown are bowling score plus bonus.
+
+### Crate Packer (`crate-packer.html`)
+Block-Blast-style: three stacks at a time dragged onto an 8x8 bay (or 1-3, arrows, Space). Full rows/columns ship; the multiplier follows a chain (resets after 3 placements without a shipment). Golden crate = ships its row and column (+100); Diamond crate = ships the whole bay (+500). Clearing the bay is +300. Ends when none of the three stacks fit.
+
+### Banana Heist (`banana-heist.html`)
+Top-down stealth. Hold to creep (steer toward your finger / arrows); release to freeze. Keepers' flashlights sweep; moving in the beam fills the alert bar fast, standing still slowly, crates block the beam. Grab the bunch at the stall, then carry it back down. Caught = lose a heart and start over. Under 30% alert on a heist is a GHOST run (x2). Golden bunch x3, Diamond bunch x10.
+
+### Typewriter Rhythm (`typewriter-rhythm.html`)
+Four lanes (D F J K or arrow keys, or tap a lane). Three tunes: Jungle Groove (96 BPM), Carriage Return (118), Banana Rush (146). The backing track is synthesised and scheduled just ahead of the playhead; each hit plays a pentatonic note. Misses drain the ink bar; empty = out. Golden key = x2 for 8s, Diamond key = auto-play for 6s. Ends with a rank (S/A/B/C).
+
+### Fruit Stall (`fruit-stall.html`)
+Customers (monkey, orangutan, gorilla, parrot) order 1-3 fruits; tap a bin (or 1-5) and the fruit goes to the most impatient customer who needs it. Fast service earns tips; leaving costs a heart. Rush hour every 35s. Golden VIP (3 items, x3, heart) and Diamond customer (one of everything, x10, full hearts).
+
+### Library Tidy (`library-tidy.html`)
+Real Library titles (a 70-title-per-shelf snapshot in `library-titles.js`, rebuilt with `python minigames/tools/make-titles.py`) fall toward the floor; tap the right shelf (books, films, songs, TV, kids, radio, sketches; a run uses 5 of the 7, starting with 3). Spines are colour-coded early and fade out over ~75s. Full shelf = bonus. Golden Edition x3 and slows the room; Diamond First Edition tidies everything on screen.
+
 ## Remaining ideas
 
 | Game | Loop | Input |
