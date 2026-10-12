@@ -35,7 +35,7 @@
   const cust2xCv = document.createElement('canvas'); cust2xCv.width = 17; cust2xCv.height = 28; const cust2x = cust2xCv.getContext('2d');
   let G = null, botOn = false;
   function newGame() {
-    G = { t: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, cust: [null, null, null], spawnT: 1.2, served: 0, walked: 0, goldens: 0, diamonds: 0, shake: 0, binPress: [0, 0, 0, 0, 0], rush: 0, wrong: 0, dead: 0, lastRush: 0, sinceDia: 0 };
+    G = { t: 0, score: 0, hearts: 3, combo: 0, bestCombo: 0, cust: [null, null, null], spawnT: .8, served: 0, walked: 0, goldens: 0, diamonds: 0, shake: 0, binPress: [0, 0, 0, 0, 0], stock: [5, 5, 5, 5, 5], restock: [0, 0, 0, 0, 0], rush: 0, wrong: 0, dead: 0, lastRush: 0, sinceDia: 0 };
     fx.clear(); render();
   }
   const mult = () => ui.mult(G.combo);
@@ -44,12 +44,12 @@
   /* ---------- customers ---------- */
   function spawn() {
     const free = G.cust.map((c, i) => c ? -1 : i).filter(i => i >= 0); if (!free.length) return;
-    const slot = free[Math.floor(Math.random() * free.length)], d = clamp(G.t / 120, 0, 1);
-    let size = 1 + (Math.random() < .35 + d * .4 ? 1 : 0) + (Math.random() < d * .35 ? 1 : 0), kind = 'normal';
+    const slot = free[Math.floor(Math.random() * free.length)], d = clamp(G.t / 50, 0, 1);
+    let size = 1 + (Math.random() < .45 + d * .4 ? 1 : 0) + (Math.random() < .12 + d * .55 ? 1 : 0) + (Math.random() < d * .4 ? 1 : 0), kind = 'normal';
     if (G.t > 15 && Math.random() < .04 + RARE * .6) { kind = 'golden'; size = 3; }
     else if (G.t > 40 && Math.random() < .008 + Math.min(.015, G.sinceDia / 6000) + RARE * .6) { kind = 'diamond'; size = 5; G.sinceDia = 0; }
     let need; if (kind === 'diamond') need = [0, 1, 2, 3, 4]; else { need = []; for (let i = 0; i < size; i++) need.push(Math.floor(Math.random() * 5)); }
-    const patience = (kind === 'diamond' ? 26 : 8.5 + size * 3.2) * lerp(1, .72, d);
+    const patience = (kind === "diamond" ? 18 : 4.6 + size * 1.9) * lerp(1, .55, d);
     G.cust[slot] = { slot, x: slot === 0 ? -14 : slot === 2 ? W + 14 : W / 2, type: Math.floor(Math.random() * 4), hat: Math.floor(Math.random() * 6), need, got: need.map(() => false), kind, patience, max: patience, state: 'in', t: 0, born: G.t, mood: 0 };
     G.walked++; if (kind !== 'normal') { sfx.golden(); ui.say(kind === 'diamond' ? 'DIAMOND CUSTOMER!<small>one of everything · x10</small>' : 'GOLDEN VIP!<small>3 items · x3 tips</small>', kind === 'diamond' ? 'ice' : ''); }
     sfx.tick();
@@ -57,10 +57,12 @@
 
   function serve(fruit) {
     if (!S.playing || G.dead) return; G.binPress[fruit] = .12;
+    if (G.restock[fruit] > 0) return;
+    if (G.stock[fruit] <= 0) { G.restock[fruit] = .75; sfx.tick(); ui.floatText(4 + fruit * (BINW + 1) + BINW / 2, BIN_Y - 6, 'RESTOCKING', ''); return; }
     let best = null; for (const c of G.cust) { if (!c || c.state !== 'wait') continue; if (c.need.some((n, i) => n === fruit && !c.got[i])) { if (!best || c.patience < best.patience) best = c; } }
     const x = 4 + fruit * (BINW + 1) + BINW / 2;
     if (!best) { G.wrong++; G.combo = 0; G.score = Math.max(0, G.score - 2); sfx.typo(); ui.floatText(x, BIN_Y - 6, 'NO ONE WANTS THAT', 'bad'); G.shake = 1.5; render(); return; }
-    const i = best.need.findIndex((n, k) => n === fruit && !best.got[k]); best.got[i] = true; sfx.ding(Math.min(10, best.got.filter(Boolean).length * 2 + G.combo)); best.mood = 1;
+    const i = best.need.findIndex((n, k) => n === fruit && !best.got[k]); best.got[i] = true; G.stock[fruit]--; sfx.ding(Math.min(10, best.got.filter(Boolean).length * 2 + G.combo)); best.mood = 1;
     fx.burst(best.x, COUNTER_Y - 14, [KEYC[fruit], '#fff6d6'], 6, 44, 80, .35); flyFruit(fruit, x, BIN_Y, best.x, COUNTER_Y - 16);
     if (best.got.every(Boolean)) finishOrder(best);
   }
@@ -88,12 +90,12 @@
     for (let i = flies.length - 1; i >= 0; i--) { flies[i].t += rdt / .28; if (flies[i].t >= 1) flies.splice(i, 1); }
     if (!G || !S.playing) return;
     const dt = rdt; G.t += dt; G.sinceDia += dt; G.shake = Math.max(0, G.shake - rdt * 18);
-    for (let i = 0; i < 5; i++) if (G.binPress[i] > 0) G.binPress[i] -= dt;
+    for (let i = 0; i < 5; i++) { if (G.binPress[i] > 0) G.binPress[i] -= dt; if (G.restock[i] > 0) { G.restock[i] -= dt; if (G.restock[i] <= 0) { G.restock[i] = 0; G.stock[i] = 5; sfx.clack(5); } } }
     if (G.dead > 0) { G.dead -= dt; if (G.dead <= 0) S.finish([['CUSTOMERS SERVED', G.served], ['BEST STREAK', G.bestCombo], ['WRONG TAPS', G.wrong], ['TIME OPEN', Math.round(G.t) + 's'], ['VIP / DIAMOND', `${G.goldens} / ${G.diamonds}`]]); }
     /* rush hour every 35s */
-    if (G.t - G.lastRush > 35 && G.t > 20) { G.lastRush = G.t; G.rush = 7; ui.say('RUSH HOUR!<small>customers pile in</small>'); sfx.golden(); }
+    if (G.t - G.lastRush > 22 && G.t > 14) { G.lastRush = G.t; G.rush = 7; ui.say('RUSH HOUR!<small>customers pile in</small>'); sfx.golden(); }
     if (G.rush > 0) G.rush -= dt;
-    G.spawnT -= dt; if (G.hearts > 0 && G.spawnT <= 0) { spawn(); G.spawnT = lerp(5.2, 2.4, clamp(G.t / 120, 0, 1)) * (G.rush > 0 ? .35 : 1) * rng(.8, 1.2); }
+    G.spawnT -= dt; if (G.hearts > 0 && G.spawnT <= 0) { spawn(); G.spawnT = lerp(3.4, 1.15, clamp(G.t / 50, 0, 1)) * (G.rush > 0 ? .4 : 1) * rng(.8, 1.2); }
     for (let i = 0; i < 3; i++) {
       const c = G.cust[i]; if (!c) continue; c.t += dt;
       if (c.state === 'in') { const tx = SLOTS[i]; c.x += (tx - c.x) * Math.min(1, dt * 6); if (c.t > .7) { c.state = 'wait'; c.x = tx; } }
@@ -101,7 +103,7 @@
       else if (c.state === 'happy') { c.x += (c.x < W / 2 ? -1 : 1) * 0 * dt; if (c.t > .9) G.cust[i] = null; }
       else if (c.state === 'angry') { c.x += (i === 0 ? -1 : i === 2 ? 1 : 0) * 70 * dt; if (c.t > .8) G.cust[i] = null; }
     }
-    if (botOn) { G.bt = (G.bt || 0) + dt; if (G.bt > .32) { G.bt = 0; const c = G.cust.filter(q => q && q.state === 'wait').sort((a, b) => a.patience - b.patience)[0]; if (c) { const i = c.need.findIndex((n, k) => !c.got[k]); if (i >= 0) serve(c.need[i]); } } }
+    if (botOn) { G.bt = (G.bt || 0) + dt; if (G.bt > .62) { G.bt = 0; const c = G.cust.filter(q => q && q.state === 'wait').sort((a, b) => a.patience - b.patience)[0]; if (c) { const idx = c.need.map((n, k) => k).filter(k => !c.got[k]); const open = idx.find(k => G.restock[c.need[k]] <= 0); if (open != null) serve(c.need[open]); } } }
   }
 
   /* ---------- draw ---------- */
@@ -143,6 +145,8 @@
       g.fillStyle = '#1a0f14'; g.fillRect(x, y, BINW, 48); g.fillStyle = '#8a5a2b'; g.fillRect(x + 1, y + 1, BINW - 2, 46); g.fillStyle = '#b57d3e'; g.fillRect(x + 1, y + 1, BINW - 2, 2); g.fillStyle = '#5a3517'; g.fillRect(x + 1, y + 44, BINW - 2, 3); for (let yy = y + 12; yy < y + 44; yy += 10) { g.fillStyle = '#7a4a1e'; g.fillRect(x + 1, yy, BINW - 2, 1); }
       const sp = FRUIT[i], px0 = x + BINW / 2; g.drawImage(sp, Math.round(px0 - sp.width / 2) - 4, y + 6 - (press ? 0 : 0)); g.drawImage(sp, Math.round(px0 - sp.width / 2) + 4, y + 3 + (i % 2) * 2); g.drawImage(sp, Math.round(px0 - sp.width / 2), y + 12);
       g.fillStyle = '#1a0f14'; g.fillRect(x + 4, y + 33, 14, 11); g.fillStyle = '#fff6d6'; g.fillRect(x + 5, y + 34, 12, 9); const f = FONT[String(i + 1)]; if (f) { g.fillStyle = '#1a0f14'; f.split('').forEach((b, q) => { if (b === '1') g.fillRect(x + 10 + (q % 3), y + 36 + Math.floor(q / 3), 1, 1); }); }
+      for (let k = 0; k < 5; k++) { g.fillStyle = k < G.stock[i] ? '#74c648' : '#1a0f14'; g.fillRect(x + 3 + k * 4, y + 28, 3, 3); }
+      if (G.stock[i] <= 0) { g.fillStyle = 'rgba(26,15,20,.72)'; g.fillRect(x + 1, y + 1, BINW - 2, 46); const lab = G.restock[i] > 0 ? 'WAIT' : 'EMPTY'; g.fillStyle = G.restock[i] > 0 ? '#ffd23a' : '#ff7a6a'; lab.split('').forEach((ch, k) => { const f = FONT[ch]; if (f) f.split('').forEach((b, q) => { if (b === '1') g.fillRect(x + 3 + k * 4 + (q % 3) - (lab.length === 4 ? -2 : 0), y + 12 + Math.floor(q / 3), 1, 1); }); }); if (G.restock[i] > 0) { g.fillStyle = '#ffd23a'; g.fillRect(x + 3, y + 22, Math.round(16 * (1 - G.restock[i] / .75)), 2); } }
       if (press) { g.fillStyle = 'rgba(255,246,214,.28)'; g.fillRect(x + 1, y + 1, BINW - 2, 46); }
     }
     if (G.rush > 0 && Math.floor(G.t * 4) % 2) { g.fillStyle = 'rgba(255,210,58,.07)'; g.fillRect(0, 0, W, H); }
@@ -152,7 +156,7 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'stall', title: 'FRUIT<span>STALL</span>', sub: 'Serve the line before they lose patience.',
-    legend: [[FRUIT[0], '<em>tap</em> a bin or press 1-5'], [CRE[0], '<em>fast</em> service = tips'], [CRE[1], '<em class="bad">angry</em> = -1 heart'], [FRUIT[4], '<em>wrong</em> fruit = combo breaks'], [A.golden, '<em>x3</em> golden VIP'], [A.diamond, '<em class="ice">x10</em> diamond customer']],
+    legend: [[FRUIT[0], '<em>tap</em> a bin or press 1-5'], [CRE[0], '<em>fast</em> service = tips'], [CRE[1], '<em class="bad">angry</em> = -1 heart'], [FRUIT[4], '<em>bins</em> empty: tap to restock'], [A.golden, '<em>x3</em> golden VIP'], [A.diamond, '<em class="ice">x10</em> diamond customer']],
     hint: 'tap the fruit they ask for · keys 1-5', spaceStarts: true, onStart: () => newGame(), score: () => G.score,
   });
   addEventListener('pointerdown', ev => { if (!S.playing || ev.target.closest('.mg-over,.mg-nav')) return; const [px, py] = st.toArt(ev); if (py < BIN_Y - 6) return; const i = clamp(Math.floor((px - 3) / (BINW + 1)), 0, 4); serve(i); });

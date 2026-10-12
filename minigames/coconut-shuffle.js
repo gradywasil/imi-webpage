@@ -38,14 +38,24 @@
   /* ---------- rounds ---------- */
   function nextRound() {
     G.round++; const r = G.round;
-    G.n = r < 4 ? 3 : r < 9 ? 4 : 5;
+    G.n = r < 2 ? 3 : r < 4 ? 4 : 5;
     G.kind = r >= 5 && Math.random() < .03 + RARE * .5 ? 'diamond' : r >= 3 && Math.random() < .09 + RARE * .5 ? 'golden' : 'normal';
     const winner = Math.floor(Math.random() * G.n);
     G.shells = Array.from({ length: G.n }, (_, i) => ({ slot: i, lift: 0, banana: i === winner, bad: 0, hop: 0 }));
-    const swaps = clamp(4 + Math.floor(r * 1.25), 4, 22) * (G.kind === 'diamond' ? 2 : 1);
-    G.dur = clamp(.46 - r * .022, .13, .46) * (G.kind === 'diamond' ? .65 : 1);
-    G.queue = []; let last = -1;
-    for (let i = 0; i < swaps; i++) { let a, b; do { a = Math.floor(Math.random() * G.n); b = Math.floor(Math.random() * G.n); } while (a === b || (a + b) === last); last = a + b; G.queue.push([a, b]); }
+    const swaps = clamp(6 + Math.floor(r * 1.7), 6, 30) * (G.kind === 'diamond' ? 2 : 1);
+    G.dur = clamp(.4 - r * .03, .085, .4) * (G.kind === 'diamond' ? .65 : 1);
+    G.pickMax = r < 5 ? 0 : clamp(7 - (r - 5) * .45, 2.4, 7);                       /* a pick timer arrives from round 5 */
+    G.queue = []; let last = '';
+    for (let i = 0; i < swaps; i++) {
+      let pairs, key;
+      do {
+        const idx = Array.from({ length: G.n }, (_, k) => k).sort(() => Math.random() - .5);
+        pairs = [[idx[0], idx[1]]];
+        if (r >= 3 && G.n >= 4 && Math.random() < Math.min(.55, .15 + r * .05)) pairs.push([idx[2], idx[3]]);     /* two swaps at once */
+        key = pairs.map(q => Math.min(...q) + '' + Math.max(...q)).join('|');
+      } while (key === last); last = key;
+      G.queue.push({ pairs, fake: r >= 4 && Math.random() < Math.min(.28, .08 + r * .02) });                 /* a fake-out: they slide halfway and snap back */
+    }
     G.cursor = Math.floor(G.n / 2); G.swap = null; G.chosen = -1;
     G.stage = 'intro'; G.st = 0; dealer.expr = 'normal';
     ui.say(G.kind === 'golden' ? `ROUND ${r}<small>GOLDEN BANANA · x5</small>` : G.kind === 'diamond' ? `ROUND ${r}<small>DIAMOND · blink and it's gone · x10</small>` : `ROUND ${r}`, G.kind === 'diamond' ? 'ice' : '');
@@ -56,7 +66,7 @@
   function pickSlot(slot) {
     if (G.stage !== 'pick' || slot < 0 || slot >= G.n) return;
     const sh = G.shells.find(s => s.slot === slot), x = slotX(slot, G.n), ok = sh.banana;
-    G.chosen = slot; G.stage = 'reveal'; G.st = 0; G.result = ok; sh.hop = .25;
+    ui.setMeter(0); G.chosen = slot; G.stage = 'reveal'; G.st = 0; G.result = ok; sh.hop = .25;
     if (ok) {
       const quick = G.pickT < 2.2, base = 50 + 10 * G.round, k = G.kind === 'diamond' ? 10 : G.kind === 'golden' ? 5 : 1;
       G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); G.cleared++;
@@ -88,20 +98,27 @@
       case 'idle': nextRound(); break;
       case 'intro': lift(0); if (G.st > 1.1) { G.stage = 'show'; G.st = 0; sfx.tick(); } break;
       case 'show': {
-        const hold = G.kind === 'diamond' ? .45 : clamp(1.2 - G.round * .04, .6, 1.2);
+        const hold = G.kind === 'diamond' ? .4 : clamp(.95 - G.round * .07, .3, .95);
         lift(G.st < hold + .25 ? 13 : 0, 70); if (G.st > hold + .25 + .35) { G.stage = 'shuffle'; G.st = 0; G.swap = null; } break;
       }
       case 'shuffle': {
         lift(0);
-        if (!G.swap) { const q = G.queue.shift(); if (!q) { G.stage = 'pick'; G.st = 0; G.pickT = 0; ui.say('WHERE\'S THE BANANA?', '', 1); break; } G.swap = { a: q[0], b: q[1], t: 0 }; sfx.tick(); }
+        if (!G.swap) { const q = G.queue.shift(); if (!q) { G.stage = 'pick'; G.st = 0; G.pickT = 0; ui.say('WHERE\'S THE BANANA?', '', 1); break; } G.swap = { pairs: q.pairs, fake: q.fake, t: 0 }; sfx.tick(); }
         G.swap.t += dt / G.dur;
         if (G.swap.t >= 1) {
-          const sa = G.shells.find(s => s.slot === G.swap.a), sb = G.shells.find(s => s.slot === G.swap.b); sa.slot = G.swap.b; sb.slot = G.swap.a;
-          fx.burst(slotX(G.swap.a, G.n), BASE + 2, ['#c9b88a'], 2, 14, 30, .2); fx.burst(slotX(G.swap.b, G.n), BASE + 2, ['#c9b88a'], 2, 14, 30, .2); G.swap = null;
+          if (!G.swap.fake) for (const [a, b] of G.swap.pairs) {
+            const sa = G.shells.find(s => s.slot === a), sb = G.shells.find(s => s.slot === b); sa.slot = b; sb.slot = a;
+            fx.burst(slotX(a, G.n), BASE + 2, ['#c9b88a'], 2, 14, 30, .2); fx.burst(slotX(b, G.n), BASE + 2, ['#c9b88a'], 2, 14, 30, .2);
+          }
+          G.swap = null;
         }
         break;
       }
-      case 'pick': G.pickT += dt; if (botOn && G.pickT > .6) pickSlot(G.shells.find(s => s.banana).slot); break;
+      case 'pick':
+        G.pickT += dt; ui.setMeter(G.pickMax ? 1 - G.pickT / G.pickMax : 0, false);
+        if (botOn && G.pickT > .6) pickSlot(G.shells.find(s => s.banana).slot);
+        if (G.pickMax && G.pickT >= G.pickMax) { ui.setMeter(0); const wrong = G.shells.find(s => !s.banana); ui.floatText(W / 2, BASE - 40, 'TOO SLOW!', 'bad'); pickSlot(wrong.slot); }
+        break;
       case 'reveal': {
         const win = G.shells.find(s => s.banana);
         G.shells.forEach(s => { const want = s.slot === G.chosen || (G.st > .55 && !G.result) || (G.st > .35 && G.result) ? 16 : 0; s.lift += clamp(want - s.lift, -80 * dt, 80 * dt); });
@@ -130,9 +147,13 @@
     const spr = G.kind === 'golden' ? A.golden : G.kind === 'diamond' ? A.diamond : A.banana;
     const items = G.shells.map(s => {
       let x = slotX(s.slot, G.n), dy = 0, z = 0;
-      if (G.swap && (s.slot === G.swap.a || s.slot === G.swap.b)) {
-        const e = G.swap.t < .5 ? 2 * G.swap.t * G.swap.t : 1 - Math.pow(-2 * G.swap.t + 2, 2) / 2, ar = s.slot === G.swap.a, to = slotX(ar ? G.swap.b : G.swap.a, G.n);
-        x = lerp(x, to, clamp(e, 0, 1)); dy = Math.sin(clamp(G.swap.t, 0, 1) * Math.PI) * (ar ? 9 : -5); z = ar ? 1 : -1;
+      if (G.swap) {
+        for (const [pa, pb] of G.swap.pairs) {
+          if (s.slot !== pa && s.slot !== pb) continue;
+          const t = clamp(G.swap.t, 0, 1), ar = s.slot === pa, to = slotX(ar ? pb : pa, G.n);
+          const e = G.swap.fake ? Math.sin(t * Math.PI) * .55 : (t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+          x = lerp(x, to, clamp(e, 0, 1)); dy = Math.sin(t * Math.PI) * (ar ? 9 : -5); z = ar ? 1 : -1;
+        }
       }
       const hop = s.hop > 0 ? -Math.sin((.25 - s.hop) / .25 * Math.PI) * 4 : 0, wob = s.bad > 0 ? (Math.floor(s.bad * 40) % 2 ? 2 : -2) : 0;
       return { s, x: x + wob, y: BASE + dy + hop, z };

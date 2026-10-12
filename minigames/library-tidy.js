@@ -1,6 +1,6 @@
 /* ============================================================
    LIBRARY TIDY: titles from the monkeys' own Library fall toward the floor; send each to the right shelf (tap it, or press 1-5).
-   Books, kids' stories, films, TV, radio plays, sketches and songs all turn up. Early on the spines are colour coded; later you have to know.
+   Books, kids' stories, films, TV, radio plays, sketches and songs all turn up. Spines are colour coded to their shelf; the game is how fast you can keep up.
    Fill a shelf for a bonus. Misfiled or dropped titles cost hearts. Rare: a Golden Edition pays x3 and slows the room, the Diamond First Edition tidies everything on screen.
    Standalone: titles come from a small snapshot (library-titles.js) of the real Library.
    ============================================================ */
@@ -39,10 +39,10 @@
   /* ---------- cards ---------- */
   function spawn() {
     const sh = G.shelves[Math.floor(Math.random() * G.shelves.length)], pool = TITLES[sh.k] || FALLBACK[sh.k], title = pool[Math.floor(Math.random() * pool.length)];
-    const d = clamp(G.t / 120, 0, 1), lines = wrap(title, 13); let kind = 'normal';
+    const d = clamp(G.t / 55, 0, 1), lines = wrap(title, 10); let kind = 'normal';
     if (G.t > 12 && Math.random() < .035 + RARE * .6) kind = 'gold'; else if (G.t > 30 && Math.random() < .009 + RARE * .6) kind = 'ice';
-    const hint = Math.random() < clamp(1.05 - G.t / 75, 0, 1), cardH = 9 + lines.length * 6;
-    G.cards.push({ title, lines, cat: sh.k, col: sh.col, hint, kind, w: 62, h: cardH, x: W / 2 + rng(-12, 12), y: -cardH, vy: lerp(20, 44, d) * rng(.9, 1.1), state: 'fall', t: 0, born: G.t });
+    const hint = true, cardH = 7 + lines.length * 6;
+    G.cards.push({ title, lines, cat: sh.k, col: sh.col, hint, kind, w: 50, h: cardH, x: W / 2 + rng(-26, 26), y: -cardH, vy: lerp(27, 66, d) * rng(.9, 1.12), state: 'fall', t: 0, born: G.t });
   }
   const active = () => { let a = null; for (const c of G.cards) if (c.state === 'fall' && (!a || c.y > a.y)) a = c; return a; };
 
@@ -80,11 +80,11 @@
     const slow = G.slowT > 0 ? .5 : 1, dt = rdt * slow; G.t += rdt; G.shake = Math.max(0, G.shake - rdt * 18); if (G.slowT > 0) G.slowT -= rdt;
     ui.setMeter(G.slowT / 6, false);
     if (G.dead > 0) { G.dead -= rdt; if (G.dead <= 0) S.finish([['SORTED', G.sorted], ['MISFILED', G.misfiled], ['DROPPED', G.dropped], ['SHELVES FILLED', G.full], ['BEST STREAK', G.bestCombo], ['GOLD / DIAMOND', `${G.goldens} / ${G.diamonds}`]]); }
-    if (G.unlocked === 3 && G.t > 22) { unlock(); } else if (G.unlocked === 4 && G.t > 52) { unlock(); }
+    if (G.unlocked === 3 && G.t > 14) { unlock(); } else if (G.unlocked === 4 && G.t > 34) { unlock(); }
     for (const s of G.shelves) if (s.flash > 0) s.flash -= rdt;
-    const d = clamp(G.t / 120, 0, 1); G.spawnT -= dt;
+    const d = clamp(G.t / 55, 0, 1); G.spawnT -= dt;
     const tail = G.cards.filter(c => c.state === 'fall').reduce((m, c) => Math.min(m, c.y), 1e9);
-    if (G.hearts > 0 && G.spawnT <= 0 && tail > 24) { spawn(); G.spawnT = lerp(3.4, 1.35, d) * rng(.85, 1.2); }
+    if (G.hearts > 0 && G.spawnT <= 0 && tail > 12 && G.cards.filter(c => c.state === 'fall').length < 7) { spawn(); if (d > .4 && Math.random() < d * .35) G.spawnT = .22; else G.spawnT = lerp(2.0, .62, d) * rng(.8, 1.2); }
     for (let i = G.cards.length - 1; i >= 0; i--) {
       const c = G.cards[i]; c.t += dt;
       if (c.state === 'fall') { c.y += c.vy * dt; if (c.y + c.h >= FLOOR) { c.state = 'drop'; c.t = 0; G.dropped++; G.combo = 0; G.hearts--; G.shake = 4; sfx.thud(); sfx.miss(); ui.floatText(c.x, FLOOR - 8, 'DROPPED!', 'bad'); fx.burst(c.x, FLOOR, ['#c9b88a', '#fff6d6'], 8, 40, 80, .4); render(true); if (G.hearts <= 0 && !G.dead) { G.dead = 1.1; sfx.over(); } } }
@@ -93,7 +93,7 @@
       else if (c.state === 'drop') { c.y += 140 * dt; if (c.t > .5) c.state = 'gone'; }
       if (c.state === 'gone') G.cards.splice(i, 1);
     }
-    if (botOn) { G.bt += rdt; const c = active(); if (c && G.bt > .55) { G.bt = 0; pick(G.shelves.findIndex(s => s.k === c.cat)); } }
+    if (botOn) { G.bt += rdt; const c = active(); if (c && G.bt > .8) { G.bt = 0; pick(G.shelves.findIndex(s => s.k === c.cat)); } }
   }
   function unlock() { const c = order[G.unlocked]; G.shelves.push({ ...c, n: 0, flash: 0, tint: [] }); G.unlocked++; sfx.golden(); ui.say(`NEW SHELF: ${c.label}`); }
 
@@ -124,8 +124,8 @@
       g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(x + 2, y + 2, c.w, c.h);
       g.fillStyle = '#1a0f14'; g.fillRect(x - 1 + shake, y - 1, c.w + 2, c.h + 2);
       const spine = c.kind === 'gold' ? '#ffd23a' : c.kind === 'ice' ? '#9be8ff' : c.hint ? c.col : '#8c8670';
-      g.fillStyle = c.kind === 'ice' ? '#e8fbff' : c.kind === 'gold' ? '#fff3b0' : '#fff6d6'; g.fillRect(x + shake, y, c.w, c.h); g.fillStyle = spine; g.fillRect(x + shake, y, 5, c.h); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 4 + shake, y, 1, c.h); g.fillStyle = '#c9b88a'; g.fillRect(x + shake, y + c.h - 1, c.w, 1);
-      c.lines.forEach((ln, i) => text(ln, x + 8 + shake, y + 4 + i * 6, '#1a0f14'));
+      g.fillStyle = c.kind === 'ice' ? '#e8fbff' : c.kind === 'gold' ? '#fff3b0' : '#fff6d6'; g.fillRect(x + shake, y, c.w, c.h); g.fillStyle = spine; g.fillRect(x + shake, y, 4, c.h); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 3 + shake, y, 1, c.h); g.fillStyle = '#c9b88a'; g.fillRect(x + shake, y + c.h - 1, c.w, 1);
+      c.lines.forEach((ln, i) => text(ln, x + 7 + shake, y + 4 + i * 6, '#1a0f14'));
       if (c.kind !== 'normal' && Math.floor(G.t * 10) % 2 === 0) fx.spark(x + c.w - 4, y + 3, c.kind === 'ice' ? '#9be8ff' : '#fff08c');
       if (c === act) { const b = Math.floor(performance.now() / 200) % 2; g.fillStyle = '#ffd23a'; g.fillRect(x - 5 - b, y + Math.floor(c.h / 2) - 2, 3, 5); g.fillRect(x + c.w + 2 + b, y + Math.floor(c.h / 2) - 2, 3, 5); }
     }
@@ -136,7 +136,7 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'tidy', title: 'LIBRARY<span>TIDY</span>', sub: 'Shelve the Library, one title at a time.',
-    legend: [[A.fruits[4], '<em>tap</em> a shelf · keys 1-5'], [A.coconut, '<em class="bad">misfile</em> or drop = -1 heart'], [A.golden, '<em>x3</em> golden edition'], [A.diamond, '<em class="ice">first edition</em> tidies all'], [A.heart, '<em>full shelf</em> = bonus'], [A.banana, '<em>spines</em> hint, then fade']],
+    legend: [[A.fruits[4], '<em>tap</em> a shelf · keys 1-5'], [A.coconut, '<em class="bad">misfile</em> or drop = -1 heart'], [A.golden, '<em>x3</em> golden edition'], [A.diamond, '<em class="ice">first edition</em> tidies all'], [A.heart, '<em>full shelf</em> = bonus'], [A.banana, '<em>spine colour</em> = shelf']],
     hint: 'read the title, tap the shelf it belongs on', spaceStarts: true, onStart: () => newGame(), score: () => G.score,
   });
   addEventListener('pointerdown', ev => { if (!S.playing || ev.target.closest('.mg-over,.mg-nav')) return; const [px, py] = st.toArt(ev); if (py < SHELF_Y - 4) return; pick(clamp(Math.floor(px / colW()), 0, G.shelves.length - 1)); });
