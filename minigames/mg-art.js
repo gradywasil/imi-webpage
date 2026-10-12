@@ -154,6 +154,12 @@
       [13, 22].forEach(y0 => px.shape(and(body, box(0, y0, 30, 2)), R.metal, 3));
       px.shape(and(sub(ell(15, 6, 14, 5.6), ell(15, 6.6, 11.6, 3.6)), (x, y) => y >= 6.2), R.woodL, 4);
     });
+    /* a tiny front-facing monkey (two frames: standing, hopping) for the top-down games */
+    S.monkeyS = [0, 1].map(f => make(13, 14, px => {
+      px.shape(ell(6.5, 12.6 - f, 2, 1.2), R.furD, 1); px.shape(ell(3.2, 12.8 - f * 2, 1.4, 1.1), R.fur, 2); px.shape(ell(9.8, 12.8 - f * 2, 1.4, 1.1), R.fur, 2);
+      px.shape(ell(6.5, 9.8 - f, 3.7, 3.2), R.fur, 3); px.shape(ell(1.8, 5.2, 1.7, 1.7), R.furD, 4); px.shape(ell(11.2, 5.2, 1.7, 1.7), R.furD, 4);
+      px.shape(ell(6.5, 5.3, 4.5, 4.1), R.fur, 5); px.shape(ell(6.5, 6.2, 3, 2.5), R.skin, 6); px.dot(5, 5, R.ink, 1, 7); px.dot(8, 5, R.ink, 1, 7); px.dot(6, 7, R.ink, 1, 7); px.dot(7, 7, R.ink, 1, 7);
+    }));
     S.cloudPuff = make(5, 5, px => { px.shape(ell(2.5, 2.5, 2.2, 2.2), R.paper, 1); });
     return (built = S);
   }
