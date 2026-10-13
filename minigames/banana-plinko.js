@@ -8,7 +8,7 @@
   'use strict';
   const { rng, clamp, lerp, sfx, h, spriteImg } = MG;
   const W = 120, H = 208, DROP_Y = 20, BIN_TOP = 576, WORLD_H = BIN_TOP + 32, BIN_W = 16, BIN_X = 4, WALL = 4;
-  const VALUES = [100, 25, 10, 5, 10, 25, 100], START_BALLS = 10, G_ACC = 255, PEG_R = 2.8, CIRC_R = 1.9;
+  const VALUES = [100, 25, 10, 5, 10, 25, 100], START_BALLS = 10, G_ACC = 780, PEG_R = 2.8, CIRC_R = 1.9;
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
@@ -19,8 +19,8 @@
   document.querySelector('.mg-hearts').style.display = 'none';
 
   /* ---------- the banana: a crescent, rendered at 24 angles so every frame is crisp pixel art ---------- */
-  const CA = [0, -5.4], RA = 6.2, SPAN = 82 * Math.PI / 180, STEPS = 24;
-  const ARC = [-66, -33, 0, 33, 66].map(d => { const t = Math.PI / 2 + d * Math.PI / 180; return [CA[0] + RA * Math.cos(t), CA[1] + RA * Math.sin(t)]; });
+  const CA = [0, -5.4], RA = 6.2, SPAN = 60 * Math.PI / 180, STEPS = 24;
+  const ARC = [-46, -23, 0, 23, 46].map(d => { const t = Math.PI / 2 + d * Math.PI / 180; return [CA[0] + RA * Math.cos(t), CA[1] + RA * Math.sin(t)]; });
   function crescent(angle, tipPart) {
     const ca = Math.cos(-angle), sa = Math.sin(-angle);
     return (x, y) => {
@@ -46,16 +46,16 @@
   const pegs = [];
   const peg = (x, y, row) => pegs.push({ x, y, r: PEG_R, hot: 0, row, wood: true });
   /* a tall board: the camera follows the banana, so the next obstacle is never fully in view */
-  const WORKERS = [{ y: 114, cx: 60, amp: 34, om: 1.5, ph: 0 }, { y: 370, cx: 60, amp: 34, om: 1.9, ph: 2.4 }];
+  const WORKERS = [{ y: 114, cx: 60, amp: 34, om: 1.5, ph: 0 }, { y: 374, cx: 60, amp: 34, om: 1.9, ph: 2.4 }];
   const SWINGS = [{ ax: 24, ay: 258, len: 24, amp: 1.0, om: 2.1, ph: 0 }, { ax: 96, ay: 258, len: 24, amp: 1.0, om: 1.8, ph: 2 }, { ax: 30, ay: 402, len: 24, amp: 1.0, om: 1.7, ph: 1 }, { ax: 90, ay: 402, len: 24, amp: 1.0, om: 2.2, ph: 3.5 }];
-  const SPINNERS = [{ x: 60, y: 322, arm: 18, om: 2.6 }, { x: 36, y: 526, arm: 13, om: -3.4 }, { x: 84, y: 526, arm: 13, om: 3.4 }];
+  const SPINNERS = [{ x: 60, y: 322, arm: 18, om: 2 }, { x: 36, y: 526, arm: 13, om: -2.4 }, { x: 84, y: 526, arm: 13, om: 2.4 }];
   const BUMPERS = [[60, 226], [30, 178], [90, 178], [33, 466], [87, 466], [60, 498]].map(([x, y]) => ({ x, y, r: 6.8, flash: 0 }));
-  for (let y = 50, r = 0; y <= 530; y += 16, r++) {
+  for (let y = 54, r = 0; y <= 534; y += 20, r++) {
     if (WORKERS.some(w => w.y === y)) continue;                                // the worker's ledge
-    const odd = r % 2, n = odd ? 5 : 6;
+    const odd = r % 2, n = odd ? 4 : 5;
     const ok = x => !BUMPERS.some(b => Math.hypot(b.x - x, b.y - y) < 17) && !SPINNERS.some(sp => Math.hypot(sp.x - x, sp.y - y) < sp.arm + 6) && !SWINGS.some(sw => y >= sw.ay - 8 && y <= sw.ay + sw.len && Math.abs(x - sw.ax) < 22);
-    for (const x of [8.5, W - 8.5]) if (ok(x)) peg(x, y, r);                      // rail pegs: no sliding down the wall to the 100 bin
-    for (let c = 0; c < n; c++) { const x = (odd ? 24 : 15) + c * 18; if (ok(x)) peg(x, y, r); }
+    if (!odd) for (const x of [8.5, W - 8.5]) if (ok(x)) peg(x, y, r);                      // rail pegs: no sliding down the wall to the 100 bin
+    for (let c = 0; c < n; c++) { const x = (odd ? 27 : 16) + c * 22; if (ok(x)) peg(x, y, r); }
   }
   for (let i = 1; i < 7; i++) { const x = BIN_X + i * BIN_W; peg(x, BIN_TOP + 2, 9, true); peg(x, BIN_TOP + 8, 9, true); pegs[pegs.length - 1].post = pegs[pegs.length - 2].post = true; pegs[pegs.length - 1].r = pegs[pegs.length - 2].r = 1.8; }
   let cam = 0;
@@ -99,10 +99,10 @@
       b.x += nx * (rr - d) * .85; b.y += ny * (rr - d) * .85;
       const vpx = b.vx - b.w * ry - ovx, vpy = b.vy + b.w * rx - ovy, vn = vpx * nx + vpy * ny; if (vn >= 0) continue;
       hit = true;
-      if (kick) { const sp = Math.hypot(b.vx, b.vy); b.vx = nx * kick + ovx * .2; b.vy = ny * kick; b.w += rng(-9, 9); return 'kick'; }
+      if (kick) { const sp = Math.hypot(b.vx, b.vy); b.vx = nx * kick + ovx * .2; b.vy = ny < 0 ? ny * kick * .35 + 25 : ny * kick; b.w += rng(-9, 9); return 'kick'; }
       const rn = rx * ny - ry * nx, k = 1 + rn * rn / b.I, j = -(1 + e) * vn / k;
       b.vx += j * nx; b.vy += j * ny; b.w += rn * j / b.I;
-      const tx = -ny, ty = nx, vt = vpx * tx + vpy * ty, rt = rx * ty - ry * tx, kt = 1 + rt * rt / b.I; let jt = -vt / kt; const mu = .55 * j; jt = clamp(jt, -mu, mu);   // friction gives the banana its spin
+      const tx = -ny, ty = nx, vt = vpx * tx + vpy * ty, rt = rx * ty - ry * tx, kt = 1 + rt * rt / b.I; let jt = -vt / kt; const mu = .3 * j; jt = clamp(jt, -mu, mu);   // friction gives the banana its spin
       b.vx += jt * tx; b.vy += jt * ty; b.w += rt * jt / b.I;
     }
     return hit ? 'hit' : null;
@@ -115,12 +115,12 @@
     }
     for (const p of pegs) {
       if (Math.abs(p.y - b.y) > 14 || Math.abs(p.x - b.x) > 14) continue;
-      const r = contact(b, p.x, p.y, p.r, 0, 0, .32, 0);
+      const r = contact(b, p.x, p.y, p.r, 0, 0, .62, 0);
       if (r) { if (!p.post) { p.hot = .2; if (G.hitCd <= 0) { sfx.clack(p.row % 9); G.hitCd = .04; } } if (b.split) { b.split = false; ui.say('DIAMOND BURST!', 'ice'); MG.hitstop(.08); fx.confetti(b.x, b.y, 24, ['#9be8ff', '#fff', '#2a86b8']); sfx.diamond(); fx.ring(b.x, b.y, '#9be8ff', 30); for (let i = 0; i < 4; i++) G.live.push(Object.assign(newBody(b.x, b.y, (i - 1.5) * 34, -50 - rng(0, 25), 'diamond', false), { v: 5 })); } }
     }
     for (const bm of BUMPERS) { if (Math.abs(bm.y - b.y) > 16 || Math.abs(bm.x - b.x) > 16) continue; const r = contact(b, bm.x, bm.y, bm.r, 0, 0, .9, 215); if (r === 'kick') { bm.flash = .2; MG.hitstop(.035); fx.shock(bm.x, bm.y, '#ffd23a', 20); G.bumps++; b.bumpN = (b.bumpN || 0) + 1; const pts = Math.round((b.bumpN <= 3 ? 25 : 5) * mult()); G.score += pts; ft(bm.x, bm.y - 10, 'BUMP +' + pts, 'gold'); sfx.golden(); G.shake = Math.max(G.shake, 1.6); fx.burst(bm.x, bm.y, ['#ffd23a', '#fff08c', '#e86a50'], 10, 70, 30, .35); fx.ring(bm.x, bm.y, '#ffd23a', 14); ui.bump(); render(); } }
     for (const mv of G.mv) { if (Math.abs(mv.y - b.y) > 18 || Math.abs(mv.x - b.x) > 18) continue; const r = contact(b, mv.x, mv.y, mv.r, mv.vx, mv.vy, .75, 0); if (r) { if (b.shoved !== mv.kind || G.t - (b.shoveT || 0) > .4) { b.shoved = mv.kind; b.shoveT = G.t; G.shoves++; sfx.thud(); fx.burst(mv.x, mv.y, ['#c9b88a', '#fff6d6'], 4, 36, 60, .3); } } }
-    const sp = Math.hypot(b.vx, b.vy); if (sp > 300) { b.vx *= 300 / sp; b.vy *= 300 / sp; } b.w = clamp(b.w, -28, 28);
+    const sp = Math.hypot(b.vx, b.vy); if (sp > 460) { b.vx *= 460 / sp; b.vy *= 460 / sp; } b.w = clamp(b.w, -28, 28);
   }
   function land(b) {
     const i = clamp(Math.floor((b.x - BIN_X) / BIN_W), 0, 6), val = VALUES[i];
@@ -149,7 +149,7 @@
       for (let s = 0; s < 4; s++) stepBody(b, dt / 4);
       if (b.kind !== 'normal' && Math.floor(b.age * 14) % 2 === 0) fx.spark(b.x, b.y, b.kind === 'diamond' ? '#9be8ff' : '#fff08c');
       if (Math.hypot(b.vx, b.vy) > 80 && Math.random() < .7) fx.trail(b.x + rng(-2, 2), b.y + rng(-2, 2), b.kind === 'diamond' ? '#9be8ff' : b.kind === 'golden' ? '#ffd23a' : '#fff08c');
-      if (Math.hypot(b.vx, b.vy) < 9 && Math.abs(b.w) < 1.2) { b.still += dt; if (b.still > .6) { b.vx += rng(-45, 45); b.vy -= 35; b.w += rng(-6, 6); b.still = 0; } } else b.still = 0;
+      if (Math.hypot(b.vx, b.vy) < 28) { b.still += dt; if (b.still > .25) { b.vx += rng(-60, 60) || 20; b.vy -= 20; b.w += rng(-6, 6); b.still = 0; } } else b.still = 0;
       if (b.age > 70) { b.vy = 120; b.vx = rng(-30, 30); }
       if (b.y > BIN_TOP + 10) { G.live.splice(i, 1); land(b); }
     }
