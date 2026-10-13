@@ -1,6 +1,6 @@
 /* ============================================================
    BANANA HEIST: sneak up to the banana stall, grab the loot, and slip back out, past the keepers' sweeping flashlights.
-   Hold to creep forward (and steer toward your finger / ← →); let go and the monkey freezes. Moving in the light fills the alert bar,
+   WASD / arrows move the monkey in any direction (or hold the pointer to walk toward it); stop and it freezes. Moving in the light fills the alert bar,
    standing still in it fills it slowly, and a crate between you and the keeper blocks the beam completely. Three hearts.
    Rare: a Golden bunch pays x3, the Diamond bunch x10. Sneak the whole way (barely any alert) for a GHOST bonus.
    Standalone: no connection to the main game's save yet.
@@ -23,7 +23,7 @@
   const bunch = { normal: A.banana, golden: A.golden, diamond: A.diamond };
 
   /* ---------- state ---------- */
-  let G = null, botOn = false, hold = false, tx = W / 2, keyX = 0;
+  let G = null, botOn = false, hold = false, tx = W / 2, ty = HOME_Y, keys = { l: 0, r: 0, u: 0, d: 0, go: 0 }, vy = 0;
   const m = { x: W / 2, y: HOME_Y, vx: 0, ph: 0, phT: 0, move: false, loot: null, face: 0, hide: 0 };
 
   function newGame() {
@@ -35,7 +35,7 @@
 
   function nextRound() {
     G.round++; const r = G.round; G.covers = []; G.keepers = []; G.alert = 0; G.maxAlert = 0; G.roundT = 0;
-    m.x = tx = W / 2; m.y = HOME_Y; m.loot = null; m.vx = 0; hold = hold && false;
+    m.x = tx = W / 2; m.y = ty = HOME_Y; m.loot = null; m.vx = vy = 0; hold = false;
     G.stand = r > 2 && Math.random() < .03 + RARE * .6 ? 'diamond' : r > 1 && Math.random() < .12 + RARE * .6 ? 'golden' : 'normal';
     G.loot = G.stand === 'diamond' ? 1000 : G.stand === 'golden' ? 300 : 100 + Math.min(100, r * 10);
     const n = 3 + Math.min(3, Math.floor(r / 2));
@@ -94,20 +94,29 @@
         }
       }
     }
-    /* the monkey creeps while you hold */
-    const want = botOn ? botHold() : hold || keyHold;
+    /* free movement: WASD / arrows in any direction, or hold the pointer to walk toward it; Space heads for the goal. Smooth ramp up and down. */
     m.move = false;
-    if (G.grab > 0) { G.grab -= dt; if (G.grab <= 0) { m.loot = G.stand; sfx.golden(); fx.burst(m.x, STALL_Y + 8, ['#ffd23a', '#fff08c'], 12, 60, 80, .6); ui.floatText(m.x, STALL_Y + 18, 'GOT IT! RUN!', 'gold'); G.hurry = 1.2; } }
-    else if (want && G.stun <= 0) {
-      const dir = m.loot ? 1 : -1, sp = m.loot ? 30 : 36, lx = botOn ? botX() : keyX ? m.x + keyX * 30 : tx;
-      m.vx = clamp((lx - m.x) * 5, -34, 34); let nx = m.x + m.vx * dt, ny = m.y + dir * sp * dt;
-      nx = clamp(nx, 6, W - 6); ny = clamp(ny, STALL_Y, HOME_Y);
+    if (G.grab > 0) { G.grab -= dt; m.vx = vy = 0; if (G.grab <= 0) { m.loot = G.stand; sfx.golden(); fx.burst(m.x, STALL_Y + 8, ['#ffd23a', '#fff08c'], 12, 60, 80, .6); ui.floatText(m.x, STALL_Y + 18, 'GOT IT! RUN!', 'gold'); G.hurry = 1.2; } }
+    else {
+      const dir = m.loot ? 1 : -1, sp = m.loot ? 33 : 38; let ix = 0, iy = 0;
+      if (G.stun > 0) { /* frozen */ }
+      else if (botOn) { if (botHold()) { ix = clamp((botX() - m.x) * 5, -34, 34) / 34; iy = dir; } }
+      else {
+        ix = keys.r - keys.l; iy = keys.d - keys.u + (keys.go ? dir : 0);
+        if (hold) { const dx = tx - m.x, dy = ty - m.y, d = Math.hypot(dx, dy); if (d > 1.5) { const k = Math.min(1, d / 8); ix += dx / d * k; iy += dy / d * k; } }
+        const len = Math.hypot(ix, iy); if (len > 1) { ix /= len; iy /= len; }
+      }
+      const k = Math.min(1, dt * (ix || iy ? 12 : 18));
+      m.vx += (ix * sp - m.vx) * k; vy += (iy * sp - vy) * k;
       const hit = (x, y) => G.covers.some(c => x > c.x - 4 && x < c.x + c.w + 4 && y > c.y - 3 && y < c.y + c.h + 5);
-      if (!hit(nx, m.y)) m.x = nx; if (!hit(m.x, ny)) m.y = ny; else if (!hit(nx, m.y) === false) { /* wedged: slide sideways around the crate */ m.x += (m.x < W / 2 ? -1 : 1) * 12 * dt; }
-      m.move = true; m.phT -= dt; if (m.phT <= 0) { m.ph ^= 1; m.phT = .2; G.prints.push({ x: m.x + (m.ph ? -2 : 2), y: m.y + 5, t: 0 }); if (m.loot && G.stand !== 'normal') fx.spark(m.x, m.y - 14, G.stand === 'diamond' ? '#9be8ff' : '#fff08c'); }
-      if (!m.loot && m.y <= STALL_Y + 1) { G.grab = .7; m.y = STALL_Y; }
+      const nx = clamp(m.x + m.vx * dt, 6, W - 6), ny = clamp(m.y + vy * dt, STALL_Y, HOME_Y);
+      if (!hit(nx, m.y)) m.x = nx; else m.vx = 0;
+      if (!hit(m.x, ny)) m.y = ny; else { vy = 0; if (!hit(nx, m.y) === false && (ix || iy)) m.x += (m.x < W / 2 ? -1 : 1) * 14 * dt; }
+      const spd = Math.hypot(m.vx, vy);
+      if (spd > 5) { m.move = true; m.phT -= dt * spd / 34; if (m.phT <= 0) { m.ph ^= 1; m.phT = .2; G.prints.push({ x: m.x + (m.ph ? -2 : 2), y: m.y + 5, t: 0 }); if (m.loot && G.stand !== 'normal') fx.spark(m.x, m.y - 14, G.stand === 'diamond' ? '#9be8ff' : '#fff08c'); } }
+      if (!m.loot && m.y <= STALL_Y + 1) { G.grab = .7; m.y = STALL_Y; m.vx = vy = 0; }
       if (m.loot && m.y >= HOME_Y - 1) heistDone();
-    } else m.vx = 0;
+    }
     /* detection */
     let exposed = false, rate = 0;
     for (const kp of G.keepers) if (lit(kp, m.x, m.y - 3)) { exposed = true; rate = Math.max(rate, m.move ? 1 : .22); }
@@ -117,12 +126,10 @@
     G.exposed = exposed; m.hide = !exposed && G.keepers.some(kp => inCone(kp, m.x, m.y - 3) && blocked(kp.x, kp.y, m.x, m.y - 3)) ? 1 : 0;
     if (exposed) { G.alert += rate * dt / 1.05; G.maxAlert = Math.max(G.maxAlert, G.alert); if (rate > .9 && Math.floor(G.t * 8) % 2 === 0) sfx.tick(); } else G.alert = Math.max(0, G.alert - dt * .55);
     if (G.alert >= 1) caught();
-    if (botOn) m.vx = m.vx;
   }
-  let keyHold = false;
   function caught() {
     MG.hitstop(.1); fx.shock(m.x, m.y, '#ff7a6a', 34); G.alert = 0; G.hearts--; G.caught++; G.combo = 0; G.shake = 6; sfx.bonk(); sfx.miss(); ui.doFlash('#c0392b'); ui.floatText(m.x, m.y - 12, 'CAUGHT!', 'bad'); fx.burst(m.x, m.y, ['#ffd23a', '#fff6d6', '#c0392b'], 14, 70, 100, .6);
-    m.x = tx = W / 2; m.y = HOME_Y; m.loot = null; G.stun = .8; G.hurry = 2.2; render(true);
+    m.x = tx = W / 2; m.y = ty = HOME_Y; m.vx = vy = 0; m.loot = null; G.stun = .8; G.hurry = 2.2; render(true);
     if (G.hearts <= 0) { G.dead = 1.1; sfx.over(); }
   }
   function heistDone() {
@@ -193,20 +200,22 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'heist', title: 'BANANA<span>HEIST</span>', sub: 'Creep in. Grab the bunch. Slip out.',
-    legend: [[A.monkeyS[0], '<em>hold</em> to creep · release = freeze'], [KSPR.sweeper, '<em class="bad">sweeper</em> swings its beam'], [KSPR.post, '<em class="bad">watchman</em> sees the whole yard'], [KSPR.patrol, '<em class="bad">patrol</em> walks a beat'], [sackSpr, '<em>crates</em> block the beam'], [sackSpr, '<em>crates</em> block every beam'], [A.diamond, '<em class="ice">x10</em> diamond bunch']],
-    hint: 'hold mouse / finger / Space / ↑ · steer to your finger or ← →', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
+    legend: [[A.monkeyS[0], '<em>WASD</em> / arrows to move · stop = freeze'], [KSPR.sweeper, '<em class="bad">sweeper</em> swings its beam'], [KSPR.post, '<em class="bad">watchman</em> sees the whole yard'], [KSPR.patrol, '<em class="bad">patrol</em> walks a beat'], [sackSpr, '<em>crates</em> block the beam'], [sackSpr, '<em>crates</em> block every beam'], [A.diamond, '<em class="ice">x10</em> diamond bunch']],
+    hint: 'WASD / arrows to move · or hold the mouse / finger to walk toward it', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
   });
-  const dn = (ev, on) => { hold = on; if (on) { tx = clamp(st.toArt(ev)[0], 6, W - 6); sfx.unlock(); } };
+  const aim = ev => { const a = st.toArt(ev); tx = clamp(a[0], 6, W - 6); ty = clamp(a[1] + 6, STALL_Y, HOME_Y); };
+  const dn = (ev, on) => { hold = on; if (on) { aim(ev); sfx.unlock(); } };
   addEventListener('pointerdown', ev => { if (ev.target.closest('.mg-over,.mg-nav')) return; dn(ev, true); });
-  addEventListener('pointermove', ev => { if (hold) tx = clamp(st.toArt(ev)[0], 6, W - 6); });
+  addEventListener('pointermove', ev => { if (hold) aim(ev); });
   addEventListener('pointerup', () => { hold = false; }); addEventListener('pointercancel', () => { hold = false; });
+  const KMAP = { arrowleft: 'l', a: 'l', arrowright: 'r', d: 'r', arrowup: 'u', w: 'u', arrowdown: 'd', s: 'd', ' ': 'go' };
   addEventListener('keydown', e => {
-    const k = e.key.toLowerCase();
-    if (k === ' ' || k === 'arrowup' || k === 'w') { if (S.playing) keyHold = true; else if (k === ' ' && !e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); } e.preventDefault(); }
-    else if (k === 'arrowleft' || k === 'a') { keyX = -1; e.preventDefault(); } else if (k === 'arrowright' || k === 'd') { keyX = 1; e.preventDefault(); }
+    const k = KMAP[e.key.toLowerCase()]; if (!k) return;
+    if (e.key === ' ' && !S.playing) { if (!e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); } e.preventDefault(); return; }
+    if (S.playing) keys[k] = 1; e.preventDefault();
   });
-  addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (k === ' ' || k === 'arrowup' || k === 'w') keyHold = false; if (['arrowleft', 'a', 'arrowright', 'd'].includes(k)) keyX = 0; });
-  addEventListener('blur', () => { hold = false; keyHold = false; });
+  addEventListener('keyup', e => { const k = KMAP[e.key.toLowerCase()]; if (k) keys[k] = 0; });
+  addEventListener('blur', () => { hold = false; for (const k in keys) keys[k] = 0; });
 
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); if (params.get('round')) { G.round = +params.get('round') - 1; nextRound(); } for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
