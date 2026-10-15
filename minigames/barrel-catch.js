@@ -14,12 +14,38 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.mini = { k: K, max: MAX_LEAN, step: 7 };
-  { const s = PXA.monkeySets.mini; s.angles = []; for (let a = -s.max; a <= s.max; a += s.step) s.angles.push(a); s.cache = {}; }
-  const A = MGArt.build();
+  const A = MGArt.build(), A3 = MGArt3.build();
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
 
-  const ui = MG.ui(host, st, A.banana), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana), fx = MG.fx();
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const { R, shapes: { ell, box, and, sub } } = MGArt, make = MGArt3.make, { cvs, hl } = MGArt3;
+  /* hi-res barrel: the open mouth is the back layer, the staves and front rim are the front layer, so a catch can sink between them */
+  const barrelBack = make(90, 36, px => { px.shape(ell(45, 18, 42, 16.8), R.woodL, 1); px.shape(ell(45, 19.8, 34.8, 10.8), R.ink, 2); px.shape(ell(45, 21, 30, 7), R.woodD, 3); });
+  const barrelFront = make(90, 78, px => {
+    const body = and(ell(45, 45, 42, 34.2), (x, y) => y >= 18);
+    px.shape(body, R.wood, 1);
+    for (let x = 12; x < 84; x += 15) px.shape(and(body, box(x, 24, 1.4, 60)), R.woodD, 2);
+    for (let x = 8; x < 86; x += 15) px.shape(and(body, box(x, 24, 1, 60)), R.woodL, 2);
+    [39, 66].forEach(y0 => { px.shape(and(body, box(0, y0, 90, 5)), R.metal, 3); px.shape(and(body, box(0, y0, 90, 1.4)), R.metal, 4); });
+    px.shape(and(sub(ell(45, 18, 42, 16.8), ell(45, 19.8, 34.8, 10.8)), (x, y) => y >= 18.6), R.woodL, 5);
+    hl(px, 8, 40, 3, 20, 2); hl(px, 12, 42, 2, 16, 2);
+  });
+  const groundBg = cvs(W * 3, (H - GROUND + 4) * 3, (x, tw, th) => {
+    const r = seeded(19); rectc(x, '#5a3517', 0, 12, tw, th - 12); rectc(x, '#1f6a2a', 0, 0, tw, 14); rectc(x, '#2f8a35', 0, 0, tw, 8); rectc(x, '#74c648', 0, 0, tw, 2);
+    for (let i = 0; i < 140; i++) rectc(x, ['#3a1e0b', '#6a4120', '#4a2a12'][i % 3], Math.floor(r() * tw), 16 + Math.floor(r() * (th - 18)), 1 + Math.floor(r() * 3), 1 + Math.floor(r() * 2));
+    for (let i = 0; i < 30; i++) { const px0 = Math.floor(r() * tw), py0 = 18 + Math.floor(r() * (th - 22)); rectc(x, '#8c8670', px0, py0, 4, 3); rectc(x, '#b8b2a0', px0, py0, 4, 1); }
+    for (let i = 0; i < 110; i++) { const bx = Math.floor(r() * tw), bh = 3 + Math.floor(r() * 7); rectc(x, ['#2f8a35', '#3f9a3a', '#1f6a2a', '#74c648'][i % 4], bx, -bh + 7, 1, bh + 3); }
+    rectc(x, '#1a0f14', 0, th - 3, tw, 3);
+  });
+  /* the crew monkey, tilted about its feet as it runs (cached per pose / expression / 7 degree step) */
+  const tiltCache = new Map();
+  function tilted(pose, ex, deg) {
+    const key = pose + ex + deg; let c = tiltCache.get(key);
+    if (!c) { c = cvs(110, 110, x => { x.imageSmoothingEnabled = false; x.translate(55, 55 + 18); x.rotate(deg * Math.PI / 180); x.translate(-32, -55); x.drawImage(MGCrew.frame(pose, { expr: ex }), 0, 0); }); tiltCache.set(key, c); }
+    return c;
+  }
+
   const { combo, over, say, floatText, doFlash, bump, pulseCombo } = ui;
 
   /* ---------- state ---------- */
@@ -60,14 +86,14 @@
     type = type || pickType();
     const d = clamp(G.t / 100, 0, 1);
     const it = { type, x: rng(11, W - 11), y: -10, vy: lerp(46, 108, d) * rng(.86, 1.18), sw: 0, sp: rng(6.28), age: 0, hit: false, bounced: false };
-    if (type === 'banana') it.cv = A.banana;
-    else if (type === 'fruit') it.cv = A.fruits[Math.floor(Math.random() * A.fruits.length)];
-    else if (type === 'bundle') { const L = MGArt.LETTERS, a = L[Math.floor(Math.random() * 26)], b = L[Math.floor(Math.random() * 26)], c = L[Math.floor(Math.random() * 26)]; it.cv = MGArt.bundle(a, b, c); it.sw = 5; it.vy *= .8; }
-    else if (type === 'coconut') it.cv = A.coconut;
-    else if (type === 'rotten') it.cv = A.rotten;
-    else if (type === 'golden') { it.cv = A.golden; it.sw = 7; it.vy *= .78; }
-    else if (type === 'diamond') { it.cv = A.diamond; it.sw = 10; it.vy = 40; it.x = rng(26, W - 26); G.sinceDiamond = 0; }
-    it.hw = it.cv.width / 2; it.hh = it.cv.height / 2;
+    if (type === 'banana') it.cv = A3.banana;
+    else if (type === 'fruit') it.cv = A3.fruits[Math.floor(Math.random() * A3.fruits.length)];
+    else if (type === 'bundle') { const L = MGArt.LETTERS, a = L[Math.floor(Math.random() * 26)], b = L[Math.floor(Math.random() * 26)], c = L[Math.floor(Math.random() * 26)]; it.cv = MGArt3.bundleHi(a, b, c); it.sw = 5; it.vy *= .8; }
+    else if (type === 'coconut') it.cv = A3.coconut;
+    else if (type === 'rotten') it.cv = A3.rotten;
+    else if (type === 'golden') { it.cv = A3.golden; it.sw = 7; it.vy *= .78; }
+    else if (type === 'diamond') { it.cv = A3.diamond; it.sw = 10; it.vy = 40; it.x = rng(26, W - 26); G.sinceDiamond = 0; }
+    it.hw = it.cv.width / 6; it.hh = it.cv.height / 6;
     G.items.push(it); return it;
   }
 
@@ -82,8 +108,8 @@
 
   /* ---------- catching ---------- */
   function barrelPos() {
-    const a = lean() * MAX_LEAN * Math.PI / 180, pivotY = FOOT - 41.5 * K;
-    return { x: monkey.x + Math.sin(a) * 20, y: pivotY - 25 + Math.abs(Math.sin(a)) * 3, a, pivotY };
+    const a = lean() * MAX_LEAN * Math.PI / 180, pivotY = FOOT - 13;
+    return { x: monkey.x + Math.sin(a) * 27, y: FOOT - 31 + Math.abs(Math.sin(a)) * 3, a, pivotY };
   }
   const lean = () => clamp(monkey.vx / 190, -1, 1);
   const catchR = () => BARREL_R + (G.golden > 0 || G.jackpot > 0 ? 5 : 0);
@@ -209,25 +235,14 @@
   }
 
   /* ---------- draw ---------- */
-  function arm(sx, sy, ex, ey) {
-    const n = Math.max(Math.abs(ex - sx), Math.abs(ey - sy));
-    for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sx, ex, i / n)), y = Math.round(lerp(sy, ey, i / n)); g.fillStyle = '#2a170b'; g.fillRect(x - 1, y - 1, 4, 4); }
-    for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sx, ex, i / n)), y = Math.round(lerp(sy, ey, i / n)); g.fillStyle = '#6e4220'; g.fillRect(x, y, 2, 2); }
-    g.fillStyle = '#2a170b'; g.fillRect(ex - 1, ey - 1, 5, 5); g.fillStyle = '#e0aa76'; g.fillRect(ex, ey, 3, 3);
-  }
-  const blit = (cv, cx, cy) => g.drawImage(cv, Math.round(cx - cv.width / 2), Math.round(cy - cv.height / 2));
-
+  const blit = (cv, cx, cy, flipX) => st.hi(cv, cx - cv.width / 6, cy - cv.height / 6, flipX);
   function draw() {
     g.clearRect(0, 0, W, H);
     g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
 
     /* ground */
-    g.fillStyle = '#5a3517'; g.fillRect(0, GROUND + 3, W, H - GROUND);
-    g.fillStyle = '#3a1e0b'; for (let x = 3; x < W; x += 9) g.fillRect(x, GROUND + 6 + (x * 7) % 5, 2, 1);
-    g.fillStyle = '#1f6a2a'; g.fillRect(0, GROUND, W, 4);
-    g.fillStyle = '#74c648'; g.fillRect(0, GROUND, W, 1);
-    g.fillStyle = '#2f8a35'; for (let x = 1; x < W; x += 4) g.fillRect(x, GROUND - 1 - ((x * 3) % 3 === 0 ? 1 : 0), 1, 2);
+    st.hi(groundBg, 0, GROUND - 2);
     if (G.golden > 0 || G.jackpot > 0) { g.fillStyle = G.jackpot > 0 ? 'rgba(155,232,255,.18)' : 'rgba(255,210,58,.14)'; g.fillRect(0, 0, W, H); }
 
     /* falling things */
@@ -235,7 +250,7 @@
       if (it.hit || it.bounced || it.y < 12) continue; const k = clamp(it.y / GROUND, 0, 1), w = 3 + Math.round(k * 8); g.fillStyle = `rgba(0,0,0,${(.1 + k * .22).toFixed(2)})`; g.fillRect(Math.round(it.x - w / 2), GROUND + 1, w, 2);
     }
     for (const it of G.items) {
-      if (it.type === 'coconut' && Math.floor(it.age * 5) % 2) { g.save(); g.translate(Math.round(it.x), 0); g.scale(-1, 1); g.drawImage(it.cv, -it.cv.width / 2 | 0, Math.round(it.y - it.cv.height / 2)); g.restore(); continue; }
+      if (it.type === 'coconut' && Math.floor(it.age * 5) % 2) { blit(it.cv, it.x, it.y, true); continue; }
       if (it.type === 'golden' || it.type === 'diamond') { const k = Math.floor(it.age * 8) % 2; if (k) { g.globalAlpha = .35; blit(it.cv, it.x - 1, it.y); g.globalAlpha = 1; } }
       blit(it.cv, it.x, it.y);
     }
@@ -243,20 +258,14 @@
     /* monkey + barrel */
     const bp = barrelPos(), a = bp.a;
     const ex = monkey.stun > 0 ? 'scared' : (monkey.expr !== 'normal' ? monkey.expr : monkey.blink > 0 ? 'blink' : 'normal');
-    const f = PXA.monkeyFrame('mini', ex, a, false, monkey.ph, 0);
-    const mx = Math.round(monkey.x - f.pivot[0]), my = Math.round(bp.pivotY - f.pivot[1]);
-    const mouthY = bp.y, bx = Math.round(bp.x), by = Math.round(mouthY);
-    const squash = G.sinks.length ? Math.round(Math.sin(G.sinks[G.sinks.length - 1].t / .16 * Math.PI) * 2) : 0;
-    const shY = bp.pivotY + 18 * K, bodyX = monkey.x + Math.sin(a) * 5;
-    g.drawImage(f.cv, mx, my);
-    /* arms: shoulders up to the barrel's sides */
-    arm(Math.round(bodyX - 5), Math.round(shY), bx - 13, by + 15 + squash);
-    arm(Math.round(bodyX + 5), Math.round(shY), bx + 11, by + 15 + squash);
-    /* barrel back, then what's sinking in, then the front staves */
-    g.drawImage(A.barrelBack, bx - 15, by - 6);
+    const mouthY = bp.y, bx = bp.x, by = mouthY, dying2 = G.hearts <= 0;
+    const squash = G.sinks.length ? Math.round(Math.sin(G.sinks[G.sinks.length - 1].t / .16 * Math.PI) * 6) / 3 : 0;
+    const bpose = monkey.stun > 0 || dying2 ? 'holdhit' : monkey.exprT > 0 && monkey.expr === 'screech' ? 'hold0' : Math.abs(monkey.vx) > 24 ? (monkey.ph ? 'hold1' : 'hold2') : 'hold0', tex = monkey.stun > 0 ? 'screech' : 'determined';
+    const deg = Math.round(a * 180 / Math.PI / 7) * 7; st.hi(tilted(bpose, tex, deg), monkey.x - 55 / 3, FOOT - 73 / 3);    /* barrel back, then what's sinking in, then the front staves */
+    st.hi(barrelBack, bx - 15, by - 6);
     if (G.golden > 0 || G.jackpot > 0) { g.globalAlpha = .5 + Math.sin(performance.now() / 90) * .3; g.fillStyle = G.jackpot > 0 ? '#9be8ff' : '#ffd23a'; g.fillRect(bx - 15, by - 7, 30, 1); g.globalAlpha = 1; }
     for (const s of G.sinks) { const k = s.t / .16, it = s.it; g.save(); g.beginPath(); g.rect(bx - 16, by - 40, 32, 40 + 6); g.clip(); blit(it.cv, lerp(it.x, bx, Math.min(1, k * 1.4)), lerp(by - 2, by + 11, k)); g.restore(); }
-    g.drawImage(A.barrelFront, bx - 15, by - 6 + squash);
+    st.hi(barrelFront, bx - 15, by - 6 + squash);
 
     /* particles */
     for (const p of G.parts) {
@@ -277,7 +286,7 @@
   /* ---------- flow ---------- */
   const S = MG.shell({
     host, ui, id: 'barrel', title: 'BANANA<span>BARREL</span>', sub: 'Catch what falls. Dodge the coconuts.',
-    legend: [[A.banana, '<em>10</em> banana'], [MGArt.bundle('M', 'K', 'Y'), '<em>25</em> letters'], [A.golden, '<em>100</em> golden'], [A.diamond, '<em class="ice">500</em> diamond'], [A.coconut, '<em class="bad">-1 heart</em> coconut'], [A.rotten, '<em class="bad">-15</em> rotten']],
+    legend: [[A3.banana, '<em>10</em> banana'], [MGArt3.bundleHi('M', 'K', 'Y'), '<em>25</em> letters'], [A3.golden, '<em>100</em> golden'], [A3.diamond, '<em class="ice">500</em> diamond'], [A3.coconut, '<em class="bad">-1 heart</em> coconut'], [A3.rotten, '<em class="bad">-15</em> rotten']],
     modes: [{ k: 'bananas', label: 'BANANA RUN' }, { k: 'fruit', label: 'FRUIT FALL', cls: 'alt' }], hint: '← → or A D · or drag / move the mouse',
     onStart: m => { mode = m; newGame(); monkey.tx = monkey.x = W / 2; }, onMenu: () => newGame(), score: () => G.score,
   });
@@ -294,8 +303,6 @@
     else if (k === 'arrowright' || k === 'd') { keys.r = true; usingKeys = true; e.preventDefault(); }
   });
   addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (k === 'arrowleft' || k === 'a') keys.l = false; if (k === 'arrowright' || k === 'd') keys.r = false; });
-  /* pre-warm the monkey frames so the first lean doesn't hitch */
-  ['normal', 'scared', 'screech', 'blink'].forEach(e => PXA.monkeySets.mini.angles.forEach(a => [0, 1].forEach(p => PXA.monkeyFrame('mini', e, a * Math.PI / 180, false, p, 0))));
 
   S.title();
   if (params.get('autostart')) {

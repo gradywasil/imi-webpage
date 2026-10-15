@@ -11,22 +11,42 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.bw = { k: .5, max: 0, step: 7 }; PXA.monkeySets.bw.angles = [0]; PXA.monkeySets.bw.cache = {};
-  const A = MGArt.build(), { R, make, shapes: { ell, box, poly, or } } = MGArt;
+  const A = MGArt.build(), A3 = MGArt3.build(), { R, shapes: { ell, box, poly, or } } = MGArt, make = MGArt3.make, { cvs, hl } = MGArt3;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'pointer';
-  const ui = MG.ui(host, st, A.banana, 0), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana, 0), fx = MG.fx();
   document.querySelector('.mg-hearts').style.display = 'none';
   const frameBox = h('div', 'sc'); frameBox.append(h('b', '', 'FRAME 1')); document.querySelector('.mg-hud').appendChild(frameBox);
   const frameTxt = frameBox.querySelector('b'); frameTxt.style.minWidth = '0';
 
-  const pinSpr = { normal: make(7, 12, px => { px.shape(or(ell(3.5, 3, 2.6, 2.6), ell(3.5, 8, 3.2, 3.8), box(2.5, 4, 2, 3)), R.paper, 1); px.shape(box(0, 5, 7, 1.4), R.red, 2); }),
-    golden: make(7, 12, px => { px.shape(or(ell(3.5, 3, 2.6, 2.6), ell(3.5, 8, 3.2, 3.8), box(2.5, 4, 2, 3)), R.gold, 1); px.shape(box(0, 5, 7, 1.4), R.banY, 2); }),
-    diamond: make(7, 12, px => { px.shape(or(ell(3.5, 3, 2.6, 2.6), ell(3.5, 8, 3.2, 3.8), box(2.5, 4, 2, 3)), R.ice, 1); px.shape(box(0, 5, 7, 1.4), R.ice, 2); }) };
-  const lying = {}; for (const k in pinSpr) { const s = pinSpr[k], c = document.createElement('canvas'); c.width = s.height; c.height = s.width; const x = c.getContext('2d'); x.translate(0, s.width); x.rotate(-Math.PI / 2); x.drawImage(s, 0, 0); lying[k] = c; }
-  const ballSpr = { normal: make(11, 11, px => { px.shape(ell(5.5, 5.5, 4.8, 4.8), R.coco, 1); px.shape(or(ell(4, 4, .8, .8), ell(7, 4, .8, .8), ell(5.5, 6.4, .8, .8)), R.ink, 2); px.tone(3, 2, 2, 1); }),
-    diamond: make(11, 11, px => { px.shape(ell(5.5, 5.5, 4.8, 4.8), R.ice, 1); px.tone(3, 2, 2, 1); px.tone(4, 2, 2, 1); }) };
-
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
+  /* hi-res bamboo-turned pins and coconuts */
+  const pinMk = (body, stripe) => make(21, 36, px => {
+    const sil = or(ell(10.5, 8, 5.4, 5.6), ell(10.5, 25, 9.4, 11), box(7.5, 11, 6, 9));
+    px.shape(sil, body, 1); px.shape((x, y) => sil(x, y) && y >= 14.5 && y < 18, stripe, 2); px.shape((x, y) => sil(x, y) && y >= 19.5 && y < 21, stripe, 2);
+    for (let j = 0; j < 8; j++) px.tone(6 + (j > 3 ? 0 : 0), 20 + j * 1, 2, 1); hl(px, 7, 4, 2, 3, 2); hl(px, 5, 22, 2, 8, 2);
+  });
+  const pinSpr = { normal: pinMk(R.paper, R.red), golden: pinMk(R.gold, R.banY), diamond: pinMk(R.ice, R.ice) };
+  const lying = {}; for (const k in pinSpr) { const s = pinSpr[k], c = document.createElement('canvas'); c.width = s.height; c.height = s.width; c.hi = true; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.translate(0, s.width); x.rotate(-Math.PI / 2); x.drawImage(s, 0, 0); lying[k] = c; }
+  const ballSpr = {
+    normal: make(33, 33, px => { px.shape(ell(16.5, 16.5, 14.5, 14.5), R.coco, 1); for (let i = 0; i < 40; i++) { const a = i * 2.4, rr = 3 + (i * 7) % 10; px.dot(Math.round(16.5 + Math.cos(a) * rr), Math.round(16.5 + Math.sin(a) * rr), R.coco, i % 3 ? 0 : 2, 1); } px.shape(or(ell(12, 13, 1.9, 1.9), ell(21, 13, 1.9, 1.9), ell(16.5, 19.5, 1.9, 1.9)), R.ink, 2); hl(px, 8, 7, 5, 3, 2); hl(px, 6, 10, 3, 3, 2); }),
+    diamond: make(33, 33, px => { px.shape(ell(16.5, 16.5, 14.5, 14.5), R.ice, 1); px.shape(poly([[16.5, 3], [24, 12], [16.5, 29], [9, 12]]), R.ice, 2); px.shape(poly([[3, 14], [12, 12], [16.5, 29]]), R.ice, 3); hl(px, 9, 7, 5, 3, 2); hl(px, 7, 10, 3, 3, 2); }),
+  };
+  /* the alley, baked: dark room, bamboo rails, plank lane with arrows, the pit */
+  let alleyBg = null; const mkAlley = () => cvs(W * 3, H * 3, (x, tw, th) => {
+    const r = seeded(14), LX = (CX - LANE) * 3;
+    rectc(x, '#0a2a1c', 0, 0, tw, th);
+    for (const [rx0, dir] of [[(CX - LANE - 14) * 3, 1], [(CX + LANE) * 3, 1]]) { rectc(x, '#1a0f14', rx0, 60, 42, th - 60); rectc(x, '#5a3517', rx0 + 2, 62, 38, th - 62); rectc(x, '#b57d3e', rx0 + 2, 62, 4, th - 62); rectc(x, '#7a4a1e', rx0 + 36, 62, 4, th - 62); for (let i = 0; i < 60; i++) rectc(x, r() < .5 ? '#4a2a12' : '#6e4220', rx0 + 8 + Math.floor(r() * 26), 62 + Math.floor(r() * (th - 70)), 1, 4 + Math.floor(r() * 12)); }
+    rectc(x, '#1a0f14', (CX - LANE - 8) * 3, 72, 24, th - 72); rectc(x, '#1a0f14', (CX + LANE) * 3, 72, 24, th - 72); rectc(x, '#2a170b', (CX - LANE - 6) * 3, 72, 12, th - 72); rectc(x, '#2a170b', (CX + LANE + 2) * 3, 72, 12, th - 72); rectc(x, '#0c0608', (CX - LANE - 6) * 3 + 2, 72, 3, th - 72); rectc(x, '#0c0608', (CX + LANE + 2) * 3 + 2, 72, 3, th - 72);
+    for (let i = 0; i < 12; i++) { const bx = LX + i * 15; rectc(x, i % 2 ? '#e8b878' : '#d9a05c', bx, PIT * 3, 15, th - PIT * 3); rectc(x, i % 2 ? '#f2c690' : '#e8b878', bx + 1, PIT * 3, 1, th - PIT * 3); rectc(x, '#b57d3e', bx, PIT * 3, 1, th - PIT * 3); for (let k = 0; k < 14; k++) rectc(x, r() < .5 ? '#c98f4a' : '#f0c98c', bx + 3 + Math.floor(r() * 10), PIT * 3 + Math.floor(r() * (th - PIT * 3 - 4)), 1, 3 + Math.floor(r() * 9)); }
+    rectc(x, '#b57d3e', LX + 180, PIT * 3, 1, th - PIT * 3);
+    for (const [ax, ay] of [[-10, 140], [-5, 146], [0, 152], [5, 146], [10, 140]]) { x.fillStyle = '#7a4a1e'; const px0 = (CX + ax) * 3, py0 = ay * 3; for (let j = 0; j < 18; j++) { const w = Math.round((18 - j) * .5) + 1; x.fillRect(px0 - w, py0 + j, w * 2, 1); } }
+    for (const [hx, hy] of HOME) { x.fillStyle = 'rgba(122,74,30,.5)'; x.beginPath(); x.arc(hx * 3, hy * 3 + 2, 7, 0, 6.3); x.fill(); }
+    rectc(x, '#e8b878', LX, (FOUL + 2) * 3, LANE * 6, 6); rectc(x, '#1a0f14', LX, (FOUL + 4) * 3 + 3, LANE * 6, 3);
+    rectc(x, '#0c0608', (CX - LANE - 8) * 3, 14 * 3, (LANE * 2 + 16) * 3, 42); rectc(x, '#2a170b', (CX - LANE - 8) * 3, 14 * 3, (LANE * 2 + 16) * 3, 6); rectc(x, '#3a2418', (CX - LANE - 8) * 3, 14 * 3 + 6, (LANE * 2 + 16) * 3, 2);
+    for (let i = 0; i < 14; i++) rectc(x, '#1a0f14', (CX - LANE - 6) * 3 + i * 16, 14 * 3 + 12, 8, 28);
+  });
+  const HOME_PLACEHOLDER = 0;
   const HOME = [[60, 74], [54, 66], [66, 66], [48, 58], [60, 58], [72, 58], [42, 50], [54, 50], [66, 50], [78, 50]];
 
   /* ---------- standard ten-pin scoring ---------- */
@@ -187,32 +207,24 @@
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
-    /* alley: rails, gutters, wooden lane with arrows, pit */
-    g.fillStyle = '#1a0f14'; g.fillRect(0, 0, W, H); g.fillStyle = '#0a2a1c'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#5a3517'; g.fillRect(CX - LANE - 14, 20, 14, H - 20); g.fillRect(CX + LANE, 20, 14, H - 20); g.fillStyle = '#b57d3e'; g.fillRect(CX - LANE - 14, 20, 2, H - 20); g.fillRect(CX + LANE, 20, 2, H - 20);
-    g.fillStyle = '#1a0f14'; g.fillRect(CX - LANE - 8, 24, 8, H - 24); g.fillRect(CX + LANE, 24, 8, H - 24); g.fillStyle = '#2a170b'; g.fillRect(CX - LANE - 6, 24, 4, H - 24); g.fillRect(CX + LANE + 2, 24, 4, H - 24);
-    for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#e8b878' : '#d9a05c'; g.fillRect(CX - LANE + i * 5, PIT, 5, H - PIT); } g.fillStyle = '#b57d3e'; for (let i = 0; i <= 12; i++) g.fillRect(CX - LANE + i * 5, PIT, 1, H - PIT);
-    g.fillStyle = '#7a4a1e'; for (const [x, y] of [[-10, 140], [-5, 146], [0, 152], [5, 146], [10, 140]]) g.fillRect(CX + x - 1, y, 3, 6);
-    g.fillStyle = '#e8b878'; g.fillRect(CX - LANE, FOUL + 2, LANE * 2, 2); g.fillStyle = '#1a0f14'; g.fillRect(CX - LANE, FOUL + 4, LANE * 2, 1);
-    g.fillStyle = '#0c0608'; g.fillRect(CX - LANE - 8, 14, LANE * 2 + 16, 14); g.fillStyle = '#2a170b'; g.fillRect(CX - LANE - 8, 14, LANE * 2 + 16, 2);
+    st.hi(alleyBg || (alleyBg = mkAlley()), 0, 0);
     /* pin shadows + standing pins, back to front */
     const pins = G.pins.filter(p => p.up && !p.down).sort((a, b) => a.y - b.y);
-    for (const p of pins) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(Math.round(p.x - 3), Math.round(p.y + 4), 7, 2); }
-    for (const p of G.pins.filter(p => p.up && p.down)) { const s = lying[p.kind]; g.drawImage(s, Math.round(p.x - s.width / 2), Math.round(p.y - s.height / 2)); }
-    for (const p of pins) { const s = pinSpr[p.kind]; g.drawImage(s, Math.round(p.x - 3.5), Math.round(p.y - 9)); if (p.kind !== 'normal' && Math.floor(G.t * 8 + p.i) % 2 === 0) fx.spark(p.x, p.y - 4, p.kind === 'diamond' ? '#9be8ff' : '#fff08c'); }
-    for (const s of G.sweep) { g.globalAlpha = 1 - s.t; const sp = lying[s.k]; g.drawImage(sp, Math.round(s.x - sp.width / 2), Math.round(s.y - sp.height / 2 - s.t * 18)); g.globalAlpha = 1; }
+    for (const p of pins) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(p.x - 3.33, p.y + 4, 7.33, 2); }
+    for (const p of G.pins.filter(p => p.up && p.down)) { const s = lying[p.kind]; st.hi(s, p.x - s.width / 6, p.y - s.height / 6); }
+    for (const p of pins) { const s = pinSpr[p.kind]; st.hi(s, p.x - 3.5, p.y - 9); if (p.kind !== 'normal' && Math.floor(G.t * 8 + p.i) % 2 === 0) fx.spark(p.x, p.y - 4, p.kind === 'diamond' ? '#9be8ff' : '#fff08c'); }
+    for (const s of G.sweep) { g.globalAlpha = 1 - s.t; const sp = lying[s.k]; st.hi(sp, s.x - sp.width / 6, s.y - sp.height / 6 - s.t * 18); g.globalAlpha = 1; }
     /* trail + ball */
     for (let i = 0; i < G.trail.length; i++) { g.globalAlpha = i / G.trail.length * .4; g.fillStyle = G.dia ? '#9be8ff' : '#563418'; g.fillRect(Math.round(G.trail[i][0]) - 2, Math.round(G.trail[i][1]) - 2, 5, 5); } g.globalAlpha = 1;
     const showBall = G.stage !== 'between' && G.stage !== 'resolve' && (G.stage !== 'roll' || G.rolling);
-    if (showBall) { const bx = G.stage === 'roll' ? G.bx : G.x, by = G.stage === 'roll' ? G.by : 180, s = ballSpr[G.dia ? 'diamond' : 'normal']; g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(Math.round(bx - 4), Math.round(by + 4), 9, 2); g.drawImage(s, Math.round(bx - 5.5), Math.round(by - 5.5)); }
+    if (showBall) { const bx = G.stage === 'roll' ? G.bx : G.x, by = G.stage === 'roll' ? G.by : 180, s = ballSpr[G.dia ? 'diamond' : 'normal']; g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(bx - 4, by + 4, 9, 2); st.hi(s, bx - 5.5, by - 5.5); }
     /* aim arrow + power bar */
     if (G.stage === 'angle' || G.stage === 'power') { const len = 56; for (let i = 6; i < len; i += 3) { g.fillStyle = i < 48 ? '#fff6d6' : '#ffd23a'; g.fillRect(Math.round(G.x + Math.sin(G.ang) * i), Math.round(180 - Math.cos(G.ang) * i), 2, 2); } }
     if (G.stage === 'power') { const bx = 26, bw = 68; g.fillStyle = '#1a0f14'; g.fillRect(bx - 1, 196, bw + 2, 7); g.fillStyle = '#2f8a35'; g.fillRect(bx + Math.round(bw * .72), 197, Math.round(bw * .16), 5); g.fillStyle = '#5a3517'; g.fillRect(bx, 197, Math.round(bw * .72), 5); g.fillRect(bx + Math.round(bw * .88), 197, Math.round(bw * .12), 5); g.fillStyle = '#fff'; g.fillRect(bx + Math.round(bw * G.pow) - 1, 195, 3, 9); }
     if (G.stage === 'pos') { g.fillStyle = 'rgba(255,246,214,.5)'; for (let x = CX - LANE + 4; x < CX + LANE - 3; x += 4) g.fillRect(x, 184, 2, 1); }
     /* monkey bowler waiting by the foul line */
-    const f = PXA.monkeyFrame('bw', mk.t > 0 ? mk.expr : mk.blink > 0 ? 'blink' : 'normal', 0, false, 0, 0), mx = G.stage === 'roll' || G.stage === 'between' ? CX : G.x;
-    if (G.stage !== 'power') g.drawImage(f.cv, Math.round(mx - f.pivot[0]), 192 - 6 + (G.stage === 'between' ? 0 : 0));
-    fx.draw(g); g.restore();
+    const mx = G.stage === 'roll' || G.stage === 'between' ? CX : G.x, bpose = mk.t > 0 && mk.expr === 'scared' ? 'scared' : mk.t > 0 && mk.expr === 'screech' ? 'cheer' : G.stage === 'roll' && G.st < .3 ? 'launch' : G.stage === 'angle' ? 'crouch' : Math.floor(performance.now() / 420) % 2 ? 'breathe' : 'idle';
+    if (G.stage !== 'power') MGCrew.draw(st, bpose, mx, 197);    fx.draw(g); g.restore();
   }
 
   /* ---------- shell + input ---------- */
@@ -230,7 +242,6 @@
   });
   addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (['arrowleft', 'a', 'arrowright', 'd'].includes(k)) G.steer = 0; });
 
-  ['normal', 'scared', 'screech', 'blink'].forEach(e => PXA.monkeyFrame('bw', e, 0, false, 0, 0));
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   if (params.get('dbg')) setInterval(() => { document.title = `rolls=${G.rolls.join(",")} score=${total()} stage=${G.stage} done=${G.done} ball=${Math.round(G.bx)},${Math.round(G.by)} v=${Math.round(G.vx)},${Math.round(G.vy)} rolling=${G.rolling} mov=${G.pins.filter(p=>p.up&&Math.hypot(p.vx,p.vy)>3).length}`; }, 200);

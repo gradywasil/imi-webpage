@@ -108,6 +108,14 @@ Y:10001 10001 01010 00100 00100 00100 00100|Z:11111 00001 00010 00100 01000 1000
     for (let n = 0; n < str.length; n++) { const gl = G57[str[n]] || G57[str[n].toUpperCase()]; if (!gl) continue; for (let i = 0; i < 35; i++) if (gl[i] === '1') g.fillRect(x + (n * 6 + i % 5) * s, y + Math.floor(i / 5) * s, s, s); }
   }
 
+  /* three letter tiles fanned out and tied with string (hi-res) */
+  function bundleHi(a, b, c) {
+    return cvs(69, 45, x => {
+      const tile = (ch, tx, ty, rot) => { x.save(); x.translate(tx + 10, ty + 13); x.rotate(rot); x.fillStyle = '#1a0f14'; x.fillRect(-10, -13, 21, 27); x.fillStyle = '#fff6d6'; x.fillRect(-9, -12, 19, 25); x.fillStyle = '#ede0b8'; x.fillRect(-9, 9, 19, 4); text(x, ch, -5, -8, '#1a0f14', 2); x.restore(); };
+      tile(a, 3, 12, -.22); tile(c, 45, 12, .22); tile(b, 24, 4, 0);
+      x.fillStyle = '#52301a'; x.fillRect(8, 36, 53, 3); x.fillStyle = '#c0392b'; x.fillRect(30, 33, 9, 9); x.fillStyle = '#e86a50'; x.fillRect(30, 33, 9, 2); x.fillStyle = '#1a0f14'; x.fillRect(29, 32, 11, 1);
+    });
+  }
   let built = null;
   function build() {
     if (built) return built;
@@ -123,5 +131,5 @@ Y:10001 10001 01010 00100 00100 00100 00100|Z:11111 00001 00010 00100 01000 1000
     S.fruits = [S.apple, S.orange, S.grapes, S.pine, S.banana];
     return (built = S);
   }
-  window.MGArt3 = { build, hl, dots, cvs, flip, make, text, textW, G57 };
+  window.MGArt3 = { build, hl, dots, cvs, flip, make, text, textW, G57, bundleHi };
 })();
