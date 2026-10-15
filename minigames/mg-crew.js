@@ -35,7 +35,9 @@
     swing:   { sx: .9, sy: 1.1, y: -3, expr: 'giggle', armL: [-5, -16], armR: [5, -16], legL: [-6, 17], legR: [4, 19] },
     leap:    { sx: .94, sy: 1.06, y: -2, expr: 'giggle', armL: [-15, -9], armR: [15, -9], legL: [-6, 17], legR: [8, 15] },
     sneak:   { sx: 1.12, sy: .84, y: 3, expr: 'determined', armL: [-12, 11], armR: [12, 11], legL: [-9, 16], legR: [8, 16], headY: 2 },
-    carry:   { sx: 1, sy: 1, y: 0, expr: 'giggle', armL: [-7, -9], armR: [7, -9], legL: [-6, 17], legR: [6, 17], prop: 'banana' },
+    sneak2:  { sx: 1.12, sy: .84, y: 3, expr: 'determined', armL: [-10, 12], armR: [13, 10], legL: [-4, 17], legR: [11, 15], headY: 2 },
+    carry:   { sx: 1, sy: 1, y: 0, expr: 'giggle', armL: [-8, -9], armR: [8, -9], legL: [-6, 17], legR: [6, 17] },
+    carry2:  { sx: 1, sy: 1, y: -1, expr: 'giggle', armL: [-8, -9], armR: [8, -9], legL: [-9, 16], legR: [9, 17] },
     freeze:  { sx: 1.04, sy: .98, y: 1, expr: 'screech', armL: [-9, 3], armR: [9, 3], legL: [-6, 17], legR: [6, 17] },
   };
   const cache = new Map();
@@ -47,7 +49,7 @@
         x: 32, y: 34 + P.y, facing: 1, squashX: P.sx, squashY: P.sy, headY: P.headY || 0, expr: ex, armL: P.armL, armR: P.armR, legL: P.legL, legR: P.legR,
         squatImpact: !!P.impact, hat: h, bodyTilt: (o.tilt != null ? o.tilt : P.tilt) || 0, headTilt: -((o.tilt != null ? o.tilt : P.tilt) || 0) * .8, prop: P.prop || null,
       });
-      cache.set(key, cv);
+      cv.hi = true; cache.set(key, cv);
     }
     return cv;
   }
@@ -61,11 +63,10 @@
 
   /* what each costume brings to each game: small, readable, optional. A game asks perk(id) and applies the numbers it understands. */
   const PERKS = {
-    roadhop:  { v01: { id: 'quick', label: 'QUICK HOP · faster hops', hop: .85 }, v03: { id: 'bouncy', label: 'GYMNAST · landing is free', soft: 1 }, v04: { id: 'skate', label: 'SKATER · swipe hops two', skate: 1 }, v07: { id: 'tough', label: 'DOCKWORKER · +1 heart', hearts: 1 }, v13: { id: 'eye', label: 'INSPECTOR · see traffic coming', preview: 1 } },
-    vineswing: { v01: { id: 'grip', label: 'RUNNER · longer reach', reach: 1.12 }, v03: { id: 'chalk', label: 'GYMNAST · never slips', grip: 1 }, v20: { id: 'pilot', label: 'PILOT · gentle fall', glide: 1 }, v26: { id: 'hook', label: 'PIRATE · hook grabs farther', reach: 1.2 } },
-    heist:    { v29: { id: 'ninja', label: 'NINJA · guards see less', stealth: .85 }, v18: { id: 'press', label: 'REPORTER · +1 alert', patience: 1 }, v11: { id: 'gloves', label: 'WELDER · carry faster', carry: 1.15 }, v01: { id: 'sprint', label: 'RUNNER · quicker legs', speed: 1.08 } },
-  };
-  const perk = game => (PERKS[game] && PERKS[game][look()]) || null;
+    roadhop:   { v01: { id: 'quick', label: 'RUNNER · quicker hops', hop: .85 }, v07: { id: 'tough', label: 'DOCKWORKER · +1 heart', hearts: 1 }, v03: { id: 'soft', label: 'GYMNAST · garbage stuns half as long', soft: 1 } },
+    vineswing: { v01: { id: 'reach', label: 'RUNNER · longer reach', reach: 1.12 }, v20: { id: 'glide', label: 'PILOT · gentler falls', glide: 1 }, v26: { id: 'hook', label: 'PIRATE · hook grabs farther', reach: 1.2 } },
+    heist:     { v29: { id: 'ninja', label: 'NINJA · guards see less', stealth: .85 }, v11: { id: 'gloves', label: 'WELDER · carries loot faster', carry: 1.15 }, v01: { id: 'sprint', label: 'RUNNER · quicker legs', speed: 1.08 } },
+  };  const perk = game => (PERKS[game] && PERKS[game][look()]) || null;
 
   window.MGCrew = { look, setLook, frame, draw, perk, POSE, FOOT, hat, ids };
 })();

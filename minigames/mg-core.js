@@ -191,7 +191,7 @@
     S.title = () => {
       setPhase('title'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; ui.hideBanner();
       const leg = h('div', 'mg-legend');
-      (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
+      (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.hi ? 2 : cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
       const btns = h('div', 'mg-modes'); modes.forEach((m, i) => btns.appendChild(ui.btn(m.label, (m.cls || '') + (i === 0 ? ' primary' : ''), () => { S.start(m.k); })));
       const best = modes.map(m => (modes.length > 1 ? m.label.split(' ')[0] + ' ' : '') + S.best(m.k)).join('  ·  ');
       const ttl = h('h1', 'mg-title', o.title), longest = Math.max(...o.title.replace(/<[^>]+>/g, ' ').split(/\s+/).map(w => w.length));

@@ -12,18 +12,34 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.vs = { k: .5, max: 42, step: 7 }; { const s = PXA.monkeySets.vs; s.angles = []; for (let a = -s.max; a <= s.max; a += s.step) s.angles.push(a); s.cache = {}; }
   const A = MGArt.build(), { R, make, shapes: { ell, poly, box } } = MGArt;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
-  const ui = MG.ui(host, st, A.banana, 3), fx = MG.fx();
+  const A3 = MGArt3.build(), { cvs } = MGArt3, perk = MGCrew.perk('vineswing'), REACH = perk && perk.reach || 1, GLIDE = perk && perk.glide ? .78 : 1;
+  const ui = MG.ui(host, st, A3.banana, 3), fx = MG.fx();
 
-  const batSpr = [0, 1].map(f => make(13, 8, px => {
-    px.shape(ell(6.5, 4.5, 2, 2.4), R.ink, 2);
-    px.shape(f ? poly([[4.5, 4], [0, 1], [1, 5.5], [4.5, 6]]) : poly([[4.5, 3], [0, 6], [1.5, 7], [4.5, 5.5]]), R.grape, 1);
-    px.shape(f ? poly([[8.5, 4], [13, 1], [12, 5.5], [8.5, 6]]) : poly([[8.5, 3], [13, 6], [11.5, 7], [8.5, 5.5]]), R.grape, 1);
+  /* ---------- hi-res art: bats, a canopy tile, and the crew monkey rotated about its hands ---------- */
+  const rect = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); };
+  const batSpr = [0, 1, 2].map(f => make(45, 27, px => {
+    const up = [-9, 0, 6][f];
+    px.shape(poly([[22.5, 9], [14, 4 + up * .3], [1, 3 + up], [5, 11 + up * .4], [8, 12 + up * .2], [11, 15], [14, 14], [17, 16], [22.5, 16]]), R.grape, 1);
+    px.shape(poly([[22.5, 9], [31, 4 + up * .3], [44, 3 + up], [40, 11 + up * .4], [37, 12 + up * .2], [34, 15], [31, 14], [28, 16], [22.5, 16]]), R.grape, 1);
+    px.shape(ell(22.5, 13, 4.4, 6), R.ink, 2); px.shape(poly([[19, 8], [19.5, 3], [22, 7]]), R.ink, 2); px.shape(poly([[26, 8], [25.5, 3], [23, 7]]), R.ink, 2);
+    px.dot(20, 12, R.red, 1, 3); px.dot(25, 12, R.red, 1, 3); px.dot(21, 17, R.paper, 1, 3); px.dot(24, 17, R.paper, 1, 3);
   }));
-  const gem = A.diamond, gold = A.golden;
-
+  batSpr.forEach(c => { c.hi = true; });
+  const canopy = cvs(63, 30, x => {
+    rect(x, '#0c3012', 0, 0, 63, 14);
+    [[8, 14, 11, 8], [24, 12, 12, 9], [41, 14, 11, 8], [56, 12, 10, 8]].forEach(([cx, cy, rx, ry]) => { x.fillStyle = '#1f6a2a'; for (let j = -ry; j <= ry; j++) { const w = Math.round(rx * Math.sqrt(1 - j * j / (ry * ry))); x.fillRect(cx - w, cy + j, w * 2, 1); } });
+    [[8, 11, 6, 4], [24, 9, 7, 4], [41, 11, 6, 4], [56, 9, 6, 4]].forEach(([cx, cy, rx, ry]) => { x.fillStyle = '#2f8a35'; for (let j = -ry; j <= ry; j++) { const w = Math.round(rx * Math.sqrt(1 - j * j / (ry * ry))); x.fillRect(cx - w, cy + j, w * 2, 1); } });
+    for (let i = 0; i < 18; i++) rect(x, i % 3 ? '#3f9a3a' : '#74c648', (i * 37) % 60, 6 + (i * 11) % 18, 2, 1);
+  });
+  /* the crew monkey rotated about its raised hands (frame pixel 32,15), cached per pose / expression / 7 degree step */
+  const rotCache = new Map();
+  function swingFrame(pose, ex, deg) {
+    const key = pose + ex + deg; let c = rotCache.get(key);
+    if (!c) { c = cvs(110, 110, x => { x.imageSmoothingEnabled = false; x.translate(55, 55); x.rotate(deg * Math.PI / 180); x.translate(-32, -15); x.drawImage(MGCrew.frame(pose, { expr: ex }), 0, 0); }); rotCache.set(key, c); }
+    return c;
+  }
   /* ---------- state ---------- */
   let G = null, hold = false, botOn = false;
   const m = { x: 0, y: 0, vx: 0, vy: 0, vine: null, th: 0, om: 0, r: 60, cd: 0, stun: 0, armed: false, last: null, expr: 'normal', et: 0, blink: 0 };
@@ -69,7 +85,7 @@
         if (!want && m.armed) release();
         G.pred = predict();
       } else {
-        m.vy += GRAV * dt; m.x += m.vx * dt; m.y += m.vy * dt;
+        m.vy += GRAV * GLIDE * dt; m.x += m.vx * dt; m.y += m.vy * dt;
         G.pred = null;
         if (want && m.cd <= 0 && m.stun <= 0) {
           for (const v of G.vines) { const dx = v.ax - m.x, dy = m.y - v.ay; if (v === m.last && Math.abs(m.x - (m.from || 0)) < 14) continue; if (Math.abs(dx) < 17 && dy > 14 && dy < v.len + 4 && Math.sign(dx) === Math.sign(m.vx || dx)) { m.vx += clamp(dx, -1, 1) * 70 * dt; break; } }
@@ -106,7 +122,7 @@
     m.from = m.x; fx.burst(m.x, m.y, ['#74c648', '#2f8a35'], 4, 24, 60, .3);
   }
   function tryGrab() {
-    const reach = G.assist > 0 ? 14 : 9;
+    const reach = (G.assist > 0 ? 14 : 9) * REACH;
     for (const v of G.vines) {
       if (v === m.last && Math.abs(m.x - m.from) < 12) continue;
       const dx = m.x - v.ax, dy = m.y - v.ay; if (Math.abs(dx) > reach || dy < 14 || dy > v.len + 4) continue;
@@ -134,7 +150,7 @@
   }
   /* where would a release right now take you? returns the dotted path and the vine it would catch, if any */
   function predict() {
-    let x = m.x, y = m.y, vx = m.r * Math.cos(m.th) * m.om, vy = -m.r * Math.sin(m.th) * m.om; const pts = [], reach = G.assist > 0 ? 14 : 9; let hit = null;
+    let x = m.x, y = m.y, vx = m.r * Math.cos(m.th) * m.om, vy = -m.r * Math.sin(m.th) * m.om; const pts = [], reach = (G.assist > 0 ? 14 : 9) * REACH; let hit = null;
     for (let i = 0; i < 44; i++) {
       vy += GRAV * .04; x += vx * .04; y += vy * .04; if (y + 20 > WATER) break; pts.push([x, y]);
       if (i > 3) for (const v of G.vines) { if (v === m.vine) continue; const dx = x - v.ax, dy = y - v.ay; if (Math.abs(dx) <= reach && dy >= 14 && dy <= v.len + 4) { hit = v; break; } }
@@ -151,27 +167,23 @@
 
   /* ---------- draw ---------- */
   function vineLine(ax, ay, th, len, lit) {
-    const tx = ax + Math.sin(th) * len, ty = ay + Math.cos(th) * len, n = Math.ceil(len);
-    for (let i = 0; i <= n; i += 1) {
-      const t = i / n, x = Math.round(lerp(ax, tx, t)), y = Math.round(lerp(ay, ty, t));
-      g.fillStyle = '#17481f'; g.fillRect(x - 1, y, 3, 1); g.fillStyle = lit ? '#a8ec76' : '#2f8a35'; g.fillRect(x, y, 1, 1);
-      if (i % 9 === 4) { g.fillStyle = '#74c648'; g.fillRect(x + (i % 18 < 9 ? 1 : -3), y, 3, 1); g.fillRect(x + (i % 18 < 9 ? 2 : -3), y - 1, 1, 1); }
+    const tx = ax + Math.sin(th) * len, ty = ay + Math.cos(th) * len, n = Math.ceil(len * 3), dk = '#17481f', mid = lit ? '#a8ec76' : '#2f8a35', hi = lit ? '#e4ffc0' : '#4aa83e';
+    for (let i = 0; i <= n; i++) {
+      const t = i / n, wig = Math.sin(t * 19 + ax) * .22, x = Math.round((lerp(ax, tx, t) + wig) * 3) / 3, y = Math.round(lerp(ay, ty, t) * 3) / 3;
+      g.fillStyle = dk; g.fillRect(x - 2 / 3, y, 4 / 3, 1 / 3); g.fillStyle = mid; g.fillRect(x - 1 / 3, y, 2 / 3, 1 / 3); g.fillStyle = hi; g.fillRect(x - 1 / 3, y, 1 / 3, 1 / 3);
     }
-    g.fillStyle = '#17481f'; g.fillRect(Math.round(tx) - 1, Math.round(ty), 3, 3); g.fillStyle = '#74c648'; g.fillRect(Math.round(tx), Math.round(ty), 1, 2);
-  }
-  function arm(sx, sy, ex, ey) {
-    const n = Math.max(Math.abs(ex - sx), Math.abs(ey - sy), 1);
-    for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sx, ex, i / n)), y = Math.round(lerp(sy, ey, i / n)); g.fillStyle = '#2a170b'; g.fillRect(x - 1, y - 1, 3, 3); }
-    for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sx, ex, i / n)), y = Math.round(lerp(sy, ey, i / n)); g.fillStyle = '#6e4220'; g.fillRect(x, y, 1, 1); }
-    g.fillStyle = '#2a170b'; g.fillRect(ex - 1, ey - 1, 4, 4); g.fillStyle = '#e0aa76'; g.fillRect(ex, ey, 2, 2);
-  }
-  function draw() {
+    for (let k = 1; k < len / 7; k++) {   /* leaves pair off along the vine */
+      const t = k * 7 / len, x = lerp(ax, tx, t) + Math.sin(t * 19 + ax) * .22, y = lerp(ay, ty, t), s = k % 2 ? 1 : -1;
+      g.fillStyle = dk; g.fillRect(x + (s > 0 ? .33 : -3.33), y - .67, 3, 1.67); g.fillStyle = lit ? '#a8ec76' : '#3f9a3a'; g.fillRect(x + (s > 0 ? .67 : -3), y - .33, 2.33, .67); g.fillStyle = '#74c648'; g.fillRect(x + (s > 0 ? 1 : -2.67), y - .33, 1, .33);
+    }
+    g.fillStyle = dk; g.fillRect(tx - 1, ty, 2, 2); g.fillStyle = '#74c648'; g.fillRect(tx - .33, ty, .67, 1.33);
+  }  function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
     const cam = Math.round(G.cam);
     /* distant trunks (parallax) and the canopy */
-    g.fillStyle = 'rgba(10,42,28,.55)'; for (let i = -1; i < 6; i++) { const x = ((i * 53 - cam * .45) % (W + 60) + W + 60) % (W + 60) - 20; g.fillRect(Math.round(x), 0, 6 + (i & 1) * 3, WATER); }
-    g.fillStyle = '#0c3012'; g.fillRect(0, 0, W, 5); g.fillStyle = '#1f6a2a'; for (let x = -((cam * .9) % 14); x < W; x += 14) { g.fillRect(Math.round(x), 4, 9, 3); g.fillRect(Math.round(x) + 3, 7, 4, 2); }
+    for (let i = -1; i < 6; i++) { const x = Math.round((((i * 53 - cam * .45) % (W + 60) + W + 60) % (W + 60) - 20) * 3) / 3, w = 6 + (i & 1) * 3; g.fillStyle = 'rgba(10,42,28,.55)'; g.fillRect(x, 0, w, WATER); g.fillStyle = 'rgba(40,110,60,.28)'; g.fillRect(x, 0, 1, WATER); g.fillStyle = 'rgba(0,20,10,.3)'; g.fillRect(x + w - 1, 0, 1, WATER); }
+    for (let x = -((cam * .9) % 21); x < W; x += 21) st.hi(canopy, x, -3);
     g.save(); g.translate(-cam, 0);
     const pr = G.pred && m.vine ? G.pred : null;
     for (const v of G.vines) vineLine(v.ax, v.ay, v.th, v.len, v === m.vine || (pr && pr.hit === v));
@@ -181,21 +193,17 @@
     }
     /* pickups */
     for (const p of G.picks) {
-      const bob = Math.round(Math.sin(G.t * 4 + p.ph) * 1.5), sp = p.type === 'diamond' ? gem : p.type === 'golden' ? gold : A.banana;
-      g.drawImage(sp, Math.round(p.x - sp.width / 2), Math.round(p.y - sp.height / 2) + bob);
+      const bob = Math.round(Math.sin(G.t * 4 + p.ph) * 4.5) / 3, sp = p.type === 'diamond' ? A3.diamondS : p.type === 'golden' ? A3.goldenS : A3.bananaS;
+      st.hi(sp, p.x - sp.width / 6, p.y - sp.height / 6 + bob);
       if (p.type !== 'banana' && Math.floor(G.t * 10 + p.ph) % 2) fx.spark(p.x, p.y, p.type === 'diamond' ? '#9be8ff' : '#fff08c');
     }
-    for (const b of G.bats) { if (b.cy == null) continue; g.drawImage(batSpr[Math.floor(G.t * 9 + b.ph) % 2], Math.round(b.x - 6), Math.round(b.cy - 4)); }
+    for (const b of G.bats) { if (b.cy == null) continue; st.hi(batSpr[[0, 1, 2, 1][Math.floor(G.t * 10 + b.ph) % 4]], b.x - 7.5, b.cy - 4.5); }
     /* monkey */
     if (!(G.splash && G.dead > 0)) {
-      const air = !m.vine, a = clamp(m.vine ? -m.th : m.vx / 140, -.733, .733), ex = m.et > 0 ? m.expr : m.stun > 0 ? 'scared' : m.blink > 0 ? 'blink' : 'normal';
-      const f = PXA.monkeyFrame('vs', ex, a, false, air ? Math.floor(G.t * 6) % 2 : 0, 0), k = .5, ac = Math.cos(a), as = Math.sin(a);
-      const loc = (lx, ly) => [m.x + lx * ac - ly * as, m.y + lx * as + ly * ac], P = loc(0, 7);
-      const hx = Math.round(m.x), hy = Math.round(m.y - 1), sh = [loc(-3, 7 + 9), loc(3, 7 + 9)];
-      if (m.vine || hold || botOn) { arm(Math.round(sh[0][0]), Math.round(sh[0][1]), hx - 1, hy); arm(Math.round(sh[1][0]), Math.round(sh[1][1]), hx + 1, hy); }
-      g.drawImage(f.cv, Math.round(P[0] - f.pivot[0]), Math.round(P[1] - f.pivot[1]));
-    }
-    fx.draw(g);
+      const air = !m.vine, a = clamp(m.vine ? -m.th : m.vx / 140, -.733, .733), ex = m.et > 0 ? (m.expr === 'scared' ? 'screech' : m.expr) : m.stun > 0 ? 'screech' : 'determined';
+      const pose = m.stun > 0 || (m.et > 0 && m.expr === 'scared') ? 'scared' : air ? 'leap' : Math.abs(m.om) > 2.4 ? 'swing' : 'hang', deg = Math.round(a * 180 / Math.PI / 7) * 7, fr = swingFrame(pose, ex, deg);
+      g.fillStyle = 'rgba(0,0,0,.0)'; st.hi(fr, m.x - 55 / 3, m.y - 1 - 55 / 3);
+    }    fx.draw(g);
     g.restore();
     for (const sl of G.streaks) { g.globalAlpha = 1 - sl.t / .22; g.fillStyle = '#fff6d6'; g.fillRect(Math.round(sl.x - cam), Math.round(sl.y), 9, 1); }
     g.globalAlpha = 1;
@@ -210,8 +218,8 @@
 
   /* ---------- shell + input ---------- */
   const S = MG.shell({
-    host, ui, id: 'vine', title: 'VINE<span>SWING</span>', sub: 'One button. Swing, fly, catch.',
-    legend: [[A.banana, '<em>8</em> per banana'], [batSpr[0], '<em class="bad">bats</em> knock you off'], [A.golden, '<em>+40</em> wide grab'], [A.diamond, '<em class="ice">+150</em> banana magnet']],
+    host, ui, id: 'vine', title: 'VINE<span>SWING</span>', sub: 'One button. Swing, fly, catch.' + (perk ? '<br><small>' + perk.label + '</small>' : ''),
+    legend: [[A3.banana, '<em>8</em> per banana'], [batSpr[1], '<em class="bad">bats</em> knock you off'], [A3.golden, '<em>+40</em> wide grab'], [A3.diamond, '<em class="ice">+150</em> banana magnet']],
     hint: 'HOLD mouse / finger / Space · release to let go', spaceStarts: false, onStart: () => newGame(), score: () => G.score, overTitle: 'SPLASH!',
   });
   const down = on => { hold = on; if (on && S.playing) sfx.unlock(); };
@@ -220,7 +228,6 @@
   addEventListener('keydown', e => { if (e.key === ' ') { if (S.playing) down(true); else if (!e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); } e.preventDefault(); } });
   addEventListener('keyup', e => { if (e.key === ' ') down(false); });
 
-  ['normal', 'scared', 'blink', 'screech'].forEach(e => PXA.monkeySets.vs.angles.forEach(a => [0, 1].forEach(p => PXA.monkeyFrame('vs', e, a * Math.PI / 180, false, p, 0))));
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   if (params.get('dbg')) setInterval(() => { document.title = `d=${Math.round(G.dist)} b=${G.bananas} grabs=${G.grabs} dead=${G.dead > 0 || S.phase === 'over'}`; }, 200);

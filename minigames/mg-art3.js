@@ -12,18 +12,18 @@
   const flip = c => { const f = cvs(c.width, c.height, x => { x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(c, 0, 0); }); f.hi = true; return f; };
 
   /* a banana: a tapering crescent. kind picks the ramp; stem + tip are dark */
-  function bananaSprite(ramp, o = {}) {
-    const W = 44, H = 36, cx = 20, cy = 3, rm = 20, span = 1.0, rot = .38;
+  function bananaSprite(ramp, o = {}, sc = 1) {
+    const W = Math.round(44 * sc), H = Math.round(36 * sc), cx = 20 * sc, cy = 3 * sc, rm = 20 * sc, span = 1.0, rot = .38;
     const polar = (x, y) => { const dx = x - cx, dy = y - cy; return [Math.hypot(dx, dy), Math.atan2(dx, dy) - rot]; };
     return make(W, H, px => {
-      const body = (x, y) => { const [d, a] = polar(x, y); if (Math.abs(a) > span) return false; const t = a / span, h = 6.2 * Math.pow(Math.max(0, 1 - t * t), .5) + .9; return Math.abs(d - rm) <= h; };
+      const body = (x, y) => { const [d, a] = polar(x, y); if (Math.abs(a) > span) return false; const t = a / span, h = 6.2 * sc * Math.pow(Math.max(0, 1 - t * t), .5) + .9; return Math.abs(d - rm) <= h; };
       px.shape(body, ramp, 1);
-      px.shape((x, y) => { const [d, a] = polar(x, y); return body(x, y) && Math.abs(a) < span - .12 && d > rm + 2 && d < rm + 3.3; }, ramp, 2);   // ridge
-      px.shape((x, y) => { const [d, a] = polar(x, y); return body(x, y) && Math.abs(a + .1) < .42 && d > rm - 3.6 && d < rm - 2.2; }, ramp, 3);        // shine
+      px.shape((x, y) => { const [d, a] = polar(x, y); return body(x, y) && Math.abs(a) < span - .12 && d > rm + 2 * sc && d < rm + 2 * sc + 1.2; }, ramp, 2);   // ridge
+      px.shape((x, y) => { const [d, a] = polar(x, y); return body(x, y) && Math.abs(a + .1) < .42 && d > rm - 3.6 * sc && d < rm - 2.2 * sc; }, ramp, 3);        // shine
       const at = a => [cx + Math.sin(a + rot) * rm, cy + Math.cos(a + rot) * rm];
       const [sx, sy] = at(span - .02), [tx, ty] = at(-span + .02);
-      px.shape(and(cap(sx, sy, sx + 2.4, sy - 4, 2.1), () => true), R.stem, 4);                      // stem
-      px.shape(ell(tx, ty, 2.1, 2.1), R.stem, 4);                                                    // tip
+      px.shape(and(cap(sx, sy, sx + 2.4 * sc, sy - 4 * sc, Math.max(1.2, 2.1 * sc)), () => true), R.stem, 4);                      // stem
+      px.shape(ell(tx, ty, Math.max(1.2, 2.1 * sc), Math.max(1.2, 2.1 * sc)), R.stem, 4);                                                    // tip
       if (o.spots) dots(px, o.spots, R.stem, 1, 5);
     });
   }  const spotsRotten = [[9, 20], [13, 26], [19, 27], [25, 25], [31, 20], [17, 24], [34, 14]];
@@ -95,6 +95,7 @@
     S.golden = bananaSprite(R.gold);
     S.diamond = bananaSprite(R.ice);
     S.rotten = bananaSprite(R.rotten, { spots: spotsRotten });
+    S.bananaS = bananaSprite(R.banY, {}, .7); S.goldenS = bananaSprite(R.gold, {}, .7); S.diamondS = bananaSprite(R.ice, {}, .7);
     S.apple = apple(); S.orange = orange(); S.grapes = grapes(); S.pine = pine(); S.coconut = coconut();
     S.heart = heart(R.red); S.heartOff = heart(R.stem);
     S.tree = tree(); S.bush = bush(); S.trash = trash(); S.bag = bag(); S.soda = soda(); S.fish = fish(); S.star = star();
