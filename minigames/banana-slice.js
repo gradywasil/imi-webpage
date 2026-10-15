@@ -11,21 +11,22 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  const A = MGArt.build();
+  const A = MGArt.build(), A3 = MGArt3.build(), { cvs } = MGArt3;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'crosshair';
-  const ui = MG.ui(host, st, A.banana), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana), fx = MG.fx();
 
   /* sprites in four right-angle spins so the tumble stays pixel-clean */
   const spinCache = new Map();
   function spin(cv, k) {
-    k &= 3; if (!k) return cv; const id = cv; let m = spinCache.get(id); if (!m) spinCache.set(id, m = {});
+    k &= 3; const sz = Math.max(cv.width, cv.height); let m = spinCache.get(cv); if (!m) spinCache.set(cv, m = {});
     if (m[k]) return m[k];
-    const o = document.createElement('canvas'); o.width = cv.width; o.height = cv.height; const c = o.getContext('2d');
-    c.translate(cv.width / 2, cv.height / 2); c.rotate(k * Math.PI / 2); c.drawImage(cv, -cv.width / 2, -cv.height / 2);
+    const o = document.createElement('canvas'); o.width = o.height = sz; o.hi = true; const c = o.getContext('2d'); c.imageSmoothingEnabled = false;
+    c.translate(sz / 2, sz / 2); c.rotate(k * Math.PI / 2); c.drawImage(cv, Math.round(-cv.width / 2), Math.round(-cv.height / 2));
     return (m[k] = o);
-  }
-  const SPR = { banana: A.banana, golden: A.golden, diamond: A.diamond, coconut: A.coconut };
+  }  const SPR = { banana: A3.banana, golden: A3.golden, diamond: A3.diamond, coconut: A3.coconut };
+  const stump = cvs(60, 27, x => { x.fillStyle = '#1a0f14'; x.fillRect(3, 3, 54, 24); x.fillStyle = '#7a4a1e'; x.fillRect(5, 6, 50, 19); x.fillStyle = '#b57d3e'; x.fillRect(5, 6, 50, 3); x.fillStyle = '#e8b878'; x.fillRect(5, 6, 50, 1); x.fillStyle = '#5a3517'; x.fillRect(5, 22, 50, 3); x.fillStyle = '#d09a58'; x.fillRect(8, 0, 44, 8); x.fillStyle = '#1a0f14'; x.fillRect(6, 0, 48, 1); x.fillStyle = '#b57d3e'; for (const r of [7, 13, 19]) x.fillRect(30 - r, 3, r * 2 - 1, 1); });
+  const mpose = { t: 0, p: 'cheer' };
 
   /* ---------- state ---------- */
   let G = null, botOn = false, down = false, trail = [], last = null;
@@ -63,9 +64,9 @@
     it.dead = true; const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang);
     const cv = spin(SPR[it.type], it.k);
     G.slashes.push({ x: it.x, y: it.y, dx: Math.cos(ang), dy: Math.sin(ang), t: 0, big: it.type === 'golden' || it.type === 'diamond' });
-    G.halves.push({ x: it.x, y: it.y, vx: it.vx + nx * 34, vy: it.vy + ny * 34 - 20, half: 0, cv, t: 0 }, { x: it.x, y: it.y, vx: it.vx - nx * 34, vy: it.vy - ny * 34 - 20, half: 1, cv, t: 0 });
+    mpose.t = G.burst >= 2 ? .5 : .25; mpose.p = 'cheer'; G.halves.push({ x: it.x, y: it.y, vx: it.vx + nx * 34, vy: it.vy + ny * 34 - 20, half: 0, cv, t: 0 }, { x: it.x, y: it.y, vx: it.vx - nx * 34, vy: it.vy - ny * 34 - 20, half: 1, cv, t: 0 });
     if (it.type === 'coconut') {
-      MG.hitstop(.09); fx.shock(it.x, it.y, '#ff7a6a', 28); G.hearts--; G.bonks++; G.combo = 0; G.shake = 6; sfx.bonk(); ui.doFlash('#c0392b'); fx.burst(it.x, it.y, ['#563418', '#86592e', '#fff6d6'], 14, 80, 180, .6); ui.floatText(it.x, it.y - 10, 'OUCH -1', 'bad');
+      MG.hitstop(.09); mpose.t = .8; mpose.p = 'scared'; fx.shock(it.x, it.y, '#ff7a6a', 28); G.hearts--; G.bonks++; G.combo = 0; G.shake = 6; sfx.bonk(); ui.doFlash('#c0392b'); fx.burst(it.x, it.y, ['#563418', '#86592e', '#fff6d6'], 14, 80, 180, .6); ui.floatText(it.x, it.y - 10, 'OUCH -1', 'bad');
       render(true); if (G.hearts <= 0) { G.deadT = 1; sfx.over(); } return;
     }
     G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.sliced++; G.burst++; G.burstT = .22;
@@ -118,25 +119,28 @@
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
     if (G.slowT > 0) { g.fillStyle = 'rgba(155,232,255,.12)'; g.fillRect(0, 0, W, H); }
     if (G.frenzy > 0) { g.fillStyle = 'rgba(255,210,58,.09)'; g.fillRect(0, 0, W, H); }
+    /* the keeper, perched on a stump in the corner, watching your blade */
+    if (mpose.t > 0) mpose.t -= 1 / 60; st.hi(stump, W - 24, H - 8);
+    MGCrew.draw(st, mpose.t > 0 ? mpose.p : G.hearts <= 1 && S.playing ? 'scared' : Math.floor(performance.now() / 420) % 2 ? 'breathe' : 'idle', W - 14, H - 7, { flip: true });
     for (const it of G.items) {
       const cv = spin(SPR[it.type], it.k);
-      g.drawImage(cv, Math.round(it.x - cv.width / 2), Math.round(it.y - cv.height / 2));
+      st.hi(cv, it.x - cv.width / 6, it.y - cv.height / 6);
       if ((it.type === 'golden' || it.type === 'diamond') && Math.floor(it.age * 12) % 2 === 0) fx.spark(it.x, it.y, it.type === 'diamond' ? '#9be8ff' : '#fff08c');
     }
     for (const hv of G.halves) {
       const w = hv.cv.width, hw = w >> 1; g.globalAlpha = clamp(1.4 - hv.t, 0, 1);
-      g.drawImage(hv.cv, hv.half ? hw : 0, 0, hw, hv.cv.height, Math.round(hv.x - hw + (hv.half ? hw : 0)), Math.round(hv.y - hv.cv.height / 2), hw, hv.cv.height);
+      g.drawImage(hv.cv, hv.half ? hw : 0, 0, hw, hv.cv.height, Math.round((hv.x - hw / 3 + (hv.half ? hw / 3 : 0)) * 3) / 3, Math.round((hv.y - hv.cv.height / 6) * 3) / 3, hw / 3, hv.cv.height / 3);
     }
     g.globalAlpha = 1;
     for (const sl of G.slashes) {                                            /* a short white streak where the blade went through */
       const k = 1 - sl.t / .2, len = sl.big ? 22 : 15; g.globalAlpha = k;
-      for (let i = -len; i <= len; i++) { const w = Math.abs(i) > len * .6 ? 1 : 2; g.fillStyle = Math.abs(i) < len * .5 ? '#fff' : '#fff08c'; g.fillRect(Math.round(sl.x + sl.dx * i), Math.round(sl.y + sl.dy * i), w, w); }
+      for (let i = -len; i <= len; i += .34) { const w = Math.abs(i) > len * .6 ? .67 : 1.33; g.fillStyle = Math.abs(i) < len * .5 ? '#fff' : '#fff08c'; g.fillRect(sl.x + sl.dx * i, sl.y + sl.dy * i, w, w); }
       g.globalAlpha = 1;
     }
     /* blade trail: a bright core with a warm edge, thinning as it ages */
     for (let i = 1; i < trail.length; i++) {
-      const a = trail[i - 1], b = trail[i], k = 1 - b.t / .22, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y)));
-      for (let s = 0; s <= n; s++) { const x = Math.round(lerp(a.x, b.x, s / n)), y = Math.round(lerp(a.y, b.y, s / n)); g.fillStyle = k > .55 ? '#fff' : '#fff08c'; g.fillRect(x, y, k > .5 ? 2 : 1, k > .5 ? 2 : 1); if (k > .7) { g.fillStyle = 'rgba(255,210,58,.5)'; g.fillRect(x - 1, y - 1, 1, 1); g.fillRect(x + 2, y + 2, 1, 1); } }
+      const a = trail[i - 1], b = trail[i], k = 1 - b.t / .22, n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) * 3));
+      for (let s = 0; s <= n; s++) { const x = lerp(a.x, b.x, s / n), y = lerp(a.y, b.y, s / n), sz = k > .5 ? 1.33 : .67; g.fillStyle = k > .55 ? '#fff' : '#fff08c'; g.fillRect(x - sz / 2, y - sz / 2, sz, sz); if (k > .7 && s % 3 === 0) { g.fillStyle = 'rgba(255,210,58,.5)'; g.fillRect(x - 1.33, y - 1.33, .67, .67); g.fillRect(x + 1, y + 1, .67, .67); } }
     }
     if (down && last) { const f = Math.floor(performance.now() / 70) % 2; g.fillStyle = '#fff'; g.fillRect(Math.round(last[0]) - 1, Math.round(last[1]) - 1, 3, 3); g.fillStyle = f ? '#ffd23a' : '#fff08c'; g.fillRect(Math.round(last[0]) - 2, Math.round(last[1]), 5, 1); g.fillRect(Math.round(last[0]), Math.round(last[1]) - 2, 1, 5); }
     fx.draw(g); g.restore();
@@ -145,8 +149,8 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'slice', title: 'BANANA<span>SLICE</span>', sub: 'Swipe the bananas. Spare the coconuts.',
-    legend: [[A.banana, '<em>10</em> per banana'], [A.coconut, '<em class="bad">slice</em> = -1 heart'], [A.golden, '<em>100</em> frenzy'], [A.diamond, '<em class="ice">200</em> slow-mo'],
-      [A.rotten, '<em class="bad">drop</em> = -1 heart'], [A.heart, '<em>3</em> hearts']],
+    legend: [[A3.banana, '<em>10</em> per banana'], [A3.coconut, '<em class="bad">slice</em> = -1 heart'], [A3.golden, '<em>100</em> frenzy'], [A3.diamond, '<em class="ice">200</em> slow-mo'],
+      [A3.rotten, '<em class="bad">drop</em> = -1 heart'], [A3.heart, '<em>3</em> hearts']],
     hint: 'press and drag to slice · 3+ in a swipe = bonus', onStart: () => newGame(), score: () => G.score,
   });
   addEventListener('pointerdown', ev => { if (!S.playing || ev.target.closest('.mg-over,.mg-nav')) return; down = true; last = null; blade(st.toArt(ev)); });
