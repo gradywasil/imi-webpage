@@ -10,19 +10,32 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.sh = { k: .7, max: 0, step: 7 }; PXA.monkeySets.sh.angles = [0]; PXA.monkeySets.sh.cache = {};
-  const A = MGArt.build(), { R, make, shapes: { ell, box, and, or } } = MGArt;
+  const A = MGArt.build(), A3 = MGArt3.build(), { R, shapes: { ell, box, and, or } } = MGArt, make = MGArt3.make, { cvs, hl } = MGArt3;
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'pointer';
-  const ui = MG.ui(host, st, A.banana), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana), fx = MG.fx();
 
-  const shellSpr = make(22, 18, px => {
-    px.shape(and(ell(11, 15, 10.6, 14), (x, y) => y <= 16), R.coco, 1);
-    px.shape(box(0, 13.5, 22, 3), R.stem, 2);
-    px.shape(or(ell(8, 8, .9, .9), ell(14, 8, .9, .9), ell(11, 11.4, .9, .9)), R.ink, 3);
-    px.tone(5, 5, 2, 1); px.tone(6, 4, 2, 1);
+  /* a coconut half, hi-res: hairy husk dome with a dark rim and the three little eyes */
+  const shellSpr = make(66, 54, px => {
+    const r = seeded(3);
+    px.shape(and(ell(33, 45, 31.8, 42), (x, y) => y <= 48), R.coco, 1);
+    px.shape(box(0, 40.5, 66, 9), R.stem, 2);
+    for (let i = 0; i < 90; i++) { const x = 4 + Math.floor(r() * 58), y = 6 + Math.floor(r() * 34); px.dot(x, y, R.coco, r() < .5 ? 0 : 2, 1); }
+    px.shape(or(ell(24, 26, 2.6, 2.6), ell(42, 26, 2.6, 2.6), ell(33, 34, 2.6, 2.6)), R.ink, 3);
+    hl(px, 15, 13, 8, 3, 2); hl(px, 13, 16, 5, 3, 2); hl(px, 10, 22, 3, 5, 2);
+    px.shape(box(0, 47, 66, 2), R.ink, 4);
   });
-
+  /* the felt table, baked: woven green cloth shading toward the player, wooden edge on top */
+  const tableBg = cvs(W * 3, (H - TABLE) * 3, (x, tw, th) => {
+    const r = seeded(11); rectc(x, '#1a0f14', 0, 0, tw, th); rectc(x, '#2f8a35', 0, 12, tw, th - 12);
+    for (let y = 14; y < th; y += 3) for (let xx = (y / 3 % 2) * 3; xx < tw; xx += 6) rectc(x, '#2a7e30', xx, y, 3, 1);
+    for (let i = 0; i < 160; i++) rectc(x, r() < .5 ? '#3f9a3a' : '#74c648', Math.floor(r() * tw), 16 + Math.floor(r() * (th - 20)), 1, 1);
+    for (let y = 12; y < th; y += 4) { x.fillStyle = 'rgba(0,25,10,' + (.04 + (y / th) * .1).toFixed(3) + ')'; x.fillRect(0, y, tw, 4); }
+    rectc(x, '#5a3517', 0, 0, tw, 12); rectc(x, '#b57d3e', 0, 0, tw, 9); rectc(x, '#e8b878', 0, 0, tw, 2); rectc(x, '#8a5a2b', 0, 6, tw, 2); rectc(x, '#17481f', 0, 12, tw, 3);
+    for (let i = 0; i < 30; i++) rectc(x, '#8a5a2b', Math.floor(r() * tw), 2 + Math.floor(r() * 6), 8 + Math.floor(r() * 20), 1);
+    rectc(x, '#e6e6f0', 9, 150, 2, 2); rectc(x, 'rgba(255,255,255,.18)', 300, 130, 14, 1);
+  });
   /* ---------- state ---------- */
   let G = null, botOn = false;
   const dealer = { expr: 'normal', t: 0, blink: 0 };
@@ -133,18 +146,12 @@
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
     /* dealer monkey behind the table */
-    const f = PXA.monkeyFrame('sh', dealer.t > 0 ? dealer.expr : dealer.blink > 0 ? 'blink' : 'normal', 0, false, 0, 0);
-    const bob = G.stage === 'shuffle' ? Math.round(Math.sin(performance.now() / 70)) : 0;
-    g.drawImage(f.cv, Math.round(W / 2 - f.pivot[0]), Math.round(TABLE + 6 - 41.5 * .7 - f.pivot[1] + bob));
+    const bob = G.stage === 'shuffle' ? Math.sin(performance.now() / 70) * .7 : 0;
+    const dpose = dealer.t > 0 && dealer.expr === 'scared' ? 'scared' : dealer.t > 0 && dealer.expr === 'screech' ? 'cheer' : G.stage === 'shuffle' ? 'idle' : Math.floor(performance.now() / 420) % 2 ? 'breathe' : 'idle';
+    MGCrew.draw(st, dpose, W / 2 + 30, TABLE + 3 + bob, { flip: true });
     /* table */
-    g.fillStyle = '#1a0f14'; g.fillRect(0, TABLE, W, H - TABLE);
-    g.fillStyle = '#2f8a35'; g.fillRect(0, TABLE + 4, W, H - TABLE - 4);
-    for (let y = TABLE + 4; y < H; y += 2) for (let x = (y / 2) % 2 * 2; x < W; x += 4) { g.fillStyle = '#287a30'; g.fillRect(x, y, 2, 1); }
-    g.fillStyle = '#74c648'; for (let i = 0; i < 26; i++) g.fillRect((i * 41) % W, TABLE + 8 + (i * 67) % (H - TABLE - 12), 1, 1);
-    g.fillStyle = '#b57d3e'; g.fillRect(0, TABLE, W, 4); g.fillStyle = '#e8b878'; g.fillRect(0, TABLE, W, 1); g.fillStyle = '#5a3517'; g.fillRect(0, TABLE + 3, W, 1);
-    g.fillStyle = '#17481f'; g.fillRect(0, TABLE + 4, W, 1);
-    /* banana (under the shell that holds it; shells draw over it) */
-    const spr = G.kind === 'golden' ? A.golden : G.kind === 'diamond' ? A.diamond : A.banana;
+    st.hi(tableBg, 0, TABLE);    /* banana (under the shell that holds it; shells draw over it) */
+    const spr = G.kind === 'golden' ? A3.golden : G.kind === 'diamond' ? A3.diamond : A3.banana;
     const items = G.shells.map(s => {
       let x = slotX(s.slot, G.n), dy = 0, z = 0;
       if (G.swap) {
@@ -161,11 +168,11 @@
     for (const it of items) {
       if (it.s.banana && (G.stage === 'show' || G.stage === 'reveal' || G.stage === 'intro' && false)) {
         g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(Math.round(it.x - 8), BASE + 1, 16, 2);
-        g.drawImage(spr, Math.round(it.x - spr.width / 2), Math.round(BASE - spr.height + 3 - (G.stage === 'reveal' && G.result ? Math.abs(Math.sin(G.st * 6)) * 3 : 0)));
+        st.hi(spr, it.x - spr.width / 6, BASE - spr.height / 3 + 3 - (G.stage === 'reveal' && G.result ? Math.abs(Math.sin(G.st * 6)) * 3 : 0));
         if (G.kind !== 'normal' && Math.floor(performance.now() / 120) % 2 === 0) fx.spark(it.x, BASE - 8, G.kind === 'diamond' ? '#9be8ff' : '#fff08c');
       }
       g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(Math.round(it.x - 9), BASE + 3, 18, 2);
-      g.drawImage(shellSpr, Math.round(it.x - 11), Math.round(it.y - 15 - it.s.lift));
+      st.hi(shellSpr, it.x - 11, it.y - 15 - it.s.lift);
     }
     /* cursor */
     if (G.stage === 'pick') { const x = slotX(G.cursor, G.n), b = Math.floor(performance.now() / 200) % 2; g.fillStyle = '#1a0f14'; g.fillRect(x - 3, BASE - 36 + b, 7, 4); g.fillStyle = '#ffd23a'; g.fillRect(x - 2, BASE - 36 + b, 5, 2); g.fillRect(x - 1, BASE - 34 + b, 3, 1); g.fillRect(x, BASE - 33 + b, 1, 1); }
@@ -176,7 +183,7 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'shuffle', title: 'COCONUT<span>SHUFFLE</span>', sub: 'Watch the banana. Find the shell.',
-    legend: [[A.banana, '<em>50+</em> per round'], [A.coconut, '<em class="bad">wrong</em> = -1 heart'], [A.golden, '<em>x5</em> golden round'], [A.diamond, '<em class="ice">x10</em> diamond flash']],
+    legend: [[A3.banana, '<em>50+</em> per round'], [A3.coconut, '<em class="bad">wrong</em> = -1 heart'], [A3.golden, '<em>x5</em> golden round'], [A3.diamond, '<em class="ice">x10</em> diamond flash']],
     hint: 'tap a shell · or 1-5 / ← → + Space', onStart: () => { newGame(); },
     score: () => G.score, spaceStarts: true,
   });
@@ -195,7 +202,6 @@
     else if (e.key === ' ' || e.key === 'Enter') { pickSlot(G.cursor); e.preventDefault(); }
   });
 
-  ['normal', 'scared', 'screech', 'blink'].forEach(e => PXA.monkeyFrame('sh', e, 0, false, 0, 0));
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   MG.loop(update, draw);
