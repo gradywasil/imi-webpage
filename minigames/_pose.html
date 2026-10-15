@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><body style="background:#2f8a35;margin:0;color:#fff;font:10px monospace">
+<div id="o" style="display:flex;flex-wrap:wrap;width:1100px"></div>
+<script src="../crew-art.js"></script><script src="mg-crew.js"></script>
+<script>
+const o = document.getElementById('o'), look = new URLSearchParams(location.search).get('look') || 'v01';
+for (const n of Object.keys(MGCrew.POSE)) {
+  const d = document.createElement('div'); d.style.cssText = 'width:110px;text-align:center';
+  const c = document.createElement('canvas'); c.width = c.height = 64; c.style.cssText = 'width:96px;height:96px;image-rendering:pixelated;background:rgba(0,0,0,.15)';
+  c.getContext('2d').drawImage(MGCrew.frame(n, { look }), 0, 0);
+  d.append(c, n); o.append(d);
+}
+</script>
