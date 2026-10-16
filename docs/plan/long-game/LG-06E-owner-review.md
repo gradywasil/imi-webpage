@@ -1,0 +1,30 @@
+# LG-06E owner package
+
+2026-10-15 America/Denver. Proposal for parent review, then owner approval. A6-A9 bases are accepted locally with their existing qualifications. LG-05's challenge rules, earned floors and purchased tiers remain unapproved. No implementation authority follows from this document.
+
+Recommend one challenge implementation including only the earned 45-second benefit. Staging that benefit would leave first clears without their advertised helper improvement; purchasing tiers adds unnecessary scope.
+
+All four require founded Imprint >=1, current displayed Printing >=5, intro complete, existing development flags and actual Rewards ownership. Recheck at the existing next-Printing action with >=1 earned star. Selection at displayed Printing5 starts the challenge in Printing6, matching existing behavior. Goals count distinct current-run authored/pitched sales through soldCount, excluding kids/library and Folio.
+
+| Proposed ID/name | Exact rule and goal | Benefit | Future ownership |
+| --- | --- | --- | --- |
+| handplanted / Hand-planted | Disable automatic garden plant/harvest/replant; manual garden remains. 6 progression sales. | A6 earned floor1 | Ops garden commit; Automation readiness/cadence |
+| onebrief / One brief | First clear inherited backlog to <=1 unsold pitch. No commissions or challenge progress during clearance. Then 8 additional progression sales; commissions allowed only at zero unsold. | A7 earned floor1 | Ops commission, sale/progress and run metadata; Automation cadence |
+| paperonly / Paper only | No media releases, manual or automatic, any quantity. 8 progression sales. Other income remains. | A8 earned floor1 | Ops media prepare/validate/fallback; Automation readiness/cadence |
+| fixedcast / Fixed cast | First 3 sales allow ordinary seating. Before sale4 require >=1 owned Muse in a usable seat. Sale4 locks all seats through sale8. No subsequent seating, moving or unseating. 8 total progression sales. | A9 earned floor1 | Ops shared sale and Muse commit/fallback; Automation readiness/cadence |
+
+One brief deliberately replaces the impossible absolute entry cap with a visible clearance phase. Printing retains generated definitions but clears written, so previously sold pitches become unsold again. Record the soldCount baseline when clearance finishes, including a sale that reduces backlog to one; that sale earns no challenge progress. Entry with <=1 starts at baseline zero. Show clearance count, then 0/8. Never delete pitches, reset their history or excuse an undisclosed cap violation. Inherited high-band recipes can delay clearance until desks reopen; no new time limit applies.
+
+Fixed cast deliberately replaces first-sale locking. Slots open at 3/8/13 sales and reset empty, making the draft a no-Muse run. The fourth-sale gate gives one real cast choice at ordinary invitation cost, without free Muses or early slots. Publisher/away may reach three, then must wait for a valid cast. Lock immediately before consuming sale4 materials; pending seating must settle first. The seat opening at eight stays empty until clear.
+
+Enforce these rules in shared manual/auto/API/away paths, tracked-pitch sale prepare/finish and flagless fallbacks, not just buttons. Reset blocked helper clocks; no catch-up. Reject entry/reset while garden/commission/Muse choices, media debit, tracked sale, reward or away work remains unsettled. Revalidate Retry against run identity and current restriction. Existing eight entry/end/abandon behavior stays intact; new abandon lifts constraints without compensation. Founding already blocks active challenges.
+
+Use chDone as the sole earned-floor record, deriving floor1 and 45 active game seconds for its mapped helper; no new purchased-level fields or 1/2/4-star buttons. Current A6-A9 have fixed60 clocks, not paid ladders. Retain existing higher levels/unknown metadata untouched; any future approved faster tier must win. Keep Imprint1/2/3/5 and acknowledged manual predecessor gates, Off/settings, fair slots and active-only behavior unchanged.
+
+Add exactly challenge:handplanted:first, challenge:onebrief:first, challenge:paperonly:first and challenge:fixedcast:first to Letters L tier0. Lock the existing highest-owned-desk productive-rate descriptor, floor(max(50,min(5000,180*rate))), balanced letters. For new IDs only, acknowledge detached clear/chDone plus prepared locked claim before publishing clear/floor; use existing delivery/Retry thereafter. Failed preparation leaves challenge active and floor unavailable; failed delivery retains the prepared claim. Reload/replay/reset never reissues it. Preserve original eight, ch4 original-four predicate, 68 awards/+1%, 109DB allocation; new stars/DB zero.
+
+Future lease: one Ops owner, narrow automation.js/rewards.js and SW cache bump. Minimal existing challenge/helper cards in both styles, internal scrolling, >=40px controls at360x560, Low/reduced motion; no art/tab/module. Unowned prerequisites are the two run-rule records and narrow acknowledged first-clear preparation, not a generic framework. Later verify one controlled entry/restriction/clear/reload per distinct rule, one relevant save failure/no duplicate, short default control when Ops changes, both phone styles and one independent review. No A6-A9 campaigns. Mastery stays staged before A11; pacing stays LG13.
+
+Owner approval question: Do you approve this complete package, including One brief's visible clearance phase, Fixed cast's required cast before sale4, the four exact goals/IDs and once-only Letters rewards, and earned-only45-second floors now with purchased tiers and mastery deferred?
+
+OWNER APPROVED 2026-10-15: complete four-challenge package, clearance/fourth-sale corrections, once-only Letters claims and chDone-derived45second helper benefits. Receipt evidence/LG-06/owner-approval-challenges/receipt.json. Implementation lease LG-06E-imprint-challenges.md. Purchased tiers/mastery/default activation/commit/deploy excluded; earlier proposal status retained as history.

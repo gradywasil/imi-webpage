@@ -18,9 +18,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;600&family=Barlow+Condensed:wght@500;700&family=Rokkitt:wght@500;800&family=Bree+Serif&family=Pacifico&display=swap" rel="stylesheet">
   <script>document.documentElement.dataset.screen = location.hash === '#play' ? 'game' : 'menu';</script>
-  <script src="style-swap.js"></script>
+  <script src="awards-catalogue.js"></script>
+<script src="vault.js"></script>
+<script src="vault-play.js"></script>
+<script src="vault-save-gate.js"></script>
+  <script src="rewards.js"></script>
+  
+  <script>if (!VaultSaveGate.blocked && !Rewards.enabled) document.write('<script src="style-swap.js"><\/script>');</script>
   <link rel="stylesheet" href="classic.css">
   <link rel="stylesheet" href="ops.css">
+  <link rel="stylesheet" href="commission-board.css">
+<link rel="stylesheet" href="hall.css">
+<link rel="stylesheet" href="seasons.css">
+  <link rel="stylesheet" href="minigame-progression.css">
+<link rel="stylesheet" href="automation.css">
+<link rel="stylesheet" href="production-goal.css">
   <link rel="stylesheet" href="pickups.css">
   <link rel="stylesheet" href="classic-fx.css">
 </head>
@@ -119,6 +131,12 @@
     </symbol>
   </svg>
 
+  <script>
+    if (!VaultSaveGate.blocked && Rewards.enabled) Rewards.start(() => {
+      localStorage.setItem('imi-style', 'classic');
+      document.getElementById('styleSwap').addEventListener('click', () => { if (Rewards.owns()) location.href = 'index.html' + location.search + location.hash; });
+    });
+  </script>
   <script src="weather.js"></script>
   <script src="world.js"></script>
   <script src="mood.js"></script>
@@ -132,7 +150,23 @@
   <script src="readers-w9.js"></script>
   <script src="crew-art.js"></script>
   <script src="crew-svg.js"></script>
-  <script src="ops.js"></script>
+  <script src="minigame-progression.js"></script>
+<script src="auto-challenge.js"></script>
+<script src="automation.js"></script>
+  <script src="production-goal.js"></script>
+<script src="training-pool.js"></script>
+<script src="folio.js"></script>
+<link rel="stylesheet" href="layers.css">
+<script src="layers.js"></script>
+<script src="estate.js"></script>
+<script src="archive.js"></script>
+<script src="works.js"></script>
+  <script src="works-catalogue.js"></script>
+<script src="works-play.js"></script>
+<script src="commission-board.js"></script>
+<script src="hall.js"></script>
+<script src="seasons.js"></script>
+<script src="ops.js"></script>
   <script src="tour.js"></script>
   <script src="pickups.js"></script>
   <script src="classic-fx.js"></script>

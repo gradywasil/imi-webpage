@@ -1,0 +1,19 @@
+.layers .o-btn { min-height:40px; margin:4px 6px 4px 0; white-space:normal; }
+.layers p { overflow-wrap:anywhere; }
+.layer-confirm .o-modal-card { display:flex; flex-direction:column; max-height:calc(100dvh - 32px); }
+.layer-confirm .layer-details { overflow:auto; min-height:0; overscroll-behavior:contain; }
+.layer-confirm .o-row { flex-shrink:0; padding-top:12px; }
+.layer-confirm .o-btn { min-height:40px; }
+html[data-style="pixel"] .layers h3, html[data-style="pixel"] .layer-confirm h3 { font-family:var(--font-px); }
+html[data-style="pixel"] .layers .o-btn { border-radius:0; }
+html[data-style="classic"] .layers .o-btn { border-radius:12px; }
+@media (max-width:480px) {
+  .layer-confirm .o-modal-card { width:calc(100vw - 24px); margin:0; }
+  .layer-confirm .o-row { display:flex; flex-wrap:wrap; gap:8px; }
+  .layer-confirm .o-row .o-btn { flex:1; }
+  .layers .o-btn { width:100%; margin-right:0; }
+}
+
+.layer-shelf { min-width:0; }
+html[data-style="pixel"] .layer-shelf h4 { font-family:var(--font-px); }
+html[data-style="classic"] .layer-shelf h4 { font-weight:700; }

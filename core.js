@@ -15,7 +15,7 @@ window.Core = (() => {
   const fmtHud = fmt;
 
   /* =====================  SOUND (synthesized, no assets)  ===================== */
-  const audio = { ctx: null, on: localStorage.getItem('imi-sound') !== 'off' };
+  const audio = { ctx: null, on: !window.VaultSaveGate?.blocked && localStorage.getItem('imi-sound') !== 'off' };
   function ac() {
     if (!audio.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) audio.ctx = new C(); }
     if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
@@ -73,6 +73,11 @@ window.Core = (() => {
 
   /* =====================  BOOT  ===================== */
   function boot(art) {
+    if (window.VaultSaveGate?.blocked) throw new Error('Vault save blocked');
+    const writer = window.Rewards?.enabled ? window.Rewards : null;
+    if (writer && !writer.owns()) throw new Error('Core boot requires save ownership');
+    const { setTimeout, clearTimeout, setInterval, requestAnimationFrame } = writer ? writer.timers : window;
+    const canWrite = () => !writer || writer.owns();
     const px = art.edition === 'pixel', sfx = makeSfx(px);
 
     /* ---------- sound buttons (the menu and the game header each have one) ---------- */
@@ -90,7 +95,9 @@ window.Core = (() => {
     let score = Economy.loadScore();
     let shown = score, tweening = false, saveT = 0;
     const inGame = () => html.dataset.screen === 'game';
-    const persist = () => { clearTimeout(saveT); saveT = 0; Economy.saveScore(score); };
+    const flushAcknowledged = () => { clearTimeout(saveT); saveT = 0; return canWrite() && !IMI.ops?.extensions?.state().meta.automation?.media?.pending && !IMI.ops?.extensions?.state().meta.estate?.pending && !IMI.ops?.extensions?.state().meta.automation?.print?.pending ? Economy.saveScoreAcknowledged(score) : { ok: false, error: 'Not the save owner' }; };
+    const persist = () => { if (writer?.localDisposition()) { clearTimeout(saveT); saveT = 0; return {ok:false,error:'Historical boundary owns the wallet'}; } if (writer) return IMI.ops && !IMI.ops.progression.running() ? { ok: false, error: 'Progression paused' } : flushAcknowledged(); clearTimeout(saveT); saveT = 0; Economy.saveScore(score); };
+    if (writer) writer.onPagehide(persist);
     addEventListener('pagehide', persist);
     document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); });
     scoreEl.textContent = fmtHud(score);
@@ -100,16 +107,18 @@ window.Core = (() => {
       if (!(Math.abs(d) > Math.max(1, Math.abs(score) * Number.EPSILON * 4))) { shown = score; scoreEl.textContent = fmtHud(shown); tweening = false; return; }
       shown += d * 0.16 + Math.sign(d); scoreEl.textContent = fmtHud(shown); requestAnimationFrame(tweenScore);
     }
-    function paintScore(bump) {
+    function paintScore(bump, event) {
       if (!saveT) saveT = setTimeout(persist, 1500);
       hud.title = 'Bananas: ' + exact(score);
       hud.setAttribute('aria-label', 'Bananas: ' + exact(score));
       if (reduceMotion || !inGame()) { shown = score; scoreEl.textContent = fmtHud(score); } else if (!tweening) { tweening = true; requestAnimationFrame(tweenScore); }
       if (bump && inGame()) restart(hud, 'bump');
-      watchers.forEach(f => f(score));
+      watchers.forEach(f => { if (event) f(score, event); else f(score); });
     }
     /* a "+n" with a banana flies from `from` into the counter, then the total changes */
     function earn(n, from) {
+      if (!canWrite() || (writer && !IMI.ops?.progression.running())) return false;
+      if (writer && !Economy.saveScoreAcknowledged(score + n).ok) return false;
       score += n; paintScore(true); sfx.coin();
       if (reduceMotion || !inGame()) return;
       const [fx, fy] = from || [innerWidth / 2, innerHeight / 2], [hx, hy] = centerOf(hud);
@@ -121,6 +130,8 @@ window.Core = (() => {
       ], { duration: 900, easing: art.ease || 'steps(14)' }).onfinish = () => f.remove();
     }
     function spend(n) {
+      if (!canWrite() || (writer && IMI.ops && !IMI.ops.progression.running())) return false;
+      if (writer && n <= score && !Economy.saveScoreAcknowledged(score - n).ok) return false;
       if (n > score) return false; score -= n; paintScore(true); sfx.tick();
       if (n >= 1 && !reduceMotion && inGame()) {             // the price drops out of the counter
         const [x, y] = centerOf(hud), f = document.createElement('div'); f.className = 'fly-minus'; f.textContent = '-' + fmt(n);
@@ -191,6 +202,7 @@ window.Core = (() => {
       }, left);
     }
     function useToy(id) {
+      if (!canWrite() || (writer && !IMI.ops?.progression.running())) return;
       const T = TOYS[id], o = toys[id], now = Date.now();
       if (IMI.ops?.introActive()) { say('Finish learning the room to unlock boosts.'); return; }
       if ((readyAt[id] || 0) > now) { sfx.tick(); say(`${T.name} is recharging (${Math.ceil((readyAt[id] - now) / 1000)}s)`); restart(o.el, 'nope'); return; }
@@ -242,6 +254,8 @@ window.Core = (() => {
     }
     ['weather', 'night'].forEach(id => toys[id].el.addEventListener('click', () => { sfx.tick(); restart(toys[id].el, 'hit'); say(forecastText(id)); emit('toy', { id }); }));
     /* ---------- settings popover (game header): art style, sound, reset, tutorial replay ---------- */
+    let vaultSettings = null, paintVaultSettings = () => {};
+    const settings = {registerVault:row => {if(vaultSettings)throw Error('Vault Settings already registered');vaultSettings=row;paintVaultSettings();}};
     const setBtn = $('#settingsBtn');
     if (setBtn) {
       const pop = document.createElement('div'); pop.className = 'set-pop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Settings');
@@ -253,6 +267,8 @@ window.Core = (() => {
         + row('Tutorial', '<button type="button" class="set-btn" data-set="tour">Replay</button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
         + row('Tips', '<button type="button" class="set-btn" data-set="tips"></button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
         + row('Game', '<button type="button" class="set-btn" data-set="reset">Reset</button>');
+      const vaultHost=document.createElement('div');pop.appendChild(vaultHost);
+      paintVaultSettings=()=>{vaultHost.innerHTML=vaultSettings?.render() || '';};
       document.body.appendChild(pop);
       const soundOpt = $('[data-set="sound"]', pop);
       paintOpt = () => { soundOpt.textContent = audio.on ? 'On' : 'Off'; soundOpt.setAttribute('aria-pressed', String(audio.on)); };
@@ -260,12 +276,13 @@ window.Core = (() => {
       const close = () => { pop.hidden = true; setBtn.setAttribute('aria-expanded', 'false'); };
       const tipsOpt = $('[data-set="tips"]', pop);
       const paintTour = () => { const t = window.IMI && IMI.tour; pop.querySelectorAll('[data-tour]').forEach(r => { r.hidden = !t; }); if (t) { tipsOpt.textContent = t.tipsOn() ? 'On' : 'Off'; tipsOpt.setAttribute('aria-pressed', String(t.tipsOn())); } };   // tour.js loads after this, so look it up when the popover opens
-      setBtn.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); paintTour(); paintFx(); pop.hidden = !pop.hidden; setBtn.setAttribute('aria-expanded', String(!pop.hidden)); });
+      setBtn.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); paintTour(); paintFx(); paintVaultSettings(); pop.hidden = !pop.hidden; setBtn.setAttribute('aria-expanded', String(!pop.hidden)); });
       pop.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.fx) { setFx(b.dataset.fx); return; }
         if (b.dataset.style) { if (b.dataset.style !== cur && window.StyleSwap) { close(); StyleSwap.swap(); } return; }
         const act = b.dataset.set;
+        if (act?.startsWith('lamp-') && vaultSettings) {close();vaultSettings.action(act);paintVaultSettings();return;}
         if (act === 'sound') { audio.on = !audio.on; localStorage.setItem('imi-sound', audio.on ? 'on' : 'off'); paintSound(); if (audio.on) sfx.drum(); return; }
         if (act === 'tips') { IMI.tour.tipsOn(!IMI.tour.tipsOn()); paintTour(); return; }
         close();
@@ -296,7 +313,7 @@ window.Core = (() => {
     const bus = {};
     const on = (n, f) => { (bus[n] || (bus[n] = [])).push(f); };
     const off = (n, f) => { bus[n] = (bus[n] || []).filter(x => x !== f); };
-    const emit = (n, d) => { (bus[n] || []).slice().forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
+    const emit = (n, d) => { if (!canWrite()) return; (bus[n] || []).slice().forEach(f => { try { f(d); } catch (e) { console.error(e); } }); };
 
     /* ---------- effects level ----------
        Max = High plus the heavy extras (html[data-fxmax], IMI.fx.max): glow, more particles, trails, screen shake. Only ever chosen by hand.
@@ -337,12 +354,59 @@ window.Core = (() => {
 
     /* ---------- the bridge ops.js plays through ---------- */
     window.IMI = {
-      on, off, emit,
+      on, off, emit, settings,
       edition: art.edition, reduceMotion, sfx, centerOf, fmt, fmtRate, exact, say, banner, heroSay: art.heroSay,
       fx, setFx, bananaEl: art.bananaEl, forecastText,
       burst: (x, y, names, n = 12) => art.burst(x, y, names, fx.low ? Math.max(2, Math.ceil(n / 3)) : fx.max ? Math.round(n * 1.6) : n),     // Low: a third of the particles, Max: more
       fall: (x, y, name, life) => { if (fx.low && Math.random() < .5) return; art.fall(x, y, name, life); },
-      bananas: { get: () => score, add: n => { score += n; paintScore(false); }, spend, earn, watch: f => watchers.push(f) },
+      bananas: { get: () => score, add: n => { if (!canWrite() || (writer && IMI.ops && !IMI.ops.progression.running())) return false; if (writer && !Economy.saveScoreAcknowledged(score + n).ok) return false; score += n; paintScore(false); }, spend, earn, watch: f => watchers.push(f),
+        ...(writer ? { saveAcknowledged: flushAcknowledged, acknowledgement: Economy.walletAcknowledgement,
+          resetAcknowledged() {
+            if (!canWrite() || !IMI.ops?.progression.running()) return { ok:false, error:'Progression paused' };
+            const result = Economy.saveScoreAcknowledged(0, null);
+            if (result.ok) { clearTimeout(saveT); saveT = 0; score = 0; paintScore(false); }
+            return result;
+          },
+          debitMediaAcknowledged(id) {
+            const intent = canWrite() && writer.mediaWallet(id);
+            if (!intent || ![intent.balance,intent.after].includes(score)) return {ok:false,error:'No exact owned media debit'};
+            const result = Economy.saveScoreAcknowledged(intent.after);
+            if (result.ok) { clearTimeout(saveT); saveT = 0; score = intent.after; paintScore(false); }
+            return result;
+          },
+          replacePrintingAcknowledged(id) {
+            const intent = canWrite() && writer.printingWallet(id);
+            if (!intent || ![intent.balance,intent.seed].includes(score)) return {ok:false,status:'refused',error:'No exact owned Printing replacement'};
+            const result = Economy.saveScoreAcknowledged(intent.seed);
+            if (!result.ok) return {...result,status:'held'};
+            clearTimeout(saveT); saveT = 0; score = intent.seed; paintScore(false,{reward:id});
+            return {ok:true,status:'acknowledged',id};
+          },
+          replaceEstateAcknowledged(id) {
+            const intent = canWrite() && writer.estateWallet(id);
+            if (!intent || ![intent.balance,intent.seed].includes(score)) return {ok:false,error:'No exact owned Estate replacement'};
+            if (score === intent.seed) return {ok:true,duplicate:true};
+            const result = Economy.saveScoreAcknowledged(intent.seed);
+            if (result.ok) { clearTimeout(saveT); saveT = 0; score = intent.seed; paintScore(false, {reward:id}); }
+            return result;
+          },
+          replaceImprintAcknowledged(id) {
+            const intent = canWrite() && writer.layerWallet(id);
+            if (!intent) return {ok:false, error:'No owned Imprint wallet intent'};
+            // Exact replacement is replayable while the prepared reset holds progression.
+            // Preserve rewardMarker and all wallet metadata through Economy's default marker.
+            const result = Economy.saveScoreAcknowledged(intent.seed);
+            if (result.ok) { clearTimeout(saveT); saveT = 0; score = intent.seed; paintScore(false, {reward:id}); }
+            return result;
+          },
+          creditReward({ id, sequence, previous, amount } = {}) {
+            if (!canWrite()) return { ok: false, error: 'Not the save owner' };
+            const result = Economy.creditReward(score, { id, sequence, previous, amount });
+            if (!result.ok) return result;
+            if (!result.duplicate) { clearTimeout(saveT); saveT = 0; score = result.score; paintScore(false, { reward:id }); }
+            return { ok:true, duplicate:result.duplicate, marker:result.marker };
+          }
+        } : {}) },
       screen: () => html.dataset.screen,
       onScreen: f => screenFns.push(f),
       whenPlaying: f => (inGame() ? f() : queued.push(f)),     // modals wait for the game screen instead of covering the menu

@@ -1,0 +1,46 @@
+.lg03-panel { max-width: 760px; margin: 0 auto; }
+.lg06a-garden label { display: grid; gap: 6px; margin: 12px 0; }
+.lg06a-garden select { width: 100%; min-width: 0; }
+.lg06a-garden p { line-height: 1.5; }
+.lg03-panel > p, .lg03-desk p { line-height: 1.5; }
+.lg03-desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 160px); gap: 12px; align-items: center; }
+.lg03-desk h3, .lg03-desk p { grid-column: 1 / -1; margin: 0; }
+.lg03-desk button { grid-column: 1 / -1; }
+.lg03-panel button, .lg03-panel select { min-height: 44px; padding: 8px 12px; font: inherit; color: inherit; background: #1a0f14; border: 2px solid currentColor; cursor: pointer; }
+.lg03-panel :disabled { opacity: .6; cursor: default; }
+.lg03-shop > p, .lg03-coach > p, .lg03-priority p { line-height: 1.5; }
+.lg03-priority { padding-left: 24px; }
+.lg03-priority li { margin: 16px 0; }
+.lg03-priority p { margin: 4px 0 8px; }
+.lg03-order { display: flex; gap: 8px; }
+.lg03-panel :is(button, select):focus-visible { outline: 3px solid #e7ab45; outline-offset: 3px; }
+html[data-style="pixel"] .lg03-panel :is(button, select) { border-radius: 0; }
+html[data-style="pixel"] .lg03-panel h2 { font-family: var(--font-px); font-size: 16px; line-height: 1.6; }
+html[data-style="classic"] .lg03-panel :is(button, select) { border-radius: 12px; }
+@media (max-width: 600px) { .lg03-panel { font-size: 18px; } .lg03-desk { grid-template-columns: minmax(0, 1fr) 100px; gap: 10px; } }
+
+.lg06b-pitch p { line-height: 1.5; overflow-wrap: anywhere; }
+.lg06b-pitch button { min-height: 40px; max-width: 100%; }
+
+.lg06c-media { font-size: 13px; line-height: 1.4; }
+.lg06c-media p { margin: .4rem 0; overflow-wrap: anywhere; }
+.lg06c-media button { min-height: 44px; }
+html[data-style="classic"] .lg06c-media { border-radius: 12px; }
+
+.lg06d-muse { font-size: 13px; line-height: 1.4; }
+.lg06d-muse p { margin: .4rem 0; overflow-wrap: anywhere; }
+.lg06d-muse button { min-height: 44px; max-width: 100%; }
+html[data-style="classic"] .lg06d-muse { border-radius: 12px; }
+
+.lg08h-print { font-size: 13px; line-height: 1.5; }
+.lg08h-print p { margin: .5rem 0; overflow-wrap: anywhere; }
+.lg08h-print label { display: block; margin-top: 12px; }
+.lg08h-print input { min-height: 44px; width: 100%; box-sizing: border-box; margin: 6px 0; font: inherit; }
+.lg08h-print button { max-width: 100%; }
+html[data-style="pixel"] .lg08h-print input { border-radius: 0; }
+html[data-style="classic"] .lg08h-print, html[data-style="classic"] .lg08h-print input { border-radius: 12px; }
+
+.lg08l-challenge { font-size: 13px; line-height: 1.5; }
+.lg08l-challenge p { margin: .5rem 0; overflow-wrap: anywhere; }
+.lg08l-challenge button { min-height: 44px; max-width: 100%; }
+html[data-style="classic"] .lg08l-challenge { border-radius: 12px; }

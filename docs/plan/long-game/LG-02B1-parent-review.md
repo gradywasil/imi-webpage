@@ -1,0 +1,27 @@
+# LG-02B1 parent review and historical exception request
+
+Status: OWNER APPROVED2026-10-13; restrictedlocalB1acceptance recorded in LG-02B1-accepted.md. Owner explicitly responded "okay lets keep working i approve" after the threehistoricalexception request and localtesting guidance. The exact statedlimits remain, all originalartifacts/failures preserved; no retrospectiveverification or broaderrelease approval.
+
+## Concrete result reviewed
+
+New vault.js contains the approved frozen catalogue and pure structural receipt/ledger validation. Script registration follows Rewards in index/classic/balance, current worker cacheimi-v31. Three independent-review defects are repaired: no transaction chronology inferred from wall-history dates; latest-only unresolved receipt and active lower prerequisite; contiguous retained acknowledged history/exact successor. No live purchases, effects, Vault admission, paid trust or coordinator exists. All Vault-bearing saves still block through unchanged gate.
+
+Sol6 author and repair, independent Astra full QA1 then QA2. Fresh QA2 tests27/27, unchanged independent fixtures56/56 and64additionalcontrols pass. Source-bound final159/159serial suite preserved; no claim it was rerun by reviewer. Eight existing complete60minute captures compare as full objects after ONLY five provenance exclusions, actualseed1active/collect activeMinutes180/session60/tune{}, canonical017fae08. Captured output is not exhaustiveheap/RNG or a freshreviewerpre-edit capture.
+
+Fresh actual native Pixel/Classic click/save/reload retains version1/unknownfields, bothstyles directCore/Economy refusals and acknowledgedwriter rejection pass on purevalid-but-blocked fixtures. Currentimi-v31 activated/controlling and served/cached/diskVaultbytes agree. Independentreport LG-02B1-QA-runtime-r2.md gives every original11deliverable disposition and all failures/limits.
+
+Parent personally opened all23actualfiles:15original B1 normal/cleared/blocked at1280x800/390x700/360x560 in bothstyles, fourQA1 and fourcurrentQA2images. Current blocked controls retain readablecopy/action/focus; current normaldesktops retain gamepresentation. Historical Pixeldailyoverlay captures were also inspected; cleared captures distinguish them. Ordinaryphone text truncation remains known/out-of-scope. Full oldmatrix/media/Low/lifecycle carry is explicitly unchanged-source support, not freshexecution/nativezoom. Parent rehashed717closingcurrentinputs,51outputs and23images with zero mismatches. Currentclosingfiles are authoritative; changes list contains earlier changedbrief hash, not currentoverride. First parent check's wrong override diagnostic was corrected without touching QA evidence.
+
+## Exact historical exceptions requested
+
+1. Original212testoutputs were written/moved under oldLG01 evidence roots outside the named lease. Exclusivecreate/collisionfailure and boundedpriorhashes limit concern, but missingpre-runpathinventory means everymovedartifact's priorownership/identity remains UNVERIFIED. No wholesalehistorycorruption is established. Accept this documented lease deviation without asserting complete prior preservation or reconstructing inventory. Exactmoves remain in QA1/QA2 and LG-02B1-evidence-deviation.md.
+2. Original/repairbeforefixtures were captured with realOps/Economy on balance.html's simulatedIMIwalletbridge, not a nativeCorepage. They are correctlyversioned/sourcebound and precede codechanges; later actualnativeCoreoldsave/save/reload passes. The literal nativeCore BEFORE requirement was missed and cannot be retroactively supplied. Accept this precise capture-method exception, retaining originalfixtures and native-after evidence separately; do not claim the former is nativeCorecapture or borrow LG00exceptionapproval.
+3. Repair HANDOFF's named historical-risk-inventory.json is absent. Independentaudit verifies exercisedrepairrouting from actualwriter/source/log/destinationfiles:213mappings,144writes/69mkdirs, missedinitialmkdir refused before mutation. This supports thoseactualcalls, not universalfilesystemcontainment or a retrospectiveinventory. Accept the missingnamedinventory evidence gap and corrected handoff interpretation; do not create the file or rewrite oldclaim.
+
+## Why this needs owner disposition
+
+The approved B1 task explicitly restricts output leaves and requires a correctlyversioned realCorebeforefixture; the repair additionally requires a bounded pre-runinventory. The owner's orchestration rules require escalation when outputbreaks ownership or requiredverification. IndependentQA cannot grant these exceptions, and newcleanruns cannot change the past. This is the final historical disposition after completedtechnicalQA and parentimages, not a new design/price/deployment request.
+
+## Scope of an approval
+
+Approval accepts only these stated historical limitations and allows parent restrictedlocalB1acceptance/resumption of the already-approved sequence through a new exactcoordinatorlease and later independentQA. It approves no historyreplacement, price/rewardallocation, shared/public purchases, validatoradmission/effects, defaultactivation, commit or deployment. Nativezoom/physical/screenreader/audio, historical8181browsererasure, wholeLG02 and LG13pacing remain unverified/deferred. Futurework must capture actualnativeCorebeforebytes and route/inventory outputs beforewrites. If exceptions are declined, B1 remains parked/HOLD; originalsource/evidence preserved.

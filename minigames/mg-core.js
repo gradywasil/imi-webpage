@@ -83,7 +83,7 @@
     function frame(now) {
       raf = requestAnimationFrame(frame);
       let dt = Math.min(.1, (now - last) / 1000); last = now;
-      if (run) { if (freeze > 0) freeze -= dt; else { acc += dt; while (acc >= STEP) { update(STEP); acc -= STEP; } } }
+      if (run) { if (freeze > 0) freeze -= dt; else { acc += dt; while (acc >= STEP) { window.MGHosted?.advance(STEP); update(STEP); acc -= STEP; } } }
       draw(run ? acc / STEP : 0);
     }
     raf = requestAnimationFrame(frame);
@@ -183,7 +183,13 @@
     const { host, ui } = o, over = ui.over, modes = o.modes || [{ k: 'main', label: 'START' }];
     const S = { phase: 'title', mode: modes[0].k, get playing() { return S.phase === 'play'; } };
     const bestKey = m => o.id + ':' + m, quick = /autostart/.test(location.search) && !/count=1/.test(location.search);
-    const setPhase = ph => { S.phase = ph; document.body.classList.toggle('mg-playing', ph === 'play' || ph === 'pause'); syncPause(); };
+    const applyPhase = ph => { S.phase = ph; document.body.classList.toggle('mg-playing', ph === 'play' || ph === 'pause'); syncPause(); window.MGHosted?.phase(ph, S.mode); };
+    const setPhase = ph => {
+      if (window.MGHosted && ph === 'play' && S.phase !== 'pause') {
+        applyPhase('waiting'); window.MGHosted.start(S.mode, () => { if (S.phase === 'waiting') applyPhase('play'); });
+      } else applyPhase(ph);
+    };
+    window.MGHosted?.attach(S);
     S.best = m => store.get(bestKey(m || S.mode), 0);
     S.title = () => {
       setPhase('title'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; ui.hideBanner();
@@ -215,6 +221,7 @@
     S.skipCount = () => {};
     S.finish = stats => {
       setPhase('over'); host.classList.add('menu-open'); ui.hideBanner(); ui.setMeter(0); ui.combo.classList.remove('on'); host.querySelectorAll('.mg-float,.mg-count').forEach(e => e.remove());
+      window.MGHosted?.finish(o.score());
       const score = o.score(), prev = S.best(), isNew = score > prev && score > 0; if (isNew) store.set(bestKey(S.mode), score);
       over.hidden = false; over.innerHTML = '';
       const grid = h('div', 'mg-stats'); (stats || []).forEach(([k, v], i) => { const a = h('span', '', k), b = h('b', '', v); a.style.setProperty('--i', i); b.style.setProperty('--i', i); grid.append(a, b); });
@@ -226,7 +233,7 @@
       const roll = () => { const k = clamp((performance.now() - t0) / dur, 0, 1), v = Math.round(score * (1 - Math.pow(1 - k, 3))); if (v !== shown) { shown = v; big.textContent = v; if (k < 1 && shown % 3 === 0) sfx.tick(); } if (k < 1) requestAnimationFrame(roll); else { big.textContent = score; big.classList.add('hit'); if (isNew) { sfx.golden(); confetti(over); } } };
       requestAnimationFrame(roll);
     };
-    S.quit = () => { if (o.onMenu) o.onMenu(); S.title(); };
+    S.quit = () => { window.MGHosted?.quit(); if (o.onMenu) o.onMenu(); S.title(); };
     S.pause = () => {
       if (S.phase !== 'play') return; setPhase('pause'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
       over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', 'primary', S.resume), ui.btn('QUIT TO MENU', 'alt', S.quit));

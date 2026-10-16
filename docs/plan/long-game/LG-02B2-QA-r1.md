@@ -1,0 +1,74 @@
+# LG-02B2 independent whole-slice QA, round 1
+
+## Goal
+
+Review the actual coordinator implementation and tutorial repair against the original requirements, then independently verify every accessible acceptance lane. The authors were Sol6.1; use a different model, Astra medium standard. This is read-only QA of the product. Return PASS, FAIL and UNVERIFIED with an explicit HOLD or qualified parent-review recommendation. A candidate recommendation is not owner acceptance, purchase readiness or permission to activate another slice.
+
+## Mandatory original briefs and context
+
+Read docs/plan/README.md first, then docs/plan/long-game/README.md, premium-currency.md, LG-02-vault-design.md, LG-02-owner-review.md, LG-01-accepted.md, LG-02A-accepted.md, LG-02B1-accepted.md and its explicitly accepted historical exceptions. Read LG-02B2-coordinator.md IN FULL: all fourteen original deliverables remain the acceptance contract. Read LG-02B2-completion-r2.md, LG-02B2-tutorial-repair-r3.md, LG-02B2-preflight.md and LG-02B2-runtime-scope.md. Review actual caller code and frozen before/after patches, not the authors' summaries alone.
+
+Read evidence/LG-02/implementation-b2-r2/HANDOFF.md, FAILURES.md, before/source-seal.json, before-prerequisite-validation.json, historical-risk-inventory.json, final-audit.json, parity-results-final.json, final-image-review.json and handoff-close-seal.json. Read evidence/LG-02/tutorial-repair-b2-r3/HANDOFF.md, FAILURES.md, before/source-seal.json, final-readback-audit.json, receipt-readback-audit.json, closing-seal.json and closing-readback.json. Follow concrete evidence pointers for findings rather than dumping whole profile trees.
+
+## Prior findings, responses and unresolved objections
+
+- The first B2 implementation task ended cancelled during prerequisites; its terminal claims are history. Completion r2 froze fresh current-source/native actual Core/raw baseline/routing inventory before edits, implemented the original coordinator and reported 201/201 serial tests, three complete raw parity pairs and eight native media/lifecycle cases. These remain author evidence until independently reviewed.
+- R2 correctly retained HOLD when the actual first-run tutorial covered Retry at 390x700 in both styles. The parent personally opened both failed images and rehashed all 1,303 r2 closing-seal records with zero drift.
+- R3 separately leased only tour.js, cache version and new tests/helpers. The actual recovery panel now hides tutorial bubble/ring at mutation delivery and restores the same step or tip. The observer watches direct body/Ops panel child changes and status hidden attribute, without broad subtree observation or taking Ops' single status-presentation callback. A shown tip retains its remaining timeout through recovery. R3 reports eight actual-caller tests, six native size/edition pointer failure-then-success cases, four media cases, default60 raw parity and source/cache/preservation/cleanup passes. The parent personally opened all 24 current normal/held/restored/blocked images and rehashed all 432 closing-seal records with zero differences. These parent checks are source/visual integrity, not independent runtime QA.
+- R2 default BEFORE/AFTER reports are complete and original command execution exists in tool history, but separate contemporaneous command/stdout JSON files were missed. Its command-policy readback is explicitly a handoff-time reconstruction. R3 fresh runs have actual command/stdout receipts and do not erase this historical qualification. Decide its effect on bounded acceptance from the original contract; no retrospective invented capture or silent exception. If owner disposition is required, state it explicitly with evidence.
+- All original/r2/r3 first failures are retained. Read their dispositions and challenge them where evidence does not support them. A later pass does not erase a failure or prove an inaccessible lane. Fresh r3 native hidden/resume/bfcache was not performed; whole-slice QA must test the current v33 source in that accessible lane.
+- Core/Ops/Rewards/Vault remain at r2 hashes, and R3 changes worker only v32 to v33. Parent opened held phone frames with exposed Retry and restored same-step guidance. Long held content and chips can require internal scroll on phones; independently verify access and ordering, not mere DOM presence. Existing normal 360x560 tutorial placement is baseline behavior; report unrelated defects as handoff notes, do not broaden the patch.
+
+## Files owned and read-only boundary
+
+ONLY NEW QA records and fixtures are editable:
+
+- docs/plan/long-game/LG-02B2-QA-runtime-r1.md final report.
+- docs/plan/long-game/evidence/LG-02/qa-runtime-b2-r1/**, except parent dispatch.json and parent-preflight.json.
+- tools/long-game/lg02-b2-qa-r1-* new minimal QA helpers.
+- tools/long-game/fixture-lg02-b2-qa-r1-20261013/** and qa-lg02-b2-qa-r1-20261013-* new exclusive output leaves.
+- This task's Status and Handoff notes only.
+
+All product files, existing tests/assertions/helpers, plans/design/task statuses and historical evidence are read-only. You are not alone; preserve others' dirty files and index. Do not fix production defects, normalize source line endings, change a test assertion, mark another task accepted, commit/stage/push/deploy/default-activate, or dispatch children. minigames/ remains read-only and outside QA except preservation/integration boundaries.
+
+Important: implementation helpers are NOT necessarily read-only runners. For example lg02-b2-r2-final-check.mjs normalizes product bytes and writes old destinations before invoking suites. Inspect before executing any helper. Do not run that implementation wrapper under this QA lease. Build the smallest new serial runner/router around unchanged tests. Prove actual filesystem write/mkdir redirection, exclusive collision behavior and unsupported old mutations before running old writers; environment variables alone are insufficient. Preserve every original failure in NEW QA receipts. Inventory actual at-risk historical output paths before writes and rehash after; never write old output then move it.
+
+## Current source identity
+
+Workspace C:/Users/arran/Projects/monkeyOS-v2, branch long-game, HEAD 7d1e3863c10f642b4ed786786ddda8315038ab9c. No concurrent product writer exists. Bind QA to exact disk/fetched/executed/cache identity; stop attributing current passes if source changes during QA.
+
+| File | Expected SHA256 |
+|---|---|
+| core.js | dc28915b44f6d6635cfded59a90f05afef6cc5501c95b6cf60c776722f9b1650 |
+| ops.js | 95493e39f1426562da4677696fde0e4024c83f2e50ff76aa4693d311848dbab7 |
+| rewards.js | 3d6637758c20bb71b0d717dcd33120f5e3baa51d99f06d643da10d0b4b2e087f |
+| vault.js | 09d31120fa187327acf61c93ce1c047b51c65ebc0d405bc28792639f2fa112c7 |
+| tour.js | 83a991fb6c52e4e3577957e3b352dadd4ac6e01b402d7711b41d18ccf36a2f8e |
+| sw.js | 7b64c1de657481b30a499a979704f5f5076f5a487e31817b0aa61fdfcccb12b0 |
+
+## Exact deliverables and acceptance checks
+
+1. Freeze QA source/index/status, historical output-risk inventory and effective router before runtime writes. Audit actual pre-edit native Core, fresh complete baseline and inventory/routing prerequisites from r2 with source identity and chronology. Rehash bounded r2/r3 seals; account for permitted current tour/SW changes rather than reinterpreting old tested identities.
+2. Independently inspect all original coordinator requirements and caller boundaries. Audit preparation while writing false, private current-state normalization/eligibility after real settlement, one conserved continuation through nested reward holds, no speculative candidate reconciliation, actual wallet baseline/cash marker acknowledgement, identity-safe narrow publication and no generic mutation/economic bypass. Check meaningful malformed claim/credit/source/wallet/prototype proposal refusal and guard failure placement.
+3. Independently exercise visible phase/RNG/work conservation and fixed-end historical six-second tail, real old checkpoint/payment/deletion progression, separate close acknowledgement, repeat Retry at each durable boundary, no income during held productive time, zero/no-old checkpoint, two holds with a productive gap, literal 100/106/126/128 clocks, G2 Deadline fixture, backward and overflow fail-closed behavior. Distinguish fixture factors/internal module assembly from production providers and native Vault admission. Ensure exact saved crop/challenge compensation once across closed/recovery time only after first descriptor acknowledgement. Check actual saved field/credit/report/sold identity and all finalizers, not only helper return values.
+4. Run unchanged existing 159 reward/economy/gate/schema/strict tests plus 42 B2 failure-path groups and eight tour tests serially on current source through a proven NEW-output router. Counts are author expectations, not an acceptance shortcut. Add targeted independent cases in NEW helpers where the contract is not reached or assertions substitute for the actual caller. No skips, changed old assertions, gate/writer/validator/ack-success stubs or blanket source rewriting. Complete accessible lanes even after finding a defect; preserve first failures and diagnose without fixing product.
+5. Independently reproduce complete60 default, LG01-only and both-flags no-Vault raw controls using exact seed1 active collect activeMinutes180/session60/tune{} GUARD240. Compare fresh current runs to exact original/r2 frozen-code/current-source controls with ONLY capturedAt/sourceCommit/sourceHashes/url/wallSeconds excluded. Preserve actual command/env/stdout/stderr/exit/source receipts and raw bytes. Replay frozen code in NEW leaves without changing historical artifacts. Byte-identical captured output does not prove all heap/RNG or all-profile pacing. All-profile endpoints remain LG-13.
+6. Actual T3 native Pixel and Classic old-save play/save/reload and unknown-field preservation through actual Core, default/opt-in no intent behavior, blocked loader/direct ack refusal and unchanged raw saves. The cold gate MUST continue blocking every Vault-bearing full-shell save. Internal boundary-only fixture invocation in an already admitted no-Vault document is allowed by the original lease; no gate override or production purchase/provider caller. Do not call that native Vault recovery.
+7. Fresh native pointer held Retry failure then success/continuation exactly once, keyboard/focus/state/tip preservation and immediate bubble/ring hide without a productive redraw. Check normal/held/restored/blocked at 1280x800,390x700,360x560 both editions, no page scroll, >=40px targets and accessible internal scrolling to both chips. Export and personally open original and NEW images. Check enlarged held DOM text with the explicit native-zoom qualification. Preserve owner-approved held chips between message and Retry.
+8. Current v33 actual reduced-motion preference and Effects Low/high cases; real document.hidden intervals and resume, native pageshow.persisted bfcache restoration with old owner inert and current tutorial observation disposed. Source-bind the actual current tour and runtime, not a cache-controlled predecessor. Native evidence must include exact actual preference/visibility/persisted events, executed/fetched hashes, real controller activation and cache identity across both game shells and Balance. Balance cache fetch is not executed Core/tour proof. Synthetic departure is separate caller evidence.
+9. Recheck source/index/read-only/historical preservation and verified cleanup. Give an ordered finding list with actual code sites, trigger/expected/observed, severity, retained reproduction and smallest recommended repair scope. Map every original fourteen-item and r3 requirement to PASS/FAIL/UNVERIFIED. Record genuinely unavailable lanes and their impact; do not claim physical/audio/native zoom/screenreader/hardware crash/provider/paid/shared/public/pacing acceptance.
+10. Finish report with explicit HOLD or qualified recommendation for parent acceptance ONLY of this internal slice. Full-shell Vault recovery/admission, economic debit/refund/activation, later volatile object lifetime fairness, paid trust, backend/legal/price decisions, store/Undo/slots/reset/automation and shared/current-current/stale writer guarantees remain outside this task. Do not quietly relax requirements to obtain a pass. A documented historical capture exception needs owner disposition if the original contract demands it.
+
+## Environment and safe verification
+
+T3 preview_status/open first, own tab, new verified-unused origin and one game document with task-owned saves. Inert or before-navigation fixture planting. Ordinary UI through T3. Owner-authorized temporary Chrome scope covers actual reduced motion, real hidden/resume and persisted bfcache; documented headless balance/test workflow remains available. Existing external puppeteer-core module is C:/Users/arran/AppData/Local/Temp/pp/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js; verify availability, do not install dependencies. Use GUARD240 per command and NEW immutable run labels.
+
+Preserve user8000 and unrelated8123/8147/8148/8162. Prior8312/8313 tasks report cleaned, never assume a listener is yours. Historical8194 and8181 boundaries remain unverified; do not adopt/clear/kill them. Start background helpers hidden. Before stopping, validate exact PID, command/root, numeric creation epoch and listener. Clear only own origin from inert page and close own tab/profile, verify containment before any recursive cleanup. Large file listings require adequate bounded buffers; do not dump historical Chrome trees or raw full saves into chat. JSON may have BOM; Windows dates converted through PowerShell can lose milliseconds, use retained raw/numeric epochs. All new evidence writes exclusive, and missing command capture stays missing historically.
+
+## Status
+
+QA COMPLETE 2026-10-13 America/Denver. Astra medium independent review: current v33 accessible technical lanes pass; acceptance HOLD pending explicit owner disposition of missing r2 contemporaneous default command/stdout captures. See LG-02B2-QA-runtime-r1.md. No product acceptance or next-slice authorization.
+
+## Handoff notes
+
+Every line of added QA helper code must justify existence. Preserve all original briefs, failures and unresolved qualifications. Return a complete evidence-linked report after finishing accessible lanes. No product edits or advancement to the next implementation slice. Completed report and exclusive evidence are in LG-02B2-QA-runtime-r1.md and evidence/LG-02/qa-runtime-b2-r1/. Independent results: 209/209 serial, five adversarial groups, three full raw parity pairs, fresh v33 media/hidden/resume/persisted bfcache, native matrix and functional chip scrolling. Own origin/server/profile cleanup verified; historical failures retained.

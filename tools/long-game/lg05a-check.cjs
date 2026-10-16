@@ -1,0 +1,117 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const pp=require('C:/Users/arran/pp/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js');
+const out='docs/plan/long-game/evidence/LG-05/implementation-folio-r1', run=process.argv[2];
+assert(/^[a-z0-9-]+$/.test(run));
+const write=(name,x)=>fs.writeFileSync(`${out}/${run}-${name}.json`,JSON.stringify(x,null,2),{flag:'wx'});
+(async()=>{
+ const browser=await pp.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ const checks=[],errors=[],loaded={},reads=[];
+ try {
+  const context=await browser.createBrowserContext(),page=await context.newPage();
+  await page.setBypassServiceWorker(true);await page.setCacheEnabled(false);
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('response',r=>{const f=new URL(r.url()).pathname.slice(1);if(['folio.js','ops.js','rewards.js','core.js','economy.js'].includes(f))reads.push(r.buffer().then(b=>loaded[f]=crypto.createHash('sha256').update(b).digest('hex')));});
+  const base='http://127.0.0.1:8387/index.html', flags='?lg01a=1&lg05folio=1&pg01=1&pg02=1#play';
+  await page.goto(base);
+  const fixture=await page.evaluate(()=>IMI.ops.dev.S());
+  fixture.intro={...fixture.intro,done:true,train:true,words:true,shop:true};fixture.printing=3;fixture.lastSeen=Date.now();
+  fixture.awards=Object.fromEntries([...fs.readFileSync('ops.js','utf8').matchAll(/AW\('([^']+)',/g)].map(m=>[m[1],true]));
+  fixture.desks[0].paws=0;fixture.desks[0].keeper.on=false;fixture.rewards={};fixture.prem={};fixture.meta={};
+  const seed=await page.evaluateOnNewDocument(s=>{localStorage.setItem('imi-ops-v1',JSON.stringify(s));localStorage.setItem('imi-score',JSON.stringify({economyVersion:1,score:0}));},fixture);
+  const ready=()=>page.waitForFunction(()=>window.IMI?.ops?.progression?.running()&&Rewards.owns());
+  await page.goto(base+flags);await ready();await page.removeScriptToEvaluateOnNewDocument(seed.identifier);
+  checks.push(...await page.evaluate(()=>{
+   const checks=[],ok=(v,m)=>{if(!v)throw Error(m);checks.push(m);},s=()=>IMI.ops.dev.S(), d=IMI.ops.dev;
+   window.command=(action,extra={})=>Rewards.folioAction({action,expected:JSON.parse(JSON.stringify(s().meta.folio??null)),...extra});
+   const selection={id:'pocket',leaves:[0,1],reward:{kind:'cash'}};
+   s().printing=2;ok(!command('choose',{selection}).ok&&!s().meta.folio,'Printing 3 locked, absent metadata untouched');s().printing=3;
+   ok(command('choose',{selection}).ok,'Printing 4 unlock and acknowledged selection');
+   ok(JSON.stringify(Folio.ingredients(selection))===JSON.stringify({THE:2,APE:1,CAP:1}),'exact aggregate Pocket ingredients');
+   s().meta.productionGoal={version:1,enabled:true,band:1,collection:'authored',advance:true,manual:null,unknown:'retain'};
+   const prefs=JSON.stringify(s().meta.productionGoal);s().focus=null;s().autoFocus=true;
+   ok(command('work').ok,'explicit work enters without rewriting production preferences');
+   ok(!s().desks[0].keeper.on,'work preserves disabled keeper');
+   const before=JSON.stringify({bank:s().bank,folio:s().meta.folio,wallet:IMI.bananas.get()});
+   ok(!command('prepare').ok&&before===JSON.stringify({bank:s().bank,folio:s().meta.folio,wallet:IMI.bananas.get()}),'insufficient ingredients refuse with no change');
+   s().desks[0].keeper={...s().desks[0].keeper,owned:true,on:true};s().desks[0].letters={T:2,H:2,E:3,A:2,P:2,C:1};
+   for(let i=0;i<4;i++)d.keeperStep(s().desks[0],0);
+   ok(s().bank.THE===2&&s().bank.APE===1&&s().bank.CAP===1,'actual enabled keeper banks aggregate words on Bamboo');
+   ok(command('return').ok&&JSON.stringify(s().meta.productionGoal)===prefs,'Return preserves exact PG band collection advance and unknown fields');
+   d.action('focus',{id:d.RECIPES.find(r=>!r.kid&&!r.lib&&!r.gen).id});
+   ok(!command('work').ok,'pending manual title blocks Folio work');d.action('unfocus');
+   ok(command('work').ok,'explicit manual Return permits Folio work');
+   d.action('focus',{id:d.RECIPES.find(r=>!r.kid&&!r.lib&&!r.gen).id});ok(!s().meta.folio.working,'manual book selection acknowledges leaving Folio');d.action('unfocus');ok(command('work').ok,'Folio work resumes explicitly');
+   s().meta.trainingPool={version:1,enabled:true};s().bank={};s().desks[0].letters={T:2,H:2,E:3,A:2,P:2,C:1,Z:200};
+   const facts=IMI.ops.extensions.trainingPoolFacts(0);
+   window.trainingFacts=facts;ok(facts.ok&&facts.spendable>=0,'actual shared training planner accepts Folio ingredients and reserve');
+   ok(facts.donors[0].ingredients===12&&facts.donors[0].floor===53,'shared training protects 12 ingredient letters within accepted 25 percent reserve');
+   d.buyUp('fing',0,1);ok(s().desks[0].up.fing===1&&['T','H','E','A','P','C'].every(ch=>s().desks[0].letters[ch]==={T:2,H:2,E:3,A:2,P:2,C:1}[ch]),'actual pooled training spends surplus without consuming Folio ingredients');
+   s().pub={tier:3,on:true,rule:'any'};s().desks[0].paws=1;d.ensureCrew(s().desks[0]);
+   s().bank={};IMI.ops.simulateAway(20);
+   ok(s().bank.THE>=2&&s().bank.APE>=1&&s().bank.CAP>=1,'representative actual away keeper banks missing ingredients');
+   ok(Object.keys(s().written).length===0&&!d.pubSell()&&/Folio/.test(d.pubStatus()),'Publisher pauses online and away while working');
+   s().desks[0].paws=0;s().desks[0].keeper.on=false;s().bank={THE:2,APE:1,CAP:1};d.touchBank();
+   window.beforeBind={stats:JSON.stringify(s().stats),claims:JSON.stringify(s().rewards.claims),wallet:IMI.bananas.get(),earned:s().run.earned};
+   // Fail the owning final Ops write after the durable wallet credit, preserving prepared intent.
+   const original=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'&&JSON.parse(v).meta?.folio?.completed?.pocket)throw Error('LG05 controlled final write refusal');return original.call(this,k,v);};
+   window.restoreStorage=()=>{Storage.prototype.setItem=original;};
+   ok(!command('prepare').ok&&Rewards.held(),'cash commit refusal holds actual progression');
+   ok(s().bank.THE===2&&!s().meta.folio.completed.pocket&&s().meta.folio.pending,'no live word debit or completion before owning acknowledgement');
+   ok(IMI.bananas.get()===beforeBind.wallet+6250&&s().run.earned===beforeBind.earned,'cash credit acknowledged separately, run income waits for completion');
+   window.cashExpected={...beforeBind,wallet:IMI.bananas.get()};restoreStorage();return checks;
+  }));
+  const expected=await page.evaluate(()=>cashExpected);await page.reload();await ready();
+  checks.push(...await page.evaluate(expected=>{
+   const s=()=>IMI.ops.dev.S(),checks=[],ok=(v,m)=>{if(!v)throw Error(m);checks.push(m);};
+   window.command=(action,extra={})=>Rewards.folioAction({action,expected:JSON.parse(JSON.stringify(s().meta.folio??null)),...extra});
+   ok(!s().meta.folio.pending&&s().meta.folio.completed.pocket&&s().bank.THE===0,'reload recovers prepared cash binding and exact word debit');
+   ok(IMI.bananas.get()===expected.wallet&&s().run.earned===expected.earned+6250,'reload credits cash and ordinary income exactly once');
+   ok(JSON.stringify(s().stats)===expected.stats&&JSON.stringify(s().rewards.claims)===expected.claims,'Folio adds no typing stats or catalogue claims');
+   const stable=JSON.stringify({folio:s().meta.folio,bank:s().bank,wallet:IMI.bananas.get()});
+   ok(!command('prepare').ok&&stable===JSON.stringify({folio:s().meta.folio,bank:s().bank,wallet:IMI.bananas.get()}),'duplicate completion refuses without debit or payout');
+   s().desks[1].owned=true;s().desks[1].paws=0;s().desks[1].keeper.on=false;
+   ok(command('choose',{selection:{id:'journey',leaves:[0,1],reward:{kind:'letters',desk:1,letter:'Z'}}}).ok,'chosen identical letter reward on owned desk');
+   s().bank={PAN:1,WENDY:1,GOLD:1,PASS:1};IMI.ops.dev.touchBank();
+   const stale={action:'prepare',expected:JSON.parse(JSON.stringify(s().meta.folio))};
+   const original=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'&&JSON.parse(v).meta?.folio?.pending)throw Error('LG05 controlled prepare refusal');return original.call(this,k,v);};
+   const before=s().desks[1].letters.Z||0;
+   ok(!command('prepare').ok&&Rewards.held()&&!s().meta.folio.pending,'refused prepare leaves live selection and stock intact');Storage.prototype.setItem=original;
+   ok(Rewards.retry()&&s().desks[1].letters.Z===before+500,'Retry revalidates exact intent and grants exactly 500 Z');
+   ok(!Rewards.folioAction(stale).ok&&s().desks[1].letters.Z===before+500,'stale Retry request never repeats letters');
+   ok(s().bank.PAN===0&&s().bank.WENDY===0&&s().bank.GOLD===0&&s().bank.PASS===0,'chosen letters consume exact summed word stock');
+   ok(JSON.parse(localStorage.getItem('imi-ops-v1')).desks[1].letters.Z===s().desks[1].letters.Z,'chosen letters and completion are acknowledged in the same Ops save');
+   return checks;
+  },expected));
+  await page.reload();await ready();
+  checks.push(...await page.evaluate(()=>{
+   const s=()=>IMI.ops.dev.S(),checks=[],ok=(v,m)=>{if(!v)throw Error(m);checks.push(m);};
+   ok(s().meta.folio.completed.journey&&s().desks[1].letters.Z===500,'chosen letters and completion survive reload');
+   s().meta.folio.unknown={retain:true};s().run.earned=12500000;IMI.ops.dev.doPrint();document.querySelectorAll('.o-celebrate,.o-modal').forEach(x=>x.remove());
+   ok(s().printing===4&&s().meta.folio.selection===null&&!s().meta.folio.working&&Object.keys(s().meta.folio.completed).length===0,'actual Printing clears selection work and three-entry completion map');
+   ok(s().meta.folio.gallery.pocket.count===1&&s().meta.folio.gallery.journey.count===1&&s().meta.folio.unknown.retain,'Printing retains lifetime gallery and unknown optional data');
+   ok(s().meta.folio.cashHead&&IMI.ops.saveAcknowledged().ok,'cash marker source remains acknowledged across Printing');
+   return checks;
+  }));
+  await page.goto(base+'?lg01a=1#play');await ready();
+  checks.push(...await page.evaluate(()=>{
+   const s=()=>IMI.ops.dev.S(),f=JSON.stringify(s().meta.folio);s().run.earned=12500000;IMI.ops.dev.doPrint();document.querySelectorAll('.o-celebrate,.o-modal').forEach(x=>x.remove());
+   if(JSON.stringify(s().meta.folio)!==f||Folio.goal(s())!==null)throw Error('flagless dormancy');
+   return ['flagless actual Printing leaves stored Folio dormant'];
+  }));
+  await page.goto(base+flags);await ready();
+  checks.push(...await page.evaluate(()=>{
+   const s=IMI.ops.dev.S(),f=Folio.current(s);if(f.printing!==s.printing||f.selection||Object.keys(f.completed).length||!f.gallery.pocket)throw Error('flagless identity reconciliation');
+   const original=JSON.stringify(s.meta.folio);s.meta.folio={...s.meta.folio,version:2};
+   const result=Rewards.folioAction({action:'choose',expected:s.meta.folio,selection:{id:'pocket',leaves:[0,1],reward:{kind:'cash'}}});
+   if(result.ok||s.meta.folio.version!==2)throw Error('future save edited');s.meta.folio=JSON.parse(original);
+   return ['re-enable reconciles flagless Printing identity with gallery retained','future Folio namespace refuses edits without erasure'];
+  }));
+  await Promise.all(reads);assert.deepEqual(errors,[]);
+  for(const [f,h]of Object.entries(loaded))assert.equal(h,crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex'));
+  write('checks',{qualification:'Controlled native Core/Economy fixtures. No natural pacing or physical atomicity claim.',checks,errors,loaded,final:await page.evaluate(()=>({folio:IMI.ops.dev.S().meta.folio,printing:IMI.ops.dev.S().printing,training:window.trainingFacts}))});
+  console.log(checks.length+' compact checks PASS');
+ } catch(e){write('first-failure',{message:e.message,stack:e.stack,checks,errors,loaded});throw e;}
+ finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

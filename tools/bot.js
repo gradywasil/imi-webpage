@@ -44,7 +44,7 @@
     for (const x of D.DEALS) if (!s.deals[x.id] && D.soldCount() >= x.need) tryBuy('deal', x.id, x.cost, 1.5);
     s.desks.forEach((d, i) => { if (d.owned && d.mk < 2) tryBuy('mk', i, D.mkCost(i), 4); });
     // keeper levels only while they are small next to the machine being saved for (a sensible player does not tune a keeper instead of buying the next desk)
-    if (BT().BOT_SELL === 'pub' && D.PUB_COST && s.pub.tier < 3 && D.soldCount() >= 3) tryBuy('pub', undefined, D.PUB_COST[s.pub.tier], 2);
+    if ((BT().BOT_SELL === 'pub' || st.opts.usePublisher) && D.PUB_COST && s.pub.tier < 3 && D.soldCount() >= 3) tryBuy('pub', undefined, D.PUB_COST[s.pub.tier], 2);
     // coaching is a surplus purchase: only when the bot holds four times the next machine's price (it is a poor investment next to machines and divisions) (the typists with the weakest roll first), when the run asks for it
     if (BT().BOT_COACH && D.coachCost) s.desks.forEach((d, i) => { if (!d.owned) return; let w = null; d.crew.forEach((t, p) => { if ((t.coach || 0) < D.COACH_MAX && (!w || (t.talent || 0) + (t.coach || 0) * D.COACH_STEP < (w.t.talent || 0) + (w.t.coach || 0) * D.COACH_STEP)) w = { t, p }; }); if (w && bn.get() >= Math.min(price * 4, 1e15) && bn.get() >= D.coachCost(i, w.t) * 3) D.coachTypist(i, w.p); });
     if (D.keeperUpCost) s.desks.forEach((d, i) => { if (d.owned && D.keeperLv(i) < D.KEEPER_UP_MAX && D.keeperUpCost(i) <= .15 * price) tryBuy('keeper', i, D.keeperUpCost(i), 3); });
@@ -64,6 +64,11 @@
     let best = -1; s.offers.forEach((p, i) => { if (bandOfPitch(p) >= 1 && (best < 0 || p.pay > s.offers[best].pay)) best = i; });
     if (best < 0) return;
     const p = s.offers[best]; if (!p) return;
+    if (st.opts.realActions) {
+      if (st.opts.commission) st.opts.commission(best, { ...p });
+      else D.action('commission', { i: String(best) });
+      return;
+    }
     s.pitches.push(p); D.registerPitch(p); s.stats.pitched = (s.stats.pitched || 0) + 1;
     s.offers[best] = D.genPitch(Math.min(topBand(), 5));
   }
@@ -75,7 +80,7 @@
   function act() {
     const s = S();
     const BT = window.__TUNE || {};                              // BOT_SELL: 'pub' = buy the assistant and let it sell (rule BOT_PUB_RULE); default is the bot selling by hand at any price
-    const viaPub = BT.BOT_SELL === 'pub' && s.pub && s.pub.tier > 0;
+    const viaPub = (BT.BOT_SELL === 'pub' || st.opts.usePublisher) && s.pub && s.pub.tier > 0;
     if (viaPub) s.pub.rule = BT.BOT_PUB_RULE || 'fair';
     else if ((!D.tabVisible || D.tabVisible('press')) && (!BT.BOT_VISIT || Math.floor(st.sec / 60) % BT.BOT_VISIT === 0)) for (const r of D.RECIPES) if (!s.written[r.id] && D.canWrite(r)) D.writeTitle(r.id);   // BOT_VISIT = N: a casual player who only checks in for one minute every N minutes
     if (s.intro && s.intro.shop && !s.intro.done && D.completeIntro) D.completeIntro();
@@ -97,7 +102,7 @@
     const activeMin = st.opts.activeMinutes == null ? 180 : st.opts.activeMinutes;
     // idle = a casual finger: 1 tap a second until the first typist is hired, then walks away (opts.idleTps changes the rate)
     if (st.opts.profile === 'idle' && (s.desks[0].paws < 1 || (s.intro && !s.intro.words)) && st.sec < 1800) taps(st.opts.idleTps || 1);
-    if (st.opts.profile === 'active' && st.sec / 60 < activeMin) taps(s.hold ? Math.max(1, Math.round(D.holdRate(s.desks[0]))) : 3);
+    if (st.opts.profile === 'active' && st.sec / 60 < activeMin) taps(s.hold ? Math.max(1, Math.round(D.holdRate(s.desks[0]))) : st.opts.tapRate || 3);
     // milestones
     const sold = D.soldCount(), kids = D.kidsSold(); [1, 3, 6, 10, 16, 24].forEach(n => { if (sold >= n) mark('titles_' + n); });
     if (s.stats.words > 0) mark('word_1');

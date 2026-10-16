@@ -1,0 +1,27 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const out='docs/plan/long-game/evidence/LG-03/implementation-challenges-r1',checks=[],blocks=[];
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const before=f=>fs.readFileSync(`${out}/before/${f.replaceAll('/','_')}`,'utf8').replaceAll('\r\n','\n');
+const now=f=>fs.readFileSync(f,'utf8').replaceAll('\r\n','\n');
+const same=(f,start,end)=>{const a=before(f),b=now(f),slice=s=>s.slice(s.indexOf(start),s.indexOf(end,s.indexOf(start)));assert(a.includes(start)&&b.includes(start)&&a.includes(end)&&b.includes(end));assert.equal(slice(a),slice(b));blocks.push({file:f,start,end,sha256:hash(slice(b))});};
+for(const f of ['ops.js','automation.js','rewards.js','sw.js']){const b=fs.readFileSync(f);assert.equal(b.toString().split('\r\n').length>1,fs.readFileSync(`${out}/before/${f}`).toString().split('\r\n').length>1);}
+const a=before('ops.js'),b=now('ops.js'),aw=s=>[...s.matchAll(/AW\('([^']+)',\s*(\d),\s*('(?:\\'|[^'])*')/g)].map(m=>m.slice(1));assert.deepEqual(aw(a),aw(b));assert.equal(aw(b).length,68);checks.push('same original 68 award IDs tiers and names');
+for(const id of ['vowel','haiku','hands','timed']){const row=s=>s.split('\n').find(l=>l.includes(`{ id: '${id}', name:`)).trim().replace(/,$/,'');assert.equal(row(a),row(b));}checks.push('old four challenge IDs goals minutes stars and perks byte-equivalent');
+assert(b.includes("() => ['vowel', 'haiku', 'hands', 'timed'].every(id => S.chDone[id])"));assert(!b.includes('CHALLENGES.every'));checks.push('historical ch4 frozen to original four');
+const firsts=s=>s.match(/  const firsts = [\s\S]*? };/)[0];assert.equal(firsts(before('rewards.js')),firsts(now('rewards.js')));checks.push('old first-clear Diamond assignments unchanged');
+same('rewards.js','  function descriptor(','  function persist(');
+same('rewards.js','  function deliver(','  function reconcile(');
+same('ops.js','      buyAutomationTier(','      quoteAutomationHire(');
+same('ops.js','      commitAutomation(','      quoteAutomationTier(');
+same('ops.js','  function trainingQuote(','  const buyWant');
+same('ops.js','  function buyUp(','  /* ================= shop');
+same('ops.js','  const pgContext =','  const goalWord');
+same('ops.js','    reset: () => { if (confirm(','\n  };');
+same('automation.js','    tick({gameSeconds, replay})','  new MutationObserver');
+checks.push('unchanged locked descriptor validation/delivery/prepare; paid tier purchase/config guards; shared training plans/spending; PG context; full reset; fair automation scheduler');
+const protectedFiles=JSON.parse(fs.readFileSync(`${out}/before-identities.json`,'utf8').replace(/^\uFEFF/,''));
+for(const row of protectedFiles.filter(r=>!['ops.js','automation.js','rewards.js','sw.js'].includes(r.path)))assert.equal(hash(fs.readFileSync(row.path)),row.sha256);checks.push('all 12 captured unowned product/helper sources unchanged');
+const baseline=JSON.parse(fs.readFileSync(`${out}/before-default.json`)),final=JSON.parse(fs.readFileSync(`${out}/final-default.json`));for(const k of ['report','meta','errors'])assert.deepEqual(final[k],baseline[k]);assert.deepEqual(final.meta,{});assert.deepEqual(final.errors,[]);checks.push('pre-edit/final five-minute report meta and errors identical');
+const seams={smallcrew:'upCap -> upPlan/trainingQuote -> buyUp; quoteAutomationHire -> hireAutomationOne -> same buyUp; Legacy grants 2 and desk purchase grants 1',quietshop:'challengeShopLock -> buy/shopLock/quoteAutomationShop; toolOn -> pawSecs/rewardBasis/away raw rate, salePay/marketFloor, holding input and tick, analyst forecast; Legacy suppresses Hold',patientpress:'pubSell/autoSellAway/tick Publisher guards plus writeTitle opts.auto/opts.silent; manual writeTitle remains available',baremetal:'challengeShopLock mk -> manual buy and quoteAutomationRestore -> restoreAutomationOne; desk path unchanged',completion:'tick -> checkChallenge -> endChallenge; new owner guard before mutation; pure firstClearFloor before Rewards challenge prepare; existing descriptor/deliver/Retry',flagsAbsent:'definitions always readable; entry requires lg03 and Rewards owner; first clears refuse before mutation without required owner/automation hook',printing:'f.meta/rewards/prem retained plus chDone; fresh run has selected challenge, no inherited prohibited Hold',fullReset:'unchanged reset uses fresh(); source-qualified only'};
+const finalHashes=Object.fromEntries(['ops.js','automation.js','rewards.js','sw.js'].map(f=>[f,hash(fs.readFileSync(f))]));
+fs.writeFileSync(`${out}/source-checks.json`,JSON.stringify({checks,blocks,seams,finalHashes},null,2),{flag:'wx'});console.log(checks.join('\n'));

@@ -1,0 +1,52 @@
+# LG-02 independent repaired-design QA r2
+
+## Goal and original scope
+
+Fresh different-model static review of the repaired LG-02 contract. Validate all six r1 findings and their dependent integration, while retaining full coverage of the original nine design deliverables. Complete all accessible static lanes; do not stop at the first defect. This is documents-only QA, not owner approval, runtime acceptance or a repair lease.
+
+Read docs/plan/README.md, long-game/README.md, premium-currency.md, execution.md, LG-00-accepted.md, LG-01-reward-design.md, LG-01-accepted.md, the complete original LG-02-diamond-vault.md, original LG-02-QA-design-r1-brief.md/report, frozen r1 design, LG-02-design-repair-r2.md, actual current LG-02-vault-design.md and all r2 responses/diff/static receipts, then this brief. Read actual relevant current source and test context. Prior static passes are source-bound and may carry only after checking the actual diff/preservation; do not assume the author repaired the contract merely because headings mention each finding.
+
+## Files owned
+
+- NEW docs/plan/long-game/LG-02-QA-design-r2.md report.
+- NEW docs/plan/long-game/evidence/LG-02/qa-design-r2/** concise static receipts.
+- This brief's Status/Handoff only.
+
+You are not alone in the codebase. Preserve unrelated work. All production/design/original brief/master/spec/execution/ROADMAP/test/helper/old reports/old receipts/before evidence are read-only. No fixes, game/browser/navigation/save mutation, server, tests/harness, install, tooling/assets, children, staging/commits/push/deployment/default activation. Static source/hash/arithmetic scripts and opening existing images are permitted. No new visual-fit or runtime results may be claimed.
+
+## Candidate, prior findings, responses and remaining objections
+
+R1 full independent review completed HOLD with six findings, not a partial review. Original candidate f14932e09ece264f0b2d94ba1e83dbebc67dab7438b80b0c9e214e40d5f9a440 and full report are frozen under design-repair-r2/before. Repair author Sol6.1 medium reports DESIGN REPAIR READY FOR INDEPENDENT REVIEW. Current candidate SHA256396c0bfc7aadc0d1e5a715ab915c1dd0dfbf7aed677d2c822f24697745b76e2a. Parent recomputed173 current read-only input hashes with zero mismatches before its execution-history append; that later parent append is explicitly expected. R2 author made no runtime changes. Check artifacts and scope against actual files.
+
+R1-01 pagehide settlement after ordinary timestamp-advancing finalizers lost old-effect work. R2 proposes Rewards pre-departure while guards valid, Ops sole lastSeen ownership, settled/preserve disposition for registered/direct/periodic/visibility/beforeunload paths, fixed-end original simulator and inactive fallback. Verify exact t2 hidden/t8 departure at old G; thresholds, saved prefixes, partial checkpoint/report/sold identity, no unsaved visible-prefix promise, activation failures and fresh/bfcache recovery.
+
+R1-02 productive settlement inside paused/writing commit could not run and nested holds lacked arbitration. R2 proposes productive prepare under existing owner, separate user-mutation suppression, one Vault intent/conserved continuation, current-state quote/receipt revalidation, wallet baseline then guarded synchronous commit. Verify real progress/guard/Retry/startup APIs permit the sequence without bypassing private flags; repeated/nested failure must not replay presses, award income, batches, checkpoint or source split. Changed quote/source split requires truthful reconfirmation; fixed saved refund/activation receipts do not reprice.
+
+R1-03 clocks/callbacks could expire pickups while held and persist invalid monotonic timestamps. R2 proposes clock-domain table, signed wall versus monotonic compensation, actual ordinary/native-gold object-generation callback/animation leases, read-only held-time views, one post-ack volatile publication, saved bounded hold-exclusion transition descriptor and lastSeen resume boundary. Trace interrupted checkpoint, prior saved crop/challenge timestamps versus simulator cursor, reload before/after each ack, hidden return, rehold, timer generation, wall jumps and unavailable storage. Verify no contradiction between checkpoint continuation and compensated timestamps/Deadline calculation; no held-time double pay, skipped pre-hold work or post-resume gap. Pause only object-owned callbacks, not world/news/calendar. Inactive saved item/held clock policy remains proposed owner behavior.
+
+R1-04 ordinary same-build bookmark without flags could clear/spend a Vault save. R2 proposes new recognition-only vault-save-gate.js before Rewards/Core/Economy, own prem.vault presence including malformed/null/unknown, nonwriting blocked/resume path, under-lock reread/validation, no-Vault exact path and isolated task-origin purchases until gate proven. Check all bootstrap/load/backup/reset/dependent paths; cold, missing one/both flags, lg02 alone, changed keys and stale loaded documents. Existing enabled edition links preserve search; no style-swap repair. A gate on an unlocked early read must not be oversold as control of stale/noncooperating writers. Unknown/raw read failure rules, source/cache tuple and owner prospective lease must be concrete.
+
+R1-05 taps were conflated with Hold. R2 says physical tap/key retains existing one base press/Golden Keys/RNG/stat path; Hold gets G; automatic typists get G*T. Audit all catalogue/copy/formula/test statements, literal-one paths and typist-factor boundaries without new tap yield. Both x2 remain.
+
+R1-06 fourth seat conflicted with slice0..3 three-Muse award/facts and soldCount wording. R2 proposes conditional activeMuseCount unique valid owned IDs within capacity for only mu3 and facts, unchanged threshold3/ID/name/description/reward/+1%/claim and exact old default-three path, explicitly owner-gated scope exception. Audit all123/124/134/234/duplicates/swaps/invalid/capacity/Printing cases on paper and generated-pitch soldCount versus authoredSold/kids/library. No wider predicate permission. If owner declines exception, seat SKU is deferred, not shipped inconsistent.
+
+Previously passing static lanes: catalogue drafts/unique6700 at unapprovedEndless1200 versus7400 overlap; smaller cosmetic list270; finite109 below firstspeed150; earned-first source algebra; ordinary efficiencies40-70/Woolf55-85; plots3-6 and premium7/8; presentation-only cosmetics/separate rarity; paid ribbon without personal data/deferredLG11; explicit Infinity checkpoint encoding; static layout widths; reset alternatives/price/copy/Q5/Q6/Q8/Q9/Q10 gates; serial future ownership/tests. Recheck dependent revised portions and arithmetic. These are static/model facts, not runtime results or policy approvals.
+
+## Exact deliverables and acceptance criteria
+
+1. Independently seal inspected inputs/current design and immutable before artifacts, verify r2 diff/edit boundary and173-entry claim without conflating expected parent history. Enumerated preservation is not a retrospective whole-tree guarantee. No baseline replacement.
+2. Finish full original nine-deliverable review through the current diff/source. Report PASS/FAIL/UNVERIFIED by lane, each prior finding RESOLVED/UNRESOLVED with actual rationale and new material defects separately. Use concrete counterexample and smallest correction, not generic warnings or optional polish as blockers.
+3. Trace prepare/settle/commit, departure/startup, callbacks and durable/volatile domains through paper sequences. Check all failed-write acknowledgement boundaries and compatible current-state validators. Do not treat expanded promises as accepted LG-01 bugfixes. Every line of prospective code must justify existence; prefer one owner/conserved cursor over generic abstractions. Check the new compatibility gate against zero-no-Vault changes and explicit owner scope.
+4. Reconcile all draft prices/finite income/full-reset permanent ownership, ten-second inactive reservation/local-only Undo, hold/departure policy, hidden-store/copy/badge/cosmetics and Muse scope exception as owner choices. No choice or future runtime lease has been approved. Verify both x2, earned automation, hard child/no personal data/ad-free/no gacha/random/FOMO/pay-only rules, no art revival and unchanged LG13sixweek/allprofiles55%capstone/80%layers2and3includingAway.
+5. Static geometry/focus/inert/Undo/Settings/held views may remain unverified in actual markup. Assess required later old-save/native/real persistence/hidden/bfcache/media/harness/default-one checks and exact counterexamples. Physical/native zoom/runtime/pacing/payments/security/legal remain UNVERIFIED. No new tests/screens/browser evidence now.
+6. Return ordered findings, complete scope and static receipts, grouped owner decisions and verdict READY FOR OWNER REVIEW or HOLD. No owner questions from child, self-acceptance, price/legal decision or implementation. Parent handles repairs/review/owner presentation. Stop after full accessible review.
+
+## Status
+
+REVIEW COMPLETE: HOLD, 2026-10-12. Fresh GPT-6-Astra medium independent static review completed all accessible original nine-deliverable lanes against candidate396c0bfc7aadc0d1e5a715ab915c1dd0dfbf7aed677d2c822f24697745b76e2a. No runtime, owner policy or implementation approval.
+
+## Handoff notes
+
+Report: LG-02-QA-design-r2.md; new receipts: evidence/LG-02/qa-design-r2/. R1-02/R1-05/R1-06 resolved at design level; integrated R1-01/R1-03 and shared-save R1-04 remain unresolved. New R2-01 checkpoint deletion loses an uncovered pre-hold tail; R2-02 compensated challenge.start gives a historical fixed-end tail the wrong Deadline basis; R2-03 one unlocked absence read misses current-build absence-to-Vault startup/admitted-writer races. Temporary isolated purchase restriction remains valid; shared-save safety does not pass.
+
+All accessible scope completed, including catalogue/ledger arithmetic, slots, cosmetics/supporter, child/copy/reset choices, static geometry and future leases/tests. Parent owns focused document repair, fresh review and eventual grouped owner presentation. Original r1 HOLD, frozen before and all old receipts preserved. Only this Status/Handoff, new report and new static receipts changed. No code/design repair, browser/game/save/server/tests/harness/install/delegation/stage/commit/push/deploy/default activation. Runtime/native/physical/zoom/media/payments/security/legal and LG13 six-week/all-profile55%/80% including Away remain UNVERIFIED. Stop at report/receipt.

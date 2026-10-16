@@ -1,0 +1,71 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const pp=require('C:/Users/arran/pp/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js');
+const root=process.cwd(),out='docs/plan/long-game/evidence/LG-08/estate-reset-r1',run=process.argv[2];assert(/^[a-z0-9-]+$/.test(run));
+const write=(n,v)=>fs.writeFileSync(`${out}/${run}-${n}.json`,JSON.stringify(v,null,2),{flag:'wx'});
+const fixture=JSON.parse(fs.readFileSync('docs/plan/long-game/evidence/LG-05/implementation-shelf-r1/final-ui-failure.json'));
+Object.assign(fixture.state,{lastSeen:Date.now(),printing:7,challenge:null,offers:[],pitches:[],written:{'ape-in-the-cape':true},editions:{'ape-in-the-cape':2},bank:{THE:40}});
+fixture.state.legacy={stars:7,total:360,ups:{seed:1,crew:0,speed:2}};
+fixture.state.meta.layers.count=5;fixture.state.meta.layers.seals=4;
+fixture.state.meta.automation={version:1,media:{version:1,sequence:23,manual:{complete:true}},muse:{version:1,manual:{ids:['seuss'],complete:true,imprint:1,printing:4}},garden:{version:1,manual:{complete:false,pending:{token:'old-crop',imprint:5,printing:7,bed:0,letter:'E',desk:0}}},pitch:{version:1,manual:{complete:false,pending:{recipe:{id:'p-old',title:'Old recipe',text:'THE APE',pay:250},printing:7,imprint:5}}}};
+fixture.state.meta.minigames={version:1,futureEstateProof:{fraction:.37,attempts:2,session:'keep-session'}};
+fixture.state.prem.futureEstateProof={receipt:'keep-receipt'};fixture.wallet.futureEstateProof='wallet-keep';
+fixture.state.desks.forEach(d=>{d.paws=0;d.crew=[];d.keeper.on=false;});
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'};
+const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL(req.url,'http://local').pathname);if(!f.startsWith(root+path.sep))return res.writeHead(403).end();fs.readFile(f,(e,b)=>{res.writeHead(e?404:200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});res.end(e?'missing':b);});});
+(async()=>{let browser;const result={status:'UNVERIFIED',checks:[],errors:[],hashes:{}};try{
+await new Promise(r=>server.listen(0,'127.0.0.1',r));result.port=server.address().port;assert(![8000,8354,8356,8358,8397].includes(result.port));
+browser=await pp.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+const page=await browser.newPage();await page.setViewport({width:360,height:560,isMobile:true,deviceScaleFactor:1});await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);await page.setBypassServiceWorker(true);await page.setCacheEnabled(false);
+page.on('pageerror',e=>result.errors.push(e.stack||e.message));page.on('response',async r=>{const f=new URL(r.url()).pathname.slice(1);if(['estate.js','layers.js','ops.js','rewards.js','core.js','vault-save-gate.js'].includes(f))result.hashes[f]=crypto.createHash('sha256').update(await r.buffer()).digest('hex');});
+const base=`http://127.0.0.1:${result.port}`,flags='?lg01a=1&lg05folio=1&lg05layers=1&lg08estate=1#play';
+const seed=await page.evaluateOnNewDocument(f=>{localStorage.setItem('imi-ops-v1',JSON.stringify(f.state));localStorage.setItem('imi-score',JSON.stringify(f.wallet));localStorage.setItem('imi-sound','off');localStorage.setItem('imi-fx','low');},fixture);
+await page.goto(base+'/index.html'+flags);await page.removeScriptToEvaluateOnNewDocument(seed.identifier);
+await page.waitForFunction(()=>window.Rewards?.owns()&&IMI.ops?.progression.running()&&!Rewards.held(),{timeout:12000});
+result.checks.push(...await page.evaluate(()=>{
+const a=IMI.ops.extensions,s=a.state(),rows=[],check=(name,pass,facts)=>{rows.push({name,pass:!!pass,facts});if(!pass)throw Error(name);};
+check('actual owner before actions',Rewards.owns()&&IMI.ops.progression.running()&&Rewards.guard(s)&&!Rewards.held());
+s.pub.on=false;s.desks.forEach(d=>{d.paws=0;d.crew=[];d.keeper.on=false;});document.querySelectorAll('.o-modal,.o-celebrate').forEach(e=>e.remove());
+const before=JSON.stringify(s),raw=localStorage.getItem('imi-ops-v1'),o=a.estatePreview();
+check('pure absent Estate preview',!s.meta.estate&&JSON.stringify(s)===before&&localStorage.getItem('imi-ops-v1')===raw&&o.quote.gain===3&&o.reward.amount===50,{quote:o.quote,seed:o.seed,reward:o.reward});
+const stale={...o.quote,total:361},wallet=localStorage.getItem('imi-score');
+check('stale quote refuses without writes',!Rewards.estateAction({action:'reset',quote:stale}).ok&&JSON.stringify(s)===before&&localStorage.getItem('imi-score')===wallet&&localStorage.getItem('imi-ops-v1')===raw);
+const identityOnly=JSON.parse(before);identityOnly.meta.estate={version:1,localImprints:5,resetEpoch:2,futureEstate:{keep:73}};const projected=a.estateRoom(identityOnly);check('identity-only defaults preserve unknown fields',projected.meta.estate.count===1&&projected.meta.estate.charters===3&&projected.meta.estate.resetEpoch===3&&projected.meta.estate.futureEstate.keep===73);
+const foundation=a.layerPreview().room;check('shared foundation keeps lifetime and local increment semantics',foundation.meta.layers.count===6&&!foundation.meta.estate&&foundation.meta.folio.imprint===6);
+const overflow=JSON.parse(before);overflow.meta.estate={version:1,localImprints:5,resetEpoch:Number.MAX_SAFE_INTEGER};let refused=false;try{Estate.quote(overflow);}catch{refused=true;}check('epoch overflow refuses',refused);
+window.__estateBefore=JSON.parse(before);window.__markerBefore=IMI.bananas.acknowledgement();a.setTab('estate');a.mark();return rows;
+}));
+await new Promise(r=>setTimeout(r,400));await page.screenshot({path:`${out}/${run}-pixel-preview-360.png`});
+await page.click('[data-act="estate:review"]');await page.screenshot({path:`${out}/${run}-pixel-confirm-360.png`});
+result.checks.push({name:'pixel layout',facts:await page.evaluate(()=>({pageScroll:document.documentElement.scrollHeight>innerHeight,buttons:[...document.querySelectorAll('.layer-confirm button')].map(e=>({text:e.textContent,height:e.getBoundingClientRect().height})),details:document.querySelector('.layer-details').scrollHeight>document.querySelector('.layer-details').clientHeight}))});
+// One candidate acknowledgement failure after the wallet replacement has succeeded.
+await page.evaluate(()=>{window.__setItem=Storage.prototype.setItem;window.__injected=0;Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'){const s=JSON.parse(v);if(s.meta?.estate?.count===1&&!s.meta.estate.pending&&!window.__injected++){throw Error('LG08B injected candidate ACK failure');}}return window.__setItem.call(this,k,v);};});
+await page.click('[data-confirm]');
+const failed=await page.evaluate(()=>{Storage.prototype.setItem=window.__setItem;const s=IMI.ops.extensions.state();return {held:Rewards.held(),running:IMI.ops.progression.running(),estate:s.meta.estate,wallet:IMI.bananas.get(),raw:JSON.parse(localStorage.getItem('imi-ops-v1')),walletRaw:localStorage.getItem('imi-score'),injected:window.__injected};});
+write('injected-candidate-hold',failed);assert(failed.held&&!failed.running&&failed.estate.pending);assert(!result.checks.find(x=>x.name==='pixel layout').facts.pageScroll);assert(result.checks.find(x=>x.name==='pixel layout').facts.buttons.every(b=>b.height>=40));assert.equal(failed.wallet,25000);assert.equal(failed.estate.count,0);result.checks.push({name:'candidate failure holds before benefits publish',pass:true});
+const cold=await browser.newPage();await cold.setBypassServiceWorker(true);await cold.evaluateOnNewDocument(f=>{localStorage.setItem('imi-ops-v1',JSON.stringify(f.raw));localStorage.setItem('imi-score',f.walletRaw);},failed);
+// Separate origin prevents this cold fixture from touching the held owner's save.
+await cold.goto(`http://localhost:${result.port}/index.html#play`);
+const blocked=await cold.evaluate(()=>({blocked:VaultSaveGate.blocked,ops:!!window.IMI?.ops,raw:localStorage.getItem('imi-ops-v1'),wallet:localStorage.getItem('imi-score'),title:document.querySelector('#vaultGateTitle')?.textContent}));assert(blocked.blocked&&!blocked.ops);assert.equal(blocked.raw,JSON.stringify(failed.raw));assert.equal(blocked.wallet,failed.walletRaw);write('cold-missing-flags',blocked);await cold.close();
+await page.bringToFront();await page.click('.o-writer-status button');await page.waitForFunction(()=>!Rewards.held()&&IMI.ops.progression.running(),{timeout:8000});
+result.checks.push(...await page.evaluate(()=>{
+const a=IMI.ops.extensions,s=a.state(),b=window.__estateBefore,rows=[],same=(x,y)=>JSON.stringify(x)===JSON.stringify(y),check=(name,pass,facts)=>{rows.push({name,pass:!!pass,facts});if(!pass)throw Error(name);};
+check('owner after Retry',Rewards.owns()&&!Rewards.held()&&IMI.ops.progression.running()&&Rewards.guard(s));
+check('one Estate Charters baselines identity',s.meta.estate.count===1&&s.meta.estate.charters===3&&s.meta.estate.localImprints===0&&s.meta.estate.resetEpoch===1&&s.meta.estate.starBaseline===360&&s.meta.layers.baseline===360&&s.meta.layers.count===5,{estate:s.meta.estate,layers:s.meta.layers});
+check('legacy premium MG history and sequences retained',same(s.legacy,b.legacy)&&same(s.prem,b.prem)&&same(s.meta.minigames,b.meta.minigames)&&s.meta.automation.media.sequence===23&&same(s.meta.automation.muse.manual,b.meta.automation.muse.manual)&&same(s.meta.folio.cashHead,b.meta.folio.cashHead)&&same(IMI.bananas.acknowledgement(),window.__markerBefore)&&same(s.meta.layers.purchases,b.meta.layers.purchases)&&same(s.meta.layers.shelf,b.meta.layers.shelf)&&same(s.meta.layers.stamps,b.meta.layers.stamps)&&same(s.meta.folio.gallery,b.meta.folio.gallery));
+check('flag-off incomplete proof clears',s.meta.automation.garden.manual.pending===null&&s.meta.automation.pitch.manual.pending===null);
+check('room reset and rollover exactly once',s.printing===0&&s.run.earned===0&&s.meta.layers.seals===0&&s.meta.layers.genre===null&&s.editions['ape-in-the-cape']===3&&Object.keys(s.written).length===0&&Object.keys(s.bank).length===0&&s.desks[0].paws===0&&s.desks.slice(1).every(d=>!d.owned)&&s.lamp===0&&s.garden.beds.every(b=>b===null));
+const c=s.rewards.claims['layer:estate:first'];check('existing L0 committed once',c.status==='committed'&&c.descriptor.amount===50&&c.descriptor.desk===0&&Object.values(s.desks[0].letters).reduce((n,v)=>n+v,0)===50,{claim:c});
+const before=JSON.stringify(s),wallet=localStorage.getItem('imi-score'),raw=localStorage.getItem('imi-ops-v1'),r=Rewards.estateAction({action:'reset',quote:{}});
+check('duplicate immediate reset refuses without writes',!r.ok&&JSON.stringify(s)===before&&localStorage.getItem('imi-score')===wallet&&localStorage.getItem('imi-ops-v1')===raw);
+check('unknown wallet metadata retained',JSON.parse(wallet).futureEstateProof==='wallet-keep');
+window.__estateClaim=JSON.stringify(c);check('actual acknowledged save',IMI.ops.saveAcknowledged().ok);return rows;
+}));
+await page.screenshot({path:`${out}/${run}-pixel-result-360.png`});
+await page.reload();await page.waitForFunction(()=>Rewards.owns()&&IMI.ops?.progression.running()&&!Rewards.held());
+const reload=await page.evaluate(()=>{const s=IMI.ops.extensions.state();return {estate:s.meta.estate,claim:s.rewards.claims['layer:estate:first'],editions:s.editions,letters:Object.values(s.desks[0].letters).reduce((n,v)=>n+v,0),guard:Rewards.guard(s)};});assert.equal(reload.estate.count,1);assert.equal(reload.estate.charters,3);assert.equal(reload.letters,50);assert.equal(reload.editions['ape-in-the-cape'],3);assert(reload.guard);write('reload',reload);result.checks.push({name:'save reload without reward replay',pass:true});
+// Second edition uses the same completed save, then a pure controlled eligibility fixture for its review image.
+await page.goto(base+'/classic.html'+flags);await page.waitForFunction(()=>Rewards.owns()&&IMI.ops?.progression.running()&&!Rewards.held());await page.evaluate(()=>{IMI.ops.extensions.setTab('estate');IMI.ops.extensions.mark();});await new Promise(r=>setTimeout(r,350));await page.screenshot({path:`${out}/${run}-classic-result-360.png`});
+await page.evaluate(()=>{const a=IMI.ops.extensions,s=a.state();s.meta.estate.localImprints=5;s.printing=7;s.legacy.total=1800;a.mark();});await new Promise(r=>setTimeout(r,350));await page.screenshot({path:`${out}/${run}-classic-preview-360.png`});await page.click('[data-act="estate:review"]');await page.screenshot({path:`${out}/${run}-classic-confirm-360.png`});
+const classic=await page.evaluate(()=>({gain:Estate.quote(IMI.ops.extensions.state()).gain,pageScroll:document.documentElement.scrollHeight>innerHeight,buttons:[...document.querySelectorAll('.layer-confirm button')].map(e=>({text:e.textContent,height:e.getBoundingClientRect().height}))}));assert.equal(classic.gain,6);assert(!classic.pageScroll&&classic.buttons.every(b=>b.height>=40));result.checks.push({name:'classic 360 later Estate preview',pass:true,facts:classic});
+for(const [f,h]of Object.entries(result.hashes))assert.equal(h,crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex'));assert.deepEqual(result.errors,[]);result.status='PASS';
+}catch(e){result.status='FAIL';result.error=e.stack;}finally{if(browser)await browser.close();await new Promise(r=>server.close(r));write('results',result);write('cleanup',{browserClosed:true,serverClosed:true,port:result.port,protectedResourcesUntouched:true});console.log(JSON.stringify({status:result.status,checks:result.checks.length,error:result.error}));if(result.status!=='PASS')process.exitCode=1;}})();

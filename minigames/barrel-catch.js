@@ -285,11 +285,12 @@
   function showOver() { S.finish([['BANANAS & CO', G.caught], ['LETTERS', G.letters], ['BEST COMBO', G.bestCombo], ['GOLDEN', G.goldens], ['DIAMOND', G.diamonds], ['TIME', Math.round(G.t) + 's']]); }
 
   /* ---------- input ---------- */
-  function point(ev) { if (!S.playing) return; usingKeys = false; monkey.tx = clamp(st.toArt(ev)[0], 17, W - 17); }
+  function point(ev) { if (!S.playing) return; window.MGHosted?.input(); usingKeys = false; monkey.tx = clamp(st.toArt(ev)[0], 17, W - 17); }
   addEventListener('pointermove', point);
   addEventListener('pointerdown', ev => { if (ev.target.closest('.mg-over,.mg-nav')) return; point(ev); sfx.unlock(); });
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
+    if (S.playing && ['arrowleft','arrowright','a','d'].includes(k)) window.MGHosted?.input();
     if (k === 'arrowleft' || k === 'a') { keys.l = true; usingKeys = true; e.preventDefault(); }
     else if (k === 'arrowright' || k === 'd') { keys.r = true; usingKeys = true; e.preventDefault(); }
   });

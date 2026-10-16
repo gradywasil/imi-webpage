@@ -1,0 +1,5 @@
+# LG-09B first permanent play approval
+
+OWNER APPROVED 2026-10-15: full first-play package in LG-09B-owner-review.md, exact script/manifest,100 ordered editions with1000ordinary+99000fresh letters, once-onlysignature +1percentagepoint automatictypistrate within7pointWorksfamily plus Playbill1 and exact proposedcopy. Receipt evidence/LG-09/owner-approval-first-play/receipt.json binds approved frozen hashes. Historical proposal documents/manifest retain unapproved labels as their creation history; this receipt is the subsequent authority, not a retroactive alteration of hashed artifacts.
+
+Authorize one explicit local opt-in first-play implementation lease. Keep demo separate/nonrewarding with no conversion, original Estate3/twoactive matureclassics introduction and retainedunlock, genuinefreshgeneration/material/ACK/reset rules. No plays2..7/placeholders/anthologywin/NG+/mastery/A10A11/newDB/currency/payment/legal choice, commit/deploy/defaultactivation. Pacing remains provisional; LG13 ratios and naturalcalendar targets unverified.

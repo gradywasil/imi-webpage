@@ -1,0 +1,12 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const pp=require('C:/Users/arran/pp/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js');
+const root=process.cwd(),out='docs/plan/long-game/evidence/LG-09/first-play-r1',phase=process.argv[2];
+assert(['before','final','confirmation','stable','frozen'].includes(phase));
+const write=(n,v)=>fs.writeFileSync(`${out}/${n}.json`,JSON.stringify(v,null,2),{flag:'wx'});
+const files=['layers.js','ops.js','rewards.js','core.js','vault-save-gate.js','sw.js','estate.js',...(phase === 'before' ? [] : ['archive.js','production-goal.js','folio.js','works.js','works-play.js'])];
+
+write(phase+'-control-source',Object.fromEntries(files.map(f=>[f,{bytes:fs.statSync(f).size,sha256:crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')}])));
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json'};
+const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL(req.url,'http://local').pathname);if(!f.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(f,(e,b)=>{res.writeHead(e?404:200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});res.end(e?'missing':b);});});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));assert(![8000,8354,8356,8358,8397].includes(server.address().port));let browser;try{browser=await pp.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}/tools/balance.html`);const result=await page.evaluate(()=>{Bot.start({profile:'active',strategy:'collect',seed:1,activeMinutes:5});Bot.run(5);return {report:Bot.report(),meta:IMI.ops.dev.S().meta};});result.errors=errors;write(phase+'-default',result);assert.deepEqual(errors,[]);assert.deepEqual(result.meta,{});if(phase!=='before')assert.deepEqual(result,JSON.parse(fs.readFileSync(out+'/before-default.json')));console.log(phase+' 5-minute report/meta/errors PASS');}finally{if(browser)await browser.close();await new Promise(r=>server.close(r));write(phase+'-control-cleanup',{browserClosed:true,serverClosed:true});}})().catch(e=>{console.error(e);process.exitCode=1;});
+

@@ -1,0 +1,7 @@
+# LG-08K one-run Auto-challenge approval
+
+OWNER APPROVED 2026-10-15. Owner selected "Approve one-run Auto-challenge" for the cohesive question in evidence/LG-08/owner-approval-auto-challenge/receipt.json. Authority LG-08K-owner-review.md, LG-08K-parent-review.md and full design. Historical UNAPPROVED labels remain creation history; this later receipt authorizes only the stated stage.
+
+Authorize free/defaultOff one ordinary Small Crew run per explicit enable at Estate3 after genuine saved manual Gold/introduction-clear proof, ordinary first clear and already-owned Veteran Crew. Normal>=1pendingstar Printing entry. New A11-only fixed six-Bamboo-reader focus/readiness/sale clerk may sell at actual market pay before Publisher, using real typists/keepers. No purchases/grants. Entry/focus/sale/exit share tenth fair slot,60eligible active game seconds per command. Suspend other helpers/net during clerk control and reserve A10 with settings preserved. Compatible PG honored, conflicts wait; manual interventions hand over with local Off. Standard6-sale clear then acknowledged exit saves Off, no repeat reward/new medal/DB. Exact fixed entry/payment/progress/clear/Retry/cold and documented Off/manual-continuation behavior apply. No offline new actions.
+
+LG-08L leases local opt-in implementation. Routine implementation choices and repairs within approved scope need no reapproval. Other challenges, repeating cycles/automatic rearm, purchases, new rewards/tiers, public/default activation, commit/deploy and pacing acceptance remain separate.

@@ -1,0 +1,41 @@
+# LG-02D Banana net lifetime completion
+
+## Authority and exact blocker
+
+Parent amendment2026-10-15 within the owner-approved one-item lamp/necessary lifetime contract. No new game mechanic or owner decision. Read LG-02D-free-lamp-implementation.md, LG-02C-approved-free-vault.md/receipt/full design and evidence/LG-02/free-lamp-r1/Handoff.md. Original writer stopped correctly without editing unowned Automation. Current final authority closure-blocked-r2/source-final.json; readiness=false prevents offers/typed spending/admission. Pre-blocker actual play is only source-qualified, not a final candidate PASS. No independent review yet.
+
+Concrete missing owner: automation.js netItems/cancelNet, observeNet, serviceNet, netBlocked and visibility/resize callbacks. It owns admitted acknowledged Catch/Skip selection and slot.at. Existing Ops/pickup preservation retains the node but not that separate slot. Parent inspected those actual sources and existing lampHold/lampRelease notification order. A supported lamp save cannot simply exclude net or drop its slot under the already-approved hold policy.
+
+## Precise replacement lease
+
+Sole product writer owns automation.js ONLY net slot lifetime hold/resume/disposal and affected cancellation callbacks; ops.js ONLY integration with existing lampHold/lampRelease/departure for net; vault-play.js ONLY removing explicit unavailable block after prerequisite works, with narrow necessary readiness wiring; sw.js ONLY cache version74->75. Original twelve-file implementation is otherwise frozen. Four current paths, one newly owned Automation path. Do not change net sequences/odds/selection/cadence/upgrades/gates/prices or any other helper. No generic automation pause framework.
+
+Own additions to the two previously new LG02D focused tests only for this net contract; NEW tools/long-game/lg02d-net-r2-* helpers; NEW evidence/LG-02/free-lamp-net-r2/** excluding parent-dispatch.json; this Status/Handoff. All other product/config/old tests/prior evidence/design/approval files read-only. A concrete additional dependency requires parent amendment before edits. No children/dependencies/art/stage/commit/push/deploy/default activation. Not alone; preserve unrelated dirty bytes, encodings/resources/failures. Every code line justifies existence.
+
+## Required behavior
+
+Preserve the SAME admitted slot/item/acknowledged selection/phase and remaining active-game-second catch dwell through the current Rewards lifetime lease and separate closing ACK. Hold arrives before progression-stop cancellation; temporarily hidden native nodes and hold-related observer/visibility/resize/service callbacks do not discard or re-admit it. No extra phase write, reroll, second catch, reset delay or early payment. Resume exactly once after productive-clock compensation. Inspect actual productionNow freeze so you do not double-compensate slot.at. Pending unadmitted selection writes keep existing exact ownership; do not pretend unacknowledged phase is committed. Actual departure, identity loss, genuinely removed/replaced object or unrelated user disable disposes appropriately without resurrecting old volatile state. Existing default/ordinary nonlamp net behavior unchanged.
+
+Do not enable available merely by deleting the guard. Finish source/lifetime integration and focused verification first. Supported admission remains the exact isolated earned-only lamp slice; retain every other gate/unknown/bought/shared/public restriction. No economic/price/reset/hold policy changes. Existing original12 files not leased here remain byte-equal, except the three explicitly named current integration/version paths.
+
+## Bounded verification and source seal
+
+Capture immediate blocked-before source bytes/hashes for four paths and establish Automation equals the earlier captured protected hash. Preserve all blocked/pre-blocker artifacts and do not relabel them. Original before/ is the cumulative12-path baseline; add captured Automation bytes for a13-product combined patch/source manifest. Provide immediate four-file patch and cumulative13-file reconstruction if practical, exact raw bytes outside checkout. Preserve Git index/no stage. Reuse the source-bound final disabled five-minute default as before; run one fresh final5minute report/meta/errors and compare byte-for-byte. Changed JS syntax and focused new net tests only, no broad old suites.
+
+One coherent fresh final-source actual lamp purchase/inactive/Keep/cap/save/sequential reload path, with ONE relevant activation-save-failure lane that has an ACTUALLY admitted native Banana net catch before hold. Use actual net selection/service and native connected object, no direct injection of netItems or phase advancement as proof. Controlled eligibility/funding/clock/native spawn can be labelled before operations. Verify same node/slot/selection/remaining dwell through failed save and visible Retry, then exactly one catch at remaining eligible time and no extra phase advance. Either ordinary or golden native item suffices; cover the other kind by narrow component/source qualification, not another campaign. Record productive clock and lease identity so dwell claims are assessable. No natural timing claim.
+
+Reuse source-qualified cap/Undo/Printing/UI work for untouched regions; final actual cap provider and economic/reload must pass under enabled source, not the old available=false build. Capture/read one affected phone state in each edition360x560 during the final path; no broad image/size/fault suite. Existing pre-blocker images can be reused only with explicit changed-source qualification. No need to rerun all Undo/old coordinator tests unless a concrete failure touches them.
+
+External isolation remains parent-authorized setup delegated to this writer: brand-new ephemeral loopback origin/profile/save, one game document, record exact identities before admission; flags/locks are not isolation. Authorized repo Chrome/Puppeteer and preview rules from original lease. Protect all named ports8000/8354/8356/8358/8397/user/prior profiles/services/storage/art stderr. Close only owned browser/server, no deletion or cleanup campaign. Preserve failures uniquely.
+
+## Status
+
+IMPLEMENTATION COMPLETE, READY FOR INDEPENDENT REVIEW 2026-10-15. Sole writer released. Coherent restricted enabled candidate sealed in evidence/LG-02/free-lamp-net-r2/closure-final/. Eighteen focused groups, final actual purchase/Keep/cap/save/sequential reload and admitted-native-net activation failure/visible Retry/dwell-once proof pass. Both immediate four-file and cumulative thirteen-file patches reconstruct exact raw bytes outside the checkout. Prior blocked history retained. This is an implementation handoff, not acceptance, default/public activation or deployment.
+
+AUTHORIZED MINIMUM LEASE AMENDMENT2026-10-15. Parent resolves the reported unowned net prerequisite without changing approved mechanics. Original blocked candidate is not accepted. Sole completion writer then one different-model review of coherent combined source.
+
+## Handoff notes
+
+Completion report: evidence/LG-02/free-lamp-net-r2/Handoff.md. Authoritative final manifest/patches are in closure-final/; root source-final.json and earlier lanes remain intermediate history. Native final lanes are cap-complete and failure-complete. Preparation replay and the temporary hidden-node observer after closing were concretely reproduced and repaired within the granted Automation cancellation hooks. Slot.at remains unchanged; existing productive-clock compensation applies once. Fresh five-minute complete report/meta/errors remains byte-equal to the original disabled baseline. Readiness restored only within existing flags, external isolated-origin assertion and supported-envelope restrictions. No additional product dependency, children, dependencies, stage/commit/deploy or cleanup campaign. Parent performs the separate different-model review.
+
+Deliver Handoff/source manifests/diffs/exact13-file baseline proof, fresh actual admitted-net lamp/failure/reload evidence, default comparison/focused tests and resource account. Distinguish fresh/reused/component/source-qualified/deferred. If no coherent completion within scope, keep readiness blocked and report exact minimum dependency. Update Status/Handoff, release writer and stop for parent independent review.

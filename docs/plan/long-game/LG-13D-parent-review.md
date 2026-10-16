@@ -1,0 +1,9 @@
+# LG-13D commission bridge source review
+
+2026-10-15. SOURCE REVIEW COMPLETE, READY FOR THE ALREADY APPROVED ONE R3 RUN. Parent read the exact two-file patch, handoff/source contracts and actual commission card/navigation/owner source. The correction stays within tools/bot.js's optional realActions dispatcher and RegularPilot's supplied DOM adapter. Absent callback retains the original D.action call. Chosen index/full offer/rendered title are checked, actual visible navigation and button handling supply real geometry, then Floor is restored. No geometry/owner/guard/product replacement or economic policy change.
+
+Parent independently ran node --check for bot, policy and read-only runner, and the raw patch reverse applicability check. All passed. All 53 recorded current source entries and 11 repair artifacts match final manifests before parent documentation updates. The 53 entries include the two changed tools and 51 protected read-only sources/evidence. New R3 directory was absent. No browser/server/game route was launched for this review.
+
+These checks establish source conformance, not runtime commission ACK, navigation or endpoint proof. The exact callback and all later native progression paths remain UNVERIFIED pending the next trajectory. Preserve R1/R2 partial results. The owner already approved the correction, focused review and ONE new run together in LG-13D-approved-bridge-and-run.md. Dispatch LG-13E without asking again. No repeated retry/repair campaign, default activation, product change or six-week/full LG-13 pacing acceptance.
+
+Parent Status/README/task changes after this review are documented plan updates; historical final manifests remain retained. Next operator should compare immutable tool/runtime/evidence identities and qualify these expected documentation updates rather than mistaking them for product drift.

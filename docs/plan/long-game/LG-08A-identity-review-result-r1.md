@@ -1,0 +1,25 @@
+# LG-08A identity review result, round 1
+
+**Local prerequisite: PASS, 2026-10-15.** The optional identity candidate is sufficient for a new, separately leased Estate initializer and reset implementation. This is acceptance of the identity prerequisite in the local default-off prototype. It does not activate Estate or accept a future reset transaction.
+
+## Source and scope
+
+I reviewed the six-file `task-only.patch` against the preserved dirty-before source, its final byte reconstruction receipt, and the changed functions with their immediate owners. The patch touches only `layers.js`, `ops.js`, `folio.js`, `automation.js`, `rewards.js` and `sw.js`. All six working-file SHA-256 hashes match `evidence/LG-08/identity-r1/final-source.json` now. `core.js` and `vault-save-gate.js` needed no change because their fixed owner bridge and early envelope checks retain the existing prefixes. `node --check` exited 0 for all six changed JavaScript files. No product code changed in this review.
+
+## Findings
+
+1. `layers.js:19-61` leaves absent `meta.estate` absent, validates supported version and safe counters, and returns detached initialization/advance projections. `layers.count` remains the lifetime foundation counter used by existing gates. `layers.js:81-155` includes the current epoch in new foundation quotes and pending IDs, increments lifetime and local counts in the projected successor, and validates the exact successor without changing the source state. The next Estate lease must still implement a durable initializer and Estate reset; neither exists here.
+2. `ops.js:1488-1520` advances an existing epoch before ordinary Printing changes room or wallet and copies metadata for the optional path. The final native confirmation covers flagless Printing. `folio.js:19-34,78-82` binds current commands and pending work while accepting settled old cash markers. `ops.js:840-1095,1206-1297,1392-1399,2443-2459` and `automation.js:36-59,158-187` bind tracked pitch/media, garden/Muse and challenge provenance to the epoch. `rewards.js:390-440` validates the outer pitch/media request epoch before their write paths. The final source includes those two late envelope checks.
+3. `layers.js:44-61` refuses initialization or advancement while named original work is pending or the save owner is held. It never guesses an epoch for an old pending command. The inspected retained receipt paths preserve old IDs, sequence and permanent claims. Existing cash and media sequences are not reset. This readiness proof is bounded: actual old pending recovery and a native foundation transaction were not rerun here.
+
+I found no material defect within this lease. The fresh owner smoke used an isolated Chrome profile and ephemeral loopback port 63677. It asserted owner `owns/running/guard` true and `held` false, projected identity without changing an absent namespace, ran actual Printing from a seeded optional identity, rejected a stale Folio choose with current expected data without changing room, wallet or save bytes, saved, and reloaded at Printing 5 / epoch 1 with the unknown identity field retained. `evidence/LG-08/identity-review-r1/smoke.json` records PASS with no page errors; `cleanup.json` records browser and server closed. The fixture controls production and earnings, so this is a transaction smoke rather than natural progression.
+
+## Reused evidence and limits
+
+The final-source `final-confirmation-results.json` reports PASS for 15 grouped native/pure checks, including settled old Folio recognition, pure foundation projection, actual Printing and flagless Printing, repeated-coordinate distinct Folio IDs, stale command refusal, overflow refusal and reload. I checked its source hashes against the current candidate. The before/final/confirmation five-minute default reports have equal stable report, metadata and errors objects. They establish a short default control, not hour-long or pacing equivalence.
+
+The original flagless wait failure and first patch packaging failure remain historical failed attempts. Their corrected final runs pass. The earlier `confirmation-results.json` predates the final pitch/media envelope checks and is not final-source proof. Legacy pending recovery, non-Folio command permutations, most malformed/future-state cases and actual foundation ACK remain source-qualified. Full lifecycle/fault, service-worker transition, UI matrix, physical device, all-profile and LG13 pacing work remains deferred under `skeleton-validation-policy.md`. No UI changed, so this review required no screenshot matrix.
+
+The next lease should begin by settling original pending work before the first explicit identity initialization, then implement Estate as one acknowledged candidate that advances the epoch once, zeroes only local Imprints, preserves lifetime count and cash/media sequences, and checks old receipts separately from executable current commands. This review grants no default activation, commit or deployment.
+
+Review resources are closed. Protected ports 8000/8354/8356/8358 and unknown 8397, user tabs/services/saves and unrelated dirty work were left untouched. Review lease released.

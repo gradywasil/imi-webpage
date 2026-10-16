@@ -1,0 +1,17 @@
+# LG-05C local mixed-shelf acceptance
+
+ACCEPTED LOCALLY2026-10-14 by parent after independent r1 functionalcontractPASS with textFAIL/normalpointerUNVERIFIED, followed by narrow parent textrepair and valid freshpointercheck. This does not reclassify r1HOLD asindependentPASS or eraseoriginalhelperfailures. OwnerGroupC rulesunchanged; no public/defaultactivation/commit/deploy.
+
+Mixedshelf2currentSealsrequirespress+charter, onceackpurchase. Curateupto3distinctearnedstamps, freemanualremove/clear/rearrange, retainedPrinting/foundation. +5%3distinct,+5%anyapprovedcomplementarypair,cap10; actualtitle-saleonlybeforeonefinalround, neutralwhenunowned/disabled, workswithoutactivegenre. Noroyalty/DEALS/division/Folio/odds/DBchange. FolioGenreShelfbridgeexistingImprintspane.
+
+Original4filecandidate Layersjs/css,Folionav,SW51. Parenttextrepairr2restored6existingcharacters+SW52. Independentreviewfoundnewpurchase-labelstrayencoding andinvalidreviewfixturewaiting-save, notnormalnavigationfailure. Parentr3restoredremaininglabelonly+SW53; evidence shelf-parent-final-r3/source.json/task-only.patch. No mechanism changes in either parenttextpatch.
+
+FreshdocumentedrepoheadlessnativeCore/Rewardspointer-check.json usespreviouspassingfocusedpointerfixture, explicitlyseededstamps andunownedshelf2Seals. Asserted owns/running, heldfalse/guardtrue beforeactions. ActualpointerGenreShelfopens, exactBuyMixedshelflabel, pointerpurchasecost2, pointerpairslot/remove, reloadowned/seals0/slotmystery/bonus0; executingLayers/Folio/Ops/Rewards/Core/CSShashesmatchdisk. Commandexit0; inprocessserver/browserclosedbyfinally, cleanup.json. No owneroriginsused.
+
+Reused11functionallanes prerequisite/stale/duplicate/failedwriteRealRetry/slotvalidation/exactbonus/titlepay/royalty/Folio6250/reload/Printing/projectorretention. No Ops/Rewards/Core/Economy/earlygate edits. AcceptedLG05B5minutecontrol reused, defaultdisabledfactor1. Parent/revieweropenedbothstyle360top/controlimages/internalpanes/40pxcontrols; r3labelonlycurrentfreshtextproof, no newmatrix.
+
+Originalcombinedhelperclicktimeout remainsfailedlane withcauseUNRESOLVED. Separatefocusedpointerpasses andfreshparentnormalpath establishactualnavigationreadiness; they do notexplain/eraseoriginaltimeout. Invalidreviewfixtureandearlierfailuresretainedseparately.
+
+Current Layers7654d02ef837f98c031cf1f73e8a81bb654cb515ad15ae9b9ff91e86dc8a746d; Folioed45d361d0fc47c2275e30114ddfbbad5e6d7c156908dfd0a5852a0d50967082;layersCSS12079906966180d7681ff317b484941ce70a8be2c1a825f9ace7ff1d8d3af9d5;SW53hash4b2a4e7efeac41028510562a78d63f27931ec388c808530f1287c46073a66ca6. ParentcheckedJSsyntaxearlier; label-onlyeditparsed/executedinfreshbrowser. WholeLG13/naturalstampearning/pacing/devices/publicshared/lifecycle unverified.
+
+ApprovedFolio/Imprints/sixgenres/Mixedshelf skeleton nowlocal. LaterA6-A9/helpertiers/fournewchallenges/mastery remainunapproved/separatelygated. NextLG-06A-garden-scope.md documents-only. Priorunknown8397resource untouched.

@@ -1,0 +1,11 @@
+# LG-08A local identity prerequisite acceptance
+
+ACCEPTED LOCALLY 2026-10-15 after independent gpt-6-sol medium focused review PASS. This accepts optional identity compatibility for the approved Estate prototype, not an Estate transaction or activation.
+
+Six changed product files are layers.js, ops.js, folio.js, automation.js, rewards.js and sw.js, cache59. Parent rechecked all six current hashes against evidence/LG-08/identity-r1/final-source.json after review. Core and early gate are unchanged in this slice. Supported optional estate identity is version1/localImprints/resetEpoch, with no eager initialization. Lifetime layers.count retains helper gate semantics. New commands bind epochs; historical receipt IDs and cash/media sequences survive.
+
+Independent fresh actual-owner Chrome smoke passed pure absent-state initialization projection, actual Printing, stale Folio refusal without room/wallet/raw-save change, acknowledged save and reload with unknown identity field preserved. Six changed JS syntax checks passed. Reused final fifteen-group native/pure confirmation covers old settled Folio head recognition, flagless Printing, detached foundation projection, distinct repeated-coordinate IDs, epoch overflow refusal and reload. Stable five-minute before/final/confirmation default results match. No UI changed, so no screenshot matrix applies.
+
+Original fixture wait and patch reconstruction failures remain retained, with their corrected passes. Earlier confirmation predates final pitch/media envelope checks; only final-confirmation-results.json is final-source confirmation. Actual foundation ACK, old pending recovery and broader non-Folio/future-state permutations remain source-qualified. No full-hour, natural pacing, lifecycle/cache, physical-device or public/shared-paid acceptance is claimed. Review browser/server closed; protected user resources untouched. No commit, deployment or default activation.
+
+Evidence: LG-08A-identity-review-result-r1.md; evidence/LG-08/identity-review-r1/smoke.json and cleanup.json; implementation Handoff.md, schema-handoff.md and final-source.json. Both writer/reviewer leases released. Next explicit lease implements Estate reset under approved Group A, settling original pending work before identity installation.

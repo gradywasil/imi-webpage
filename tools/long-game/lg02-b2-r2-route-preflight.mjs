@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import router from './lg02-b2-r2-output.cjs';
+assert.equal(process.env.LG02_B2_R2_RECORD, '1');
+const fixture = 'docs/plan/long-game/evidence/LG-01/implementation-b';
+const away = 'docs/plan/long-game/evidence/LG-01/repair-b-r2';
+await mkdir(fixture);
+await mkdir(path.resolve(fixture + '/fixture-r2/nested'), {recursive:true});
+fs.writeFileSync(fixture + '/fixture-r2/a.json', 'record only');
+await writeFile(path.resolve(fixture + '/fixture-r2/nested/b.json'), 'record only');
+await mkdir(away);
+await writeFile(away + '/' + process.env.REPAIR_PHASE + '-probe.json', 'record only');
+for (const file of [fixture + '/unleased.json', fixture + '-sibling/a.json', away + '/old.json', away + '/' + process.env.REPAIR_PHASE + '-nested/a.json']) assert.throws(() => fs.writeFileSync(file, 'refused'));
+assert.equal(router.routes.length, 6);
+assert.ok(router.routes.every(r => r.mapped.includes('implementation-b2-r2')));
+// Exercise the existing writer without executing a game or acknowledging a save.
+const helper = await import('./lg01-b-fixture.mjs');
+await helper.capture({page:{evaluate:async () => ({routingProbe:true})},hashes:{},errors:[]}, 'route-probe');
+assert.equal(router.routes.length, 8);
+console.log(JSON.stringify({recordOnly:true, routes:router.routes, refusals:4, immutableWriterExercised:true, esmBindingsExercised:true, gameplayProof:false}));

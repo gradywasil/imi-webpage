@@ -1,0 +1,24 @@
+import fs from 'node:fs';
+import { writeFile, mkdir } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import router from './lg02-b2-output.cjs';
+assert.equal(process.env.LG02_B2_ROUTE_RECORD, '1');
+const fixture = 'docs/plan/long-game/evidence/LG-01/implementation-b';
+const away = 'docs/plan/long-game/evidence/LG-01/repair-b-r2';
+await mkdir(fixture);
+await mkdir(fixture + '/fixture-b2/nested', { recursive:true });
+fs.writeFileSync(fixture + '/fixture-b2/a.json', 'record only');
+await writeFile(path.resolve(fixture + '/fixture-b2/nested/b.json'), 'record only');
+await writeFile(away + '/' + process.env.REPAIR_PHASE + '-sample.json', 'record only');
+for (const file of [fixture + '/unleased.json', fixture + '-sibling/a.json', away + '/old.json', away + '/' + process.env.REPAIR_PHASE + '-nested/a.json']) assert.throws(() => fs.writeFileSync(file, 'refused'));
+assert.equal(router.routes.length, 5);
+assert.ok(router.routes.every(entry => entry.mapped.includes('implementation-b2')));
+console.log(JSON.stringify({ recordOnly:true, routes:5, refusals:4, esmBindingsExercised:true }));
+// Exercise the immutable writer itself. This is a routing probe, not gameplay evidence.
+const helper = await import('./lg01-b-fixture.mjs');
+const first = router.routes.length;
+await helper.capture({ page:{ evaluate:async () => ({ routingProbe:true }) }, hashes:{}, errors:[] }, 'route-probe');
+assert.equal(router.routes.length - first, 2);
+assert.ok(router.routes.slice(first).every(entry => entry.mapped.includes('implementation-b2')));
+console.log(JSON.stringify({ immutableCaptureWriter:true, actualMethods:['mkdir','writeFile'], gameplayProof:false }));

@@ -1,0 +1,8 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+const {default:p}=await import(pathToFileURL(process.env.PUPPETEER_MODULE).href);
+const b=await p.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,protocolTimeout:0});
+const root=process.argv[2]||'docs/plan/long-game/evidence/LG-00/repair-r2/';const results=[];
+try {for(const plainBank of [false,true]){const page=await b.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8148/tools/balance.html?equivalence-r2');await page.evaluate(plainBank=>LongGameBot.start('Regular',1,{plainBank}),plainBank);const start=Date.now();await page.evaluate(()=>LongGameBot.online(20));const first=await page.evaluate(()=>JSON.parse(JSON.stringify(LongGameBot.report())));await page.evaluate(()=>{LongGameBot.away(460);LongGameBot.online(20);LongGameBot.away(460);LongGameBot.online(20);});const report=await page.evaluate(()=>JSON.parse(JSON.stringify(LongGameBot.report())));results.push({plainBank,wallSeconds:(Date.now()-start)/1000,errors,first,report});await page.close();}await writeFile(root+'plain-bank-paired-raw.json',JSON.stringify(results,null,2),{flag:'wx'});assert.deepEqual(results[0].first,results[1].first);assert.deepEqual(results[0].report,results[1].report);await writeFile(root+'plain-bank-equivalence.json',JSON.stringify({sourceHash:createHash('sha256').update(await readFile('tools/long-game-bot.js')).digest('hex'),equal:true,results},null,2),{flag:'wx'});console.log(results.map(({plainBank,wallSeconds,errors})=>({plainBank,wallSeconds,errors})));}finally{await b.close();}

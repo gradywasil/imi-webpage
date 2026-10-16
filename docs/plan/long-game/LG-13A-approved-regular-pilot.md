@@ -1,0 +1,9 @@
+# LG-13A bounded Regular pilot approval
+
+OWNER APPROVED 2026-10-15. The owner selected "Approve one bounded Regular pilot (Recommended)". The exact question and answer are retained in evidence/LG-13/owner-approval-regular-pilot/receipt.json.
+
+Authority is LG-13A-regular-pilot-design.md and LG-13A-owner-review.md WITH LG-13A-parent-review.md corrections. Historical UNAPPROVED labels are superseded only within this scope. In particular, use ordinary Printing at eligible session ends whenever at least one pending star is available, after checking foundation eligibility first and settling Folio work. Do not use the draft nine-star quota or require exactly seven resets. Use the installed Puppeteer module at C:/Users/arran/pp/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js.
+
+Build only tools/long-game/regular-pilot.mjs and regular-pilot-policy.js, then run ONE fresh free seed-1 route in actual Classic/Core. Three 20-minute sessions per day start at calendar minutes 0/480/960. Use actual-rule away progress, native spawned pickup clicks, one naturally funded Pocket tales Folio binding, actual acknowledged ordinary Printing and first Imprint owners. Stop at the first acknowledged Imprint plus explicit Save/reload confirmation, 14 simulated days, or 1,800 real wall seconds total for the run including startup/readiness/reload. Preserve 30-second and transition checkpoints. An unfinished run remains partial and its endpoint UNVERIFIED.
+
+LG-13B-regular-pilot.md leases the two tools and new evidence only. No grants, owner/guard bypass, product/economy changes, premium spending, broad QA matrix, default activation, commit or deployment. One stated bot policy does not establish six-week capstone pacing or full LG-13 acceptance. Missing indispensable integration returns evidence and a proposed minimum lease, without product edits or another run.

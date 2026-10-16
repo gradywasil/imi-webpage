@@ -1,0 +1,17 @@
+# LG-13B parent review of the first attempt
+
+2026-10-15. PARTIAL STARTUP ATTEMPT, NOT A PROGRESSION RESULT. The sole authorized trajectory stopped after 30.672 wall seconds in waitForFunction. endpointAcknowledged=false, horizonComplete=false, last=null. Its only durable checkpoint is the stop record at 30.535 seconds, without a game-state snapshot. No intro or progression action ran. The original run did not deliver the required independent 30-second checkpoint; that was added afterward. Preserve all original evidence unchanged.
+
+Parent read the actual report, handoff, both tools and narrow current owners. Both new tools pass node --check. All 13 run-before/run-after hashes agree. Current 11 listed read-only game/old-bot inputs and policy match those run hashes. Only the runner has changed since execution, as disclosed by its author. Loaded response logs report no HTTP/page-console errors, but do not establish actual owner readiness. The task profile and server were reported closed; no new browser was launched for this review.
+
+The virtual scheduler does not advance RAF until policy execution, while the executed readiness predicate used Puppeteer's default RAF polling. The 100ms polling change is a plausible tool repair, not runtime proof or a product defect diagnosis. Source review also found material unexercised tool contracts that need correction before another trajectory:
+
+- Intro uses element.click on #oStage, but the product types on pointerdown or keyboard handlers. Repeated clicks will not satisfy the manual typing requirement. Read actual tour actions/selectors and drive the real intro controls without completion/proof injection.
+- Endpoint reload installs clockSource with time=0 again, losing the attained calendar boundary. Keep the acknowledged calendar boundary through sequential reload, without replaying absence or reseeding gameplay incorrectly.
+- The original run missed the scheduled independent 30-second checkpoint. New timer capture needs to sample current state rather than retaining only the previous session's last snapshot; a stalled page must not block durable partial reporting or exceed the watchdog.
+- Pickup counters track booleans and attempted clicks, so they cannot reliably distinguish a spawned/caught/missed object, especially immediate replacement or disposal. Use actual identities and product-stat changes where available and label sampling limits.
+- Audit the remaining source contracts narrowly: enabled/readiness identities before admission; known modal/tour controls; actual Folio/Printing/Layer state/quotes; away save acknowledgements; G1/T1 reporting and endpoint claims/raw wallet verification. The tools have no runtime evidence for any of these paths. Fix real source mismatches, not speculative product edge cases.
+
+The two-tool build is not accepted as runnable yet. A focused repair within the already authorized tool scope may proceed without another game-route execution. Only the two existing tool files and NEW repair evidence may change. Product/economy/old tools/failed-run evidence remain read-only. No new helpers/tests/dependencies or broad QA campaign. Repair source inspection and syntax checks are sufficient before returning a concrete next-run request. Any browser game-route startup, including readiness, would be a second trajectory and needs a new owner run decision.
+
+Six-week pacing, full LG-13, all-profile/premium ratios and the Imprint endpoint remain UNVERIFIED. A tool-startup failure is not a game-balance bottleneck.

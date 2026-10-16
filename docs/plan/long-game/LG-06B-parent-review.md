@@ -1,0 +1,19 @@
+# LG-06B parent source review
+
+2026-10-14. Documents-only source review complete. Recommend the base Auto-pitch proposal with the clarifications now included in LG-06B-owner-review.md. All new A7 mechanics remain pending owner approval. No runtime verification or product edits.
+
+Confirmed ops.js:778-842 and 3427-3437: commissions cost zero, cap eight open generated titles, register global recipe/vocabulary immediately and replace only the selected offer with existing same-band generation. Repitch is a separate paid action. Lowest eligible band then offer-slot order is a proposed interpretation of cheapest, not a new commission price. Wanted >=1.00 is a new proposed market threshold. Existing production goals constrain the exact band/collection; manual goals and working Folio pause this helper.
+
+Confirmed ops.js:2385-2413 and core.js:119-133: incumbent sales mutate bank/written/stats before wallet acknowledgement and do not check its result. A new sold-event listener cannot prove the manual predecessor was durably paid. The narrow tracked-title sale boundary is justified for this one prerequisite only. Preserve current title quote, bank costs, stats, run-income accounting and existing sale notifications exactly once. Do not rewrite unrelated sales. Active Publisher may finish the manually commissioned predecessor; silent/offline sale defers that title until visible settlement. No automatic commission or pre-existing statistics can earn it.
+
+Parent clarification: rewards.js:291-315 and 512 onward recognize specific wallet provenance; a tracked sale credit must register its settled wallet head for subsequent reward reconciliation. Recovery must finish before any ordinary progression, reset or reward payment. vault-save-gate.js currently recognizes Imprint and Vault envelopes only, so a new durable tracked-sale intent also needs narrow early recognition before Core/legacy writers when flags are missing. Resume adds lg03/lg01a/lg05folio/lg05layers while preserving the URL; malformed/future owned intents block without erasure or writes. This is a necessary part of the proposed intent boundary, not authority for an unrelated startup/Vault rewrite.
+
+Manual commission evidence should be newly acknowledged and tied to exact content/ID plus Printing/Imprint. On failure, retain the prepared replacement for exact Retry without registering a ghost recipe or rerolling. Settings and complete evidence survive resets; incomplete evidence clears after any pending settlement. Current resets retain pitch definitions and clear written/offers, so retained titles may consume open capacity again. This incumbent behavior remains unchanged and may need later playtest tuning.
+
+Proposed free/default-Off gate: intro, Imprint 2, one newly manual-commissioned title sold during active play. Proposed cadence: 60 eligible active game seconds, sixth fair slot, one total economic/crop/commission action per tick, hosted minigames active, no offline actions or catch-up. Existing four opt-ins and ownership required. No paid tiers, challenges, new reward draws, currency allocation or default activation.
+
+Use the skeleton policy for later checks. One controlled unlock/use/reload, relevant failed commission/Retry and tracked-sale recovery, short default control and both-style smallest-phone inspection suffice; no historical campaign. This review adds one focused flagless cold-refusal check because the proposed new durable wallet intent crosses the startup boundary. Full pacing stays LG-13.
+
+Status: READY FOR ONE BUNDLED OWNER DECISION. Source inspection only. No active product writer; do not dispatch implementation until approved.
+
+OWNER APPROVED 2026-10-14: base package including parent cold-recovery clarifications. Receipt evidence/LG-06/owner-approval-pitch/receipt.json. Implementation lease LG-06B-auto-pitch.md; no tiers/challenges/default activation/commit/deploy. Earlier proposal status is retained as history.

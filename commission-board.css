@@ -1,0 +1,9 @@
+.lg09g-board { overflow-wrap:anywhere; }
+.lg09g-board summary { cursor:pointer; min-height:40px; display:flex; align-items:center; }
+.lg09g-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.lg09g-actions button { min-height:40px; white-space:normal; }
+html[data-style="pixel"] .lg09g-board h3 { font-family:var(--font-px); }
+html[data-style="pixel"] .lg09g-board { padding-top:8px; }
+html[data-style="pixel"] .lg09g-actions button { border-radius:0; }
+html[data-style="classic"] .lg09g-board { border-radius:14px; }
+html[data-style="classic"] .lg09g-actions button { border-radius:10px; }

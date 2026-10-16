@@ -2,7 +2,10 @@
    A tiny coach-mark engine: a pulsing ring around the thing to press (never a blocking overlay) plus a speech bubble.
    It reads the game through IMI.ops.snap() and re-checks on the IMI event bus; it never touches game state. */
 (() => {
+  function start() {
   'use strict';
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const IMI = window.IMI;
   if (!IMI || !IMI.ops || !IMI.on || window.__OPS_HEADLESS) return;
   const PX = IMI.edition === 'pixel', KEY = 'imi-tour', snap = () => IMI.ops.snap();
@@ -13,7 +16,7 @@
   /* ---- persistence ---- */
   let T = { step: 0, done: false, tips: {}, tipsOff: false };
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') { T = { ...T, ...s, tips: { ...(s.tips || {}) } }; } } catch { /* corrupt: start over */ }
-  const store = () => { try { localStorage.setItem(KEY, JSON.stringify(T)); } catch { /* storage blocked */ } };
+  const store = () => { if (window.Rewards?.enabled && !Rewards.owns()) return; try { localStorage.setItem(KEY, JSON.stringify(T)); } catch { /* storage blocked */ } };
   if (!IMI.ops.introActive()) T.done = true;
   else if (T.version !== 2 || T.done) T = { ...T, version: 2, step: 0, done: false };
   store();
@@ -67,6 +70,7 @@
   let replaying = false, stepAt = performance.now(), hintTimer = 0, tip = null, tipTimer = 0, lastTip = -1e9, drawKey = '';
   const pending = {};                            // tips raised by an event, waiting for a quiet moment
   const TIP_GAP = 120000;
+  let recovering = false, tipAt = 0, tipRemaining = 0;
 
   const visible = el => !!el && !el.hidden && el.getClientRects().length > 0 && !el.closest('[hidden]');
   const resolve = sel => {                       // 'tab:id' = that department's tab in the side rail
@@ -74,7 +78,8 @@
     if (sel.startsWith('tab:')) { const t = $(tabBtn(sel.slice(4))); return visible(t) ? t : null; }
     const el = $(sel); return visible(el) ? el : null;
   };
-  const busy = () => IMI.screen() !== 'game' || document.hidden || !!document.querySelector('.o-modal, .o-celebrate');
+  const recoveryVisible = () => visible($('.o-writer-status'));
+  const busy = () => IMI.screen() !== 'game' || document.hidden || recoveryVisible() || !!document.querySelector('.o-modal, .o-celebrate');
   const stepView = (st, s) => {                  // what to show right now: the step itself, a detour to its tab, or a state-based variant
     let v = { tab: st.tab, target: st.target, text: st.text };
     if (st.view) { const o = st.view(s); if (o) v = { ...v, ...o }; }
@@ -117,7 +122,7 @@
 
   function hide() { bub.hidden = true; ring.hidden = true; drawKey = ''; }
   function draw() {
-    if (mode === 'idle' || busy()) return hide();
+    if ((window.Rewards?.enabled && !Rewards.owns()) || mode === 'idle' || busy()) return hide();
     let target = null, text = '', num = '', canNext = false, last = false;
     if (mode === 'tour') {
       const st = STEPS[T.step]; if (!st) return finish();
@@ -180,8 +185,12 @@
   const tipsOn = v => { if (v !== undefined) { T.tipsOff = !v; if (!v && tip) dismissTip(true); store(); } return !T.tipsOff; };
   function showTip(t) {
     tip = t; T.tips[t.id] = true; lastTip = performance.now(); store(); mode = 'tip'; drawKey = '';
-    clearTimeout(tipTimer); tipTimer = setTimeout(() => dismissTip(), 11000);
+    armTip(11000);
     IMI.sfx.tick(); draw();
+  }
+  function armTip(milliseconds) {
+    clearTimeout(tipTimer); tipAt = performance.now(); tipRemaining = milliseconds;
+    tipTimer = setTimeout(() => dismissTip(), milliseconds);
   }
   function dismissTip(quiet) { clearTimeout(tipTimer); tip = null; mode = T.done ? 'idle' : 'tour'; drawKey = ''; if (!quiet) draw(); else hide(); }
   function tryTips(s) {
@@ -196,6 +205,31 @@
   TIPS.filter(t => t.ev).forEach(t => IMI.on(t.ev, () => { if (T.tips[t.id] || !T.done) return; pending[t.ev] = true; if (t.live) setTimeout(() => delete pending[t.ev], 6000); tryTips(); }));
 
   /* ---- wiring ---- */
+  // Recovery changes while productive rendering is stopped; keep Ops' sole status consumer.
+  let recoveryPanel = $('.o-writer-status');
+  const recoveryObserver = new MutationObserver(records => {
+    if (window.Rewards?.enabled && !Rewards.owns()) { recoveryObserver.disconnect(); hide(); return; }
+    const statusNode = node => node.nodeType === 1 && node.matches('.o-writer-status');
+    if (!records.some(record => record.target.matches?.('.o-writer-status') ||
+        [...record.addedNodes, ...record.removedNodes].some(statusNode))) return;
+    const panel = $('.o-writer-status');
+    if (panel && panel !== recoveryPanel) {
+      recoveryPanel = panel; recoveryObserver.observe(panel, { attributes: true, attributeFilter: ['hidden'] });
+    }
+    const held = recoveryVisible();
+    if (held === recovering) return;
+    recovering = held;
+    if (tip) {
+      if (held) { tipRemaining = Math.max(0, tipRemaining - (performance.now() - tipAt)); clearTimeout(tipTimer); }
+      else armTip(tipRemaining);
+    }
+    draw();
+  });
+  recoveryObserver.observe(document.body, { childList: true });
+  recoveryObserver.observe($('#opsRoot .o-panel'), { childList: true });
+  recovering = recoveryVisible();
+  if (recoveryPanel) recoveryObserver.observe(recoveryPanel, { attributes: true, attributeFilter: ['hidden'] });
+  addEventListener('pagehide', () => { recoveryObserver.disconnect(); hide(); }, { once: true });
   ['tap', 'letters', 'hire', 'bank', 'sold', 'desk', 'focus'].forEach(n => IMI.on(n, check));
   IMI.on('tab', () => { check(); draw(); });
   IMI.on('render', () => { check(); draw(); tryTips(); });
@@ -211,4 +245,6 @@
 
   IMI.tour = { replay, skip, reset: () => { T = { version: 2, step: 0, done: false, tips: {}, tipsOff: false }; replaying = false; mode = 'tour'; tip = null; clearTimeout(tipTimer); store(); arm(); hide(); }, active: () => mode === 'tour', tipsOn };
   arm(); setTimeout(() => { check(); draw(); }, 400);
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

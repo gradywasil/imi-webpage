@@ -65,6 +65,7 @@
   /* ---------- pick ---------- */
   function pickSlot(slot) {
     if (G.stage !== 'pick' || slot < 0 || slot >= G.n) return;
+    window.MGHosted?.input();
     const sh = G.shells.find(s => s.slot === slot), x = slotX(slot, G.n), ok = sh.banana;
     ui.setMeter(0); G.chosen = slot; G.stage = 'reveal'; G.st = 0; G.result = ok; sh.hop = .25;
     if (ok) {
@@ -189,6 +190,7 @@
   addEventListener('pointermove', ev => { if (!S.playing || G.stage !== 'pick') return; const [px] = st.toArt(ev); let best = 0, bd = 1e9; for (let i = 0; i < G.n; i++) { const d = Math.abs(px - slotX(i, G.n)); if (d < bd) { bd = d; best = i; } } G.cursor = best; });
   addEventListener('keydown', e => {
     if (!S.playing || G.stage !== 'pick') return;
+    if (['ArrowLeft','ArrowRight','a','d'].includes(e.key)) window.MGHosted?.input();
     if (e.key >= '1' && e.key <= '5') pickSlot(+e.key - 1);
     else if (e.key === 'ArrowLeft' || e.key === 'a') G.cursor = Math.max(0, G.cursor - 1);
     else if (e.key === 'ArrowRight' || e.key === 'd') G.cursor = Math.min(G.n - 1, G.cursor + 1);

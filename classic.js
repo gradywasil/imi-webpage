@@ -1,6 +1,9 @@
 /* CLASSIC EDITION: art layer. Emoji particles, SVG toys and the title screen's monkey.
    Sound, the banana counter, screens and toy logic live in core.js; this file hands them an `art` object. */
 (() => {
+  function start() {
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const { $, rand, pick, centerOf, reduceMotion } = Core;
   const root = document.documentElement, fine = matchMedia('(pointer: fine)').matches;
   const onMenu = () => root.dataset.screen === 'menu';
@@ -181,4 +184,6 @@
     paintSound: (btn, on) => { btn.firstChild.textContent = on ? '🔊' : '🔇'; },
   });
   requestAnimationFrame(frame);
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

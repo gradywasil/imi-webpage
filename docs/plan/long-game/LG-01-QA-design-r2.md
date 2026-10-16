@@ -1,0 +1,20 @@
+# LG-01 independent design review r2
+
+**Verdict: PASS — READY FOR OWNER REVIEW.** The three material r1 document defects are resolved in the proposal. This review supports design readiness only; owner decisions, an implementation lease and later runtime acceptance remain required.
+
+## Material findings
+
+- **PASS — preparation failure and recovery are bounded honestly.** A failed prepare retains only a volatile retry sample, delivers nothing and is not called saved. The proposed pause blocks progression, wallet changes, reset and ordinary writes; it reaches the enclosing operation, checkpoints already-counted away work and resumes once without replaying the full absence. After reload, durable prepared claims retry their fixed descriptor. Missing durable letter/cash samples are held for owner repair rather than resampled; fixed DB/gold recovery checks existing source-tagged credits and receipts before reconciliation. The document retains the legacy unsaved-progress limitation and makes no hardware-durability or account-level exactly-once claim. These are proposed guarantees, not proven behavior.
+- **PASS — concrete single-writer and bootstrap policy.** The proposal selects a same-origin exclusive Web Lock, acquired before Core wallet reads, Economy migration/writes, Ops load, dependent scripts, startup/offline work or runtime writers. A competing tab remains nonwriting; unsupported/rejected acquisition fails closed; retry loads fresh state. Hidden-tab ownership, pagehide stop/save/cancel/release, bfcache reacquisition and stale callback blocking are specified. The current source order confirms the need for the named future app.js/classic.js and shell boot gates: both edition bootstraps call Core.boot before Ops, while Core.boot reads the wallet. Runtime Web Locks support and integration remain unverified.
+- **PASS — rush timing and interrupted work are specified.** The contract consumes only permitted away work, slices at the remaining 15,000 game milliseconds, preserves caps/efficiency/batch and Deadline chronology/RNG traversal, and prohibits retrospective after-away application or whole-absence boosting. The before/during-away seam is an explicit future lease prerequisite; exact online/offline duration and conservation remain marked **UNVERIFIED**. The transaction pause also forbids continuing the current operation or mixing pending cash across runs before reconciliation.
+- **PASS — scope and static catalogue.** Independently matched all 68 design catalogue rows against current `ops.js` IDs, names and tiers with zero mismatches (24 bronze, 25 silver, 19 gold). The supplied static receipts retain 76 award DB + 33 first-clear DB = 109 draft DB, with five distinct first-clear rows. Existing tests and +1% awards are explicitly preserved. No scope expansion found.
+
+## Owner choices and limits
+
+The proposed amounts, historical backfill/waivers, finite DB policy, gold effect/reset behavior, transaction-pause UX, failed-storage behavior, blocked-tab UX and goal/ticker geometry are clearly presented as owner choices, not missing QA approvals. Q5/Q6/Q8/Q9/Q10, paid ownership, endpoint deferrals and the historical-wallet exception remain open or unchanged as required.
+
+Current `ops.js`, `core.js`, `economy.js`, `app.js`, `classic.js` and shell order corroborate the cited existing save swallowing, event ordering, offline payout timing and bootstrap dependencies. The repair receipt’s source hashes match the preserved identities. This static source check does not prove durability, lock exclusion, UI fit, payout correctness, pacing or actual browser support. No runtime/browser/save work was performed.
+
+## Review boundary
+
+Read the requested planning documents, r1 report/static receipt, r2 repair response/preservation receipt and current reward design. Reviewed only the repaired seams and scoped authority/catalogue consistency; did not restart unchanged r1 formula, layout or goal review. Wrote this report and `evidence/LG-01/qa-design-r2/static-check.json` only. Pre-existing workspace changes were preserved.

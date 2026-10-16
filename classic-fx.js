@@ -8,6 +8,9 @@
      Reduced motion: this file does nothing at all.
    The canvas only runs a frame loop while a particle is alive, and only clears the box the last frame drew in. */
 (() => {
+  function start() {
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const root = document.documentElement, IMI = window.IMI;
   if (root.dataset.style !== 'classic' || !IMI || IMI.reduceMotion) return;
   const fine = matchMedia('(pointer: fine)').matches, TAU = Math.PI * 2;
@@ -292,4 +295,6 @@
       mx = e.clientX; my = e.clientY; if (!pending) pending = requestAnimationFrame(apply);
     }, { passive: true });
   }
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

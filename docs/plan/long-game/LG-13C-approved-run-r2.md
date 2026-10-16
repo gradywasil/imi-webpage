@@ -1,0 +1,7 @@
+# LG-13C execution-only approval
+
+OWNER APPROVED 2026-10-15. In response to "Approve this one fresh bounded run?" for LG-13C-regular-pilot-run-r2.md, the owner answered "Yes". The exact decision is retained in evidence/LG-13/owner-approval-regular-pilot-r2/receipt.json. Proposed/unapproved labels in LG-13C are superseded within this execution-only scope.
+
+Authorize ONE fresh free Regular seed1 trajectory using the two source-reviewed repaired tools unchanged. Same actual Classic/Core wallet, three 20-minute sessions/day, real-rule away gaps, native spawned pickups, one Pocket binding, eligible-session-end >=1-star ordinary Printing and foundation-first policy. Stop at first acknowledged Imprint plus Save/reload, 14 simulated days or 1800 real seconds total including startup/reload/cleanup. Preserve 30-second and transition checkpoints and every partial result. Output must be the NEW regular-pilot-run-r2 directory, created by the runner.
+
+No tool/product/economy changes, resource grants, owner/guard bypass, premium spending, additional trajectory/restart, guard extension, broad QA matrix, default activation, commit or deployment. The original failed R1 and source-only repair evidence remain preserved. Endpoint success would measure only this bot policy; six-week/full LG-13 acceptance remains separate. Delegate to a model different from product/tool implementer, then parent reviews the returned evidence.

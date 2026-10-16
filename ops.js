@@ -2,7 +2,10 @@
    Letters (typed by hanging monkeys) → words (Coconut R&D) → written titles (Vine Infrastructure) → bananas → more typewriters.
    Shares the page's banana counter, sounds, particles, weather/mood and header toys through window.IMI (see core.js). */
 (() => {
+  function start() {
   'use strict';
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const IMI = window.IMI, root = document.getElementById('opsRoot');
   if (!IMI || !root) return;
   const PX = IMI.edition === 'pixel';
@@ -14,6 +17,61 @@
   const rand = Math.random;
   const VOWELS = 'AEIOU';
   const bananas = IMI.bananas;
+  const writer = window.Rewards?.enabled ? window.Rewards : null;
+  const expanded = window.AwardsCatalogue?.enabled ? window.AwardsCatalogue : null;
+  const funding = expanded?.funding.enabled ? expanded.funding : null;
+  const pg = window.ProductionGoal?.enabled ? window.ProductionGoal : null;
+  const trainingPool = window.TrainingPool?.enabled ? window.TrainingPool : null;
+  const folio = window.Folio;
+  const layers = window.Layers;
+  const archiveFeature = window.Archive;
+  const worksDemo = window.WorksDemo;
+  const worksPlay = window.WorksPlay;
+  const activeWork = () => worksPlay?.active(S) ? worksPlay : worksDemo?.active(S) ? worksDemo : null;
+  const worksActive = () => !!activeWork();
+  const workPaused = () => worksActive() || !!folioGoal();
+  const worksAdvance = () => { activeWork()?.advance(S, trainingIngredients()); };
+
+  const titleAvailable = r => !archiveFeature || archiveFeature.available(S,r);
+  const folioGoal = () => archiveFeature?.goal(S) || folio?.goal(S);
+  let archiveSpans = [], archiveInterval = null, archiveSampleToken = null, pitchSampleToken = null, royaltySampleToken = null;
+  function archiveSettle() {
+    if (!archiveFeature?.enabled || S.meta.archive === undefined) return true;
+    return writer.archiveIncome().ok;
+  }
+  let paused = false, started = false;
+  const progressing = () => !writer || (writer.owns() && !paused && !writer.transacting() && !S.meta?.layers?.pending && !S.meta?.estate?.pending && !S.meta?.archive?.pending &&
+    !S.meta?.seasons?.pending && !S.meta?.commissionBoard?.pending && !S.meta?.automation?.challenge?.pending && !S.meta?.challengeMastery?.pending && !S.meta?.automation?.pitch?.sale && !S.meta?.automation?.media?.pending && (!S.prem?.vault?.transition || writer.boundaryProgressing()));
+  // Named callbacks run in registration order and always receive a current-state getter.
+  const extensions = new Map();
+  let speedProvider = null, productionExtra = 0;
+  const speed = () => {
+    const n = speedProvider ? speedProvider(extensionAPI) : 1;
+    if (!Number.isFinite(n) || n <= 0) throw new Error('Invalid production speed');
+    return n;
+  };
+  const extensionEvent = (name, event) => { for (const hooks of extensions.values()) hooks[name]?.(event, extensionAPI); };
+  let lampLifetime = null;
+  const productiveMono = () => lampLifetime?.mono ?? performance.now();
+  const productionNow = () => productiveMono() + productionExtra;
+  function lampHold(lease) {
+    if (lampLifetime) return;
+    lampLifetime = lease;
+    lampLiveBuffs = Object.keys(buffs).filter(k => buffs[k] > lease.mono);
+    extensions.get('automation')?.netHold(lease);
+    goldObject?.hold(lease); IMI.pickups?.vaultHold(lease);
+  }
+  let lampLiveBuffs = [];
+  function lampRelease(lease) {
+    if (lampLifetime !== lease) return;
+    const elapsed = performance.now() - lease.mono;
+    for (const k of lampLiveBuffs) if (buffs[k]) buffs[k] += elapsed;
+    productionExtra -= elapsed; lampLifetime = null; lampLiveBuffs = [];
+    last = performance.now();
+    goldObject?.resume(lease); IMI.pickups?.vaultResume(lease);
+    extensions.get('automation')?.netRelease(lease);
+  }
+  const lampPending = () => !!(window.VaultPlay?.pending(S) || writer?.localDisposition());
 
   /* ================= static data ================= */
   const DESKS = [
@@ -170,10 +228,12 @@
     up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0 },
     keeper: { owned: i === 0, on: true, def: 0, targets: {}, lv: 0 }
   });
-  const fresh = () => ({ economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  let hallHistory = {};
   let S = (() => {
     try {
       const saved = Economy.loadState();
+      if (window.Hall?.enabled) hallHistory = Hall.observe(JSON.parse(localStorage.getItem(KEY) || '{}'));
       if (!saved) return fresh();
       const f = fresh(), stats = f.stats; Object.assign(f, saved);
       f.stats = { ...stats, ...saved.stats, byLetter: { ...stats.byLetter, ...saved.stats?.byLetter } };
@@ -186,18 +246,28 @@
       if (saved.focus === undefined) { f.focus = old || null; f.autoFocus = !old; }
       f.desks.forEach(d => { if (d.owned) d.keeper.owned = true; delete d.keeper.focus; });
       return f;
-    } catch { return fresh(); }
+    } catch (error) { if (writer) throw error; return fresh(); }
   })();
   while (S.market.v.length < DESKS.length) { S.market.v.push(1); S.market.m.push(0); S.market.hist.push([1]); }   // saves from before the new machines
+  S.meta ??= {}; S.rewards ??= {}; S.prem ??= {};
   (S.pitches || []).forEach(p => registerPitch(p));
   if (!S.garden || !Array.isArray(S.garden.beds)) S.garden = { beds: [null, null] };
-  const save = () => { S.lastSeen = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* storage blocked */ } };
+  const saveAcknowledged = () => {
+    if (!writer?.owns()) return { ok: false, error: 'Not the save owner' };
+    if (writer.localDisposition()) return {ok:false, error:'Historical boundary owns the save'};
+    if (!writer.guard(S)) return { ok: false, error: 'Reward metadata or transaction unresolved' };
+    if (!archiveSettle()) return {ok:false,error:'Archive income waiting to save'};
+    const lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now(), result = Economy.saveStateAcknowledged({ ...S, lastSeen });
+    if (result.ok) S.lastSeen = lastSeen;
+    return result;
+  };
+  const save = () => { if (writer) return progressing() ? saveAcknowledged() : { ok: false, error: 'Progression paused' }; S.lastSeen = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* storage blocked */ } };
   const rt = DESKS.map(() => ({ timers: [], sheet: '', col: 0, n: 0 }));    // runtime only
   const ui = { nextCh: '', seed: 'E', hot: [false, false, false, false, false, false], buyN: 1, unseen: 0, pulled: null, dropped: {}, mcd: {}, readySet: null, fresh: null, lastBanked: null, bankedAt: 0, trayN: 0, tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, shelfNew: 0, archq: '', archf: 'all', read: null, sub: {}, libLimit: 24, archFailed: 0, bankq: '', ovr: '', ovrn: 3 };
   /* the Titles view (status, longest-word filter, sort, show-locked) is remembered between visits */
   const VIEW_KEYS = ['libf', 'libcap', 'libsort', 'libshow'];
   try { const v = JSON.parse(localStorage.getItem('imi-titles-view') || '{}'); VIEW_KEYS.forEach(k => { if (k in v) ui[k] = v[k]; }); } catch { /* ignore a bad value */ }
-  const saveView = () => { try { localStorage.setItem('imi-titles-view', JSON.stringify(Object.fromEntries(VIEW_KEYS.map(k => [k, ui[k]])))); } catch { /* storage blocked */ } };
+  const saveView = () => { if (!progressing()) return; try { localStorage.setItem('imi-titles-view', JSON.stringify(Object.fromEntries(VIEW_KEYS.map(k => [k, ui[k]])))); } catch { /* storage blocked */ } };
   let dirty = true, holding = false, holdAcc = 0, popSlot = 0, lastBananas = bananas.get();
   const introActive = () => !S.intro.done;
   const keepersReady = () => !introActive() || S.intro.words;
@@ -209,6 +279,7 @@
     intro.shop ||= Object.keys(S.written).length > 0;
   }
   function completeIntro() {
+    if (!progressing()) return;
     S.intro.done = true; S.intro.train = S.intro.words = S.intro.shop = true; save(); mark();
     setTimeout(dailyLater, 1200);
   }
@@ -295,11 +366,13 @@
   const hatOpen = h => !!S.awards[h.award];
   const hatById = id => HATS.find(h => h.id === id);
   const rollTalent = () => Math.floor(rand() * 7) + Math.floor(rand() * 7);                // two dice: +0 to +12 % typing speed, most often about +6
-  function newTypist() {
-    const used = new Set(S.desks.flatMap(d => (d.crew || []).map(t => t.name)));
+  function newTypist(candidate = S) {
+    const used = new Set(candidate.desks.flatMap(d => (d.crew || []).map(t => t.name)));
     const free = NAMES.filter(n => !used.has(n));
     const name = free.length ? free[Math.floor(rand() * free.length)] : NAMES[Math.floor(rand() * NAMES.length)] + ' ' + (used.size + 1);
-    const look = rollLook(); ui.lastLook = { id: look.id, fresh: !(S.looks || {})[look.id] }; seeLook(look.id);
+    const look = rollLook();
+    if (candidate === S) ui.lastLook = { id: look.id, fresh: !(S.looks || {})[look.id] };
+    (candidate.looks || (candidate.looks = {}))[look.id] = 1;
     return { name, look: look.id, trait: look.trait, talent: rollTalent(), coach: 0, rerolls: 0, xp: 0, lv: 1, hat: 0, shiny: rand() < .05 };   // 1 in 20 hires is shiny (cosmetic)
   }
   function ensureCrew(d) {
@@ -325,7 +398,7 @@
     if (museOn('poe') && isNight()) m *= 1.25;
     m *= speedPerks() * (1 + ((t.talent || 0) + (t.coach || 0) * COACH_STEP) / 100);        // the monkey's talent roll plus coaching
     if (t.trait === 'rainy') { if (sky().wx >= 1) m *= 1 + .3 * trMul(t); if (stormy()) m *= 2; }
-    return m;
+    return m * (1 + (extensions.get('minigames')?.automaticTypingBonus?.() || 0)) * (worksPlay?.factor(S) || 1);
   }
   const maxLevel = () => S.desks.reduce((m, d) => d.crew.reduce((a, t) => Math.max(a, levelOf(t.xp)), m), 1);
   function grantXp(d, p, amt, silent) {
@@ -351,8 +424,16 @@
   const target = (d, w) => (w in d.keeper.targets ? d.keeper.targets[w] : d.keeper.def);
   const stormy = () => sky().wx === 3;
   const buffs = { frenzy: 0, golden: 0, snack: 0, rush: 0, sluggish: 0, critic: 0 };
+  // Keep old absolute timestamp formats. Extra game time moves only gameplay deadlines.
+  function advanceDeadlines(extraMs, challengeExtraMs = extraMs) {
+    if (extraMs) {
+      S.garden.beds.forEach(b => { if (b) b.ready -= extraMs; });
+      Object.keys(buffs).forEach(k => { if (buffs[k]) buffs[k] -= extraMs; });
+    }
+    if (challengeExtraMs && S.challenge) S.challenge.start -= challengeExtraMs;
+  }
   const BUFF_INFO = { frenzy: ['FRENZY', ''], golden: ['GOLDEN KEYS', ''], snack: ['SNACK BREAK x1.5', ''], rush: ['ROYALTY RUSH x7', ''], sluggish: ['SPOILED: SLOW', 'bad'], critic: ['BAD REVIEW: ROYALTIES HALF', 'bad'] };
-  const anyBuff = () => Object.keys(buffs).some(k => performance.now() < buffs[k]);
+  const anyBuff = () => Object.keys(buffs).some(k => productiveMono() < buffs[k]);
 
   /* ---- royalties: every title on the shelf keeps paying, a little, forever ---- */
   const ROY_BASE = TUNE.ROY_BASE || 0.00001;
@@ -389,14 +470,58 @@
   const readyList = () => { const now = performance.now(); if (!readyC || now - readyT > 250) { readyC = RECIPES.filter(canWrite); readyT = now; } return readyC; };
   const dropCaches = () => { listC = null; readyC = null; soldC = null; };
   const dealMult = () => DEALS.reduce((m, d) => (S.deals[d.id] ? m * (d.mult || 1) : m), 1) * (S.deals.clubs ? 1 + .03 * soldCount() : 1);
-  const bookRoy = r => r.pay * (r.kid ? KID_ROY : r.lib ? LIB_ROY : 1) * ROY_BASE * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);
-  const royBase = () => soldStats().pay * ROY_BASE * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);   // bookRoy summed over the shelf, with the shared factors pulled out of the loop
+  const royaltyScale = () => new URLSearchParams(location.search).get('pg03') === '1' ? 2 * (1 + .35 * Math.min(S.printing, 7)) : 1;
+  const bookRoy = r => r.pay * (r.kid ? KID_ROY : r.lib ? LIB_ROY : 1) * ROY_BASE * royaltyScale() * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);
+  const royBase = () => soldStats().pay * ROY_BASE * royaltyScale() * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);   // bookRoy summed over the shelf, with the shared factors pulled out of the loop
   const royRate = () => royBase() * passive();
   const fmtRate = IMI.fmtRate;
-  const buffOn = k => performance.now() < buffs[k];
-  const pawSecs = d => PAW_BASE[S.desks.indexOf(d)] * Math.pow(0.85, d.up.fing) * (S.metro ? 0.5 : 1) * (stormy() ? 2 : 1) * (buffOn('frenzy') ? 0.5 : 1) * (buffOn('snack') ? 1 / 1.5 : 1) * (buffOn('sluggish') ? 1.7 : 1);
-  const holdRate = d => ((TUNE.HOLD_BASE || 4) + (TUNE.RAPID_STEP || 2) * d.up.rapid) * (S.dbl ? (TUNE.DBL || 2) : 1);
+  const buffOn = k => productiveMono() < buffs[k];
+  const pawSecs = d => PAW_BASE[S.desks.indexOf(d)] * Math.pow(0.85, d.up.fing) * (toolOn('metro') ? 0.5 : 1) * (stormy() ? 2 : 1) * (buffOn('frenzy') ? 0.5 : 1) * (buffOn('snack') ? 1 / 1.5 : 1) * (buffOn('sluggish') ? 1.7 : 1);
+  const holdRate = d => ((TUNE.HOLD_BASE || 4) + (TUNE.RAPID_STEP || 2) * d.up.rapid) * (toolOn('dbl') ? (TUNE.DBL || 2) : 1);
   const autoRate = d => (d.paws ? d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) / pawSecs(d) : 0);
+  const rewardBasis = () => {
+    const multiplier = speed(), letters = S.desks.map((d, i) => !d.owned || !d.paws ? 0 :
+      multiplier * deskMk(d) / (PAW_BASE[i] * .85 ** d.up.fing * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) *
+      d.crew.reduce((n, t) => n + typistSpeed(t) * (t.trait === 'lucky' ? 1 + .05 * trMul(t) : 1), 0));
+    return { speed:multiplier, desk:S.desks.reduce((n, d, i) => d.owned ? i : n, 0), letters, bananas:(royBase() + divBase()) * multiplier };
+  };
+  let layerOffer = null;
+  const layerChoices = new Set();
+  function layerChoiceResult(kind, result) {
+    if (layers?.enabled) { if (result.ok) layerChoices.delete(kind); else layerChoices.add(kind); }
+    return result;
+  }
+  function startingRoom(room) {
+    const d = room.desks[0];
+    if (room.legacy.ups.crew) { room.hold = true; d.paws = 2; for (let n=0;n<2;n++) d.crew.push(newTypist(room)); }
+    const skyNow = sky(), multiplier = speed();
+    const rate = multiplier / PAW_BASE[0] / (skyNow.wx === 3 ? 2 : 1) * d.crew.reduce((sum,t) => {
+      const m = trMul(t);
+      let factor = (1 + .1 * (room.legacy.ups.speed || 0)) * (room.chDone.vowel ? 1.05 : 1) * (room.chDone.hands ? 1.1 : 1) * (1 + t.talent / 100);
+      if (t.trait === 'speedy') factor *= 1 + .25 * m;
+      if (t.trait === 'owl') factor *= skyNow.night ? 1 + .4 * m : .9;
+      if (t.trait === 'rainy') { if (skyNow.wx >= 1) factor *= 1 + .3 * m; if (skyNow.wx === 3) factor *= 2; }
+      if (t.trait === 'lucky') factor *= 1 + .05 * m;
+      return sum + factor * (1 + (extensions.get('minigames')?.automaticTypingBonus?.() || 0)) * (worksPlay?.factor(room) || 1);
+    },0);
+    return {room, basis:{desk:0, letters:[rate], speed:multiplier}, seed:cash([0,1000,10000,100000][room.legacy.ups.seed || 0])};
+  }
+  function layerPreview() {
+    if (!archiveSettle()) throw Error('Archive income is waiting to save.');
+    const quote = layers.quote(S), start = startingRoom(layers.project(S, fresh()));
+    const reward = S.rewards.claims['layer:imprint:first'] ? null : writer.layerReward(start.basis);
+    return layerOffer = {...start, quote, legacy:JSON.stringify(S.legacy), reward};
+  }
+  function layerRuntimeReset(tab = 'imprints') {
+    IMI.pickups?.clear(); goldEnd?.(); holding = false; royAcc = coinBank = 0;
+    combo.n = combo.t = 0; keeperT = []; freqCache = null; lastBananas = bananas.get();
+    rt.forEach(r => { r.timers = []; r.sheet = ''; r.col = 0; r.n = 0; });
+    Object.assign(ui, {hot:DESKS.map(() => false), readySet:null, pulled:null, fresh:null, dropped:{}, mcd:{}, tab, nextCh:''});
+    Object.keys(buffs).forEach(k => { buffs[k] = 0; }); typists = []; dropCaches(); bankV++;
+    // Reset runtime cadences only. Reward initialization must not reinterpret the new local Printing.
+    for (const id of ['automation','minigames']) extensions.get(id)?.reset?.({kind:'imprint'}, extensionAPI);
+    buildStage(); mark();
+  }
   const canMake = (d, w) => { const c = lcount(w); for (const k in c) if ((d.letters[k] || 0) < c[k]) return false; return true; };
   const makeCopies = (d, w) => { const c = lcount(w); let n = Infinity; for (const k in c) n = Math.min(n, Math.floor((d.letters[k] || 0) / c[k])); return n; };
   const pick = map => {
@@ -407,13 +532,15 @@
     return Object.keys(map)[0];
   };
   const addLetter = (d, ch) => { d.letters[ch] = (d.letters[ch] || 0) + 1; d.tray.push(ch); if (d.tray.length > 80) d.tray.shift(); };
+  // Only actual press output enters this route. Generic grants remain ordinary.
+  const generatedLetter = (d, i, ch) => { if (!activeWork()?.route(S,i,ch,1)) addLetter(d,ch); };
   const takeLetter = (d, ch) => {
     if (!d.letters[ch]) return;
     if (--d.letters[ch] <= 0) delete d.letters[ch];
     const i = d.tray.lastIndexOf(ch); if (i >= 0) d.tray.splice(i, 1);
   };
   /* one goal for every keeper; the argument is kept so call sites read the same */
-  const focusRecipe = () => (S.focus && !S.written[S.focus] ? RBY[S.focus] || null : null);
+  const focusRecipe = () => folioGoal() || (S.focus && titleAvailable(RBY[S.focus] || {}) && !S.written[S.focus] ? RBY[S.focus] || null : null);
   /* auto focus picks the best return for the crews' time: missing letters, weighted by how slowly that desk's typists work, per banana of rights */
   function autoEffort(r) {
     let t = 0;
@@ -421,15 +548,44 @@
     return t;
   }
   function pickAutoFocus() {
+    if (folioGoal()) return;
+    if (challengeActive()?.phase === 'producing') return;
+    if (pg?.active(pgContext)) {
+      const was = S.focus, next = pg.resolve(pgContext);
+      S.focus = next?.id || null; S.autoFocus = !S.meta.productionGoal.manual;
+      if (S.focus !== was) IMI.emit('focus', { id: S.focus });
+      return;
+    }
     if (!S.autoFocus || focusRecipe()) return;
     let best = null, bm = Infinity;
     for (const r of RECIPES) {
-      if (S.written[r.id] || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
+      if (!titleAvailable(r) || S.written[r.id] || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
       const miss = autoEffort(r) / r.pay;
       if (miss < bm || (miss === bm && best && r.pay < best.pay)) { best = r; bm = miss; }
     }
     const was = S.focus; S.focus = best ? best.id : null; if (S.focus !== was) IMI.emit('focus', { id: S.focus });
   }
+  // The policy gets recipe facts and one bounded config writer, never an unrestricted state setter.
+  const pgContext = pg ? {
+    state: () => S, recipes: RECIPES, byId: RBY, available:titleAvailable, inPlay, bandOf, stock, effort: autoEffort,
+    accessible: b => S.desks[b].owned && !((chal('haiku') || masteryActive()) && b > 1),
+    ready: r => canWrite(r), mark: () => mark(), refresh: () => pickAutoFocus(),
+    missing: () => DESKS.map((d, i) => ({ name: d.name, words: Object.entries(focusRecipe()?.need || {}).reduce((n, [w, count]) => n + (bandOf(w.length) === i ? Math.max(0, count - stock(w)) : 0), 0) })).filter(x => x.words),
+    commit: commitProductionGoal
+  } : null;
+  function commitProductionGoal(expected, next) {
+    if (!pg || window.VaultSaveGate?.blocked || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ok: false, error: 'Save owner is unavailable' };
+    if (challengeActive() && !challengeHandover()) return {ok:false,error:'A11 handover waiting to save'};
+    const current = S.meta.productionGoal;
+    if ((current === undefined ? null : JSON.stringify(current)) !== expected || current !== undefined && !pg.valid(current) || !pg.valid(next)) return { ok: false, error: 'Production goal changed or is unsupported' };
+    const productionGoal = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+    const focus = productionGoal.enabled ? productionGoal.manual : null, autoFocus = !focus;
+    const result = layerChoiceResult('productionGoal', Economy.saveStateAcknowledged({ ...S, meta: { ...S.meta, productionGoal }, focus, autoFocus, lastSeen }));
+    if (result.ok) { S.meta.productionGoal = productionGoal; S.focus = focus; S.autoFocus = autoFocus; S.lastSeen = lastSeen; mark(); }
+    return result;
+  }
+  const goalWord = w => folioGoal() ? !!folioGoal().need[w] && stock(w) < folioGoal().need[w] : !pg || pg.wants(pgContext, w);
+  const goalTarget = (d, w) => folioGoal() ? folioGoal().need[w] || 0 : pg?.active(pgContext) ? focusRecipe()?.need[w] || 0 : target(d, w);
   const mark = () => { dirty = true; dropCaches(); };
   const vib = p => { try { if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; navigator.vibrate && navigator.vibrate(p); } catch { /* unsupported */ } };
   /* progress(r) is how many of a title's words are banked. It is asked for every title (1,200 of them) on each redraw of the Titles list, but it only
@@ -499,32 +655,34 @@
   function roll(d, i, auto, ty) {
     const up = d.up, k = d.keeper; let ch = null;
     if (auto && focusRecipe(d) && rand() < Math.min(.98, UPV.practice[up.practice] + (ty && ty.trait === 'wordsmith' ? .15 * trMul(ty) : 0))) ch = pick(focusNeeds(d, i).missing);
-    if (!ch && auto && k.owned && up.stock && rand() < UPV.stock[up.stock]) ch = pick(completers(d, i, w => target(d, w) > 0 && stock(w) < target(d, w)));
-    if (!ch && up.ink && rand() < UPV.ink[up.ink]) ch = pick(completers(d, i, w => !stock(w)));
+    if (!ch && auto && k.owned && up.stock && rand() < UPV.stock[up.stock]) ch = pick(completers(d, i, w => goalWord(w) && goalTarget(d, w) > 0 && stock(w) < goalTarget(d, w)));
+    if (!ch && up.ink && rand() < UPV.ink[up.ink]) ch = pick(completers(d, i, w => (!auto || goalWord(w)) && !stock(w)));
     if (!ch) {
-      const last = rt[i].sheet.slice(-1).toUpperCase();
+      const last = rt[i].sheet.slice(-1).toUpperCase(), frequency = freqNow();
       const lastCons = last && /[A-Z]/.test(last) && !VOWELS.includes(last);
-      if (lastCons && !chal('vowel') && (up.vowel || (ty && ty.trait === 'vowel') || museOn('dick')) && rand() < Math.max(UPV.vowel[up.vowel], ty && ty.trait === 'vowel' ? Math.min(.9, .3 * trMul(ty)) : 0, museOn('dick') ? .3 : 0)) ch = pick(Object.fromEntries([...VOWELS].map(v => [v, FREQ[v]])));
-      else ch = pick(freqNow());
+      if (lastCons && !chal('vowel') && (up.vowel || (ty && ty.trait === 'vowel') || museOn('dick')) && rand() < Math.max(UPV.vowel[up.vowel], ty && ty.trait === 'vowel' ? Math.min(.9, .3 * trMul(ty)) : 0, museOn('dick') ? .3 : 0)) ch = pick(Object.fromEntries([...VOWELS].map(v => [v, frequency[v]])));
+      else ch = pick(frequency);
     }
     return ch;
   }
   function press(i, auto, p) {
+    if (!progressing()) return;
     const d = S.desks[i]; if (!d.owned) return;
     const ty = auto && p != null ? d.crew[p] : null;
     if (!auto && chal('hands')) { handsNag(); return; }
     if (!auto && i === S.sel) comboHit();
     const ch = roll(d, i, auto, ty);
-    addLetter(d, ch);
-    if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) addLetter(d, roll(d, i, true, ty)); }
+    generatedLetter(d, i, ch);
+    if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) generatedLetter(d, i, roll(d, i, true, ty)); }
     const st = S.stats; st.letters++; if (!auto) { st.manual++; introProgress(); IMI.emit('tap', { letters: st.letters }); } st.byLetter[ch] = (st.byLetter[ch] || 0) + 1;
     if (stormy()) st.storm++; if (isNight()) st.night++;
-    if (!auto && buffOn('golden')) addLetter(d, roll(d, i, false));
+    if (!auto && buffOn('golden')) generatedLetter(d, i, roll(d, i, false));
     if (auto && d.up.ribbon && d.keeper.owned && rand() < UPV.ribbon[d.up.ribbon]) {
       const { required, missing } = focusNeeds(d, i), want = pick(missing);
       const spare = Object.keys(d.letters).filter(l => d.letters[l] > (required[l] || 0));
       if (want && spare.length) { takeLetter(d, spare[Math.floor(rand() * spare.length)]); addLetter(d, want); }
     }
+    worksAdvance();
     rt[i].sheet = (rt[i].sheet + ch).slice(-120); rt[i].n++;
     if (i === S.sel) animatePress(ch, auto, rt[i].n, p);
     mark();
@@ -538,8 +696,26 @@
     { n: 100, name: 'BANANA BONUS', desc: `${fmt(cash(50))} bananas per title written, plus ${fmt(cash(50))}` },
     { n: 200, name: 'MONKEY MANIA', desc: '30s of Frenzy and Golden Keys, plus 10 letters' }
   ];
+  const HIGH_MILES = new URLSearchParams(location.search).get('ui01') === '1' ? [
+    [500, 'LONG RUN'], [1000, 'MARATHON'], [2000, 'IRON PAWS'],
+    [3000, 'UNBROKEN'], [4000, 'LEGEND'], [5000, 'TYPING MYTH']
+  ].map(([n, name]) => ({ n, name, desc: `A streak of ${n} taps!`, recognition: true })) : [];
   const combo = { n: 0, t: 0, timer: 0 };
+  let milestoneNotice, noticeTimer, noticeItems = [];
+  function showMilestone(m) {
+    if (!milestoneNotice) {
+      milestoneNotice = document.createElement('div'); milestoneNotice.className = 'o-milestone-notice';
+      milestoneNotice.setAttribute('role', 'status'); root.appendChild(milestoneNotice);
+    }
+    if (!noticeItems.some(x => x.n === m.n) && noticeItems.length < MILES.length + HIGH_MILES.length) noticeItems.push(m);
+    const visible = noticeItems.slice(0, 2), rest = noticeItems.slice(2);
+    milestoneNotice.innerHTML = visible.map(x => `<b>${esc(x.name)}!</b><span>${esc(x.desc)}</span>`).join('') +
+      (rest.length ? `<details><summary>${rest.length} more streak milestones</summary>${rest.map(x => `<b>${esc(x.name)}!</b><span>${esc(x.desc)}</span>`).join('')}</details>` : '');
+    milestoneNotice.hidden = false;
+    clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { milestoneNotice.hidden = true; noticeItems = []; }, 3000);
+  }
   function award(m, cx, cy) {
+    if (m.recognition) { showMilestone(m); root.dataset.streak = m.n; mark(); return; }
     const d = cur(), now = performance.now();
     if (now < (ui.mcd[m.n] || 0)) { floatText('cooling down', cx, cy + 40, '#cfd8dc'); return; }
     ui.mcd[m.n] = now + 45000;
@@ -548,7 +724,7 @@
     if (m.n === 50) buffs.golden = now + 12000;
     if (m.n === 100) bananas.earn(cash(50) * (1 + Object.keys(S.written).length), [cx, cy]);
     if (m.n === 200) { buffs.frenzy = now + 30000; buffs.golden = now + 30000; for (let k = 0; k < 10; k++) addLetter(d, roll(d, S.sel, true)); }
-    floatText(m.name + '!', cx, cy, '#ffd23a', true); floatText(m.desc, cx, cy + 46, '#fff6d6');
+    showMilestone(m);
     IMI.burst(cx, cy, ['spark', 'banana', 'star', 'leaf'], 12 + Math.min(14, m.n / 8)); shock(cx, cy, m.n >= 100 ? '#ff5d73' : '#ffd23a', m.n >= 50); if (m.n >= 50) flash('#fff08c'); if (m.n >= 100) vignette(m.n >= 200 ? '#ff5d73' : '#ffd23a'); shake(m.n >= 100 ? 2 : 1); IMI.sfx.ding(); vib([12, 30, 12]);
     cheer(m.n >= 100 ? 2600 : 1400, m.n >= 100 ? 'WOW!' : 'YAY!');
     IMI.emit('milestone', { n: m.n, x: cx, y: cy });
@@ -560,7 +736,7 @@
     vib(6);
     if (!fx) return; const el = fx.combo, stage = fx.stage;
     const heat = combo.n >= 50 ? 3 : combo.n >= 20 ? 2 : combo.n >= 10 ? 1 : 0;
-    if (stage.dataset.heat !== String(heat)) stage.dataset.heat = heat;
+    if (root.dataset.heat !== String(heat)) root.dataset.heat = heat;
     if (combo.n < 5) { if (el.className !== 'o-combo') el.className = 'o-combo'; return; }
     IMI.sfx.combo && IMI.sfx.combo(combo.n);
     fx.comboN.textContent = `x${combo.n}`; const cls = 'o-combo show' + (combo.n >= 50 ? ' hot' : combo.n >= 20 ? ' warm' : ''); if (el.className !== cls) el.className = cls;
@@ -571,9 +747,9 @@
     }
     if (heat) ember(heat);
     IMI.emit('combo', { n: combo.n, heat });
-    const m = MILES.find(x => x.n === combo.n);
+    const m = MILES.find(x => x.n === combo.n) || HIGH_MILES.find(x => x.n === combo.n);
     if (m) { const b = stage.getBoundingClientRect(); award(m, b.left + b.width / 2, b.top + 150); }
-    clearTimeout(combo.timer); combo.timer = setTimeout(() => { el.className = 'o-combo'; stage.dataset.heat = 0; combo.n = 0; if (fx && fx.meterAnim) fx.meterAnim.cancel(); mark(); }, 900);
+    clearTimeout(combo.timer); combo.timer = setTimeout(() => { el.className = 'o-combo'; root.dataset.heat = 0; delete root.dataset.streak; combo.n = 0; if (fx && fx.meterAnim) fx.meterAnim.cancel(); mark(); }, 900);
     mark();
   }
   /* a hot streak throws sparks up off the keyboard */
@@ -697,9 +873,142 @@
   function newOffers() { const bands = []; for (let k = 0; k < 3; k++) bands.push(pickPitchBand(bands)); return bands.map(b => genPitch(b)); }
   const pitchActive = () => RECIPES.filter(r => r.gen && !S.written[r.id]).length;
   const repitchCost = () => Math.max(cash(25), roundMoney(royBase() * 20));
+  function commissionPublished(p,el) {
+    ui.fresh = p.id; setTimeout(() => { if (ui.fresh === p.id) ui.fresh = null; mark(); }, 2200);
+    pickAutoFocus();
+    const at = el ? IMI.centerOf(el) : null; if (at) floatText('+1 COMMISSION', at[0], at[1] - 20, '#ffd23a', true);
+    IMI.say(`Commissioned “${p.title}”. Find it under Pitches > Your commissions.`);
+    IMI.sfx.ding(); logIt(`Commissioned a new title: “${p.title}”.`); newsPush(`Agents confirm a new pitch: “${p.title}”. Monkeys hurry to the typewriters.`); mark(); save();
+    setTimeout(() => { const c = document.querySelector('#o-press .o-book.fresh'); if (c) c.scrollIntoView({ behavior: IMI.reduceMotion ? 'auto' : 'smooth', block: 'nearest' }); }, 60);
+  }
+  const pitchPrototype = () => gardenPrototype();
+  const pitchCopy = v => JSON.parse(JSON.stringify(v));
+  const pitchSame = (a,b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  const pitchInteger = n => Number.isSafeInteger(n) && n >= 0;
+  const pitchRecord = p => !!p && typeof p === 'object' && !Array.isArray(p) && typeof p.id === 'string' && /^p-[a-z0-9]+$/.test(p.id) &&
+    typeof p.title === 'string' && !!p.title && typeof p.text === 'string' && !!p.text && pitchInteger(p.pay) && p.pay > 0 && p.pay % Economy.scale === 0;
+  const pitchSaleShape = t => !!t && typeof t === 'object' && !Array.isArray(t) && t.version === 1 && pitchRecord(t.recipe) &&
+    ['printing','imprint','previous','sequence','balance','pay','earned'].every(k => pitchInteger(t[k])) && t.pay > 0 && t.pay % Economy.scale === 0 &&
+    t.sequence === t.previous + 1 && typeof t.id === 'string' && layers.epochValid(t) && t.id === layers.identityKey('pitch-sale',[t.imprint,t.printing,t.recipe.id],t) &&
+    ['manual','publisher'].includes(t.origin) && Number.isFinite(t.mult) && t.mult >= .5 && t.mult <= 2 &&
+    !!t.need && typeof t.need === 'object' && !Array.isArray(t.need) && !!t.bank && typeof t.bank === 'object' && !Array.isArray(t.bank) &&
+    Object.keys(t.need).length > 0 && Object.entries(t.need).every(([w,n]) => /^[A-Z]+$/.test(w) && pitchInteger(n) && n > 0 && pitchInteger(t.bank[w]) && t.bank[w] >= n) &&
+    Array.isArray(t.stats) && t.stats.length === 3 && pitchInteger(t.stats[0]) && pitchInteger(t.stats[1]) && Number.isFinite(t.stats[2]) && t.stats[2] >= 0 &&
+    (t.previous === 0 ? t.marker === null : !!t.marker && t.marker.sequence === t.previous && typeof t.marker.id === 'string' && pitchInteger(t.marker.amount) && t.marker.amount > 0);
+  function validPitch(p) {
+    return p === undefined || !!p && typeof p === 'object' && !Array.isArray(p) && p.version === 1 &&
+      (p.enabled === undefined || typeof p.enabled === 'boolean') &&
+      (p.manual === undefined || !!p.manual && typeof p.manual === 'object' && !Array.isArray(p.manual) &&
+        (p.manual.complete === undefined || typeof p.manual.complete === 'boolean') &&
+        (p.manual.pending == null || layers.epochValid(p.manual.pending) && pitchRecord(p.manual.pending.recipe) && ['printing','imprint'].every(k => pitchInteger(p.manual.pending[k])))) &&
+      (p.sale == null || pitchSaleShape(p.sale));
+  }
+  function trackedPitch(s = S) {
+    const p = s.meta.automation?.pitch, m = p?.manual, record = m?.pending;
+    return validPitch(p) && !m?.complete && !!record && layers.epochMatches(s,record) && record.printing === s.printing && record.imprint === layers.identity(s) &&
+      !s.written[record.recipe.id] && s.pitches.filter(r => r.id === record.recipe.id).length === 1 && s.pitches.some(r => pitchSame(r,record.recipe));
+  }
+  function clearPitchPending(s) {
+    const p = s.meta.automation?.pitch;
+    if (pitchPrototype() && validPitch(p) && p?.manual?.pending && !p.sale) s.meta = {...s.meta, automation:{...s.meta.automation,
+      pitch:{...p, manual:{...p.manual, pending:null}}}};
+  }
+  let commissionPending = null, commissionNotice = '';
+  function pitchSelection() {
+    const p = S.meta.productionGoal;
+    if (pg && p !== undefined && !pg.valid(p)) return -1;
+    if (pg?.active(pgContext) && (p.manual || !['all','pitches'].includes(p.collection)) ||
+        S.focus && !S.autoFocus && !S.written[S.focus] || S.meta.folio?.working || S.meta.folio !== undefined && !folio.valid(S.meta.folio)) return -1;
+    return (S.offers || []).map((p,i) => ({p,i,r:pitchRecord(p) ? buildRecipe({...p,gen:true}) : null})).filter(({p,r}) =>
+      r && !S.written[p.id] && !RBY[p.id] && !S.pitches.some(x => x.id === p.id) && S.offers.filter(x => x.id === p.id).length === 1 &&
+      Object.keys(r.need).every(w => S.desks[bandOf(w.length)]?.owned && !((chal('haiku') || masteryActive()) && bandOf(w.length) > 1)) &&
+      marketMult(r.band) >= 1 && (!pg?.active(pgContext) || r.band === S.meta.productionGoal.band))
+      .sort((a,b) => a.r.band - b.r.band || a.i - b.i)[0]?.i ?? -1;
+  }
+  function commission(i, origin = 'manual', el, retry = null) {
+    const helper = extensions.get('automation'), refuse = error => { commissionPending = null; layerChoices.delete('pitch'); commissionNotice = error; mark(); return {ok:false,retryable:false,error}; };
+    if (!challengeCommissionAllowed() || !pitchPrototype() || !writer?.owns() || !extensionAPI.automationAllowed() || !helper.validConfig(S.meta.automation) ||
+        !['manual','auto'].includes(origin) || !Number.isInteger(i) || pitchActive() >= PITCH_MAX) return refuse('Commission owner, save or capacity unavailable.');
+    try { layers.current(S); } catch { return refuse('Unsupported Imprint save.'); }
+    if (commissionPending && commissionPending !== retry) return {ok:false,error:'Retry the waiting commission first.'};
+    const p = S.offers?.[i];
+    if (!pitchRecord(p) || RBY[p.id] || S.written[p.id] || S.pitches.some(x => x.id === p.id) || S.offers.filter(x => x.id === p.id).length !== 1) return refuse('Offer absent, duplicated or already registered.');
+    if (origin === 'auto' && (!helper.pitchReady(!!retry) || pitchSelection() !== i)) return refuse('Auto-pitch is paused or no current offer qualifies.');
+    const basis = JSON.stringify([S.offers,S.pitches,S.stats.pitched ?? 0,S.meta.automation,S.printing,layers.identity(S),layers.epochFields(S)]);
+    if (retry && (retry.state !== S || retry.basis !== basis)) return refuse('Commission changed. Choose again.');
+    const request = retry || {state:S,basis,i,origin,replacement:genPitch(buildRecipe(p).band)};
+    if (!pitchRecord(request.replacement) || RBY[request.replacement.id] || S.offers.some(x => x.id === request.replacement.id) || S.pitches.some(x => x.id === request.replacement.id)) return refuse('Replacement identity unavailable.');
+    const candidate = {...S, offers:S.offers.slice(), pitches:[...S.pitches,pitchCopy(p)], stats:{...S.stats,pitched:(S.stats.pitched || 0)+1}, meta:pitchCopy(S.meta), lastSeen:Date.now()};
+    candidate.offers[i] = pitchCopy(request.replacement);
+    if (origin === 'manual' && !candidate.meta.automation?.pitch?.manual?.complete && !trackedPitch()) {
+      const m = candidate.meta.automation || {version:1}, cfg = m.pitch || {version:1,enabled:false};
+      candidate.meta.automation = {...m,pitch:{...cfg,manual:{...cfg.manual,complete:false,pending:{...layers.epochFields(S),recipe:pitchCopy(p),printing:S.printing,imprint:layers.identity(S)}}}};
+    }
+    if (!writer.guard(candidate)) return refuse('Commission save guard refused.');
+    const result = layerChoiceResult('pitch',Economy.saveStateAcknowledged(candidate));
+    if (!result.ok) { commissionPending = request; commissionNotice = 'Commission save failed. Retry keeps the same replacement.'; mark(); return result; }
+    S.offers = candidate.offers; S.pitches = candidate.pitches; S.stats = candidate.stats; S.meta = candidate.meta; S.lastSeen = candidate.lastSeen;
+    registerPitch(p); commissionPending = null; commissionNotice = 'Commission saved.';
+    commissionPublished(p,el); return result;
+  }
+  function pitchSaleValidate() {
+    const p = S.meta.automation?.pitch, t = p?.sale, record = p?.manual?.pending;
+    if (!challengeSaleAllowed(RBY[t?.recipe?.id] || {}) || !pitchPrototype() || !validPitch(p) || !t || !trackedPitch() || !pitchSame(t.recipe,record.recipe) ||
+        !layers.epochMatches(S,t) || t.printing !== S.printing || t.imprint !== layers.identity(S) ||
+        t.pay !== salePay(RBY[t.recipe.id],t.mult) || !pitchSame([RBY[t.recipe.id]?.title,RBY[t.recipe.id]?.text],[t.recipe.title,t.recipe.text]) ||
+        !pitchSame(t.need,RBY[t.recipe.id]?.need) || !canWrite(RBY[t.recipe.id]) ||
+        !pitchSame(t.bank,Object.fromEntries(Object.keys(t.need).map(w => [w,S.bank[w]]))) ||
+        !pitchSame(t.stats,[S.stats.lump,S.stats.pitchSold || 0,S.stats.bestMult || 0]) || t.earned !== S.run.earned) throw Error('Unsupported tracked pitch sale. Save preserved.');
+    const marker = bananas.acknowledgement(), paid = marker?.id === t.id && marker.sequence === t.sequence && marker.amount === t.pay;
+    if (!paid && !pitchSame(marker,t.marker) || bananas.get() !== t.balance + (paid ? t.pay : 0)) throw Error('Tracked pitch wallet baseline mismatch. Save preserved.');
+    return t;
+  }
+  function pitchSaleCommit(request) {
+    if (!pitchPrototype() || !writer?.owns() || !writer.transacting() || writer.localDisposition()) return {ok:false,refused:true,error:'Tracked sale owner unavailable.'};
+    try {
+      let candidate, t;
+      if (request.action === 'prepare') {
+        const r = RBY[request.id], cfg = S.meta.automation?.pitch;
+        if (!challengeSaleAllowed(r) || !trackedPitch() || cfg.sale || r?.id !== cfg.manual.pending.recipe.id || !canWrite(r) || document.hidden || IMI.screen() !== 'game' ||
+            (chal('patientpress') || masteryActive()) && request.auto || request.auto && (S.focus === r.id && !S.autoFocus || !(!pg || pg.allowsSale(pgContext,r)))) throw Error('Tracked title is unavailable for visible sale.');
+        pitchSampleToken = printingHelper()?.printSampleToken(true);
+        const marker = bananas.acknowledgement(), previous = marker?.sequence || 0, mult = marketMult(r.band);
+        t = {version:1,...layers.epochFields(S),id:layers.identityKey('pitch-sale',[layers.identity(S),S.printing,r.id],layers.epochFields(S)), recipe:pitchCopy(cfg.manual.pending.recipe), printing:S.printing,imprint:layers.identity(S),
+          origin:request.auto ? 'publisher' : 'manual', previous,sequence:previous+1,marker,balance:bananas.get(),mult,pay:salePay(r,mult),need:pitchCopy(r.need),
+          bank:Object.fromEntries(Object.keys(r.need).map(w => [w,S.bank[w]])),stats:[S.stats.lump,S.stats.pitchSold || 0,S.stats.bestMult || 0],earned:S.run.earned};
+        if (!pitchSaleShape(t) || !pitchInteger(t.balance+t.pay) || !pitchInteger(t.stats[0]+t.pay) || !pitchInteger(t.stats[1]+1) || !pitchInteger(t.earned+t.pay)) throw Error('Tracked sale exceeds safe wallet limits.');
+        candidate = {...S,meta:{...S.meta,automation:{...S.meta.automation,pitch:{...cfg,sale:t}}}};
+        challengeBeforeSale(candidate,r);
+      } else if (request.action === 'finish') {
+        t = pitchSaleValidate();
+        const marker = bananas.acknowledgement();
+        if (marker?.id !== t.id || marker.sequence !== t.sequence || marker.amount !== t.pay) throw Error('Tracked sale credit is not acknowledged.');
+        candidate = pitchCopy(S);
+        for (const w in t.need) { candidate.bank[w] -= t.need[w]; if (candidate.bank[w] <= 0) delete candidate.bank[w]; }
+        candidate.written[t.recipe.id] = true; challengeAfterSale(candidate); candidate.stats.lump += t.pay; candidate.stats.pitchSold = (candidate.stats.pitchSold || 0)+1;
+        candidate.stats.bestMult = Math.max(candidate.stats.bestMult || 0,t.mult); candidate.run.earned += t.pay;
+        const cfg = candidate.meta.automation.pitch;
+        cfg.manual = {...cfg.manual,complete:true,pending:null,receipt:{id:t.id,sequence:t.sequence,amount:t.pay}}; cfg.sale = null;
+        candidate.rewards.walletHead = {...cfg.manual.receipt,origin:'pitch-sale'};
+        pg?.clearManual(candidate,t.recipe.id); if (candidate.focus === t.recipe.id) candidate.focus = null;
+      } else throw Error('Unknown tracked sale command.');
+      candidate.lastSeen = Date.now();
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (result.ok) {
+        if (request.action === 'prepare') { S.meta = candidate.meta; S.challenge = candidate.challenge; }
+        else {
+          for (const k of ['bank','written','stats','run','meta','rewards','focus','autoFocus','challenge']) S[k] = candidate[k];
+          printingHelper()?.printPosting(t.pay,pitchSampleToken); pitchSampleToken = null;
+          bankV++; dropCaches(); introProgress(); pickAutoFocus(); salePublished(RBY[t.recipe.id],t.pay,t.mult,null,{auto:t.origin === 'publisher'});
+        }
+        S.lastSeen = candidate.lastSeen; mark();
+      }
+      return result;
+    } catch(error) { return {ok:false,refused:true,error:error.message}; }
+  }
   function pitchHTML() {
     if (!S.offers || !S.offers.length) S.offers = newOffers();
-    const act = pitchActive(), full = act >= PITCH_MAX, cost = repitchCost();
+    const act = pitchActive(), full = act >= PITCH_MAX || !challengeCommissionAllowed(), cost = repitchCost();
     const mine = RECIPES.filter(r => r.gen && !S.written[r.id]);
     return `<div class="o-card o-pitch"><p class="o-dim">Agents pitch endless parody titles built from words your typewriters can type. Commission one, then bank its words and write it to sell the rights. Each pitched title you sell makes the next ones pay 2% more.</p></div>
       <div class="o-card o-pitch"><div class="o-row"><h3>Your commissions</h3><span class="o-dim">${act}/${PITCH_MAX} commissions open</span></div>
@@ -753,7 +1062,7 @@
   const divUnlocked = D => soldCount() >= D.need;
   const divUnit = D => D.base * (TUNE.DIV_BASE || 0.35) * D.mult();
   const divBase = () => DIVS.reduce((a, D) => a + (divCount(D) ? divUnit(D) * divFactor(D) : 0), 0) * (museOn('twain') ? 1.2 : 1) * legacyMult();
-  const passive = () => (buffOn('rush') ? 7 : 1) * (buffOn('critic') ? .5 : 1);
+  const passive = () => (buffOn('rush') || (writer && S.rewards.activeGold?.remainingGameMs > 0) ? 7 : 1) * (buffOn('critic') ? .5 : 1);
   const divRate = () => divBase() * passive();
   let premiereClock = 0;
   function divPlan(D, want) {
@@ -761,23 +1070,114 @@
     while (n < want && n < room) { const c = D.cost * (TUNE.DIV_COST || 1) * Math.pow(1.15, own + n); if (want === Infinity && n > 0 && cost + c > have) break; cost += c; n++; }
     return { n, cost: roundMoney(cost) };
   }
+  // A8 has one fixed command for manual and automatic catalogue releases.
+  const mediaPrototype = () => gardenPrototype();
+  const mediaSetting = () => ({version:1,enabled:false,manual:{complete:false},sequence:0,pending:null,...S.meta.automation?.media});
+  const mediaObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  function mediaShape(t) {
+    return mediaObject(t) && t.version === 1 && ['manual','auto'].includes(t.origin) &&
+      ['printing','imprint','sequence','before','quantity','cost','balance','after'].every(k => pitchInteger(t[k])) &&
+      t.sequence > 0 && t.quantity > 0 && t.cost > 0 && t.cost % Economy.scale === 0 && t.balance >= t.cost &&
+      t.after === t.balance - t.cost && t.balance - t.after === t.cost && DIVS.some(d => d.id === t.division) &&
+      layers.epochValid(t) && t.id === layers.identityKey('media',[t.imprint,t.printing,t.sequence],t) && typeof t.config === 'string' &&
+      Array.isArray(t.catalogue) && t.catalogue.length > 0 && t.catalogue.every(x => Array.isArray(x) && x.length === 2 && typeof x[0] === 'string' && Number.isFinite(x[1]) && x[1] > 0) &&
+      mediaObject(t.wallet) && t.wallet.score === t.balance && t.wallet.economyVersion >= 1;
+  }
+  function validMedia(m) {
+    return m === undefined || mediaObject(m) && m.version === 1 &&
+      (m.enabled === undefined || typeof m.enabled === 'boolean') &&
+      (m.manual === undefined || mediaObject(m.manual) && (m.manual.complete === undefined || typeof m.manual.complete === 'boolean')) &&
+      (m.sequence === undefined || pitchInteger(m.sequence)) && (m.pending == null || mediaShape(m.pending));
+  }
+  const mediaConfig = cfg => JSON.stringify({...cfg,pending:null});
+  const mediaCatalogue = D => divOrder[D.id]?.map(x => [x.title,x.words]);
+  function mediaSelection() {
+    loadArchive();
+    return DIVS.map((D,index) => ({D,index,before:divCount(D),...divPlan(D,1)})).filter(q =>
+      divOrder[q.D.id]?.length && divUnlocked(q.D) && q.n === 1 && pitchInteger(q.cost) && q.cost > 0 && q.cost <= bananas.get() && q.cost <= bananas.get() * .05)
+      .sort((a,b) => a.before - b.before || a.index - b.index)[0];
+  }
+  function mediaPlan(id, quantity, origin) {
+    const helper = extensions.get('automation'), cfg = mediaSetting(), D = DIVS.find(d => d.id === id);
+    if (chal('paperonly') || !mediaPrototype() || !writer?.owns() || !extensionAPI.automationAllowed() || !helper.validConfig(S.meta.automation) || cfg.pending ||
+        !S.intro.done || document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])') ||
+        !D || !divUnlocked(D) || !['manual','auto'].includes(origin)) throw Error('Media release is unavailable during this activity or save.');
+    const imprint = layers.current(S).count;
+    loadArchive();
+    if (!divOrder[D.id]?.length) throw Error('Waiting for the media catalogue to load. Release again when ready.');
+    if (origin === 'auto' && (!helper.mediaReady() || mediaSelection()?.D.id !== id || quantity !== 1)) throw Error('No automatic release qualifies.');
+    const plan = divPlan(D,quantity), balance = bananas.get();
+    const t = {version:1,...layers.epochFields(S),id:layers.identityKey('media',[imprint,S.printing,cfg.sequence+1],layers.epochFields(S)),origin,division:id,printing:S.printing,imprint,
+      sequence:cfg.sequence+1,before:divCount(D),quantity:plan.n,cost:plan.cost,balance,after:balance-plan.cost,
+      config:mediaConfig(cfg),catalogue:mediaCatalogue(D),wallet:JSON.parse(localStorage.getItem('imi-score'))};
+    // The baseline flush below acknowledges current income before any intent is stored.
+    t.wallet.score = balance;
+    if (!mediaShape(t) || origin === 'auto' && t.cost > balance * .05) throw Error('Media quote is unaffordable or cannot be represented safely.');
+    return t;
+  }
+  function mediaValidate(t = S.meta.automation?.media?.pending, prepared = true) {
+    const cfg = mediaSetting(), D = DIVS.find(d => d.id === t?.division);
+    if (chal('paperonly') || !mediaPrototype() || !validMedia(S.meta.automation?.media) || !mediaShape(t) ||
+        !extensions.get('automation').validConfig(S.meta.automation) || !layers.epochMatches(S,t) || t.printing !== S.printing || t.imprint !== layers.current(S).count ||
+        t.sequence !== cfg.sequence + 1 || t.config !== mediaConfig(cfg) || divCount(D) !== t.before || !divUnlocked(D) ||
+        prepared && !pitchSame(t,cfg.pending) || !prepared && cfg.pending) throw Error('Unsupported or stale media release. Save preserved.');
+    loadArchive();
+    if (!divOrder[D.id]) throw Error('Waiting for the frozen media catalogue. Retry when loaded.');
+    const q = divPlan(D,t.quantity);
+    if (!pitchSame(t.catalogue,mediaCatalogue(D)) || q.n !== t.quantity || q.cost !== t.cost ||
+        t.origin === 'auto' && (!cfg.enabled || !cfg.manual?.complete || t.imprint < 3 || t.quantity !== 1 || t.cost > t.balance * .05)) throw Error('Media catalogue, configuration or quote mismatch. Save preserved.');
+    const wallet = JSON.parse(localStorage.getItem('imi-score'));
+    if (!pitchSame({...wallet,score:t.balance},t.wallet) || !pitchSame(bananas.acknowledgement(),t.wallet.rewardMarker ?? null) ||
+        ![t.balance,t.after].includes(bananas.get()) || wallet.score !== bananas.get() || !prepared && bananas.get() !== t.balance) throw Error('Media wallet baseline mismatch. Save preserved.');
+    return t;
+  }
+  function mediaCommit(request) {
+    if (!mediaPrototype() || !writer?.owns() || !writer.transacting() || writer.localDisposition()) return {ok:false,refused:true,error:'Media save owner unavailable.'};
+    try {
+      const t = mediaValidate(request.action === 'prepare' ? request.intent : undefined,request.action !== 'prepare');
+      if (!['prepare','finish'].includes(request.action)) throw Error('Unknown media command.');
+      const candidate = pitchCopy(S), cfg = mediaSetting();
+      candidate.meta.automation = {...candidate.meta.automation,version:1,media:{...cfg,pending:pitchCopy(t)}};
+      if (request.action === 'finish') {
+        if (bananas.get() !== t.after) throw Error('Media debit is not acknowledged.');
+        candidate.divs[t.division] = t.before + t.quantity;
+        candidate.meta.automation.media = {...cfg,sequence:t.sequence,pending:null,
+          manual:{...cfg.manual,complete:!!cfg.manual?.complete || t.origin === 'manual'}};
+      }
+      candidate.lastSeen = Date.now();
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (result.ok) {
+        S.meta = candidate.meta; S.lastSeen = candidate.lastSeen;
+        if (request.action === 'finish') { S.divs = candidate.divs; releasePublished(DIVS.find(d => d.id === t.division),t.before,t.quantity); }
+        mark();
+      }
+      return result;
+    } catch(error) { return {ok:false,refused:true,error:error.message}; }
+  }
   function releaseDiv(id) {
+    if (chal('paperonly')) return {ok:false,error:'Media releases are blocked by Paper only.'};
+    if (mediaPrototype()) { const result = writer.mediaRelease({...layers.epochFields(S),division:id,quantity:buyWant(),origin:'manual'}); if (!result.ok) IMI.say(result.error); return result; }
     const D = DIVS.find(x => x.id === id); if (!D || !divUnlocked(D)) return;
     loadArchive();
     const plan = divPlan(D, buyWant()); if (plan.n <= 0 || !bananas.spend(plan.cost)) return;
     const before = divCount(D); S.divs[D.id] = before + plan.n;
+    releasePublished(D,before,plan.n); mark(); save();
+  }
+  function releasePublished(D,before,quantity) {
+    const plan = {n:quantity};
     const ord = divOrder[D.id], last = ord && ord[Math.min(before + plan.n, ord.length) - 1];
     logIt(`${D.name} released ${plan.n > 1 ? plan.n + ' ' + D.unit + 's' : (/^[aeiou]/.test(D.unit) ? 'an ' : 'a ') + D.unit}${last ? `, latest: “${last.title}”` : ''}.`);
     newsPush(last ? `NEW RELEASE from ${D.name}: “${last.title}”. Critics are baffled; the monkeys are delighted.` : `${D.name} releases ${plan.n} new ${D.unit}${plan.n > 1 ? 's' : ''}.`);
     IMI.sfx.ding(); vib(25);
     const btn = $(`.o-btn[data-act="release"][data-id="${D.id}"]`);
     if (btn) { const [x, y] = IMI.centerOf(btn); IMI.burst(x, y, ['star', 'spark', 'banana'], 12); shock(x, y, '#ffd23a'); if (last) floatText('NEW: ' + last.title, x, y - 50, '#fff6d6'); const card = btn.closest('.o-card'); if (card && !IMI.reduceMotion) card.animate([{ transform: 'none' }, { transform: 'translateY(-6px) scale(1.02)' }, { transform: 'none' }], { duration: 320, easing: PX ? 'steps(4)' : 'ease-out' }); }
-    mark(); save();
+    mark();
   }
   function premiere() {
     const F = DIVS[4]; if (!divCount(F)) return;
     const lump = roundMoney(divUnit(F) * divFactor(F) * passive() * 120); S.divTotal += lump;
-    bananas.earn(lump); floatText(`PREMIERE! +${fmtBig(lump)}`, innerWidth / 2, 190, '#ffd23a', true);
+    const sample = printingHelper()?.printSampleToken(), balance = bananas.get();
+    bananas.earn(lump); printingHelper()?.printPosting(bananas.get() - balance,sample); floatText(`PREMIERE! +${fmtBig(lump)}`, innerWidth / 2, 190, '#ffd23a', true);
     const ord = divOrder[F.id], pick1 = ord && ord[Math.floor(rand() * Math.min(ord.length, divCount(F)))];
     newsPush(pick1 ? `PREMIERE: “${pick1.title}” opens to a standing ovation from three monkeys and a pigeon.` : 'PREMIERE: a new IMI Picture opens to a standing ovation.');
     IMI.sfx.ding(); mark();
@@ -793,7 +1193,7 @@
         <p>${fmtRate(unit)}/s per release now · total <b>${fmtRate(unit * divFactor(D) * passive())}/s</b></p>
         <p class="o-quirk">${D.quirk}</p><p class="o-dim">${D.status()}</p>
         ${recent ? `<div class="o-chips">${recent}</div>` : ''}
-        <button type="button" class="o-btn gold" data-act="release" data-id="${D.id}" ${full || bananas.get() < plan.cost ? 'disabled' : ''}>${full ? 'Catalogue complete' : `${plan.n > 1 ? `Release x${plan.n}` : `Release ${/^[aeiou]/.test(D.unit) ? 'an' : 'a'} ${D.unit}`} · ${price(plan.cost)}`}</button></div>`;
+        <button type="button" class="o-btn gold" data-act="release" data-id="${D.id}" ${chal('paperonly') || full || bananas.get() < plan.cost ? 'disabled' : ''}>${full ? 'Catalogue complete' : `${plan.n > 1 ? `Release x${plan.n}` : `Release ${/^[aeiou]/.test(D.unit) ? 'an' : 'a'} ${D.unit}`} · ${price(plan.cost)}`}</button></div>`;
     }).join('');
     morph($('#o-studios'), `
       <p class="o-lede">Media turns your Archive into passive income. Each release picks a real manuscript from the monkey library and earns bananas every second; longer manuscripts earn a little more. Selling titles unlocks new divisions.</p>
@@ -817,7 +1217,79 @@
   ].map(x => ({ ...x, cost: cash(x.cost) }));
   const museSlots = () => (soldCount() >= 13 ? 3 : soldCount() >= 8 ? 2 : soldCount() >= 3 ? 1 : 0);
   const museOn = id => { const seat = S.muses.seated, n = museSlots(); for (let i = 0; i < n; i++) if (seat[i] === id) return true; return false; };
-  const museSale = band => (museOn('seuss') && band <= 1 ? 1.2 : 1) * (museOn('tolken') && band >= 3 ? 1.25 : 1);
+  const museSale = (band, on = museOn) => (on('seuss') && band <= 1 ? 1.2 : 1) * (on('tolken') && band >= 3 ? 1.25 : 1);
+  // A9 seats have no payment: one detached Ops acknowledgement publishes the whole choice.
+  let musePending = null;
+  const museSame = (a,b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  function clearMuseIncomplete(s) {
+    const a = s.meta.automation, m = a?.muse;
+    if (!gardenPrototype() || !extensions.get('automation')?.validMuse(m) || !m?.manual || m.manual.complete) return;
+    s.meta = {...s.meta, automation:{...a, muse:{...m, manual:{...m.manual, ids:[], complete:false, ...layers.epochFields(s), imprint:layers.identity(s), printing:s.printing}}}};
+  }
+  function museContext() {
+    const manual = pg?.active(pgContext) ? S.meta.productionGoal.manual : !S.autoFocus ? S.focus : null;
+    const selected = manual && !S.written[manual] ? manual : null;
+    const titles = RECIPES.filter(r => !S.written[r.id] && inPlay(r) &&
+      Object.entries(r.need).every(([w,n]) => S.desks[bandOf(w.length)].owned && !((chal('haiku') || masteryActive()) && bandOf(w.length) > 1) && stock(w) >= n) &&
+      (selected ? r.id === selected : !pg || pg.allowsSale(pgContext,r)));
+    const quote = saleContext();
+    quote.state = {meta:{layers:S.meta.layers === undefined ? undefined : JSON.parse(JSON.stringify(S.meta.layers))}};
+    return {titles:titles.map(r => ({id:r.id,band:r.band,pay:r.pay})), quote, markets:S.market.v.map((_,b) => marketMult(b)),
+      night:!!sky().night, productive:S.desks.some(d => d.owned && autoRate(d) > 0), slots:museSlots(),
+      owned:MUSES.filter(m => S.muses.owned[m.id]).map(m => m.id), paused:!!folioGoal()};
+  }
+  function museScore(seats,c) {
+    const on = id => seats.slice(0,c.slots).includes(id);
+    let q = 0;
+    for (const r of c.titles) q = Math.max(q,salePay(r,c.markets[r.band],on,c.quote));
+    return [q,c.night && c.productive && on('poe') ? 1.25 : 1];
+  }
+  const museBetter = (a,b) => a[0] > b[0] || a[0] === b[0] && a[1] > b[1];
+  function museSelection() {
+    const c = museContext(), seats = S.muses.seated;
+    let score = museScore(seats,c), best = null;
+    if (c.paused) return null;
+    for (let slot = 0; slot < c.slots; slot++) for (const id of c.owned) {
+      if (seats.includes(id)) continue;
+      const next = seats.slice(); next[slot] = id;
+      const value = museScore(next,c);
+      if (museBetter(value,score)) { score = value; best = {slot,id,score:value,context:JSON.stringify(c)}; }
+    }
+    return best;
+  }
+  function seatMuse(slot,id,origin = 'manual') {
+    const p = {slot,id,origin,state:S,...layers.epochFields(S),printing:S.printing,imprint:layers.identity(S),
+      seats:S.muses.seated.slice(), config:JSON.stringify(S.meta.automation ?? null)};
+    if (origin === 'auto') { const q = museSelection(); if (!q || q.slot !== slot || q.id !== id) return {ok:false,retryable:false,error:'No better seating choice'}; p.context = q.context; }
+    return commitMuse(p);
+  }
+  function commitMuse(p) {
+    const helper = extensions.get('automation');
+    const refuse = error => { musePending = null; layerChoices.delete('muse'); mark(); return {ok:false,retryable:false,error}; };
+    if (challengeSeatsLocked() || !p || !gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed() || !helper.validConfig(S.meta.automation)) return refuse('Muse save owner unavailable');
+    if (!['manual','auto'].includes(p.origin) || p.state !== S || !layers.epochMatches(S,p) || p.printing !== S.printing || p.imprint !== layers.identity(S) ||
+        p.config !== JSON.stringify(S.meta.automation ?? null) || !museSame(p.seats,S.muses.seated) ||
+        !Number.isInteger(p.slot) || p.slot < 0 || p.slot >= museSlots() ||
+        p.id !== null && (!MUSES.some(m => m.id === p.id) || !S.muses.owned[p.id]) || p.seats[p.slot] === p.id) return refuse('Seating changed. Choose again.');
+    try { layers.current(S); } catch { return refuse('Unsupported Imprint save'); }
+    if (p.origin === 'auto') {
+      if (!helper.museReady(p)) return refuse('Muse director is paused or locked');
+      const q = museSelection();
+      if (!q || q.slot !== p.slot || q.id !== p.id || q.context !== p.context) return refuse('Sale or night choice changed. Wait for a new attempt.');
+    } else if (!helper.museActive()) return refuse('Manual seating is paused');
+    const seats = p.seats.slice(), old = p.id === null ? -1 : seats.indexOf(p.id);
+    if (old >= 0) seats[old] = null;
+    seats[p.slot] = p.id;
+    if (new Set(seats.filter(Boolean)).size !== seats.filter(Boolean).length) return refuse('Duplicate Muse seats');
+    if (p.origin === 'manual') helper.museSuspend();
+    const candidate = {...S, muses:{...S.muses,seated:seats}, meta:{...S.meta}, lastSeen:S.rewards.awayCheckpoint ? S.lastSeen : Date.now()};
+    helper.museEvidence(candidate,p,old < 0);
+    if (!writer.guard(candidate)) return refuse('Muse save guard refused the choice');
+    const result = layerChoiceResult('muse',Economy.saveStateAcknowledged(candidate));
+    musePending = result.ok ? null : p;
+    if (result.ok) { S.muses = candidate.muses; S.meta = candidate.meta; S.lastSeen = candidate.lastSeen; IMI.sfx[p.id === null ? 'tick' : 'ding'](); }
+    helper.museResult(result); mark(); return result;
+  }
   /* every muse sits for a portrait: a pixel monkey in their signature hat, in a gilt frame */
   const MUSE_LOOK = { seuss: [3, '#ff5d73'], poe: [0, '#3a2a5a'], dick: [7, '#f08aa4'], hemi: [6, '#5fa8f0'], christie: [2, '#b58cf0'], woolf: [8, '#78d9a0'], austen: [4, '#f2b23a'], tolken: [5, '#9a6a3a'], twain: [2, '#dfe3f2'] };
   const museArt = {};
@@ -833,17 +1305,18 @@
     const seatedCards = [0, 1, 2].map(k => {
       const id = M.seated[k], mu = MUSES.find(x => x.id === id);
       if (k >= slots) return `<div class="o-card locked"><h3>Slot ${k + 1}</h3><p class="o-dim">Locked: sell ${[3, 8, 13][k]} titles (you have ${soldCount()}).</p></div>`;
-      return mu ? `<div class="o-card o-pcard o-seat on">${portrait(mu.id, true)}<div class="o-row"><h3>${mu.name}</h3><span class="o-lvl">SLOT ${k + 1}</span></div><p>${mu.desc}</p><button type="button" class="o-btn sm" data-act="museout" data-slot="${k}">Send home</button></div>`
+      return mu ? `<div class="o-card o-pcard o-seat on">${portrait(mu.id, true)}<div class="o-row"><h3>${mu.name}</h3><span class="o-lvl">SLOT ${k + 1}</span></div><p>${mu.desc}</p><button type="button" class="o-btn sm" data-act="museout" data-slot="${k}" ${challengeSeatsLocked() ? 'disabled' : ''}>Send home</button></div>`
         : `<div class="o-card o-seat"><h3>Slot ${k + 1}</h3><p class="o-dim">Empty. Seat a patron below.</p></div>`;
     }).join('');
     const cards = MUSES.map(mu => {
       const owned = !!M.owned[mu.id], seated = M.seated.includes(mu.id);
-      const seatBtns = owned && !seated ? [0, 1, 2].filter(k => k < slots).map(k => `<button type="button" class="o-btn sm" data-act="museseat" data-id="${mu.id}" data-slot="${k}">${M.seated[k] ? 'Swap into' : 'Seat in'} slot ${k + 1}</button>`).join('') : '';
+      const seatBtns = owned && !seated ? [0, 1, 2].filter(k => k < slots).map(k => `<button type="button" class="o-btn sm" data-act="museseat" data-id="${mu.id}" data-slot="${k}" ${challengeSeatsLocked() ? 'disabled' : ''}>${M.seated[k] ? 'Swap into' : 'Seat in'} slot ${k + 1}</button>`).join('') : '';
       return `<div class="o-card o-pcard o-muse">${portrait(mu.id, owned)}<div class="o-row"><h3>${mu.name}</h3>${owned ? `<span class="o-lvl">${seated ? 'SEATED' : 'INVITED'}</span>` : price(mu.cost)}</div><p>${mu.desc}</p>
         ${owned ? (seatBtns || (seated ? '' : '<p class="o-dim">Unlock a slot by selling more titles.</p>')) : `<button type="button" class="o-btn gold" data-act="museinvite" data-id="${mu.id}" ${have < mu.cost ? 'disabled' : ''}>Invite</button>`}</div>`;
     }).join('');
     morph($('#o-muses'), `
       <p class="o-lede">Muses are literary patrons. Invite a Muse once, then seat up to three of them (slots open as you sell titles) and swap them whenever you like. A seated Muse works for you passively.</p>
+      ${chal('fixedcast') ? `<p role="status">${chProgress()}</p>` : ''}
       <h3 class="o-h">Seated (${M.seated.slice(0, slots).filter(Boolean).length}/${slots})</h3><div class="o-grid">${seatedCards}</div>
       <h3 class="o-h">The guest list</h3><div class="o-grid">${cards}</div>`);
     hydrate($('#o-muses'));
@@ -855,18 +1328,67 @@
   const gardenTime = (ch, desk) => Math.round((30 + (12 - FREQ[ch]) * 8) * GARDEN_SLOW[desk == null ? S.sel : desk]);   // seconds: rare letters take longer
   const fmtSecs = n => (n >= 3600 ? `${Math.floor(n / 3600)}h ${Math.round(n % 3600 / 60)}m` : n >= 120 ? `${Math.round(n / 60)}m` : `${n}s`);
   const gardenYield = ch => Math.round(6 + (12 - FREQ[ch]) * 1.2);  // ...and give more
-  function plant(i, ch) {
-    const g = S.garden; if (g.beds[i] || !FREQ[ch]) return;
-    g.beds[i] = { ch, desk: S.sel, ready: Date.now() + gardenTime(ch, S.sel) * 1000 }; IMI.sfx.tick(); mark(); save();
-  }
-  function harvest(i) {
-    const g = S.garden, b = g.beds[i]; if (!b || Date.now() < b.ready) return 0;
-    const d = S.desks[b.desk] || cur(), y = gardenYield(b.ch);
+  const gardenPrototype = () => new URLSearchParams(location.search).get('lg03') === '1' && !!layers?.enabled;
+  const cropFor = (ch, desk) => ({ ch, desk, ready:savedWallNow() + gardenTime(ch, desk) * 1000 });
+  function grantCrop(state, i) {
+    const b = state.garden.beds[i], d = state.desks[b.desk] || state.desks[state.sel], y = gardenYield(b.ch);
     d.letters[b.ch] = (d.letters[b.ch] || 0) + y; for (let k = 0; k < Math.min(y, 8); k++) d.tray.push(b.ch); if (d.tray.length > 80) d.tray.splice(0, d.tray.length - 80);
-    S.stats.harvested = (S.stats.harvested || 0) + y; g.beds[i] = null; return y;
+    state.stats.harvested = (state.stats.harvested || 0) + y; state.garden.beds[i] = null; return y;
+  }
+  function gardenRequest(action, indices, ch, desk, origin) {
+    return {action, indices, ch, desk, origin, state:S, ...layers.epochFields(S), printing:S.printing, imprint:layers.identity(S),
+      crops:indices.map(i => S.garden.beds[i]),
+      identities:indices.map(i => { const b = S.garden.beds[i]; return b ? [b.ch,b.desk,b.gardenToken ?? null] : null; }),
+      config:origin === 'auto' ? JSON.stringify(S.meta.automation.garden) : null};
+  }
+  function commitGarden(p) {
+    const helper = extensions.get('automation');
+    const refuse = error => { layerChoices.delete('garden'); return {ok:false, retryable:false, error}; };
+    if (chal('handplanted') && p.origin === 'auto' || !gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed()) return refuse('Garden save owner unavailable');
+    if (!helper?.validConfig(S.meta.automation) || !['manual','auto'].includes(p.origin) ||
+        !['plant','harvest'].includes(p.action) || p.state !== S || !layers.epochMatches(S,p) || p.printing !== S.printing || p.imprint !== layers.identity(S)) return refuse('Garden action changed');
+    try { layers.current(S); } catch { return refuse('Unsupported Imprint save'); }
+    if (p.origin === 'auto' && !helper.gardenReady(p)) return refuse('Auto-garden is paused or locked');
+    if (!p.indices.length || new Set(p.indices).size !== p.indices.length || p.indices.some((i,n) =>
+        !Number.isInteger(i) || i < 0 || i >= S.garden.beds.length || S.garden.beds[i] !== p.crops[n] || JSON.stringify(p.identities[n]) !== JSON.stringify(S.garden.beds[i] ? [S.garden.beds[i].ch,S.garden.beds[i].desk,S.garden.beds[i].gardenToken ?? null] : null))) return refuse('Crop changed. Choose the action again.');
+    if (p.action === 'plant' && (p.indices.length !== 1 || p.crops[0] || !FREQ[p.ch] || !Number.isInteger(p.desk) || !S.desks[p.desk]?.owned || !Number.isFinite(gardenTime(p.ch,p.desk)))) return refuse('Planting target unavailable');
+    if (p.action === 'harvest' && p.crops.some(b => !b || !FREQ[b.ch] || !S.desks[b.desk]?.owned || !Number.isFinite(b.ready) || savedWallNow() < b.ready)) return refuse('Crop is absent, unripe or its desk is unavailable');
+    const affected = new Set(p.action === 'harvest' ? p.crops.map(b => b.desk) : []);
+    const candidate = {...S, garden:{...S.garden, beds:S.garden.beds.slice()}, stats:{...S.stats},
+      desks:S.desks.map((d,i) => affected.has(i) ? {...d, letters:{...d.letters}, tray:d.tray.slice()} : d), meta:{...S.meta},
+      lastSeen:S.rewards.awayCheckpoint ? S.lastSeen : Date.now()};
+    let amount = 0;
+    if (p.action === 'plant') {
+      const crop = cropFor(p.ch,p.desk);
+      if (p.origin === 'manual') crop.gardenToken = crypto.randomUUID();
+      candidate.garden.beds[p.indices[0]] = crop;
+    } else for (const i of p.indices) amount += grantCrop(candidate,i);
+    helper.gardenEvidence(candidate,p);
+    if (!writer.guard(candidate)) return refuse('Garden save guard refused the candidate');
+    const result = layerChoiceResult('garden', Economy.saveStateAcknowledged(candidate));
+    if (result.ok) {
+      S.garden = candidate.garden; S.stats = candidate.stats; S.meta = candidate.meta; S.lastSeen = candidate.lastSeen;
+      for (const i of affected) { S.desks[i].letters = candidate.desks[i].letters; S.desks[i].tray = candidate.desks[i].tray; }
+      if (p.action === 'plant' && p.origin === 'manual') IMI.sfx.tick();
+      mark();
+    }
+    return {...result, amount:result.ok ? amount : 0};
+  }
+  function plant(i, ch, desk = S.sel, origin = 'manual') {
+    if (chal('handplanted') && origin === 'auto') return {ok:false,retryable:false,error:'Garden by hand during Hand-planted.'};
+    if (gardenPrototype()) return extensions.get('automation')?.gardenAction(gardenRequest('plant',[i],ch,desk,origin));
+    const g = S.garden; if (g.beds[i] || !FREQ[ch]) return;
+    if (writer?.localDisposition()) return;
+    g.beds[i] = cropFor(ch, S.sel); IMI.sfx.tick(); mark(); save();
+  }
+  function harvest(i, origin = 'manual') {
+    if (chal('handplanted') && origin === 'auto') return 0;
+    if (gardenPrototype()) return extensions.get('automation')?.gardenAction(gardenRequest('harvest',[i],null,null,origin)).amount || 0;
+    const g = S.garden, b = g.beds[i]; if (writer?.localDisposition() || !b || savedWallNow() < b.ready) return 0;
+    return grantCrop(S,i);
   }
   function gardenHTML() {
-    const g = S.garden, D = DESKS[S.sel], need = focusNeeds(cur(), S.sel).missing, now = Date.now();
+    const g = S.garden, D = DESKS[S.sel], need = focusNeeds(cur(), S.sel).missing, now = savedWallNow();
     const seeds = Object.keys(FREQ).sort().map(ch => `<button type="button" class="o-seed${ui.seed === ch ? ' on' : ''}${need[ch] ? ' need' : ''}" data-act="seed" data-ch="${ch}" aria-label="Seed ${ch}">${ch}</button>`).join('');
     const plots = g.beds.map((b, i) => {
       if (!b) return `<button type="button" class="o-plot empty" data-act="plant" data-i="${i}"><span class="o-pl-ch">+</span><small>Plant ${ui.seed}</small></button>`;
@@ -897,66 +1419,736 @@
     { id: 'vowel', name: 'Vowel Drought', stars: 3, goalN: 6, desc: 'Vowels are 65% rarer and vowel boosts are off. Sell 6 titles.', perk: 'Typists work 5% faster, forever.' },
     { id: 'haiku', name: 'Haiku Run', stars: 4, goalN: 10, desc: 'Only Bamboo and Hibiscus may be bought. Sell 10 titles.', perk: 'Restorations cost 20% less, forever.' },
     { id: 'hands', name: 'No Hands', stars: 4, goalN: 8, desc: 'Tapping and holding are disabled; only the typists type. Sell 8 titles.', perk: 'Typists work 10% faster, forever.' },
-    { id: 'timed', name: 'Deadline', stars: 5, goalN: 8, minutes: 20, desc: 'Sell 8 titles within 20 minutes.', perk: 'Golden banana "Lucky" bonuses are 25% bigger, forever.' }
+    { id: 'timed', name: 'Deadline', stars: 5, goalN: 8, minutes: 20, desc: 'Sell 8 titles within 20 minutes.', perk: 'Golden banana "Lucky" bonuses are 25% bigger, forever.' },
+    { id: 'smallcrew', name: 'Small Crew', stars: 0, goalN: 6, helper: 'hire', desc: 'At most 2 typists per owned desk. Sell 6 progression titles.', perk: 'Auto-hire level at least 1, retaining higher levels and its base unlock.' },
+    { id: 'quietshop', name: 'Quiet Shop', stars: 0, goalN: 6, helper: 'shop', desc: 'Hold to type, Writing contracts, Paw metronome, Double touch, Literary agent and Market analyst cannot be acquired or take effect, including Veteran Crew Hold. Sell 6 progression titles.', perk: 'Auto-shop level at least 1, retaining higher levels and its base unlock.' },
+    { id: 'patientpress', name: 'Patient Press', stars: 0, goalN: 8, helper: 'coach', desc: 'Publisher purchases and automatic sales are disabled. Sell 8 progression titles manually.', perk: 'Auto-coach level at least 1, retaining higher levels and its base unlock.' },
+    { id: 'baremetal', name: 'Bare Metal', stars: 0, goalN: 8, helper: 'restore', desc: 'No Mk II or Mk III restorations. New desks remain available. Sell 8 progression titles.', perk: 'Auto-restore level at least 1, retaining higher levels and its base unlock.' },
+    { id: 'handplanted', name: 'Hand-planted', stars: 0, goalN: 6, helper: 'garden', imprint: true, desc: 'Automatic planting, harvesting and replanting are disabled. Garden by hand. Sell 6 progression titles.', perk: 'Auto-garden attempts every 45 active game seconds after its usual unlock.' },
+    { id: 'onebrief', name: 'One brief', stars: 0, goalN: 8, helper: 'pitch', imprint: true, desc: 'Clear inherited commissions down to one unsold title first; clearance sales do not count. Then sell 8 more progression titles. Commission only with no unsold pitches. High-band titles may need desks reopened; there is no time limit.', perk: 'Auto-pitch attempts every 45 active game seconds after its usual unlock.' },
+    { id: 'paperonly', name: 'Paper only', stars: 0, goalN: 8, helper: 'media', imprint: true, desc: 'No media releases of any quantity. Existing passive income remains. Sell 8 progression titles.', perk: 'Auto-media attempts every 45 active game seconds after its usual unlock.' },
+    { id: 'fixedcast', name: 'Fixed cast', stars: 0, goalN: 8, helper: 'muse', imprint: true, desc: 'Sell 3 progression titles, then seat an invited Muse before sale 4. That sale locks every seat through sale 8, including newly opened seats. Invitations keep their ordinary cost.', perk: 'Muse director attempts every 45 active game seconds after its usual unlock.' }
   ];
   const legLvl = id => S.legacy.ups[id] || 0;
   const legacyMult = () => (1 + .02 * S.legacy.total) * (1 + .1 * legLvl('sales'));
   const editionMult = () => 1 + .35 * S.printing;
   const chal = id => !!S.challenge && S.challenge.id === id;
   const chDef = id => CHALLENGES.find(c => c.id === id);
+  const challengePrototype = new URLSearchParams(location.search).get('lg03') === '1';
+  const challengeCatalog = () => CHALLENGES.filter(c => !c.helper || challengePrototype || S.chDone[c.id] || chal(c.id));
+  const challengeSelectable = c => c.imprint ? gardenPrototype() && validChallengeImprint() && S.printing >= 4 && S.intro.done && !!writer?.owns() :
+    !c.helper || challengePrototype && S.printing >= 4 && S.intro.done && !!writer?.owns();
+  const validChallengeImprint = () => { try { return layers.current(S).count >= 1; } catch { return false; } };
+  const imprintChallenge = (s = S) => !!chDef(s.challenge?.id)?.imprint;
+  const challengeCount = s => Object.keys(s.written).filter(id => RBY[id] && !RBY[id].kid && !RBY[id].lib).length;
+  const challengeBacklog = s => RECIPES.filter(r => r.gen && !s.written[r.id]).length;
+  function challengeRun(s = S) {
+    const r = s.challenge?.imprintRun;
+    if (!r || r.version !== 1 || !layers.epochMatches(s,r) || r.printing !== s.printing || r.imprint !== layers.identity(s)) return null;
+    if (s.challenge.id === 'onebrief' && (!['clearance','goal'].includes(r.phase) ||
+        !Number.isSafeInteger(r.baseline) || r.baseline < 0 || r.baseline > challengeCount(s))) return null;
+    if (s.challenge.id === 'fixedcast' && challengeCount(s) >= 4 && r.seats == null) return null;
+    if (s.challenge.id === 'fixedcast' && r.seats != null && (!Array.isArray(r.seats) || r.seats.length !== 3 ||
+        !museSame(r.seats,s.muses.seated) || new Set(r.seats.filter(Boolean)).size !== r.seats.filter(Boolean).length ||
+        !r.seats.some((id,i) => i < 1 && MUSES.some(m => m.id === id) && s.muses.owned[id]) ||
+        r.seats.some(id => id !== null && (!MUSES.some(m => m.id === id) || !s.muses.owned[id])))) return null;
+    return r;
+  }
+  const challengeSales = () => !chal('onebrief') ? soldCount() : challengeRun()?.phase === 'goal' ? Math.max(0,soldCount() - challengeRun().baseline) : 0;
+  const challengeCommissionAllowed = () => !chal('onebrief') || challengeRun()?.phase === 'goal' && pitchActive() === 0;
+  const challengeSeatsLocked = () => chal('fixedcast') && (!challengeRun() || challengeRun().seats != null || soldCount() >= 4);
+  function challengeSaleAllowed(r, s = S) {
+    if (!r) return false;
+    if (!imprintChallenge(s) || r.kid || r.lib) return true;
+    const run = challengeRun(s);
+    if (!run) return false;
+    if (s.challenge.id !== 'fixedcast') return true;
+    const n = challengeCount(s);
+    return run.seats != null || n < 3 || n === 3 && !musePending && !layerChoices.size &&
+      s.muses.seated.some((id,i) => i < 1 && MUSES.some(m => m.id === id) && s.muses.owned[id]);
+  }
+  function challengeBeforeSale(s,r) {
+    if (s.challenge?.id === 'fixedcast' && !r.kid && !r.lib && challengeCount(s) === 3 && challengeRun(s)?.seats == null)
+      s.challenge = {...s.challenge,imprintRun:{...challengeRun(s),seats:s.muses.seated.slice()}};
+  }
+  function challengeAfterSale(s) {
+    if (s.challenge?.id === 'onebrief' && challengeRun(s)?.phase === 'clearance' && challengeBacklog(s) <= 1)
+      s.challenge = {...s.challenge,imprintRun:{...challengeRun(s),phase:'goal',baseline:challengeCount(s)}};
+  }
+  const challengeSettled = () => !layerChoices.size && !commissionPending && !musePending && !extensions.get('automation')?.pendingGarden() &&
+    !extensions.get('automation')?.pendingChoice() && !S.meta.automation?.pitch?.sale && !S.meta.automation?.media?.pending &&
+    !S.rewards.awayCheckpoint && !Object.values(S.rewards.claims || {}).some(c => c.status === 'prepared') && (!writer || writer.owns() && !writer.held() && !writer.localDisposition() && writer.guard(S));
+  const challengeReward = c => c.imprint ? `${c.perk} First clear also gives a balanced Letters bundle on your highest owned desk: three minutes of productive output, at least 50 and at most 5,000 letters. Replays pay nothing.` : c.helper ? `${c.perk} First clear also gives Letters on the highest owned desk: floor(max(50, min(5000, 180 × productive letters/second))). No new stars or Diamond Bananas. Replays pay nothing.` : `+${c.stars} stars and a perk: ${c.perk}`;
+  const toolOn = key => !!S[key] && !chal('quietshop');
+  const challengeShopLock = what => chal('quietshop') && ['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(what) ? 'Blocked by Quiet Shop' :
+    (chal('patientpress') || masteryActive()) && what === 'pub' ? masteryActive() ? 'Blocked by manual Small Crew mastery' : 'Blocked by Patient Press' : chal('baremetal') && what === 'mk' ? 'Blocked by Bare Metal' : '';
   const chPerk = id => !!S.chDone[id];
   const speedPerks = () => (1 + .1 * legLvl('speed')) * (chPerk('vowel') ? 1.05 : 1) * (chPerk('hands') ? 1.1 : 1);
   const starsNow = () => Math.floor(Math.sqrt((S.run.earned || 0) / cash(5e5)));
   const nextStarAt = () => Math.pow(starsNow() + 1, 2) * cash(5e5);
   let freqCache = null;
   const freqNow = () => {
-    if (!chal('vowel')) return FREQ;
-    return freqCache || (freqCache = Object.fromEntries(Object.entries(FREQ).map(([k, v]) => [k, VOWELS.includes(k) ? v * .35 : v])));
+    const base = !chal('vowel') ? FREQ : freqCache || (freqCache = Object.fromEntries(Object.entries(FREQ).map(([k, v]) => [k, VOWELS.includes(k) ? v * .35 : v])));
+    return layers?.weights(S, base) || base;
   };
   const chProgress = () => {
     if (!S.challenge) return '';
-    const C = chDef(S.challenge.id), left = C.minutes ? Math.max(0, C.minutes * 60 - (Date.now() - S.challenge.start) / 1000) : null;
-    return `${soldCount()}/${C.goalN}${left !== null ? ` · ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}` : ''}`;
+    if (masteryActive()) {const r = S.meta.challengeMastery.active; return `${r.medal}: ${r.sold.length}/${r.target} saved`;}
+    const C = chDef(S.challenge.id);
+    if (C.imprint && !challengeRun()) return 'Run unavailable. Abandon when saves settle.';
+    if (chal('onebrief') && challengeRun().phase === 'clearance') return `Clearance: ${pitchActive()} unsold pitches; reach 1`;
+    if (chal('fixedcast')) return `${soldCount()}/${C.goalN} · ${challengeSeatsLocked() ? 'Cast locked' : soldCount() >= 3 ? 'Seat an invited Muse before sale 4' : 'Choose your cast before sale 4'}`;
+    const left = C.minutes ? Math.max(0, C.minutes * 60 - (savedWallNow() - S.challenge.start) / 1000) : null;
+    return `${challengeSales()}/${C.goalN}${left !== null ? ` · ${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}` : ''}`;
   };
-  function endChallenge(kind) {
-    const C = chDef(S.challenge.id); S.challenge = null;
+  function endChallenge(kind, acknowledged = false) {
+    if (challengeActive()) return;
+    if (masteryActive()) return writer.masteryAction({action:kind === 'done' ? 'qualify' : 'abandon'});
+    const C = chDef(S.challenge.id), challengeWasDone = !!S.chDone[C.id];
+    if (C.imprint && !acknowledged) {
+      if (!challengeSettled()) return;
+      if (kind === 'done') return writer.imprintChallengeClear(C.id);
+    }
+    if (kind === 'done' && C.helper && !C.imprint) {
+      if (!writer?.owns() || !progressing() || writer.localDisposition() || !writer.guard(S)) return;
+      if (!challengeWasDone) {
+        const automation = extensions.get('automation')?.firstClearFloor(C.id, S.meta.automation);
+        if (!automation) return;
+        S.meta.automation = automation;
+      }
+    }
+    S.challenge = null;
     if (kind === 'done') {
-      const first = !S.chDone[C.id]; S.chDone[C.id] = true;
-      if (first) { S.legacy.stars += C.stars; S.legacy.total += C.stars; }
+      const first = !S.chDone[C.id]; S.chDone = {...S.chDone,[C.id]:true};
+      if (first && C.stars) { S.legacy.stars += C.stars; S.legacy.total += C.stars; }
       IMI.sfx.ding(); IMI.banner(PX ? 'OULIPO COMPLETE!' : 'Oulipo Complete!');
-      logIt(`Oulipo challenge complete: ${C.name}.${first ? ` +${C.stars} Legacy stars and a permanent perk.` : ''}`);
+      logIt(`Oulipo challenge complete: ${C.name}.${first ? C.helper ? ` ${challengeReward(C)}` : ` +${C.stars} Legacy stars and a permanent perk.` : ''}`);
       newsPush(`${C.name} conquered. Constraint-loving monkeys are smug about it.`);
     } else if (kind === 'fail') { logIt(`The ${C.name} challenge ran out of time. The constraint is lifted.`); newsPush(`${C.name} failed. The monkeys promise they were just warming up.`); }
     else logIt(`Abandoned the ${C.name} challenge.`);
+    extensionEvent('challenge', { id: C.id, kind, first: kind === 'done' && !challengeWasDone });
+    if (!progressing()) return;
     mark(); save();
   }
   function checkChallenge() {
-    if (!S.challenge) return;
+    if (!S.challenge || masteryActive() || challengeActive()) return;
     const C = chDef(S.challenge.id);
-    if (soldCount() >= C.goalN) endChallenge('done');
-    else if (C.minutes && Date.now() - S.challenge.start > C.minutes * 60000) endChallenge('fail');
+    if (!C || C.imprint && !challengeRun()) return;
+    if (challengeSales() >= C.goalN) endChallenge('done');
+    else if (C.minutes && savedWallNow() - S.challenge.start > C.minutes * 60000) endChallenge('fail');
   }
   let handsNagAt = 0;
   function handsNag() { const n = performance.now(); if (n - handsNagAt < 1200) return; handsNagAt = n; const b = $('#oStage'); if (b) { const r = b.getBoundingClientRect(); floatText('NO HANDS!', r.left + r.width / 2, r.top + 120, '#ff8a70', true); } }
 
+  const seasonsEnabled = () => !!writer && window.Seasons?.enabled;
+  let seasonsIntent = null;
+  function seasonsDisabled() {
+    return !seasonsEnabled() || !writer.owns() || !progressing() || !writer.guard(S) || writer.held() || writer.localDisposition() ||
+      !challengeSettled() || !extensionAPI.identitySettled() || workPaused() || S.meta.folio?.working || S.meta.archive?.working ||
+      S.meta.folio?.pending || S.meta.automation?.print?.pending || trainingPool?.mode() === 'suspended' || S.rewards?.awayCheckpoint ||
+      document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])')
+      ? 'Seasons waits for visible play, settled away progress, saves and work.' : '';
+  }
+  function seasonsPending() {
+    Seasons.validate(S);
+    const p=S.meta.seasons?.pending;
+    if (!seasonsEnabled() || !p) throw Error('Seasons owner unavailable.');
+    const source=pitchCopy(S); if (p.pendingNull) source.meta.seasons.pending=null; else delete source.meta.seasons.pending;
+    if (p.absent) delete source.meta.seasons;
+    if (printingSource(source) !== p.source) throw Error('Seasons source changed. Save preserved.');
+    Seasons.assertChoice(source,p);
+    if (p.action === 'claim') {
+      const a=Seasons.current(source).active;
+      if (p.id !== `seasons-claim:${a.sequence}` || !printInteger(p.previous) || p.sequence !== p.previous+1 ||
+          ![p.sequence,p.balance,p.pay,p.balance+p.pay,source.run.earned+p.pay].every(printInteger) ||
+          p.pay !== a.descriptor.amount || !pitchSame(p.descriptor,a.descriptor)) throw Error('Invalid Seasons payment.');
+      const marker=bananas.acknowledgement(), paid=marker?.id===p.id && marker.sequence===p.sequence && marker.amount===p.pay;
+      if (!paid && !pitchSame(marker,p.marker) || bananas.get() !== p.balance+(paid?p.pay:0)) throw Error('Seasons wallet baseline changed.');
+    }
+    return p;
+  }
+  function seasonsFreeze(request) {
+    if (seasonsDisabled()) throw Error(seasonsDisabled());
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    if (seasonsDisabled()) throw Error(seasonsDisabled());
+    const c=Seasons.current(S), a=c?.active, at=Seasons.observed(S), w=Seasons.week(at);
+    if (!pitchSame(request.binding,{sequence:c?.sequence ?? 0,run:a?.id ?? null,weekIndex:w.weekIndex})) throw Error('Seasons changed. Review the current week again.');
+    const action=a?.status === 'active' && at >= a.end ? 'expire' : request.action;
+    let p={version:1,action,at,run:a?.id ?? null,source:printingSource(S),absent:c===undefined,pendingNull:c?.pending===null};
+    if (action === 'participate') {
+      const quote={week:w,descriptor:Seasons.descriptor(rewardBasis())};
+      if (!pitchSame(quote,request.quote)) throw Error('Week or income changed. Review the current bonus again.');
+      p={...p,week:w,descriptor:quote.descriptor,sample:S.stats[w.metric]};
+    } else if (action === 'observe') p.sample=S.stats[a?.metric];
+    Seasons.assertChoice(S,p);
+    if (action === 'claim') {
+      const marker=bananas.acknowledgement(), previous=marker?.sequence ?? 0;
+      p={...p,id:`seasons-claim:${a.sequence}`,previous,sequence:previous+1,marker,balance:bananas.get(),pay:a.descriptor.amount,descriptor:pitchCopy(a.descriptor)};
+    }
+    const candidate=pitchCopy(S); candidate.meta.seasons ??= Seasons.fresh(); candidate.meta.seasons.pending=p;
+    const live=S; try {S=candidate;seasonsPending();} finally {S=live;}
+    seasonsIntent=candidate;
+  }
+  function seasonsCommit(phase) {
+    if (!writer?.owns() || !writer.transacting() || !seasonsEnabled() || writer.localDisposition() || window.VaultSaveGate?.blocked) return {ok:false,error:'Seasons owner unavailable.'};
+    try {
+      let candidate;
+      if (phase === 'prepare') {
+        if (!seasonsIntent || printingSource(S) !== seasonsIntent.meta.seasons.pending.source) throw Error('Seasons changed before intent save.');
+        candidate=seasonsIntent;
+      } else if (phase === 'finish') {
+        const p=seasonsPending(); candidate=pitchCopy(S);
+        if (p.action === 'claim') {
+          const marker=bananas.acknowledgement();
+          if (marker?.id !== p.id || marker.sequence !== p.sequence || marker.amount !== p.pay) throw Error('Seasons payment is not acknowledged.');
+          candidate.run.earned+=p.pay;
+        }
+        Seasons.outcome(candidate,p,Seasons.observed(S));
+      } else throw Error('Unknown Seasons phase.');
+      candidate.lastSeen=Date.now(); Seasons.validate(candidate);
+      const result=Economy.saveStateAcknowledged(candidate); if (!result.ok) return result;
+      S=candidate; seasonsIntent=null; mark(); return {ok:true,status:phase};
+    } catch(error) { return {ok:false,error:error.message}; }
+  }
+
+  // These commands freeze only the board's reviewed choice or actual manual sale.
+  const boardEnabled = () => !!writer && window.CommissionBoard?.enabled;
+  const boardNames = () => CommissionBoard.ids.map(id => RBY[id]).filter(r => CommissionBoard.eligible(r) && titleAvailable(r) && !S.written[r.id]).map(r => r.title);
+  let boardIntent = null;
+  function boardReady(action) {
+    if (!boardEnabled() || !writer.owns() || !progressing() || !writer.guard(S) || writer.held() || writer.localDisposition() ||
+        !challengeSettled() || !extensionAPI.identitySettled() || workPaused() || S.meta.folio?.working || S.meta.archive?.working ||
+        S.meta.folio?.pending || S.meta.automation?.print?.pending || trainingPool?.mode() === 'suspended' ||
+        document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])') ||
+        ['start','sale'].includes(action) && (S.challenge || masteryActive() || challengeActive())) throw Error('Commission waits for visible ordinary play and settled saves and work.');
+  }
+  function boardPending() {
+    CommissionBoard.validate(S);
+    const p = S.meta.commissionBoard?.pending;
+    if (!boardEnabled() || !p) throw Error('Commission owner unavailable.');
+    const source = pitchCopy(S); delete source.meta.commissionBoard.pending;
+    if (p.absent) delete source.meta.commissionBoard;
+    if (printingSource(source) !== p.source) throw Error('Commission source changed. Save preserved.');
+    CommissionBoard.assertChoice(source,p,boardNames());
+    if (p.action === 'sale' || p.action === 'claim') {
+      const a = CommissionBoard.current(source).active;
+      if (p.id !== `board-${p.action}:${a.sequence}` || !printInteger(p.previous) || p.sequence !== p.previous+1 ||
+          ![p.sequence,p.balance,p.pay,p.balance+p.pay,source.run.earned+p.pay].every(printInteger) || !p.pay || p.pay % Economy.scale) throw Error('Invalid Commission payment.');
+      if (p.action === 'sale') {
+        const r=RBY[p.title];
+        if (source.challenge || !CommissionBoard.eligible(r) || !canWrite(r) || !pitchSame(p.recipe,[r.title,r.text,r.pay]) || !pitchSame(p.need,r.need) ||
+            !Number.isFinite(p.mult) || p.mult < .5 || p.mult > 2 || !Array.isArray(p.muses) || p.muses.some(id => !MUSES.some(m => m.id===id)) ||
+            p.pay !== salePay(r,p.mult,id => p.muses.includes(id)) || !printInteger(source.stats.lump+p.pay)) throw Error('Commission reader or price changed.');
+      } else if (p.pay !== a.descriptor.amount || !pitchSame(p.descriptor,a.descriptor)) throw Error('Commission bonus changed.');
+      const marker=bananas.acknowledgement(), paid=marker?.id===p.id && marker.sequence===p.sequence && marker.amount===p.pay;
+      if (!paid && !pitchSame(marker,p.marker) || bananas.get() !== p.balance+(paid?p.pay:0)) throw Error('Commission wallet baseline changed.');
+    }
+    return p;
+  }
+  function boardFreeze(request) {
+    boardReady(request.action);
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    boardReady(request.action);
+    const a=CommissionBoard.current(S)?.active, action=request.action, at=CommissionBoard.observed(S);
+    let p={version:1,action,at,run:a?.id ?? null,source:printingSource(S),absent:S.meta.commissionBoard===undefined};
+    if (action==='start') {
+      const quote=CommissionBoard.descriptor(rewardBasis());
+      if (!pitchSame(quote,request.quote)) throw Error('Income changed. Review the current bonus again.');
+      p.descriptor=quote;
+    }
+    CommissionBoard.assertChoice(S,p,boardNames());
+    if (action==='sale' || action==='claim') {
+      const marker=bananas.acknowledgement(), previous=marker?.sequence ?? 0;
+      p={...p,id:`board-${action}:${a.sequence}`,previous,sequence:previous+1,marker,balance:bananas.get()};
+      if(action==='sale') {
+        const r=RBY[request.id];
+        if(!CommissionBoard.eligible(r) || !canWrite(r) || !challengeSaleAllowed(r)) throw Error('An eligible book must be ready for a manual sale.');
+        const mult=marketMult(r.band);
+        p={...p,title:r.id,need:pitchCopy(r.need),recipe:[r.title,r.text,r.pay],mult,pay:salePay(r,mult),muses:MUSES.filter(m=>museOn(m.id)).map(m=>m.id)};
+      } else {p.pay=a.descriptor.amount;p.descriptor=pitchCopy(a.descriptor);}
+    }
+    const candidate=pitchCopy(S); candidate.meta.commissionBoard ??= CommissionBoard.fresh(); candidate.meta.commissionBoard.pending=p;
+    const live=S; try {S=candidate;boardPending();} finally {S=live;}
+    boardIntent=candidate; return p.at;
+  }
+  function boardCommit(action) {
+    if (!writer?.owns() || !writer.transacting() || !boardEnabled() || writer.localDisposition() || window.VaultSaveGate?.blocked) return {ok:false,error:'Commission owner unavailable.'};
+    try {
+      let candidate,p;
+      if(action==='prepare') {
+        if(!boardIntent || printingSource(S)!==boardIntent.meta.commissionBoard.pending.source) throw Error('Commission changed before intent save.');
+        candidate=boardIntent;
+      } else if(action==='finish') {
+        p=boardPending(); candidate=pitchCopy(S);
+        if(p.action==='sale' || p.action==='claim') {
+          const marker=bananas.acknowledgement();
+          if(marker?.id!==p.id || marker.sequence!==p.sequence || marker.amount!==p.pay) throw Error('Commission payment is not acknowledged.');
+          candidate.run.earned+=p.pay;
+          if(p.action==='sale') {
+            for(const w in p.need){candidate.bank[w]-=p.need[w];if(candidate.bank[w]<=0)delete candidate.bank[w];}
+            candidate.written[p.title]=true;candidate.stats.lump+=p.pay;candidate.stats.bestMult=Math.max(candidate.stats.bestMult||0,p.mult);
+            pg?.clearManual(candidate,p.title);if(candidate.focus===p.title)candidate.focus=null;
+          }
+        }
+        CommissionBoard.outcome(candidate,p,CommissionBoard.observed(S));
+      } else throw Error('Unknown Commission phase.');
+      candidate.lastSeen=Date.now(); CommissionBoard.validate(candidate);
+      const result=Economy.saveStateAcknowledged(candidate);if(!result.ok)return result;
+      S=candidate;boardIntent=null;
+      if(p?.action==='sale'){bankV++;dropCaches();introProgress();pickAutoFocus();salePublished(RBY[p.title],p.pay,p.mult,null,{});}
+      mark();return {ok:true,status:p?'acknowledged':'prepared'};
+    }catch(error){return {ok:false,error:error.message};}
+  }
+
+  const challengeEnabled = () => masteryEnabled() && window.AutoChallenge?.enabled;
+  const challengeActive = (source = S) => window.AutoChallenge?.active(source);
+  const challengeControlled = () => challengeActive()?.phase === 'producing' && printingHelper()?.challengeOn();
+  const challengeValidate = source => window.AutoChallenge?.validate(source);
+  function challengeAvailable() {
+    const missing = AutoChallenge.ids.filter(id => !titleAvailable(RBY[id]));
+    if (missing.length) throw Error('Unavailable in Archive: ' + missing.map(id => id + ' (' + RBY[id].title + ')').join(', '));
+    if (!AutoChallenge.compatible(S)) throw Error('Waiting for PG: disabled, or band 0 / authored / no manual title / no advance.');
+  }
+  function challengeReady() {
+    challengeValidate(S);
+    if (!challengeEnabled() || !writer?.owns() || !progressing() || writer.held() || writer.localDisposition() || !writer.guard(S) ||
+        !challengeSettled() || !extensionAPI.identitySettled() || workPaused() || S.meta.folio?.working || S.meta.archive?.working ||
+        S.meta.folio?.pending || S.meta.layers?.pending || S.meta.estate?.pending || S.meta.archive?.pending || S.meta.automation?.print?.pending ||
+        S.rewards.awayCheckpoint || S.prem.vault?.transition || trainingPool?.mode() === 'suspended' ||
+        document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])')) throw Error('A11 waits for visible play and settled work and saves.');
+  }
+  let challengeIntent = null;
+  function challengePending() {
+    challengeValidate(S);
+    const p = S.meta.automation?.challenge?.pending;
+    if (!challengeEnabled() || !p || p.version !== 1 || !['settings','focus','sale','exit','abandon','continue'].includes(p.action) || typeof p.source !== 'string' || !printInteger(p.at)) throw Error('Unsupported pending A11 command.');
+    const source = pitchCopy(S); delete source.meta.automation.challenge.pending;
+    if (p.absent) delete source.meta.automation.challenge;
+    if (p.automationAbsent) delete source.meta.automation;
+    if (printingSource(source) !== p.source) throw Error('A11 command source changed. Save preserved.');
+    const run = challengeActive(source);
+    if (p.action === 'settings') {
+      const fields = p.fields;
+      if (!fields || Object.keys(fields).some(k => !['enabled','disclosed','selected','gold'].includes(k)) || typeof fields.enabled !== 'boolean' || !fields.enabled && Object.keys(fields).some(k => k !== 'enabled') ||
+          fields.enabled && (!AutoChallenge.earned(source) || fields.disclosed !== true || !layers.same(fields.selected,['smallcrew']) || !layers.same(fields.gold,source.meta.challengeMastery.highest) || run && run.phase !== 'completed-awaiting-exit') ||
+          !AutoChallenge.valid({...source.meta.automation?.challenge,...fields,version:1,sequence:source.meta.automation?.challenge?.sequence ?? 0,cursor:0,selected:fields.selected ?? source.meta.automation?.challenge?.selected ?? []})) throw Error('Unsupported A11 settings choice.');
+    } else {
+      if (!run || p.run !== run.id) throw Error('A11 run changed.');
+      if (['focus','sale'].includes(p.action)) {
+        const r = RBY[p.title];
+        if (run.phase !== 'producing' || !AutoChallenge.compatible(source) || !r || p.title !== AutoChallenge.ids[run.sold.length] || !titleAvailable(r) || !layers.same(p.recipe,[r.title,r.text,r.pay]) || !layers.same(p.need,r.need)) throw Error('A11 fixed reader changed.');
+        if (p.action === 'focus' && (run.target === p.title && source.focus === p.title || run.target !== null)) throw Error('A11 focus is already settled.');
+        if (p.action === 'sale') {
+          if (run.target !== p.title || source.focus !== p.title || !canWrite(r) || !Number.isFinite(p.mult) || p.mult < .5 || p.mult > 2 ||
+              !Array.isArray(p.muses) || p.muses.some(id => !MUSES.some(m => m.id === id)) || p.pay !== salePay(r,p.mult,id => p.muses.includes(id)) ||
+              p.id !== `a11-sale:e${run.resetEpoch}:${run.sequence}:${r.id}` || !printInteger(p.previous) || p.sequence !== p.previous + 1 ||
+              ![p.balance,p.pay,p.balance+p.pay,source.stats.lump+p.pay,source.run.earned+p.pay].every(printInteger) || p.pay <= 0 || p.pay % Economy.scale) throw Error('Unsupported frozen A11 sale.');
+          const marker = bananas.acknowledgement(), paid = marker?.id === p.id && marker.sequence === p.sequence && marker.amount === p.pay;
+          if (!paid && !layers.same(marker,p.marker) || bananas.get() !== p.balance + (paid ? p.pay : 0)) throw Error('A11 wallet baseline changed.');
+        }
+      }
+      if (p.action === 'exit' && run.phase !== 'completed-awaiting-exit' || p.action === 'continue' && run.phase === 'completed-awaiting-exit') throw Error('A11 outcome is unavailable.');
+    }
+    return p;
+  }
+  function challengeFreeze(request) {
+    challengeReady();
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    challengeReady();
+    const run = challengeActive(), action = request.action;
+    if (['focus','sale','exit'].includes(action) && !printingHelper()?.challengeAuthorize()) throw Error('A11 command is not currently due.');
+    if (['focus','sale'].includes(action)) challengeAvailable();
+    let p = {version:1,action,run:run?.id ?? null,at:Date.now(),source:printingSource(S),absent:!S.meta.automation?.challenge,automationAbsent:S.meta.automation === undefined};
+    if (action === 'settings') {
+      if (request.expected !== JSON.stringify(S.meta.automation?.challenge ?? null)) throw Error('A11 settings changed. Review again.');
+      p.fields = pitchCopy(request.fields);
+    }
+    if (['focus','sale'].includes(action)) {
+      const r = RBY[AutoChallenge.ids[run.sold.length]];
+      p = {...p,title:r.id,need:pitchCopy(r.need),recipe:[r.title,r.text,r.pay]};
+      if (action === 'sale') {
+        const marker = bananas.acknowledgement(), previous = marker?.sequence ?? 0, mult = marketMult(r.band);
+        p = {...p,id:`a11-sale:e${run.resetEpoch}:${run.sequence}:${r.id}`,previous,sequence:previous+1,marker,balance:bananas.get(),mult,pay:salePay(r,mult),muses:MUSES.filter(m => museOn(m.id)).map(m => m.id)};
+      }
+    }
+    const candidate = pitchCopy(S); candidate.meta.automation ??= {version:1};
+    candidate.meta.automation.challenge ??= {version:1,sequence:0,cursor:0,selected:[]};
+    candidate.meta.automation.challenge.pending = p;
+    // Validate against this detached intent without publishing it.
+    const live = S; try {S = candidate; challengePending();} finally {S = live;}
+    challengeIntent = candidate;
+  }
+  function challengeCommit(action) {
+    if (!writer?.owns() || !writer.transacting() || !challengeEnabled() || writer.localDisposition() || window.VaultSaveGate?.blocked) return {ok:false,refused:true,error:'A11 owner unavailable.'};
+    try {
+      let candidate, p;
+      if (action === 'prepare') {
+        if (!challengeIntent || printingSource(S) !== challengeIntent.meta.automation.challenge.pending.source) throw Error('A11 command changed before intent save.');
+        candidate = challengeIntent;
+      } else if (action === 'finish') {
+        p = challengePending(); candidate = pitchCopy(S);
+        if (p.action === 'sale') {
+          const marker = bananas.acknowledgement();
+          if (marker?.id !== p.id || marker.sequence !== p.sequence || marker.amount !== p.pay) throw Error('A11 payment is not acknowledged.');
+          for (const w in p.need) {candidate.bank[w] -= p.need[w]; if (candidate.bank[w] <= 0) delete candidate.bank[w];}
+          candidate.written[p.title] = true; candidate.stats.lump += p.pay; candidate.stats.bestMult = Math.max(candidate.stats.bestMult || 0,p.mult); candidate.run.earned += p.pay;
+        }
+        AutoChallenge.outcome(candidate,p);
+      } else throw Error('Unknown A11 command.');
+      candidate.lastSeen = p?.at ?? challengeIntent.meta.automation.challenge.pending.at;
+      challengeValidate(candidate);
+      const result = Economy.saveStateAcknowledged(candidate); if (!result.ok) return result;
+      S = candidate; challengeIntent = null;
+      if (p) {
+        bankV++; dropCaches(); pickAutoFocus();
+        if (p.action === 'sale') salePublished(RBY[p.title],p.pay,p.mult,null,{auto:true});
+        if (p.action === 'sale' && challengeActive()?.phase === 'completed-awaiting-exit') IMI.banner('Small Crew clear saved. Exit waits for its next turn.');
+      }
+      mark(); return {ok:true,status:p ? 'acknowledged' : 'prepared'};
+    } catch(error) {return {ok:false,refused:true,error:error.message};}
+  }
+  function challengeHandover() {
+    const run = challengeActive();
+    if (!run || run.phase === 'completed-awaiting-exit') return !run;
+    printingHelper()?.challengeLocalOff();
+    const result = writer.challengeAction({action:'continue'});
+    if (!result.ok) newsPush(result.error);
+    return result.ok;
+  }
+
+  // Manual Small Crew proof belongs to this fixed owner, never the ordinary first-clear counter.
+  const masteryEnabled = () => printingEnabled() && new URLSearchParams(location.search).get('lg08mastery') === '1';
+  const masteryIDs = ['ape-in-the-cape','goodnight-baboon','very-hungry-capuchin','three-little-twigs','chimp-in-the-hat','green-eggs-and-hamster','peter-panzee','swing-in-the-willows','charlie-chimpolate','wild-apes'];
+  const masteryTargets = {bronze:6,silver:8,gold:10};
+  const masteryActive = (s = S) => s.meta.challengeMastery?.active != null;
+  function masteryValidate(s) {
+    const m = s.meta.challengeMastery;
+    if (m === undefined) {if (s.challenge?.mastery) throw Error('Missing mastery proof. Save preserved.'); return;}
+    const obj = x => x && typeof x === 'object' && !Array.isArray(x);
+    const proof = r => obj(r) && r.version === 1 && r.rule === 1 && r.origin === 'manual' && masteryTargets[r.medal] === r.target &&
+      printInteger(r.sequence) && r.sequence > 0 && printInteger(r.resetEpoch) && printInteger(r.printing) && printInteger(r.imprint) &&
+      r.id === `mastery:e${r.resetEpoch}:${r.sequence}` && layers.same(r.required,masteryIDs.slice(0,r.target)) &&
+      Array.isArray(r.sold) && new Set(r.sold).size === r.sold.length && r.sold.every(id => r.required.includes(id));
+    if (!obj(m) || m.version !== 1 || !printInteger(m.sequence) || m.highest != null && (!proof(m.highest) || m.highest.sold.length !== m.highest.target || !layers.same(m.highest.contained,Object.keys(masteryTargets).filter(k => masteryTargets[k] <= m.highest.target)) || m.highest.sequence > m.sequence) ||
+        m.last != null && (!proof(m.last) || !['qualified','abandoned'].includes(m.last.outcome) || m.last.sequence > m.sequence || m.last.outcome === 'qualified' && m.last.sold.length !== m.last.target)) throw Error('Unsupported mastery proof. Save preserved.');
+    if (m.active != null && (!s.chDone.smallcrew || !s.intro.done || !proof(m.active) || m.active.sequence !== m.sequence || !layers.epochMatches(s,m.active) || m.active.printing !== s.printing || m.active.imprint !== layers.identity(s) ||
+        s.challenge?.id !== 'smallcrew' || s.challenge.mastery !== m.active.id || m.active.sold.some(id => !s.written[id]) ||
+        s.desks.some((d,i) => d.owned && (i > 1 || d.paws > 2 || d.crew.length > 2)))) throw Error('Unsupported active mastery run. Save preserved.');
+    if (s.challenge?.mastery && !m.active) throw Error('Missing active mastery proof. Save preserved.');
+    const receipt = m.receipt;
+    if (receipt != null && (!obj(receipt) || typeof receipt.id !== 'string' || !/^mastery-sale:e\d+:\d+:[a-z-]+$/.test(receipt.id) ||
+        !printInteger(receipt.sequence) || receipt.sequence < 1 || !printInteger(receipt.amount) || !receipt.amount || receipt.amount % Economy.scale)) throw Error('Unsupported mastery payment receipt.');
+  }
+  function masterySelection(medal, source = S) {
+    masteryValidate(source);
+    if (!masteryEnabled() || !masteryTargets[medal] || !source.chDone.smallcrew || !source.intro.done || source.printing < 4 || masteryActive(source)) throw Error('Requires the ordinary Small Crew clear, introduction and Printing 5.');
+    const unavailable = masteryIDs.slice(0,masteryTargets[medal]).filter(id => !titleAvailable(RBY[id]));
+    if (unavailable.length) throw Error('Unavailable in Archive: ' + unavailable.map(id => RBY[id].title).join(', '));
+    if (!printInteger((source.meta.challengeMastery?.sequence ?? 0) + 1)) throw Error('Mastery sequence cannot advance safely.');
+    return {version:1,mode:'smallcrew-mastery',rule:1,medal,target:masteryTargets[medal],required:masteryIDs.slice(0,masteryTargets[medal])};
+  }
+  function masteryReady() {
+    masteryValidate(S);
+    if (!masteryEnabled() || !writer?.owns() || !progressing() || writer.held() || writer.localDisposition() || !writer.guard(S) || !masteryActive() ||
+        !challengeSettled() || !extensionAPI.identitySettled() || !extensionAPI.layerSettled() || workPaused() || S.meta.folio?.working || S.meta.archive?.working ||
+        document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])')) throw Error('Mastery waits for visible play and settled work and saves.');
+  }
+  let masteryIntent = null, masteryNotice = '';
+  function masteryPending() {
+    masteryValidate(S);
+    const p = S.meta.challengeMastery?.pending;
+    if (!masteryEnabled() || !p || p.version !== 1 || !['sale','abandon','qualify'].includes(p.action) || typeof p.source !== 'string' || !printInteger(p.at)) throw Error('Unsupported pending mastery command.');
+    const source = pitchCopy(S); delete source.meta.challengeMastery.pending;
+    if (printingSource(source) !== p.source || !masteryActive(source)) throw Error('Mastery source changed. Save preserved.');
+    const run = source.meta.challengeMastery.active;
+    if (p.run !== run.id) throw Error('Mastery run changed.');
+    if (p.action === 'sale') {
+      const r = RBY[p.title];
+      if (!r || !run.required.includes(r.id) || run.sold.includes(r.id) || !canWrite(r) || !layers.same(p.need,r.need) ||
+          !layers.same(p.recipe,[r.title,r.text,r.pay]) || !Number.isFinite(p.mult) || p.mult < .5 || p.mult > 2 ||
+          !Array.isArray(p.muses) || p.muses.some(id => !MUSES.some(m => m.id === id)) || p.pay !== salePay(r,p.mult,id => p.muses.includes(id)) ||
+          p.id !== `mastery-sale:e${run.resetEpoch}:${run.sequence}:${r.id}` || !printInteger(p.previous) || p.sequence !== p.previous + 1 ||
+          ![p.balance,p.pay,p.balance+p.pay,source.stats.lump+p.pay,source.run.earned+p.pay].every(printInteger) || p.pay <= 0 || p.pay % Economy.scale) throw Error('Unsupported frozen mastery sale.');
+      const marker = bananas.acknowledgement(), paid = marker?.id === p.id && marker.sequence === p.sequence && marker.amount === p.pay;
+      if (!paid && !layers.same(marker,p.marker) || bananas.get() !== p.balance + (paid ? p.pay : 0)) throw Error('Mastery wallet baseline changed.');
+    } else if (p.action === 'qualify' && run.sold.length !== run.target) throw Error('Mastery target is incomplete.');
+    return p;
+  }
+  function masteryFreeze(request) {
+    masteryReady();
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    masteryReady();
+    const run = S.meta.challengeMastery.active, at = Date.now();
+    let p = {version:1,action:request.action,run:run.id,at,source:printingSource(S)};
+    if (request.action === 'sale') {
+      const r = RBY[request.id];
+      if (!r || !run.required.includes(r.id) || run.sold.includes(r.id) || !canWrite(r)) throw Error('Required authored title is unavailable.');
+      const marker = bananas.acknowledgement(), previous = marker?.sequence ?? 0, mult = marketMult(r.band);
+      p = {...p,title:r.id,id:`mastery-sale:e${run.resetEpoch}:${run.sequence}:${r.id}`,previous,sequence:previous+1,marker,balance:bananas.get(),mult,pay:salePay(r,mult),need:pitchCopy(r.need),recipe:[r.title,r.text,r.pay],muses:MUSES.filter(m => museOn(m.id)).map(m => m.id)};
+    } else if (!['abandon','qualify'].includes(request.action) || request.action === 'qualify' && run.sold.length !== run.target) throw Error('Mastery outcome unavailable.');
+    if (p.action === 'sale' && ![p.sequence,p.balance,p.pay,p.balance+p.pay,S.stats.lump+p.pay,S.run.earned+p.pay].every(printInteger)) throw Error('Mastery sale exceeds safe counters.');
+    masteryIntent = pitchCopy(S); masteryIntent.meta.challengeMastery.pending = p;
+  }
+  function masteryCommit(action) {
+    if (!writer?.owns() || !writer.transacting() || !masteryEnabled() || writer.localDisposition() || window.VaultSaveGate?.blocked) return {ok:false,refused:true,error:'Mastery owner unavailable.'};
+    try {
+      let candidate, p;
+      if (action === 'prepare') {
+        if (!masteryIntent || printingSource(S) !== masteryIntent.meta.challengeMastery.pending.source) throw Error('Mastery command changed before intent save.');
+        candidate = masteryIntent;
+      } else if (action === 'finish') {
+        p = masteryPending(); candidate = pitchCopy(S);
+        const m = candidate.meta.challengeMastery, run = m.active;
+        if (p.action === 'sale') {
+          const marker = bananas.acknowledgement();
+          if (marker?.id !== p.id || marker.sequence !== p.sequence || marker.amount !== p.pay) throw Error('Mastery payment is not acknowledged.');
+          for (const w in p.need) { candidate.bank[w] -= p.need[w]; if (candidate.bank[w] <= 0) delete candidate.bank[w]; }
+          candidate.written[p.title] = true; candidate.stats.lump += p.pay; candidate.stats.bestMult = Math.max(candidate.stats.bestMult || 0,p.mult); candidate.run.earned += p.pay;
+          run.sold.push(p.title); m.receipt = {...m.receipt,id:p.id,sequence:p.sequence,amount:p.pay}; candidate.rewards.walletHead = {...m.receipt,origin:'mastery-sale'};
+          pg?.clearManual(candidate,p.title); if (candidate.focus === p.title) candidate.focus = null;
+        }
+        if (p.action !== 'sale' || run.sold.length === run.target) {
+          const qualified = p.action !== 'abandon';
+          m.last = {...m.last,...pitchCopy(run),outcome:qualified ? 'qualified' : 'abandoned',at:p.at};
+          if (qualified && (!m.highest || m.highest.target < run.target)) m.highest = {...m.highest,...pitchCopy(run),contained:Object.keys(masteryTargets).filter(k => masteryTargets[k] <= run.target)};
+          m.active = null; candidate.challenge = null;
+        }
+        delete m.pending;
+      } else throw Error('Unknown mastery command.');
+      candidate.lastSeen = p?.at ?? masteryIntent.meta.challengeMastery.pending.at;
+      masteryValidate(candidate);
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (!result.ok) return result;
+      S = candidate; masteryIntent = null;
+      if (p) {
+        bankV++; dropCaches(); introProgress(); pickAutoFocus();
+        if (p.action === 'sale') salePublished(RBY[p.title],p.pay,p.mult,null,{});
+        if (!masteryActive()) { IMI.banner(S.meta.challengeMastery.last.outcome === 'qualified' ? 'Small Crew mastery saved' : 'Trial abandoned'); }
+      }
+      mark(); return {ok:true,status:p ? 'acknowledged' : 'prepared'};
+    } catch(error) { return {ok:false,refused:true,error:error.message}; }
+  }
+  function masteryHTML() {
+    if (!masteryEnabled()) return '';
+    let m; try { masteryValidate(S); m = S.meta.challengeMastery; } catch(error) { return `<section class="o-card"><p>${esc(error.message)}</p></section>`; }
+    const run = m?.active;
+    return `<section class="o-card lg08j-mastery"><h3>Manual Small Crew mastery</h3>${masteryNotice ? `<p role="status">${esc(masteryNotice)}</p>` : ''}<p>Saved medal: ${m?.highest?.medal ?? 'none'}. ${m?.last ? 'Last trial: ' + m.last.outcome + '.' : ''}</p><p>Bamboo and Hibiscus only, at most two typists each. All helpers and Publisher pause. Typists, free keepers, manual holds and your existing output bonuses remain. No medal rewards.</p>${run ? `<p>${esc(run.medal)}: ${run.sold.length}/${run.target} saved titles</p><ul>${run.required.map(id => `<li>${run.sold.includes(id) ? 'Sold: ' : 'Needed: '}${esc(RBY[id].title)}</li>`).join('')}</ul><button class="o-btn" data-act="mastery-abandon">Abandon trial (no medal)</button>` : `<p>Requires ordinary Small Crew clear, introduction, Printing 5 and at least one pending Printing star.</p>${Object.entries(masteryTargets).map(([medal,n]) => `<button class="o-btn" data-act="mastery-review" data-medal="${medal}" ${S.challenge || !S.chDone.smallcrew || !S.intro.done || S.printing < 4 || starsNow() < 1 ? 'disabled' : ''}>Review ${medal} (${n} books)</button>`).join('')}`}</section>`;
+  }
+  function masteryReview(medal) {
+    masteryNotice = '';
+    try {
+      const quote = printingReview('mastery',medal), selection = masterySelection(medal);
+      const el = document.createElement('div'); el.className = 'o-modal';
+      el.innerHTML = `<div class="o-modal-card o-vault-gate"><h3>Start ${esc(medal)} Small Crew?</h3><div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Trial reset losses and books"><p>This Printing grants ${quote.gain} pending Legacy stars, then resets bananas, machines, typists, bank, run tools, deals, divisions, Muses and garden. Ordinary Printing history and permanent benefits remain. Only Bamboo/Hibiscus and two typists each. All helpers and Publisher pause until qualification or saved abandon. No medal or replay reward.</p><p>Manually produce and sell all ${selection.target} books:</p><ul>${selection.required.map(id => `<li>${esc(RBY[id].title)}</li>`).join('')}</ul></div><div class="o-row"><button class="o-btn" data-cancel>Cancel</button><button class="o-btn gold" data-start>Start trial</button></div></div>`;
+      document.body.append(el); el.querySelector('[data-cancel]').onclick = () => el.remove();
+      el.querySelector('[data-start]').onclick = () => {el.remove(); const r = writer.printingAction({origin:'mastery',quote}); if (!r.ok) newsPush(r.error);};
+      el.querySelector('[data-cancel]').focus();
+    } catch(error) {newsPush(error.message);}
+  }
+
+  // LG-08G owns only ordinary Printing. Challenge/full reset keep their old path.
+  const printingEnabled = () => ['lg08print','lg03','lg01a','lg05folio','lg05layers','lg08estate'].every(k => new URLSearchParams(location.search).get(k) === '1');
+  const printingHelper = () => extensions.get('automation') || (window.__OPS_EXTENSIONS || []).find(([id]) => id === 'automation')?.[1];
+  const printInteger = n => Number.isSafeInteger(n) && n >= 0;
+  let printingOffer = null, printingIntent = null;
+  function printingQuote(source = S) {
+    if (window.VaultPlay?.pending(source) || writer?.localDisposition()) throw Error('Finish the saved purchase or recovery before Printing.');
+    masteryValidate(source); challengeValidate(source);
+    if (challengeActive(source)) throw Error('Settle A11 before Printing.');
+    if (!printingEnabled() || !printingHelper()?.validConfig(source.meta.automation,extensionAPI)) throw Error('Unsupported Printing settings or missing flags.');
+    layers.current(source); archiveFeature?.retained(source); worksDemo?.retained(source); worksPlay?.retained(source);
+    if (source.meta.folio?.pending || source.meta.layers?.pending || source.meta.estate?.pending || source.meta.archive?.pending ||
+        source.meta.automation?.pitch?.sale || source.meta.automation?.media?.pending || source.rewards.awayCheckpoint ||
+        source.prem.vault?.transition || Object.values(source.rewards.claims || {}).some(c => c.status === 'prepared') ||
+        source.meta.folio?.working || source.meta.archive?.working || source.meta.worksDemo?.working || worksPlay?.current(source)?.working) throw Error('Original work or recovery must settle before Printing.');
+    if (source.meta.folio !== undefined && !folio.valid(source.meta.folio) ||
+        source.meta.productionGoal !== undefined && !window.ProductionGoal?.valid(source.meta.productionGoal) ||
+        source.meta.trainingPool !== undefined && !window.TrainingPool?.valid(source.meta.trainingPool) ||
+        source.meta.minigames !== undefined && source.meta.minigames?.version !== 1) throw Error('Unsupported retained progression. Save preserved.');
+    const gain = Math.floor(Math.sqrt(source.run.earned / cash(5e5))), epoch = layers.estateIdentity(source)?.resetEpoch;
+    if (source.challenge || ![source.run.earned,source.printing,source.printing + 1,source.legacy.stars,source.legacy.total,gain,source.legacy.stars + gain,source.legacy.total + gain].every(printInteger) ||
+        gain < 1 || source.legacy.stars > source.legacy.total || epoch !== undefined && !printInteger(epoch + 1) ||
+        !printInteger(source.legacy.ups.seed ?? 0) || (source.legacy.ups.seed ?? 0) > 3 || ![0,1].includes(source.legacy.ups.crew ?? 0) ||
+        Object.values(source.editions).some(n => !printInteger(n)) || Object.keys(source.written).some(id => !printInteger((source.editions[id] ?? 0) + 1))) throw Error('Printing counters cannot advance safely.');
+    return {...layers.epochFields(source),printing:source.printing,earned:source.run.earned,stars:source.legacy.stars,total:source.legacy.total,gain};
+  }
+  function printingReady() {
+    if (!printingEnabled() || !writer?.owns() || !progressing() || !writer.guard(S) || writer.held() || writer.localDisposition() || window.VaultSaveGate?.blocked ||
+        S.challenge || ui.nextCh || !challengeSettled() || !extensionAPI.identitySettled() || !extensionAPI.layerSettled() || workPaused() ||
+        S.meta.folio?.working || S.meta.archive?.working || S.meta.worksDemo?.working || worksPlay?.current(S)?.working ||
+        S.meta.folio?.pending || S.meta.layers?.pending || S.meta.estate?.pending || S.meta.archive?.pending || S.meta.automation?.print?.pending ||
+        document.hidden || IMI.screen() !== 'game' || IMI.tour?.active() || document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])')) throw Error('Finish current work and waiting saves before Printing.');
+    printingQuote();
+  }
+  // Ignore only elapsed presentation counters. All room, earnings, identity and wallet inputs bind review.
+  const printingSource = source => {
+    const next = pitchCopy(source); delete next.lastSeen; delete next.log;
+    delete next.stats.secs; delete next.stats.playSecs;
+    return JSON.stringify(next);
+  };
+  function printingRoom(source, crew, at, origin, selection) {
+    const q = printingQuote(source), next = layers.projectRoom(source,fresh());
+    next.printing = q.printing + 1; next.run.earned = 0;
+    next.intro = {...source.intro,done:true,train:true,words:true,shop:true};
+    next.legacy = {...next.legacy,stars:q.stars + q.gain,total:q.total + q.gain};
+    if (q.resetEpoch !== undefined) next.meta.estate.resetEpoch = q.resetEpoch + 1;
+    worksPlay?.exit(next);
+    if (next.meta.worksDemo) next.meta.worksDemo.working = false;
+    if (next.meta.archive) next.meta.archive.working = null;
+    pg?.clearManual(next);
+    for (const id of ['garden','pitch','muse']) {
+      const manual = next.meta.automation?.[id]?.manual;
+      if (manual && !manual.complete) {
+        if (id === 'muse') Object.assign(manual,{ids:[],complete:false,...layers.epochFields(next),imprint:layers.identity(next),printing:next.printing});
+        else if (manual.pending != null) manual.pending = null;
+      }
+    }
+    if (next.meta.folio !== undefined) next.meta.folio = folio.current(next);
+    next.rewards.activeGold = null;
+    next.desks[0].paws = crew.length; next.desks[0].crew = pitchCopy(crew);
+    if (crew.length) next.hold = true;
+    for (const t of crew) next.looks[t.look] = 1;
+    const cfg = next.meta.automation?.print;
+    next.meta.automation = {...next.meta.automation,version:1,print:{...cfg,version:1,manual:{...cfg?.manual,...(origin === 'manual' ? {complete:true} : {})}}};
+    delete next.meta.automation.print.pending;
+    if (origin === 'auto-challenge') AutoChallenge.enter(next,selection,at);
+    if (origin === 'mastery') {
+      const m = next.meta.challengeMastery ?? {version:1,sequence:0};
+      const sequence = m.sequence + 1;
+      next.meta.estate = {...selection.identity,resetEpoch:selection.identity.resetEpoch + 1};
+      const run = {version:1,rule:1,origin:'manual',id:`mastery:e${next.meta.estate.resetEpoch}:${sequence}`,sequence,resetEpoch:next.meta.estate.resetEpoch,printing:next.printing,imprint:layers.identity(next),medal:selection.medal,target:selection.target,required:selection.required,sold:[]};
+      next.meta.challengeMastery = {...m,sequence,active:run};
+      next.challenge = {id:'smallcrew',start:at,mastery:run.id};
+    }
+    next.lastSeen = at;
+    return next;
+  }
+  function printingPending() {
+    const p = S.meta.automation?.print?.pending;
+    if (!printingEnabled() || !p || !(p.version === 1 && ['manual','auto'].includes(p.origin) || p.version === 2 && p.origin === 'mastery' && masteryEnabled() && p.selection?.mode === 'smallcrew-mastery' || p.version === 3 && p.origin === 'auto-challenge' && challengeEnabled() && p.selection?.mode === 'smallcrew-auto') || !printInteger(p.at) || !printInteger(p.balance) || p.balance % Economy.scale ||
+        !printInteger(p.seed) || !Array.isArray(p.crew) || typeof p.source !== 'string' || typeof p.automationAbsent !== 'boolean' ||
+        !Object.hasOwn(p,'sourcePrint') || !layers.same(p.marker,bananas.acknowledgement()) || ![p.balance,p.seed].includes(bananas.get())) throw Error('Waiting Printing requires its exact original intent and wallet.');
+    const source = pitchCopy(S);
+    if (p.automationAbsent) delete source.meta.automation;
+    else if (p.sourcePrint === null) delete source.meta.automation.print;
+    else source.meta.automation.print = pitchCopy(p.sourcePrint);
+    const q = printingQuote(source), id = layers.identityKey('printing',[q.printing + 1,q.total,q.earned],q);
+    if (p.id !== id || !/^printing:(?:e(?:0|[1-9]\d*):)?(?:0|[1-9]\d*):(?:0|[1-9]\d*):(?:0|[1-9]\d*)$/.test(p.id) ||
+        !layers.same(q,p.quote) || printingSource(source) !== p.source || p.seed !== cash([0,1000,10000,100000][source.legacy.ups.seed || 0]) ||
+        !extensionAPI.estateCrewValid(p.crew,source) || !layers.same(printingRoom(source,p.crew,p.at,p.origin,p.selection),p.candidate)) throw Error('Waiting Printing source or successor changed. Save preserved.');
+    if (p.origin === 'mastery') {
+      const selection = masterySelection(p.selection.medal,source);
+      const identity = layers.estateIdentity(source) ?? {version:1,localImprints:layers.current(source).count,resetEpoch:0};
+      if (!layers.same(p.selection,{...selection,identity})) throw Error('Unsupported frozen mastery entry.');
+    }
+    if (p.origin === 'auto-challenge' && !layers.same(p.selection,AutoChallenge.selection(source))) throw Error('Unsupported frozen A11 entry.');
+    if (p.origin === 'auto' && !printingHelper().validPrintDecision(p.decision,source,q,extensionAPI)) throw Error('Invalid frozen automatic Printing decision.');
+    return p;
+  }
+  function printingReview(origin = 'manual', medal) {
+    if (origin === 'auto-challenge' && !printingHelper()?.challengeAuthorize()) throw Error('A11 entry is not due.');
+    if (origin === 'auto' && !printingHelper()?.printAuthorize()) throw Error('Automatic Printing is not currently due.');
+    printingReady();
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    printingReady();
+    const quote = printingQuote();
+    const selection = origin === 'mastery' ? masterySelection(medal) : origin === 'auto-challenge' ? AutoChallenge.selection(S) : null;
+    if (origin === 'auto-challenge') {challengeAvailable(); if (!S.autoFocus && S.focus) throw Error('Clear the manual focus before A11 entry.');}
+    printingOffer = {origin,selection,quote,source:printingSource(S),balance:bananas.get(),marker:bananas.acknowledgement()};
+    return pitchCopy(quote);
+  }
+  function printingFreeze(request) {
+    printingReady();
+    if (!['manual','auto','mastery','auto-challenge'].includes(request?.origin) || !printingOffer || request.origin !== printingOffer.origin || request.origin === 'auto' && !printingHelper()?.printAuthorize() || !layers.same(request.quote,printingOffer.quote) ||
+        printingSource(S) !== printingOffer.source || bananas.get() !== printingOffer.balance || !layers.same(bananas.acknowledgement(),printingOffer.marker)) throw Error('Printing changed. Review it again.');
+    // Only this named Archive settlement may refresh the reviewed boundary.
+    if (!archiveSettle()) throw Error('Archive income waiting to save.');
+    printingReady();
+    if (request.origin === 'auto' && !printingHelper()?.printAuthorize()) throw Error('Automatic Printing changed before prepare.');
+    if (request.origin === 'auto-challenge') {if (!printingHelper()?.challengeAuthorize()) throw Error('A11 entry changed.'); challengeAvailable();}
+    const quote = printingQuote(), decision = request.origin === 'auto' ? printingHelper().printDecision() : null, at = Date.now(), room = fresh(), crew = room.desks[0].crew;
+    if (request.origin === 'auto' && !printingHelper().validPrintDecision(decision,S,quote)) throw Error('Automatic decision is unavailable.');
+    if (S.legacy.ups.crew) for (let i=0;i<2;i++) crew.push(newTypist(room));
+    const selection = request.origin === 'mastery' ? {...masterySelection(printingOffer.selection.medal),identity:layers.estateIdentity(S) ?? layers.initializeIdentity(S)} : request.origin === 'auto-challenge' ? AutoChallenge.selection(S) : null;
+    const p = {version:request.origin === 'auto-challenge' ? 3 : selection ? 2 : 1,origin:request.origin,...(selection ? {selection} : {}),...(decision ? {decision} : {}),at,id:layers.identityKey('printing',[quote.printing + 1,quote.total,quote.earned],quote),quote,
+      source:printingSource(S),sourcePrint:pitchCopy(S.meta.automation?.print ?? null),automationAbsent:S.meta.automation === undefined,
+      balance:bananas.get(),marker:bananas.acknowledgement(),seed:cash([0,1000,10000,100000][S.legacy.ups.seed || 0]),crew,
+      candidate:printingRoom(S,crew,at,request.origin,selection)};
+    printingIntent = {...pitchCopy(S),meta:{...pitchCopy(S.meta),automation:{...pitchCopy(S.meta.automation ?? {}),version:1,print:{...pitchCopy(S.meta.automation?.print ?? {}),version:1,pending:p}}}};
+    printingOffer = null;
+    return p.id;
+  }
+  function printingCommit(action) {
+    if (!writer?.owns() || !writer.transacting() || !printingEnabled() || window.VaultSaveGate?.blocked || writer.localDisposition()) return {ok:false,status:'refused',refused:true,error:'Printing owner unavailable'};
+    try {
+      let candidate, p;
+      if (action === 'prepare') {
+        if (!printingIntent || printingSource(S) !== printingIntent.meta.automation.print.pending.source) throw Error('Prepared Printing source changed.');
+        candidate = printingIntent;
+      } else if (action === 'finish') {p = printingPending();candidate = p.candidate;}
+      else throw Error('Unknown Printing command.');
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (!result.ok) return {...result,status:'held'};
+      S = candidate; printingIntent = null;
+      if (p) {
+        layerRuntimeReset('floor');
+        extensionEvent('init','printing');
+        extensionEvent('reset',{kind:'printing',gain:p.quote.gain,previousPrinting:p.quote.printing});
+        if (pg?.active(pgContext)) pickAutoFocus();
+        logIt(`Printing ${S.printing + 1} begins. Legacy stars: ${S.legacy.stars}.`);
+        newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
+        shownN['cel-st'] = 0;
+        celebrate(PX ? `PRINTING ${S.printing + 1}` : `Printing ${S.printing + 1}`, PX ? 'THE PRESSES ROLL AGAIN' : 'The presses roll again',
+          `<p class="o-cel-stars">+${cnt('cel-st',p.quote.gain)} Legacy star${p.quote.gain > 1 ? 's' : ''}</p><p class="o-cel-sub">Every title can be sold again. Income x${(legacyMult() * editionMult()).toFixed(2)}.</p>`);
+      }
+      mark();
+      return {ok:true,status:p ? 'acknowledged' : 'prepared',id:p?.id ?? S.meta.automation.print.pending.id};
+    } catch(error) {return {ok:false,status:'refused',refused:true,error:error.message};}
+  }
+
   function doPrint(chId) {
+    if (lampPending()) return;
+    if (masteryActive() || challengeActive()) return;
+    if (printingEnabled() && !chId && !S.challenge) { try { return writer.printingAction({origin:'manual',quote:printingReview()}); } catch(error) { return {ok:false,status:'refused',refused:true,error:error.message}; } }
+    if (!progressing()) return;
+    if (!archiveSettle()) return;
+    try { archiveFeature?.retained(S); worksDemo?.retained(S); worksPlay?.retained(S); } catch { return; }
     const gain = starsNow(); if (gain < 1) return;
+    const constraint = chId && chDef(chId);
+    if ((constraint?.imprint || imprintChallenge()) && (!challengeSettled() || imprintChallenge() && !challengeRun())) return;
+    if (chId && (!constraint || !challengeSelectable(constraint) || constraint.helper && (writer.localDisposition() || !writer.guard(S)))) return;
+    let estate;
+    try { estate = layers?.advanceIdentity(S); } catch { return; }
     IMI.pickups?.clear(); goldEnd?.(); holding = false; royAcc = coinBank = 0;
     const old = S, f = fresh();
+    f.meta = estate === undefined ? old.meta : {...pitchCopy(old.meta), estate}; f.rewards = old.rewards; f.prem = old.prem;
+    if (window.Hall?.enabled) f.looks = {...old.looks};
     Object.assign(f, { intro: { ...old.intro, done: true, train: true, words: true, shop: true }, daily: old.daily, awards: old.awards, stats: old.stats, best: old.best, gold: old.gold, royTotal: old.royTotal, divTotal: old.divTotal, pitches: old.pitches, chDone: old.chDone, printing: old.printing + 1 });
     f.editions = { ...old.editions }; Object.keys(old.written).forEach(id => { f.editions[id] = (f.editions[id] || 0) + 1; });
     f.legacy = { ...old.legacy, ups: { ...old.legacy.ups }, stars: old.legacy.stars + gain, total: old.legacy.total + gain };
     f.run = { earned: 0 }; f.challenge = chId ? { id: chId, start: Date.now() } : null;
-    S = f; freqCache = null;
+    if (constraint?.imprint) f.challenge.imprintRun = {version:1,...layers.epochFields(f),printing:f.printing,imprint:layers.identity(f),
+      ...(chId === 'onebrief' ? {phase:challengeBacklog(f) > 1 ? 'clearance' : 'goal',baseline:0} : {}),
+      ...(chId === 'fixedcast' ? {seats:null} : {})};
+    S = f; worksPlay?.exit(S); if (S.meta.worksDemo) S.meta.worksDemo = {...S.meta.worksDemo,working:false}; if (S.meta.archive) S.meta.archive = {...S.meta.archive,working:null}; pg?.clearManual(S);
+    if (gardenPrototype()) extensions.get('automation')?.clearGardenPending(S);
+    clearMuseIncomplete(S); musePending = null; layerChoices.delete('muse');
+    clearPitchPending(S); commissionPending = null; layerChoices.delete('pitch');
+    if (folio?.enabled && S.meta.folio !== undefined && folio.valid(S.meta.folio)) S.meta = {...S.meta, folio:folio.current(S)};
+    freqCache = null;
     S.desks.forEach(ensureCrew);
     bananas.spend(bananas.get());
     const seed = cash([0, 1000, 10000, 100000][legLvl('seed')]); if (seed) bananas.add(seed);
-    if (legLvl('crew')) { S.hold = true; S.desks[0].paws = 2; ensureCrew(S.desks[0]); }
+    if (legLvl('crew')) { S.hold = !chal('quietshop'); S.desks[0].paws = 2; ensureCrew(S.desks[0]); }
     S.run.earned = 0; lastBananas = bananas.get();
+    extensionEvent('init', 'printing');
+    extensionEvent('reset', { kind: 'printing', gain, previousPrinting: old.printing });
+    if (pg?.active(pgContext)) pickAutoFocus();
     rt.forEach(r => { r.timers = []; r.sheet = ''; r.col = 0; r.n = 0; });
     ui.hot = DESKS.map(() => false); ui.readySet = null; ui.pulled = null; ui.fresh = null; ui.dropped = {}; ui.mcd = {}; ui.tab = 'floor';
     Object.keys(buffs).forEach(k => { buffs[k] = 0; });
     S.sel = 0; typists = [];
+    if (!progressing()) { buildStage(); mark(); return; }
     logIt(`Printing ${S.printing + 1} begins. Legacy stars: ${S.legacy.stars}.${S.challenge ? ' Challenge: ' + chDef(S.challenge.id).name + '.' : ''}`);
     newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
     shownN['cel-st'] = 0;
@@ -965,25 +2157,32 @@
     buildStage(); render(); save();
   }
   function askPrint() {
+    printingHelper()?.printChoice();
+    let printQuote;
+    if (printingEnabled() && !ui.nextCh && !S.challenge) { try { printQuote = printingReview(); } catch(error) { newsPush(error.message);return; } }
+    if (!archiveSettle()) return;
+    try { archiveFeature?.retained(S); worksDemo?.retained(S); worksPlay?.retained(S); } catch { return; }
     const gain = starsNow(); if (gain < 1) return;
     document.querySelectorAll('.o-modal').forEach(m => m.remove());
     const el = document.createElement('div'); el.className = 'o-modal'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'oPrT');
     const C = ui.nextCh && chDef(ui.nextCh);
-    el.innerHTML = `<div class="o-modal-card"><h3 id="oPrT">Go to press?</h3>
+    el.innerHTML = `<div class="o-modal-card${C?.helper ? ' o-vault-gate' : ''}"><h3 id="oPrT">Go to press?</h3>
+      ${C?.helper ? '<div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Printing and challenge details">' : ''}
       <p>You will earn <b>${gain}</b> Legacy star${gain > 1 ? 's' : ''} and start printing ${S.printing + 2}.${C ? ` The <b>${C.name}</b> constraint will apply.` : ''}</p>
+      ${C ? `<p>${C.desc} First-clear benefit: ${challengeReward(C)}</p>` : ''}
       <p class="o-dim">You keep awards, stats, pitched titles, Legacy and your bookshelf (as earlier editions). You lose bananas, machines, typists, upgrades, deals, divisions, Muses, the garden and the word bank.</p>
-      <div class="o-row"><button type="button" class="o-btn" data-cancel>Not yet</button><button type="button" class="o-btn gold" data-ok>Print it</button></div></div>`;
+      ${C?.helper ? '</div>' : ''}<div class="o-row"><button type="button" class="o-btn" data-cancel>Not yet</button><button type="button" class="o-btn gold" data-ok>Print it</button></div></div>`;
     document.body.appendChild(el);
     const close = () => el.remove();
     el.querySelector('[data-cancel]').addEventListener('click', close);
-    el.querySelector('[data-ok]').addEventListener('click', () => { close(); doPrint(ui.nextCh); });
+    el.querySelector('[data-ok]').addEventListener('click', () => { close(); if (printQuote) { const r = writer.printingAction({origin:'manual',quote:printQuote}); if (!r.ok) newsPush(r.error); } else doPrint(ui.nextCh); });
     el.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
     el.querySelector('[data-cancel]').focus();
   }
   function renderLegacy() {
     const earned = S.run.earned || 0, gain = starsNow(), L = S.legacy;
-    const chips = [['', 'No constraint']].concat(CHALLENGES.map(c => [c.id, c.name + (S.chDone[c.id] ? ' ✓' : '')]))
-      .map(([id, name]) => `<button type="button" data-act="chpick" data-id="${id}" aria-pressed="${(ui.nextCh || '') === id}">${esc(name)}</button>`).join('');
+    const chips = [['', 'No constraint']].concat(challengeCatalog().map(c => [c.id, c.name + (S.chDone[c.id] ? ' ✓' : '')]))
+      .map(([id, name]) => `<button type="button" data-act="chpick" data-id="${id}" ${id && !challengeSelectable(chDef(id)) ? 'disabled' : ''} aria-pressed="${(ui.nextCh || '') === id}">${esc(name)}</button>`).join('');
     const picked = ui.nextCh && chDef(ui.nextCh);
     const active = S.challenge ? `<div class="o-card o-seat on"><div class="o-row"><h3>Oulipo: ${chDef(S.challenge.id).name}</h3><span class="o-lvl">${chProgress()}</span></div><p>${chDef(S.challenge.id).desc}</p><button type="button" class="o-btn sm" data-act="chabandon">Abandon (no reward)</button></div>` : '';
     const legCards = LEG.map(u => {
@@ -993,7 +2192,7 @@
     }).join('');
     const tabs = [['press', 'Press'], ['challenges', 'Challenges'], ['upgrades', 'Upgrades', L.stars ? L.stars : 0]];
     if (!tabs.some(t => t[0] === ui.sub.legacy)) ui.sub.legacy = 'press';
-    const sub = ui.sub.legacy, done = CHALLENGES.filter(c => S.chDone[c.id]);
+    const sub = ui.sub.legacy, done = challengeCatalog().filter(c => S.chDone[c.id]);
     let body;
     if (sub === 'press') body = `<div class="o-card o-print"><div class="o-row"><h3>Second Printing</h3><span class="o-lvl">Printing ${S.printing + 1}</span></div>
         <p>Keep your shelf as earlier editions: every title sells again for <b>+${35 * (S.printing + 1)}%</b> more (now +${35 * S.printing}%).</p>
@@ -1004,11 +2203,12 @@
         <button type="button" class="o-btn gold" data-act="printask" ${gain >= 1 ? '' : 'disabled'}>Go to press</button></div>`;
     else if (sub === 'challenges') body = `<h3 class="o-h">Challenge for the next printing (optional)</h3>
         <div class="o-filters"><span class="o-seg">${chips}</span></div>
-        ${picked ? `<p>${picked.desc} Reward: <b>+${picked.stars} stars</b> and a perk: ${picked.perk}${S.chDone[picked.id] ? ' <span class="o-dim">(already earned; replaying pays nothing)</span>' : ''}</p>` : '<p class="o-dim">Constraints make a run harder in a literary way. Each is worth stars and a permanent perk the first time you finish it.</p>'}
-        ${active}
+        ${picked ? `<p>${picked.desc} First-clear benefit: ${challengeReward(picked)}${S.chDone[picked.id] ? ' <span class="o-dim">(already earned; replaying pays nothing)</span>' : ''}</p>` : `<p class="o-dim">${challengePrototype ? 'More constraints unlock at Printing 5 after the introduction, with reward saving enabled. The four Imprint challenges also require a founded Imprint. First clears pay the listed benefit once.' : 'Constraints make a run harder in a literary way. Each is worth stars and a permanent perk the first time you finish it.'}</p>`}
+        ${masteryHTML()}
+        ${masteryActive() ? '' : active}
         ${done.length ? `<h3 class="o-h">Completed perks</h3><div class="o-grid">${done.map(c => `<div class="o-card"><h3>${c.name} ✓</h3><p>${c.perk}</p></div>`).join('')}</div>` : ''}`;
     else body = `<p class="o-dim">Legacy stars unspent: <b>${L.stars}</b></p><div class="o-grid">${legCards}</div>`;
-    morph($('#o-legacy'), subTabs('legacy', tabs) + body);
+    morph($('#o-legacy'), subTabs('legacy', tabs) + body + (layers?.enabled && (S.printing >= 7 || layers.identity(S)) ? '<div class="o-card layers"><h3>Imprints</h3><p>A new room with retained Legacy and permanent Press Seal purchases.</p><button class="o-btn" data-act="layers:open">Review Imprints</button></div>' : ''));
     hydrate($('#o-legacy'));
   }
 
@@ -1018,7 +2218,7 @@
   const mkCost = i => roundMoney(MK_BASE[i] * (S.desks[i].mk ? 12 : 1) * (chPerk('haiku') ? .8 : 1));
   /* ---- keepers: each desk's keeper can be tuned up (faster banking) with bananas ---- */
   const keeperLv = i => S.desks[i].keeper.lv || 0;
-  const keeperPeriod = i => KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, keeperLv(i));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
+  const keeperPeriod = i => KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, keeperLv(i)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
   const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, keeperLv(i)));
   function keeperCard(i, have) {
     const D = DESKS[i], lv = keeperLv(i), max = lv >= KEEPER_UP_MAX, cost = keeperUpCost(i), now = keeperPeriod(i);
@@ -1039,7 +2239,7 @@
     const descs = [`Sells your finished titles for you, one every ${PUB_PERIOD[0]} seconds, at a price you choose (on the Titles page). It never sells a title you picked by hand.`,
       `The assistant sells a title every ${PUB_PERIOD[1]} seconds.`, 'The assistant keeps selling while you are away, at an average market price.'];
     if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>Sells a title every ${PUB_PERIOD[1]} seconds, even while you are away.</p></div>`;
-    const lock = t === 0 && soldCount() < 3 ? 'Needs 3 sold titles' : '';
+    const lock = challengeShopLock('pub') || (t === 0 && soldCount() < 3 ? 'Needs 3 sold titles' : '');
     return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}${names[t]}</h3>${price(PUB_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="pub" ${lock || have < PUB_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
   }
@@ -1047,16 +2247,18 @@
     const D = DESKS[i], d = S.desks[i], next = MK_NAMES[d.mk + 1];
     return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart(`tw-${D.id}-${d.mk || 0}`)}${D.name}${d.mk ? ' ' + MK_NAMES[d.mk] : ''}</h3>${d.mk >= 2 ? '<span class="o-lvl">MAXED</span>' : price(mkCost(i))}</div>
       <p>${d.mk >= 2 ? 'Fully restored: typists work 50% faster here and titles in this band sell for 10% more.' : `Restore to ${next}: typists here work ${d.mk ? '50' : '25'}% faster and titles in this band sell for ${d.mk ? '10' : '5'}% more.`}</p>
-      ${d.mk >= 2 ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="mk" data-i="${i}" ${have < mkCost(i) ? 'disabled' : ''}>Restore</button>`}</div>`;
+      ${d.mk >= 2 ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="mk" data-i="${i}" ${challengeShopLock('mk') || have < mkCost(i) ? 'disabled' : ''}>${challengeShopLock('mk') || 'Restore'}</button>`}</div>`;
   }
 
   /* ================= rights market =================
      Every band has a demand multiplier that drifts. A sale pays base x demand, so you can sit on a ready title and wait for a hot market.
      Night, rain, storms and clear days each push a different band, which makes the weather and sun/moon toys matter. */
   const MK_MIN = 0.5, MK_MAX = 2.0;
-  const marketFloor = () => (S.agent ? .85 : MK_MIN);
+  const marketFloor = () => (toolOn('agent') ? .85 : MK_MIN);
   const marketMult = b => Math.max(marketFloor(), Math.round(S.market.v[b] * 100) / 100);
-  const salePay = (r, m = marketMult(r.band)) => roundMoney(r.pay * (S.contracts ? 1.25 : 1) * awardMult() * m * (1 + .05 * (S.desks[r.band].mk || 0)) * museSale(r.band) * legacyMult() * editionMult());
+  const saleContext = () => ({contracts:toolOn('contracts') ? 1.25 : 1, awards:awardMult(), desks:S.desks.map(d => 1 + .05 * (d.mk || 0)),
+    legacy:legacyMult(), edition:editionMult(), minigames:1 + (extensions.get('minigames')?.titleSaleBonus?.() || 0), state:S});
+  const salePay = (r, m = marketMult(r.band), on = museOn, c = saleContext()) => roundMoney(r.pay * c.contracts * c.awards * m * c.desks[r.band] * museSale(r.band,on) * c.legacy * c.edition * c.minigames * (layers?.saleFactor(c.state, r.band, on) || 1));
   function marketBias(b, sk = sky()) {
     const wx = sk.wx, night = sk.night;
     if (b === 0) return night ? .3 : 0;                       // bedtime books sell at night
@@ -1069,15 +2271,15 @@
   const marketNext = b => { const M = S.market; return M.v[b] + (1 + marketBias(b) - M.v[b]) * .12 + M.m[b] * .55; };
   function gardenTick() {
     const g = S.garden; if (!g.beds.some(Boolean)) return;
-    const now = Date.now(); g.beds.forEach((b, i) => { if (b && now >= b.ready && !b.told) { b.told = true; if (!document.hidden) { IMI.sfx.tick(); newsPush(`A plot of ${b.ch} is ripe in the letter garden.`); } } });
+    const now = savedWallNow(); g.beds.forEach((b, i) => { if (b && now >= b.ready && !b.told) { b.told = true; if (!document.hidden) { IMI.sfx.tick(); newsPush(`A plot of ${b.ch} is ripe in the letter garden.`); } } });
     if (ui.tab === 'lab' || ui.tab === 'muses') mark(); else dirty = true;
   }
   /* ---- the Publisher's assistant: sells finished titles for you (Shop > Market tools, three tiers) ---- */
   let pubClock = 0;
   const pubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0];
-  const pubSellable = () => readyList().filter(r => S.autoFocus || S.focus !== r.id);          // a title you picked by hand stays yours to sell
+  const pubSellable = () => readyList().filter(r => challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)));          // a title you picked by hand stays yours to sell
   function pubSell() {
-    if (!S.pub.tier || !S.pub.on || document.querySelector('.o-modal, .o-celebrate')) return false;
+    if (challengeControlled() || workPaused() || (chal('patientpress') || masteryActive()) || !S.pub.tier || !S.pub.on || document.querySelector('.o-modal, .o-celebrate')) return false;
     const rule = PUB_RULES[S.pub.rule] != null ? PUB_RULES[S.pub.rule] : 1; let best = null, bp = -1;
     for (const r of pubSellable()) { if (marketMult(r.band) < rule) continue; const p = salePay(r); if (p > bp) { best = r; bp = p; } }
     if (!best) return false;
@@ -1086,7 +2288,7 @@
     return true;
   }
   function pubStatus() {
-    const p = S.pub; if (!p.tier) return '';
+    const p = S.pub; if (workPaused()) return 'Publisher paused while working on Folio, Archive restoration or Works.'; if ((chal('patientpress') || masteryActive())) return masteryActive() ? 'Publisher suspended for manual Small Crew mastery.' : 'Publisher disabled by Patient Press. Sell titles manually.'; if (!p.tier) return '';
     if (!p.on) return 'Auto-sell is off. Finished titles wait for you.';
     const rule = PUB_RULES[p.rule] != null ? PUB_RULES[p.rule] : 1, ready = pubSellable();
     if (!ready.length) return 'Waiting for a finished title.';
@@ -1095,12 +2297,15 @@
     return `Selling in ${Math.max(0, Math.ceil(pubPeriod() - pubClock))}s${held ? ` · holding ${held} for a better price` : ''}.`;
   }
   /* tier 3: at return, sell what finished while you were away, at an average market (x1.0), as many as the assistant could have managed */
-  function autoSellAway(effSec) {
-    const out = { n: 0, pay: 0 }; if (S.pub.tier < 3 || !S.pub.on) return out;
-    for (let k = Math.min(200, Math.floor(effSec / PUB_PERIOD[1])); k > 0; k--) {
-      let best = null, bp = -1; for (const r of pubSellable()) { const p = salePay(r, 1); if (p > bp) { best = r; bp = p; } }
+  function autoSellAway(effSec, limit = 200, checkpoint) {
+    const out = { n: 0, pay: 0 }; if (challengeActive() || workPaused() || (chal('patientpress') || masteryActive()) || S.pub.tier < 3 || !S.pub.on) return out;
+    if (checkpoint) checkpoint.saleLeft ??= Math.min(limit, Math.floor(effSec / PUB_PERIOD[1]));
+    for (let k = checkpoint ? checkpoint.saleLeft : Math.min(limit, Math.floor(effSec / PUB_PERIOD[1])); k > 0; k--) {
+      let best = null, bp = -1; for (const r of pubSellable()) { if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id) continue; const p = salePay(r, 1); if (p > bp) { best = r; bp = p; } }
       if (!best) break;
+      if (checkpoint) checkpoint.saleLeft--;
       writeTitle(best.id, null, { silent: true, mult: 1 }); out.n++; out.pay += bp;
+      if (!progressing()) return out;
     }
     return out;
   }
@@ -1143,7 +2348,7 @@
     const M = S.market, rows = DESKS.map((D, b) => {
       const v = marketMult(b), h = M.hist[b], prev = h.length > 1 ? h[h.length - 2] : v, dir = v > prev + .004 ? 'up' : v < prev - .004 ? 'down' : 'flat';
       const bars = h.slice(-24).map(x => `<i style="height:${Math.round(Math.max(6, Math.min(100, (x - .4) / 1.7 * 100)))}%"></i>`).join('');
-      const nx = S.analyst ? marketNext(b) : null, fc = nx === null ? '' : `<span class="o-dim o-fc">soon: ${nx > v + .01 ? 'rising' : nx < v - .01 ? 'falling' : 'steady'}</span>`;
+      const nx = toolOn('analyst') ? marketNext(b) : null, fc = nx === null ? '' : `<span class="o-dim o-fc">soon: ${nx > v + .01 ? 'rising' : nx < v - .01 ? 'falling' : 'steady'}</span>`;
       const tag = v >= 1.5 ? '<span class="o-mtag hot">HOT</span>' : v <= .8 ? '<span class="o-mtag cold">COLD</span>' : '';
       const any = RECIPES.some(r => r.band === b), left = any ? RECIPES.filter(r => r.band === b && !S.written[r.id] && inPlay(r)).length : 1;
       return `<div class="o-mrow${left ? '' : ' done'}" style="--bc:${D.color}"><span class="o-mname"><b>${D.name.split(' ')[0]}</b><small>${D.lo}–${D.hi} letters${any ? (left ? '' : ' · all sold') : ' · pitch to unlock'}</small></span><span class="o-spark" aria-hidden="true">${bars}</span><span class="o-mval"><i class="o-arr ${dir}"></i>x${v.toFixed(2)}</span><span class="o-mextra">${tag}${fc}</span></div>`;
@@ -1221,7 +2426,7 @@
     AW('pr1', 1, 'Second Printing', 'Complete a printing', () => S.printing >= 1),
     AW('pr3', 2, 'Collector\'s Edition', 'Complete three printings', () => S.printing >= 3),
     AW('ch1', 1, 'Constraint Satisfied', 'Finish an Oulipo challenge', () => Object.keys(S.chDone).length >= 1),
-    AW('ch4', 2, 'Oulipian', 'Finish all four Oulipo challenges', () => CHALLENGES.every(c => S.chDone[c.id])),
+    AW('ch4', 2, 'Oulipian', 'Finish all four Oulipo challenges', () => ['vowel', 'haiku', 'hands', 'timed'].every(id => S.chDone[id])),
     AW('roy100', 1, 'Passive Income', `Earn ${fmt(cash(100))} bananas per second in royalties`, () => royBase() >= cash(100)),
     AW('roy1m', 1, 'Mailbox Money', `Earn ${fmt(cash(1e6))} bananas in royalties`, () => S.royTotal >= cash(1e6))
   ];
@@ -1238,8 +2443,42 @@
     const r = el.getBoundingClientRect(); setTimeout(() => { if (!el.isConnected) return; IMI.burst(r.left + 30, r.top + r.height / 2, ['star', 'spark'], 8); }, 380);
     setTimeout(() => { if (IMI.reduceMotion) return el.remove(); el.classList.add('out'); el.addEventListener('animationend', () => el.remove(), { once: true }); }, 4200);
   }
+  const allAwards = () => expanded ? [...AWARDS,...expanded.rows,...(funding?.rows || [])] : AWARDS;
+  function expandedManual(s) {
+    const helper = extensions.get('automation') || (window.__OPS_EXTENSIONS || []).find(([id]) => id === 'automation')?.[1];
+    if (s.meta.automation === undefined) return true;
+    if (!helper) return false;
+    return helper.validConfig(s.meta.automation, {gardenEnabled:() => true,pitchEnabled:() => true,mediaEnabled:() => true,museEnabled:() => true,
+      validPitch,validMedia,automationDesks:() => DESKS.map((d,index) => ({id:d.id,index}))});
+  }
+  function expandedAccess(id) {
+    if (!expanded || !S.intro.done || !tabVisible('records')) return false;
+    const gates = {
+      'lg02e-stamps-four':() => funding && layers?.enabled && tabVisible('imprints'),
+      'lg02e-stamps-six':() => funding && layers?.enabled && tabVisible('imprints'),
+      'lg02e-estate-three':() => funding && window.Estate?.enabled && tabVisible('estate'),
+      'lg02e-archive-three':() => funding && archiveFeature?.enabled && tabVisible('archive'),
+      'lg02e-manual-gold':() => funding && masteryEnabled() && tabVisible('legacy'),
+      'lg02e-works-quarter':() => funding && worksPlay?.enabled && tabVisible('works-play'),
+      'lg02e-works-half':() => funding && worksPlay?.enabled && tabVisible('works-play'),
+      'lg10-folio-trio':() => folio?.enabled && (S.printing >= 3 || layers?.charter(S)) && tabVisible('press'),
+      'lg10-room-quartet':() => challengePrototype && tabVisible('legacy'),
+      'lg10-two-stamps':() => layers?.enabled && tabVisible('imprints'),
+      'lg10-mixed-shelf':() => layers?.enabled && tabVisible('imprints'),
+      'lg10-imprint-quartet':() => gardenPrototype() && tabVisible('legacy'),
+      'lg10-manual-pair':() => gardenPrototype() && tabVisible('lab') && tabVisible('press'),
+      'lg10-manual-quartet':() => gardenPrototype() && ['lab','press','studios','muses'].every(tabVisible),
+      'lg10-estate-two':() => window.Estate?.enabled && tabVisible('estate'),
+      'lg10-archive-pair':() => archiveFeature?.enabled && tabVisible('archive'),
+      'lg10-works-ten':() => worksPlay?.enabled && tabVisible('works-play')
+    };
+    return !!gates[id]?.();
+  }
   function unlockAward(a, silent) {
-    S.awards[a.id] = true;
+    if (expanded?.row(a.id) || funding?.row(a.id)) { if (!writer.expandedDiscover(a.id)) return; }
+    else { S.awards[a.id] = true;
+    extensionEvent('award', { id: a.id, tier: a.tier, silent: !!silent }); }
+    if (!progressing()) return;
     if (introActive()) { mark(); save(); return; }
     if (silent) return;
     ui.unseen++; IMI.sfx.ding(); vib([10, 20, 10]);
@@ -1249,24 +2488,60 @@
     if (a.tier === 2) IMI.banner(PX ? 'GOLD AWARD!' : 'Gold Award!');
     mark(); save();
   }
-  function checkAwards(silent) { for (const a of AWARDS) if (!S.awards[a.id] && a.test()) unlockAward(a, silent); }
+  function checkAwards(silent) { for (const a of allAwards()) { if (!progressing()) return; if (!S.awards[a.id] && (expanded?.row(a.id) || funding?.row(a.id) ? expandedAccess(a.id) && writer.expandedReady(a.id) : a.test())) unlockAward(a, silent); } }
   const trophyHTML = () => {
-    const got = AWARDS.filter(a => S.awards[a.id]);
+    const got = allAwards().filter(a => S.awards[a.id]);
     return `<div class="o-trophies">${got.map(a => `<span class="o-trophy" title="${esc(a.name)}: ${esc(a.desc)}">${ico('trophy' + a.tier, 30)}</span>`).join('') || '<span class="o-dim">No awards yet. Keep typing.</span>'}</div>`;
   };
 
+  // Read-only facts use the same metrics and purchase/list gates as the live departments.
+  function goalFacts() {
+    const owned = S.desks.filter(d => d.owned), visible = Object.fromEntries(TABS.map(([id]) => [id, tabVisible(id)]));
+    const available = r => !S.written[r.id] && inPlay(r) && lockedDesk(r) === undefined;
+    return {
+      visible, revealed: S.intro.done && tabVisible('records'), currentTab: ui.tab,
+      metrics: { letters:S.stats.letters, streak:S.best, words:S.stats.words, sold:soldCount(), authored:authoredSold(),
+        kids:kidsSold(), library:libSold(), crew:totalPaws(), wallet:bananas.get(), level:maxLevel(),
+        pitched:S.stats.pitched || 0, pitchSold:S.stats.pitchSold || 0, restoration:Math.max(...owned.map(d => d.mk)),
+        releases:totalReleased(), divisions:DIVS.filter(D => divCount(D) > 0).length,
+        muses:MUSES.filter(m => S.muses.owned[m.id]).length, seats:S.muses.seated.slice(0,3).filter(Boolean).length,
+        harvested:S.stats.harvested || 0, printing:S.printing, challenges:challengeCatalog().filter(c => S.chDone[c.id]).length,
+        royalties:royBase(), royaltyTotal:S.royTotal, deals:DEALS.filter(d => S.deals[d.id]).length, lamp:S.lamp },
+      totals: { authored:BOOKS, kids:KIDS.length, library:LIBS.length, deals:DEALS.length, challenges:challengeCatalog().length },
+      capacity: { crew:owned.reduce((n,d) => n + upCap(UPS.find(u => u.k === 'paw'),d),0),
+        authored:RECIPES.filter(r => !r.kid && !r.lib && !r.gen && lockedDesk(r) === undefined).length,
+        kids:KIDS.filter(r => lockedDesk(r) === undefined).length, library:LIBS.filter(r => lockedDesk(r) === undefined).length },
+      reachable: { typing:S.intro.done && !chal('hands'), words:keepersReady(),
+        letters:S.intro.done && (!chal('hands') || owned.some(d => d.paws > 0)),
+        crew:owned.some(d => d.paws < upCap(UPS.find(u => u.k === 'paw'),d)), level:owned.some(d => d.paws > 0),
+        hat:owned.some(d => d.paws > 0) && HATS.some(hatOpen),
+        sold:RECIPES.some(r => !r.kid && !r.lib && available(r)), authored:RECIPES.some(r => !r.kid && !r.lib && !r.gen && available(r)),
+        kids:KIDS.some(available), library:LIBS.some(available),
+        desks:S.desks.map((d,i) => i > 0 && !d.owned && S.desks[i-1].owned && !((chal('haiku') || masteryActive()) && i >= 2)),
+        pitch:soldCount() >= 1 && (pitchActive() < PITCH_MAX || RECIPES.some(r => r.gen && available(r))),
+        restoration:owned.some(d => d.mk < 2), media:DIVS.some(D => divUnlocked(D) && divCount(D) < divCap(D)),
+        allDivisions:DIVS.every(divUnlocked), catalogue:DIVS.some(D => divUnlocked(D) && divOrder[D.id]?.length > 0 && divCount(D) < divOrder[D.id].length),
+        muse:soldCount() >= 3, seats:museSlots() >= 3,
+        garden:S.garden.beds.length > 0,
+        printing:starsNow() >= 1, challenge:!!S.challenge || starsNow() >= 1,
+        deal:DEALS.every(d => S.deals[d.id] || soldCount() >= d.need) },
+      desks:DESKS.map(d => d.name)
+    };
+  }
+
   function renderRecords() {
+    const focusedAward = writer && document.activeElement?.closest('.o-award')?.id;
     const st = S.stats, top = Object.entries(st.byLetter).sort((a, b) => b[1] - a[1])[0];
     const mins = Math.floor(st.secs / 60), played = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m ${Math.floor(st.secs % 60)}s`;
     const row = (k, v) => `<div class="o-row"><span>${k}</span><b>${v}</b></div>`;
-    const sorted = [...AWARDS].sort((a, b) => (!!S.awards[b.id] - !!S.awards[a.id]));
+    const sorted = [...allAwards()].sort((a, b) => (!!S.awards[b.id] - !!S.awards[a.id]));
     const tabs = [['awards', 'Awards'], ['stats', 'Stats'], ['log', 'Log']];
     if (!tabs.some(t => t[0] === ui.sub.records)) ui.sub.records = 'awards';
     const sub = ui.sub.records;
     tabs[0].push(sub !== 'awards' && ui.unseen ? ui.unseen : 0);
     if (sub === 'awards') ui.unseen = 0;
-    const awardsHTML = `<p class="o-lede"><b>${cnt('r-aw', awardCount())}/${AWARDS.length}</b> awards, <b>+${cnt('r-aw2', awardCount())}%</b> income (each adds 1%).</p>
-      <div class="o-awards">${sorted.map((a, n) => { const on = !!S.awards[a.id]; return `<div class="o-award t${a.tier}${on ? '' : ' locked'}" style="--n:${n}">${ico(on ? 'trophy' + a.tier : 'trophy0', 36)}<span><b>${esc(a.name)}</b><small>${esc(a.desc)}</small></span></div>`; }).join('')}</div>`;
+    const awardsHTML = `${writer ? writer.awardsHeader() : ''}<p class="o-lede"><b>${cnt('r-aw', awardCount())}/${allAwards().length}</b> awards, <b>+${cnt('r-aw2', awardCount())}%</b> income (each adds 1%).</p>
+      <div class="o-awards">${sorted.map((a, n) => { const on = !!S.awards[a.id]; return `<div ${writer ? `id="o-award-${a.id}" tabindex="-1"` : ''} class="o-award t${a.tier}${on ? '' : ' locked'}" style="--n:${n}">${ico(on ? 'trophy' + a.tier : 'trophy0', 36)}<span><b>${esc(a.name)}</b><small>${esc(a.desc)}</small>${writer ? writer.rewardLine(a.id) : ''}</span></div>`; }).join('')}</div>`;
     const logHTML = `<ol class="o-log">${S.log.map(t => `<li>${esc(t)}</li>`).join('') || '<li class="o-dim">Nothing yet. Go type something.</li>'}</ol>`;
     const statsHTML = `
       <div class="o-grid">
@@ -1276,6 +2551,7 @@
       </div>`;
     morph($('#o-records'), subTabs('records', tabs) + (sub === 'awards' ? awardsHTML : sub === 'stats' ? statsHTML : logHTML));
     hydrate($('#o-records'));
+    if (focusedAward && document.activeElement?.id !== focusedAward) document.getElementById(focusedAward)?.focus({ preventScroll:true });
   }
 
   /* ================= news ticker ================= */
@@ -1348,7 +2624,7 @@
      While the page is closed or hidden the typists nap at reduced effort, keepers keep banking, and royalties keep trickling in.
      The Night Lamp raises how long and how hard they work. */
   const LAMP = [{ cost: 5000, cap: 4, eff: .5 }, { cost: 60000, cap: 8, eff: .6 }, { cost: 750000, cap: 16, eff: .7 }].map(x => ({ ...x, cost: cash(x.cost) }));
-  const awayCap = () => (S.lamp ? LAMP[S.lamp - 1].cap : 2) * 3600;
+  const awayCap = () => Math.max((S.lamp ? LAMP[S.lamp - 1].cap : 2) * 3600, window.VaultPlay?.enabled() ? VaultPlay.cap(S) : 0);
   const awayEff = () => (S.lamp ? LAMP[S.lamp - 1].eff : .4) + (museOn('woolf') ? .15 : 0);
   const dur = sec => { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60); return h ? `${h}h ${m}m` : `${Math.max(1, m)}m`; };
   /* Offline work is simulated in bulk, not letter by letter: sample the letter mix once per step, add whole batches, bank words in bulk. */
@@ -1356,8 +2632,8 @@
     const up = d.up, k = d.keeper, mix = []; let r = 1;
     const fr = focusRecipe(d) ? focusNeeds(d, i).missing : null;
     if (fr && Object.keys(fr).length) { const p = UPV.practice[up.practice] * r; mix.push([fr, p]); r -= p; }
-    if (k.owned && up.stock) { const m = completers(d, i, w => target(d, w) > 0 && stock(w) < target(d, w)); if (Object.keys(m).length) { const p = UPV.stock[up.stock] * r; mix.push([m, p]); r -= p; } }
-    if (up.ink) { const m = completers(d, i, w => !stock(w)); if (Object.keys(m).length) { const p = UPV.ink[up.ink] * r; mix.push([m, p]); r -= p; } }
+    if (k.owned && up.stock) { const m = completers(d, i, w => goalWord(w) && goalTarget(d, w) > 0 && stock(w) < goalTarget(d, w)); if (Object.keys(m).length) { const p = UPV.stock[up.stock] * r; mix.push([m, p]); r -= p; } }
+    if (up.ink) { const m = completers(d, i, w => goalWord(w) && !stock(w)); if (Object.keys(m).length) { const p = UPV.ink[up.ink] * r; mix.push([m, p]); r -= p; } }
     const q = chal('vowel') ? 0 : Math.max(UPV.vowel[up.vowel], museOn('dick') ? .3 : 0), base = {}, F = freqNow();
     for (const ch in F) base[ch] = F[ch] * (VOWELS.includes(ch) ? 1 + 1.5 * q : 1);
     mix.push([base, r]);
@@ -1365,8 +2641,8 @@
     for (const [m, p] of mix) { let t = 0; for (const ch in m) t += m[ch]; for (const ch in m) out[ch] = (out[ch] || 0) + p * m[ch] / t; }
     return out;
   }
-  function keeperBulk(d, i, lim) {
-    if (!keepersReady()) return 0;
+  function keeperBulk(d, i, lim, work) {
+    if (worksActive() || !keepersReady()) return 0;
     let banked = 0; const words = BAND_WORDS[i], r = focusRecipe(d);
     const bankN = (w, c) => {
       const cn = lcount(w);
@@ -1378,60 +2654,277 @@
       const c = Math.min(makeCopies(d, w), r.need[w] - stock(w), lim - banked); if (c > 0) bankN(w, c);
       if (banked >= lim) return banked;
     }
+    if (folioGoal() || pg?.active(pgContext)) return banked;
     const reserved = r ? focusNeeds(d, i).oneCopy : {};
-    for (let pass = 0; pass < 12 && banked < lim; pass++) {
-      let any = false;
-      for (const w of words) {
+    for (let pass = work ? work.pass : 0; pass < 12 && banked < lim; pass++) {
+      let any = work ? work.any : false;
+      for (let wi = work ? work.word : 0; wi < words.length; wi++) {
         if (banked >= lim) break;
+        const w = words[wi]; if (work) work.word = wi + 1;
         const t = target(d, w); if (t <= 0 || stock(w) >= t || !canMake(d, w)) continue;
         const c = lcount(w); let safe = true;
         for (const ch in c) { const have = d.letters[ch] || 0; if (have - c[ch] < Math.min(have, reserved[ch] || 0)) { safe = false; break; } }
         if (!safe) continue;
-        bankN(w, 1); any = true;
+        bankN(w, 1); any = true; if (work) work.any = true;
       }
+      if (work && work.word < words.length) return banked;
+      if (work) { work.word = 0; work.any = false; work.pass = pass + (any ? 1 : 0); }
       if (!any) break;
     }
     return banked;
   }
-  function simulateAway(awaySec) {
+  let boundaryJob = null, historicalEnd = null, boundaryProposal = null;
+  const savedWallNow = () => historicalEnd ?? boundaryJob?.displayEnd ?? Date.now();
+  function simulateAway(awaySec, fixedEnd = null) {
+    if (!progressing()) return;
     S.desks.forEach(ensureCrew);
-    const cap = awayCap(), eff = awayEff(), sec = Math.min(awaySec, cap);
-    const rep = { away: awaySec, counted: sec, capped: awaySec > cap, letters: 0, words: 0, roy: 0, ready: 0 };
-    const steps = Math.max(1, Math.min(300, Math.ceil(sec / 20))), dt = sec / steps, words0 = S.stats.words;
-    const nowMs = Date.now();
-    for (let st = 0; st < steps; st++) {
-      skyOv = World.at(nowMs - sec * 1000 + (st + .5) * dt * 1000);              // owls, rain lovers and storms count for the hours you were away
-      S.desks.forEach((d, i) => {
+    let cp = writer ? S.rewards.awayCheckpoint : null;
+    if (cp && (cp.version !== 1 || !Number.isFinite(cp.awaySec) || !Number.isFinite(cp.sec) || cp.sec < 0 ||
+        !Number.isFinite(cp.multiplier) || cp.multiplier <= 0 || !Number.isFinite(cp.nowMs) || !Number.isInteger(cp.st) ||
+        !['early','advance','work','sale','challenge','expiry','next','tail','tray','market','roy','div','archive','bulk','complete'].includes(cp.phase))) {
+      writer.checkpointFailure(); return;
+    }
+    if (cp) awaySec = cp.awaySec;
+    const cap = cp ? cp.cap : awayCap(), eff = cp ? cp.eff : awayEff(), sec = cp ? cp.sec : Math.min(awaySec, cap);
+    const rep = cp ? cp.report : { away: awaySec, counted: sec, capped: awaySec > cap, letters: 0, words: 0, roy: 0, ready: 0 };
+    const multiplier = cp ? cp.multiplier : speed(), workSec = sec * multiplier;
+    const steps = Math.max(1, Math.min(300, Math.ceil(sec / 20))), realDt = sec / steps, dt = workSec / steps, words0 = cp ? cp.words0 : S.stats.words;
+    // Positive-duration speed changes opt into timed ordering; zero/default calls retain bulk behavior.
+    const timed = cp ? cp.timed : sec > 0 && multiplier !== 1 && chal('timed');
+    const deadline = cp ? cp.deadline ?? Infinity : timed ? (chDef('timed').minutes * 60 - ((fixedEnd ?? Date.now()) - awaySec * 1000 - S.challenge.start) / 1000) / multiplier : Infinity;
+    const slots = timed && S.pub.tier >= 3 && S.pub.on ? Math.min(200, Math.floor(workSec * eff / PUB_PERIOD[1])) : 0;
+    const saleTimes = cp ? cp.saleTimes : Array.from({ length: slots }, (_, i) => (i + 1) * PUB_PERIOD[1] / (multiplier * eff));
+    const boundaries = cp ? cp.boundaries : timed ? [...new Set([0, ...Array.from({ length: steps }, (_, i) => (i + 1) * realDt), ...saleTimes, Math.max(0, Math.min(sec, deadline))])].sort((a, b) => a - b) : null;
+    const sold = cp ? cp.sold : { n: 0, pay: 0 }, royaltyRate = cp ? cp.royaltyRate : timed ? royBase() : 0;
+    const nowMs = cp ? cp.nowMs : fixedEnd ?? Date.now();
+    if (writer && !cp) {
+      cp = S.rewards.awayCheckpoint = { version:1, phase:'early', awaySec, cap, eff, sec, multiplier, nowMs,
+        st:0, batch:0, budgets:timed ? [] : null, words0, report:rep, timed, deadline:timed ? deadline : null,
+        saleTimes, boundaries, sold, royaltyRate, paidSeconds:writer.incomeSeconds(workSec,
+          Math.max(0, buffs.rush - productiveMono()), Math.max(0, buffs.critic - productiveMono())) };
+      if (!writer.checkpoint()) return;
+    }
+    if (!cp || cp.phase === 'early') {
+      if (cp) cp.phase = 'advance';
+      if (timed && deadline < 0) endChallenge('fail');
+      else if (timed && soldCount() >= chDef('timed').goalN) endChallenge('done');
+      if (!progressing()) return;
+    }
+    if (!cp || cp.phase === 'advance') {
+      advanceDeadlines(sec * (multiplier - 1) * 1000, awaySec * (multiplier - 1) * 1000);
+      if (cp) cp.phase = 'work';
+    }
+    let batch = cp ? cp.batch : 0, budgets = cp ? cp.budgets : timed ? [] : null;
+    for (let st = cp ? cp.st : 0; st < (timed ? boundaries.length - 1 : steps); st++) {
+      if (cp) { batch = cp.batch; budgets = cp.budgets; }
+      const from = timed ? boundaries[st] : st * realDt, to = timed ? boundaries[st + 1] : (st + 1) * realDt;
+      if ((!cp || cp.phase === 'work') && timed && from === (batch + 1) * realDt) { batch++; budgets = []; }
+      if (cp) { cp.batch = batch; cp.budgets = budgets; }
+      const stepDt = dt, batchEnd = to === (batch + 1) * realDt;
+      const fraction = timed ? (to - batch * realDt) / realDt : 1;
+      skyOv = World.at(timed ? nowMs - awaySec * 1000 + (batch + .5) * realDt * 1000 : nowMs - sec * 1000 + (st + .5) * realDt * 1000); // weather remains real time
+      if (!cp || cp.phase === 'work') S.desks.forEach((d, i) => {
         if (!d.owned || !d.paws) return;
         const speedSum = d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) || d.paws;
-        const n = Math.round(speedSum / (PAW_BASE[i] * Math.pow(.85, d.up.fing) * (S.metro ? .5 : 1) * (stormy() ? 2 : 1)) * dt * eff);
+        const raw = speedSum / (PAW_BASE[i] * Math.pow(.85, d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) * stepDt * eff;
+        let n = Math.round(raw), budget = timed ? budgets[i] : null;
+        if (timed) {
+          if (!budget) {
+            const keeperRaw = stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i), inventory = {};
+            if (n > 0) {
+              const dist = offlineDist(d, i);
+              for (const ch in dist) { const exp = n * dist[ch]; inventory[ch] = Math.floor(exp) + (rand() < exp % 1 ? 1 : 0); }
+            }
+            budget = budgets[i] = { raw, n, typed: 0, inventory, released: {}, keeperRaw, banked: 0, pass: 0, word: 0, any: false };
+          }
+          // Floors expose only elapsed work; original round/ceil/minimum remainders wait for the batch end.
+          const typed = batchEnd ? budget.n : Math.min(budget.n, Math.floor(budget.raw * fraction));
+          n = typed - budget.typed; budget.typed = typed;
+        }
         if (n > 0) {
-          const dist = offlineDist(d, i);
+          const dist = timed ? budget.inventory : offlineDist(d, i);
           for (const ch in dist) {
-            const exp = n * dist[ch], c = Math.floor(exp) + (rand() < exp % 1 ? 1 : 0);
-            if (c > 0) { d.letters[ch] = (d.letters[ch] || 0) + c; S.stats.byLetter[ch] = (S.stats.byLetter[ch] || 0) + c; }
+            const exp = n * dist[ch];
+            const released = timed ? Math.floor(dist[ch] * budget.typed / budget.n) : 0;
+            const c = timed ? released - (budget.released[ch] || 0) : Math.floor(exp) + (rand() < exp % 1 ? 1 : 0);
+            if (timed) budget.released[ch] = released;
+            if (c > 0) { const ordinary = c - (activeWork()?.route(S,i,ch,c) || 0); d.letters[ch] = (d.letters[ch] || 0) + ordinary; S.stats.byLetter[ch] = (S.stats.byLetter[ch] || 0) + c; }
           }
           S.stats.letters += n; rep.letters += n;
-          if (d.crew.length) { const each = n / d.crew.length; for (let q = 0; q < d.crew.length; q++) grantXp(d, q, each, true); }
+          if (!timed && d.crew.length) { const each = n / d.crew.length; for (let q = 0; q < d.crew.length; q++) grantXp(d, q, each, true); }
         }
-        if (d.keeper.owned && d.keeper.on) keeperBulk(d, i, Math.max(2, Math.ceil(dt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i))));
+        if (timed && batchEnd && budget.n > 0 && d.crew.length) { const each = budget.n / d.crew.length; for (let q = 0; q < d.crew.length; q++) grantXp(d, q, each, true); }
+        if (d.keeper.owned && d.keeper.on) {
+          if (timed) {
+            const capacity = batchEnd ? Math.max(2, Math.ceil(budget.keeperRaw)) : Math.floor(budget.keeperRaw * fraction);
+            budget.banked += keeperBulk(d, i, Math.max(0, capacity - budget.banked), budget);
+          } else keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i))));
+        }
       });
+      if (!cp || cp.phase === 'work') worksAdvance();
+      if (cp && cp.phase === 'work') cp.phase = 'sale';
+      if (timed) {
+        readyC = null; // Offline time is fixed at return; a new production prefix must invalidate the timed cache.
+        if (!cp || cp.phase === 'sale') {
+          if (saleTimes.includes(to)) { const sale = autoSellAway(PUB_PERIOD[1], 1, cp); if (!cp) { sold.n += sale.n; sold.pay += sale.pay; } }
+          if (!progressing()) { skyOv = null; return; }
+          if (cp) { cp.saleLeft = null; cp.phase = 'challenge'; }
+        }
+        if (!cp || cp.phase === 'challenge') {
+          if (cp) cp.phase = 'expiry';
+          if (S.challenge && to <= deadline && soldCount() >= chDef('timed').goalN) endChallenge('done');
+          if (!progressing()) { skyOv = null; return; }
+        }
+        if (!cp || cp.phase === 'expiry') {
+          if (cp) cp.phase = 'next';
+          if (S.challenge && to >= deadline) endChallenge('fail');
+          if (!progressing()) { skyOv = null; return; }
+        }
+      }
+      if (cp) { cp.st = st + 1; cp.phase = cp.st < (timed ? boundaries.length - 1 : steps) ? 'work' : 'tail'; }
     }
-    S.desks.forEach((d, i) => {                                   // rebuild the tray from what is left in the drawers
+    if (!cp || cp.phase === 'tail') {
+      if (cp) cp.phase = 'tray';
+      if (timed && S.challenge && awaySec > deadline) endChallenge('fail');
+      if (!progressing()) { skyOv = null; return; }
+    }
+    if (!cp || cp.phase === 'tray') S.desks.forEach((d, i) => {     // rebuild the tray from what is left in the drawers
       const bag = []; for (const ch in d.letters) for (let q = 0; q < Math.min(d.letters[ch], 8); q++) bag.push(ch);
       for (let q = bag.length - 1; q > 0; q--) { const j = Math.floor(rand() * (q + 1)); [bag[q], bag[j]] = [bag[j], bag[q]]; }
       d.tray = bag.slice(-80); rt[i].sheet = d.tray.join('').slice(-120);
     });
-    for (let q = 0, m = Math.min(200, Math.floor(sec / 6)); q < m; q++) { skyOv = World.at(nowMs - sec * 1000 + (q + .5) * (sec * 1000 / m)); marketStep(true); }
+    if (cp && cp.phase === 'tray') cp.phase = 'market';
+    if (!cp || cp.phase === 'market') {
+      for (let q = 0, m = Math.min(200, Math.floor(sec / 6)); q < m; q++) { skyOv = World.at(nowMs - sec * 1000 + (q + .5) * (sec * 1000 / m)); marketStep(true); }
+      if (cp) cp.phase = 'roy';
+    }
     skyOv = null;
     rep.words = S.stats.words - words0;
-    rep.roy = floorMoney(royBase() * sec * eff);
-    if (rep.roy > 0) { S.royTotal += rep.roy; bananas.add(rep.roy); }
-    rep.div = floorMoney(divBase() * sec * eff); if (rep.div > 0) { S.divTotal += rep.div; bananas.add(rep.div); }
+    if (!cp || cp.phase === 'roy') {
+      rep.roy = floorMoney((timed ? royaltyRate : royBase()) * (cp ? cp.paidSeconds : workSec) * eff);
+      if (rep.roy > 0) { S.royTotal += rep.roy; if (cp) { if (!writer.awayCredit(rep.roy, 'div')) return; } else bananas.add(rep.roy); }
+      else if (cp) cp.phase = 'div';
+    }
+    if (!cp || cp.phase === 'div') {
+      rep.div = floorMoney(divBase() * (cp ? cp.paidSeconds : workSec) * eff);
+      if (rep.div > 0) { S.divTotal += rep.div; if (cp) { if (!writer.awayCredit(rep.div, archiveFeature?.enabled && S.meta.archive !== undefined ? 'archive' : 'bulk')) return; } else bananas.add(rep.div); }
+      else if (cp) cp.phase = archiveFeature?.enabled && S.meta.archive !== undefined ? 'archive' : 'bulk';
+    }
+    if (cp?.phase === 'archive' && !writer.archiveIncome().ok) return;
     S.stats.awayMax = Math.max(S.stats.awayMax || 0, awaySec);
-    const sold = autoSellAway(sec * eff); rep.pubSold = sold.n; rep.pubPay = sold.pay;
+    if (!cp || cp.phase === 'bulk') {
+      const sales = timed ? sold : autoSellAway(workSec * eff, 200, cp); rep.pubSold = cp ? cp.sold.n : sales.n; rep.pubPay = cp ? cp.sold.pay : sales.pay;
+      if (!progressing()) return;
+      if (cp) { writer.consumeGold(workSec * 1000); cp.phase = 'complete'; }
+    }
     rep.ready = readyList().length;
+    if (cp) {
+      // Acknowledging complete first makes checkpoint deletion safe to retry after reload.
+      if (!writer.checkpoint()) return;
+      if (boundaryJob) return rep;
+      delete S.rewards.awayCheckpoint; S.lastSeen = nowMs;
+      if (!writer.checkpoint()) { S.rewards.awayCheckpoint = cp; return; }
+    }
+    extensionEvent('away', { realSeconds: sec, gameSeconds: workSec, report: rep });
     return rep;
+  }
+  function proposeBoundary(id, proposal) {
+    if (proposal.transition) { Object.freeze(proposal.transition.oldEffects); Object.freeze(proposal.transition); }
+    if (proposal.ready) Object.freeze(proposal.ready);
+    const frozen = Object.freeze(proposal);
+    boundaryProposal = {id, proposal:frozen,
+      garden:S.garden, crops:S.garden.beds.slice(), challenge:S.challenge, printing:S.printing};
+    return {proposal:frozen};
+  }
+  function lampCommit(command, validate) {
+    if (!writer?.owns() || !writer.transacting() || !writer.boundaryProgressing() || !window.VaultPlay?.enabled() || S.prem.vault?.transition || S.rewards.awayCheckpoint) return {ok:false,error:'Lamp commit requires settled owned work'};
+    const candidate = VaultPlay.project(S,command,Date.now());
+    validate(candidate);
+    const previousSpeed = speed();
+    const result = Economy.saveStateAcknowledged(candidate);
+    if (result.ok) {
+      S.prem=candidate.prem;
+      if (speed() !== previousSpeed) {goldObject?.reschedule(); IMI.pickups?.vaultSpeed();}
+      mark();
+    }
+    return result;
+  }
+  function vaultBoundary(id) {
+    if (!writer?.boundaryProgressing()) throw Error('Boundary requires owned productive settlement');
+    if (!boundaryJob) { const end=lampLifetime?.wall ?? Date.now(); boundaryJob = {id, end, hidden:!started || document.hidden, visible:null, displayEnd:end}; }
+    if (boundaryJob.id !== id) throw Error('Boundary intent identity mismatch');
+    if (boundaryJob.closed) { boundaryJob = null; return {done:true}; }
+    const job = boundaryJob, t = S.prem.vault?.transition, cp = S.rewards.awayCheckpoint;
+    const effects = Vault.oldEffects(S);
+    if (!effects || effects.typistTier || effects.capSeconds !== awayCap() ||
+        speed() !== [1,1.25,1.5,1.75,2][effects.gameTier]) throw Error('Historical effects require their actual clock/cap providers');
+    if (!t) {
+      if (!job.hidden && !cp) {
+        job.visible ??= {phase:0, desk:0, paw:0, presses:0, debited:false, ...(lampLifetime ? {now:lampLifetime.mono} : {})};
+        historicalEnd = job.end; skyOv = World.at(job.end);
+        try { tick(job.visible); } finally { historicalEnd = null; skyOv = null; }
+        if (!progressing()) return;
+      }
+      const start = cp ? cp.nowMs : job.hidden ? S.lastSeen : job.end;
+      if (!Number.isFinite(start) || start > job.end) throw Error('Unsupported old boundary clock');
+      return proposeBoundary(id, {kind:'open', transition:{version:1, printing:S.printing,
+        phase:cp ? 'old' : start === job.end ? 'settled' : 'tail', tailStartWallMs:start,
+        tailEndWallMs:job.end, holdStartWallMs:job.end, oldEffects:effects}, lastSeen:cp || job.hidden ? S.lastSeen : job.end});
+    }
+    if (Vault.validate(S).status !== 'valid') throw Error('Invalid OPEN historical state');
+    job.displayEnd = t.phase === 'old' ? t.tailStartWallMs : t.tailEndWallMs;
+    if (t.phase !== 'settled') {
+      historicalEnd = t.phase === 'old' ? cp.nowMs : t.tailEndWallMs;
+      try {
+        if (cp || t.tailStartWallMs < t.tailEndWallMs) simulateAway(cp ? 0 : (t.tailEndWallMs - t.tailStartWallMs) / 1000, historicalEnd);
+      } finally { historicalEnd = null; }
+      if (!progressing()) return;
+      const current = S.rewards.awayCheckpoint;
+      if (current && current.phase !== 'complete') throw Error('Historical checkpoint has not completed');
+      const end = t.phase === 'old' ? t.tailStartWallMs : t.tailEndWallMs;
+      const phase = t.phase === 'old' && end < t.tailEndWallMs ? 'tail' : 'settled';
+      return proposeBoundary(id, {kind:'delete', transition:{...t, phase, tailStartWallMs:end}, lastSeen:end});
+    }
+    const closing = Date.now(), delta = closing - t.holdStartWallMs;
+    const ready = S.garden.beds.map(b => b ? b.ready + delta : null), challengeStart = S.challenge ? S.challenge.start + delta : null;
+    if (![closing,...ready.filter(n=>n!==null),...(challengeStart===null?[]:[challengeStart])].every(n=>Number.isFinite(n)&&Math.abs(n)<=8.64e15)) throw Error('Closing clocks cannot be represented');
+    if (S.garden.beds.some((b,i)=>b&&ready[i]-b.ready!==delta) || (S.challenge&&challengeStart-S.challenge.start!==delta)) throw Error('Closing clocks lose the held duration');
+    return proposeBoundary(id, {kind:'close', lastSeen:closing, ready, challengeStart});
+  }
+  function vaultCommit(id, proposal, validate) {
+    if (!writer?.owns() || !writer.transacting() || !writer.boundaryProgressing() || !boundaryProposal || boundaryProposal.id !== id ||
+        proposal !== boundaryProposal.proposal) return {ok:false,error:'Unleased boundary proposal'};
+    if (S.printing!==boundaryProposal.printing || S.garden!==boundaryProposal.garden || S.challenge!==boundaryProposal.challenge ||
+        S.garden.beds.length!==boundaryProposal.crops.length || S.garden.beds.some((b,i)=>b!==boundaryProposal.crops[i])) return {ok:false,error:'Saved lifetime identity changed'};
+    const candidate = JSON.parse(JSON.stringify(S)), p = proposal;
+    if (p.kind === 'open') {
+      candidate.prem.vault ??= {version:1,nextSequence:1,purchases:{},owned:{},active:{},selections:{},settings:{hideStore:false}};
+      if (window.VaultPlay?.enabled()) candidate.prem.vault.freeLamp ??= {version:1,rule:1};
+      candidate.prem.vault.transition = p.transition;
+    } else if (p.kind === 'delete') {
+      if (S.rewards.awayCheckpoint && (S.rewards.awayCheckpoint.phase !== 'complete' || S.rewards.awayCheckpoint.credit)) return {ok:false,error:'Checkpoint deletion is not settled'};
+      delete candidate.rewards.awayCheckpoint; candidate.prem.vault.transition = p.transition;
+    } else if (p.kind === 'close') {
+      candidate.garden.beds.forEach((b,i)=>{if(b)b.ready=p.ready[i];});
+      if (candidate.challenge) candidate.challenge.start=p.challengeStart;
+      delete candidate.prem.vault.transition;
+    } else return {ok:false,error:'Unknown boundary operation'};
+    candidate.lastSeen = p.lastSeen;
+    validate(candidate);
+    const result = Economy.saveStateAcknowledged(candidate);
+    if (!result.ok) return result;
+    S.prem.vault ??= candidate.prem.vault;
+    if (p.kind === 'delete') delete S.rewards.awayCheckpoint;
+    if (p.kind === 'close') {
+      S.garden.beds.forEach((b,i)=>{if(b)b.ready=p.ready[i];});
+      if (S.challenge) S.challenge.start=p.challengeStart;
+      delete S.prem.vault.transition;
+      boundaryJob.closed = true;
+    } else S.prem.vault.transition = candidate.prem.vault.transition;
+    S.lastSeen = p.lastSeen; boundaryProposal = null; mark();
+    // Publish the acknowledged saved fields before notifying later volatile owners.
+    if (p.kind === 'close') extensionEvent('vaultClosed', {id, closingWallMs:p.lastSeen});
+    return result;
   }
   function showWelcome(rep) {
     document.querySelectorAll('.o-modal').forEach(m => m.remove());
@@ -1459,6 +2952,7 @@
   }
   const dailyPrize = streak => roundMoney(Math.max(cash(250), (royRate() + divRate()) * 600, bananas.get() * .02) * DAILY_MULT[Math.min(streak, 7) - 1]);
   function dailyCrate() {
+    if (!progressing()) return;
     if (introActive()) return;
     if (window.__OPS_HEADLESS || !S.stats.letters) return;
     const ds = dailyState(); if (!ds) return;
@@ -1475,6 +2969,7 @@
     let opened = false;
     const btn = el.querySelector('.o-btn'), chest = el.querySelector('.o-chest');
     const open = () => {
+      if (!progressing()) return;
       if (opened) return; opened = true;
       S.daily = { last: ds.today, streak: ds.streak }; save();                                   // claim first, so a refresh can't re-open it
       chest.classList.add('shake'); IMI.sfx.shake(); btn.disabled = true;
@@ -1491,6 +2986,7 @@
       }, IMI.reduceMotion ? 0 : 700);
     };
     const collect = () => {
+      if (!progressing()) return;
       const at = IMI.centerOf(btn); el.remove();
       bananas.earn(prize, at); IMI.burst(at[0], at[1], ['banana', 'spark', 'star'], 16);
       if (big) { const now = performance.now(); buffs.frenzy = now + 30000; buffs.golden = now + 30000; cheer(2400, 'PARTY!'); }
@@ -1505,9 +3001,10 @@
   let dailyQ = false;
   const dailyLater = () => { if (dailyQ) return; dailyQ = true; IMI.whenPlaying(() => { dailyQ = false; dailyCrate(); }); };
   function welcomeBack(minSec) {
+    if (!progressing()) return;
     const away = (Date.now() - (S.lastSeen || Date.now())) / 1000;
     if (away < minSec) return;
-    const rep = simulateAway(away); S.lastSeen = Date.now(); save();
+    const rep = simulateAway(away); if (!progressing() || !rep) return; S.lastSeen = Date.now(); save();
     logIt(`Back after ${dur(away)}: typists typed ${fmt(rep.letters)} letters, keepers banked ${fmt(rep.words)} words, royalties paid ${fmtBig(rep.roy)} and divisions ${fmtBig(rep.div || 0)} bananas.${rep.pubSold ? ` Your assistant sold ${rep.pubSold} title${rep.pubSold > 1 ? 's' : ''} for ${fmtBig(rep.pubPay)}.` : ''}`);
     newsPush('Welcome back. The typists pretended to work the whole time.');
     if (!introActive() && (rep.letters || rep.roy || rep.words)) IMI.whenPlaying(() => showWelcome(rep));
@@ -1546,8 +3043,9 @@
     newsPush(good ? 'GOLDEN BANANA caught. Witnesses say it was “extremely shiny”.' : 'Rotten banana touched. Witnesses recoil; one files a complaint.');
     mark(); save();
   }
-  let goldEnd = null;
+  let goldEnd = null, goldUntil = 0, goldObject = null;
   function spawnGold(rotten) {
+    if (!progressing()) return;
     if (introActive()) return;
     if (document.querySelector('.o-gold')) return;
     if (rotten === undefined) rotten = rand() < .22 && soldCount() > 0;
@@ -1558,25 +3056,45 @@
     const W = innerWidth, H = innerHeight, dir = rand() < .5 ? 1 : -1, base = H * (.25 + rand() * .45), dur = (W < 700 ? 12000 : 9500) + rand() * 2500;
     const pts = Array.from({ length: 9 }, (_, k) => { const t = k / 8; return { transform: `translate(${dir > 0 ? -90 + t * (W + 180) : W + 90 - t * (W + 180)}px, ${base + Math.sin(t * 6.3 + rand()) * 70}px)` }; });
     let trail = 0, expiry = 0, anim = null, done = false;
-    const end = () => { if (done) return; done = true; clearInterval(trail); clearTimeout(expiry); anim?.cancel(); el.remove(); goldEnd = null; };
+    let netItem, heldLease = null, generation = 0, hovered = false;
+    const end = () => { if (done || heldLease) return; done = true; extensions.get('automation')?.netCleared('golden', netItem); clearInterval(trail); clearTimeout(expiry); anim?.cancel(); el.remove(); goldEnd = null; goldUntil = 0; goldObject = null; };
+    const expire = () => {const token=++generation;return () => {if(token===generation&&!heldLease&&writer?.owns()!==false){if(speed()!==1&&productionNow()<goldUntil)goldObject?.reschedule();else end();}};};
+    goldObject = {
+      hold(lease) {if(done||heldLease)return;heldLease=lease;el.dataset.lampHeld='';generation++;clearTimeout(expiry);anim?.pause();if(anim)anim.onfinish=null;},
+      resume(lease) {if(heldLease!==lease)return;heldLease=null;delete el.dataset.lampHeld;if(!el.isConnected){end();return;}if(anim){anim.onfinish=expire();anim.play();}else expiry=setTimeout(expire(),Math.max(0,goldUntil-productionNow())/speed());if(speed()!==1)this.reschedule();},
+      reschedule() {
+        if (done || heldLease) return;
+        clearTimeout(expiry);
+        if (anim) {anim.onfinish=null;anim.playbackRate=speed()*(hovered ? .4 : 1);}
+        expiry=setTimeout(expire(),Math.max(0,goldUntil-productionNow())/speed());
+      },
+      dispose() {heldLease=null;generation++;end();}
+    };
     goldEnd = end;
-    if (IMI.reduceMotion) { el.style.cssText += `left:${W * (.2 + rand() * .6)}px;top:${base}px`; expiry = setTimeout(end, 9000); }
+    goldUntil = productionNow() + (IMI.reduceMotion ? 9000 : dur);
+    if (IMI.reduceMotion) { el.style.cssText += `left:${W * (.2 + rand() * .6)}px;top:${base}px`; expiry = setTimeout(expire(), 9000); }
     else {
-      anim = el.animate(pts, { duration: dur, easing: 'linear' }); anim.onfinish = end;
-      trail = setInterval(() => { const r = el.getBoundingClientRect(); IMI.fall(r.left + r.width / 2, r.top + r.height / 2, rotten ? 'drop' : 'spark', 700); }, 220);
-      el.addEventListener('pointerenter', () => { try { anim.playbackRate = .4; } catch { /* ignore */ } });
-      el.addEventListener('pointerleave', () => { try { anim.playbackRate = 1; } catch { /* ignore */ } });
+      anim = el.animate(pts, { duration: dur, easing: 'linear' }); anim.onfinish = expire();
+      trail = setInterval(() => { if(heldLease||done)return; const r = el.getBoundingClientRect(); IMI.fall(r.left + r.width / 2, r.top + r.height / 2, rotten ? 'drop' : 'spark', 700); }, 220);
+      el.addEventListener('pointerenter', () => { hovered=true;try { if(!heldLease)anim.playbackRate = speed()*.4; } catch { /* ignore */ } });
+      el.addEventListener('pointerleave', () => { hovered=false;try { if(!heldLease)anim.playbackRate = speed(); } catch { /* ignore */ } });
     }
-    el.addEventListener('click', e => {
-      if (done) return;
-      e.stopPropagation(); const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    if (speed() !== 1) goldObject.reschedule();
+    const claim = () => {
+      if (!progressing()) return;
+      if (done || heldLease || productionNow()>=goldUntil) return;
+      const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
       end(); if (!introActive()) goldEffect(roulette(rotten ? ROT_FX : GOLD_FX), x, y);
-    });
+    };
+    el.addEventListener('click', e => { if (!progressing() || done) return; e.stopPropagation(); claim(); });
+    netItem = { el, valid:() => !rotten && !done && !heldLease && productionNow() < goldUntil, claim };
+    extensions.get('automation')?.netCreated('golden', netItem);
     IMI.sfx.tick(); if (!rotten) IMI.emit('goldspawn');
     if (!rotten && ui.tab === 'floor' && typists.length) { const t = typists[Math.floor(rand() * typists.length)]; say(t, 'GOLD!'); jump(t); }
   }
   /* the header toys: core.js owns the buttons and their recharge, these are what they do */
   function perk(id, at) {
+    if (!progressing()) return '';
     if (id === 'snack') { buffs.snack = performance.now() + 20000; cheer(1600, 'YUM!'); shock(at[0], at[1], '#ffd23a'); mark(); return 'SNACK BREAK! Typists work 50% faster for 20s.'; }
     const d = cur(), n = 8 + Math.min(32, totalPaws());                        // coconut: a pile of letters for the machine you are on
     for (let k = 0; k < n; k++) addLetter(d, roll(d, S.sel, true));
@@ -1587,19 +3105,460 @@
   const snap = () => ({ typed: S.stats.letters, combo: combo.n, manual: S.stats.manual, intro: { ...S.intro }, letters: totalLetters(cur()), words: S.stats.words, paws: totalPaws(), sold: Object.keys(S.written).length, bananas: bananas.get(), ready: readyList().length, tab: ui.tab, sub: ui.sub, desk: S.sel, owned: S.desks.filter(d => d.owned).length, deskPrice: DESKS[1].price, gold: S.gold, printing: S.printing, stars: starsNow(), hireCost: PAW_COST[0], hot: S.market.v.some((v, b) => S.desks[b] && S.desks[b].owned && marketMult(b) >= 1.4), pitch: !!firstPitch(), museSlots: museSlots() });
   // Pickup growth uses visible play time and sustained income, never offline time or the wallet.
   const pickup = {
+    ...(new URLSearchParams(location.search).get('lg03') === '1' ? {
+      netCreated:(kind, item) => extensions.get('automation')?.netCreated(kind, item),
+      netCleared:(kind, item) => extensions.get('automation')?.netCleared(kind, item)
+    } : {}),
     eligible: () => !introActive() && ui.tab === 'floor',
     value: () => roundMoney(Math.max(cash(5 * (1 + Math.floor(S.stats.playSecs / 600))), 2 * (royBase() + divBase()))),
     collect(value, at) {
+      if (!progressing()) return false;
       if (!this.eligible() || !Number.isFinite(value) || value <= 0) return false;
       S.stats.pickups++; S.stats.pickupEarned += value; bananas.earn(value, at); mark(); save(); return true;
     }
   };
-  IMI.ops = { pickup, baro: () => S.baro, snap, spawnGold, royRate, simulateAway, genPitch, newOffers, perk, introActive, completeIntro, reset: () => ACTIONS.reset() };
+  IMI.ops = { pickup, baro: () => S.baro, snap, spawnGold, royRate, simulateAway, genPitch, newOffers, perk, introActive, completeIntro, reset: () => { if (progressing()) return ACTIONS.reset(); } };
+  if (pg) IMI.ops.productionGoal = {
+    configure: patch => pg.configure(pgContext, patch), retry: () => pg.retry(pgContext),
+    status: () => pg.status(pgContext)
+  };
+  if (writer) {
+    IMI.ops.genPitch = (...args) => progressing() ? genPitch(...args) : null;
+    IMI.ops.newOffers = (...args) => { if (progressing()) return newOffers(...args); };
+    IMI.ops.progression = {
+      running: progressing,
+      stop: () => { extensions.get('automation')?.netBlocked(); paused = true; holding = false; printingHelper()?.sampleUpdate(); },
+      resume: () => { if (!writer.owns()) return false; last = performance.now(); paused = false; if (!started) startGame(); return true; }
+    };
+    IMI.ops.saveAcknowledged = saveAcknowledged;
+    writer.onPagehide(() => { paused = true; holding = false; if (!writer.localDisposition()) saveAcknowledged(); extensions.get('automation')?.netDispose(); IMI.pickups?.clear(true); goldObject?.dispose(); lampLifetime=null; ticker.anim?.cancel(); boundaryJob = null; boundaryProposal = null; });
+  }
+  const extensionAPI = {
+    state: () => S, save, mark, morph, setTab,
+    hallHistory:() => hallHistory,
+    hallCommit(candidate, source) {
+      if (!writer?.owns() || !writer.transacting() || writer.localDisposition() || JSON.stringify(S) !== source) return {ok:false,error:'Hall source changed. Save preserved.'};
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (result.ok) { S.meta.hall = candidate.meta.hall; S.rewards = candidate.rewards; S.lastSeen = candidate.lastSeen; mark(); }
+      return result;
+    },
+    seasonsEnabled, seasonsDisabled, seasonsFreeze, seasonsPending, seasonsCommit,
+    boardEnabled, boardNames, boardFreeze, boardPending, boardCommit,
+    challengeEnabled, challengeValidate, challengeReady, challengePending, challengeFreeze, challengeCommit,
+    challengeOff:() => {printingHelper()?.challengeLocalOff(); printingHelper()?.challengeSaveOff(); if (ui.tab === 'automation') RENDER.automation();},
+    challengeFacts:() => ({nextChallenge:ui.nextCh,manualFocus:!S.autoFocus && !!S.focus,available:AutoChallenge.ids.filter(id => !titleAvailable(RBY[id])),target:challengeActive()?.target,ready:!!challengeActive()?.target && canWrite(RBY[challengeActive().target])}),
+    masteryEnabled, masteryActive, masteryValidate, masteryFreeze, masteryPending, masteryCommit,
+    printingEnabled, printingReady, printingReview, printingFreeze, printingPending, printingCommit,
+    printingOff:() => { printingHelper()?.turnPrintOff(); if (ui.tab === 'automation') RENDER.automation(); },
+    printSampleAllowed(committed = false) {
+      return printingEnabled() && !printingHelper()?.challengeReserved() && writer?.owns() && !paused && !writer.held() && !writer.localDisposition() &&
+        (committed && writer.transacting() || progressing() && writer.guard(S)) && !window.VaultSaveGate?.blocked &&
+        !document.hidden && IMI.screen() === 'game' && !S.challenge && !workPaused() && !S.meta.archive?.working &&
+        !S.meta.layers?.pending && !S.meta.estate?.pending && !S.meta.archive?.pending && !S.meta.automation?.print?.pending &&
+        !S.meta.automation?.pitch?.sale && !S.meta.automation?.media?.pending && !S.prem.vault?.transition && !S.rewards.awayCheckpoint &&
+        !commissionPending && !musePending && !layerChoices.size && !printingHelper()?.pendingGarden() && !printingHelper()?.pendingChoice() &&
+        trainingPool?.mode() !== 'suspended' && printingHelper()?.validConfig(S.meta.automation,extensionAPI) &&
+        !IMI.tour?.active() && !document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])');
+    },
+    printSampleStart:archiveSettle,
+    printSampleSpeed:() => JSON.stringify([speed(),buffOn('rush'),buffOn('critic'),S.rewards.activeGold?.remainingGameMs > 0,S.desks.map(d => [deskMk(d) / pawSecs(d),d.crew.map(t => typistSpeed(t))])]),
+    challengeCommissionAllowed, challengeSeatsLocked,
+    imprintChallengeCommit(request) {
+      const C = chDef(S.challenge?.id);
+      if (!writer?.owns() || !writer.transacting() || !C?.imprint || request.id !== C.id || !challengeRun() ||
+          !layers.epochMatches(S,request) || request.printing !== S.printing || request.imprint !== layers.identity(S) || request.start !== S.challenge.start ||
+          challengeSales() < C.goalN || layerChoices.size || musePending || commissionPending ||
+          S.meta.automation?.pitch?.sale || S.meta.automation?.media?.pending || S.rewards.awayCheckpoint)
+        return {ok:false,refused:true,error:'Challenge changed or a save still needs to settle.'};
+      const candidate = {...S,challenge:null,chDone:{...S.chDone,[C.id]:true},rewards:pitchCopy(S.rewards)};
+      const id = `challenge:${C.id}:first`;
+      if (!S.chDone[C.id] && !candidate.rewards.claims[id]) candidate.rewards.claims[id] = {status:'prepared',origin:'new',descriptor:pitchCopy(request.descriptor)};
+      const result = Economy.saveStateAcknowledged(candidate);
+      if (result.ok) { S.rewards = candidate.rewards; endChallenge('done',true); }
+      return result;
+    },
+    identitySettled:() => !S.meta.seasons?.pending && !S.meta.commissionBoard?.pending && !S.meta.automation?.challenge?.pending && !S.meta.challengeMastery?.pending && !layerChoices.size && !commissionPending && !musePending && !writer?.localDisposition() && (!extensions.get('automation') || extensions.get('automation').identitySettled()),
+    ...(worksPlay?.enabled ? {
+      worksPlayContinue() { const message=worksPlay.continueMessage(S);if(message)newsPush(message); },
+      worksPlayCommit(request) {
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition() || layerChoices.size || commissionPending || musePending || (!extensionAPI.identitySettled() || !extensionAPI.layerSettled())) return {ok:false,refused:true,error:'Finish waiting work before using Works.'};
+        try {
+          const candidate=worksPlay.proposal(S,request,trainingIngredients());
+          candidate.lastSeen=Math.max(S.lastSeen,Date.now());
+          const result=Economy.saveStateAcknowledged(candidate);
+          if(result.ok){S=candidate;bankV++;mark();}
+          return result;
+        }catch(error){return {ok:false,refused:true,error:error.message};}
+      }
+    } : {}),
+    ...(worksDemo?.enabled ? {
+      worksDemoCommit(request) {
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition()) return {ok:false,error:'Works demo save owner unavailable'};
+        try {
+          const candidate=worksDemo.proposal(S,request,trainingIngredients());
+          candidate.lastSeen=Math.max(S.lastSeen,Date.now());
+          const result=Economy.saveStateAcknowledged(candidate);
+          if(result.ok){S=candidate;bankV++;mark();}
+          return result;
+        }catch(error){return {ok:false,refused:true,error:error.message};}
+      }
+    } : {}),
+    ...(archiveFeature?.enabled ? {
+      archiveSettle,
+      archiveCommit(request) {
+        const fixedCheckpoint=S.prem.vault?.freeSpeed && S.rewards.awayCheckpoint?.phase==='archive' &&
+          ['income','incomeFinish'].includes(request.action) && VaultPlay.supported(S) &&
+          (writer?.boundaryProgressing() || request.action==='incomeFinish' && S.meta.archive?.pending);
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition() && !fixedCheckpoint) return {ok:false,error:'Archive save owner unavailable'};
+        try {
+          let candidate, production = 0, online = false;
+          if (request.action === 'income') {
+            const cp = S.rewards.awayCheckpoint;
+            let interval = archiveInterval;
+            if (cp?.phase === 'archive') {
+              const start = Math.max(cp.nowMs - cp.awaySec * 1000,S.meta.archive.through), end = Math.max(start,cp.nowMs - cp.awaySec * 1000 + cp.sec * 1000);
+              interval = {observed:cp.nowMs,spans:end > start ? [{start,end,seconds:(end-start)/1000*cp.multiplier*cp.eff}] : []};
+            } else if (!interval && archiveSpans.length) interval = {observed:Math.ceil(Math.max(Date.now(),archiveSpans.at(-1).end)),spans:archiveSpans};
+            else if (!interval) return {ok:true,empty:true};
+            archiveInterval = interval;
+            candidate = {...S,meta:{...S.meta,archive:archiveFeature.prepare(S,interval,bananas.acknowledgement())}};
+          } else if (request.action === 'incomeFinish') {
+            const p = archiveFeature.pending(S), a = p.next;
+            production = p.credit?.amount || 0; online = !S.rewards.awayCheckpoint;
+            candidate = {...S,meta:{...S.meta,archive:a},rewards:pitchCopy(S.rewards),run:{...S.run,earned:S.run.earned+(p.credit?.amount || 0)}};
+            if (p.credit) candidate.rewards.walletHead = {id:p.credit.id,sequence:p.credit.sequence,amount:p.credit.amount,origin:'archive'};
+            if (candidate.rewards.awayCheckpoint?.phase === 'archive') candidate.rewards.awayCheckpoint.phase = 'bulk';
+          } else candidate = archiveFeature.proposal(S,request);
+          candidate.lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Math.max(S.lastSeen,Date.now());
+          const result = Economy.saveStateAcknowledged(candidate);
+          if (result.ok) {
+            const checkpoint = S.rewards.awayCheckpoint;
+            if (checkpoint && candidate.rewards.awayCheckpoint) {
+              const nextCheckpoint = candidate.rewards.awayCheckpoint;
+              nextCheckpoint.report = checkpoint.report; nextCheckpoint.sold = checkpoint.sold;
+              Object.assign(checkpoint,nextCheckpoint); candidate.rewards.awayCheckpoint = checkpoint;
+            }
+            S = candidate;
+            if (request.action === 'incomeFinish') {
+              if (online && production && printingEnabled()) {
+                const helper = printingHelper(); helper?.sampleUpdate(true);
+                if (archiveSampleToken === null || archiveSampleToken !== helper?.printSampleStatus().generation) helper?.resetSample();
+                else helper?.printPosting(production,archiveSampleToken);
+              }
+              archiveSpans = []; archiveInterval = null; archiveSampleToken = null;
+            }
+            bankV++; mark();
+          }
+          return result;
+        } catch(error) {return {ok:false,refused:true,error:error.message};}
+      }
+    } : {}),
+    ...(window.Estate?.enabled ? {
+      estatePreview() {
+        if (!archiveSettle()) throw Error('Archive income is waiting to save.');
+        const quote = Estate.quote(S), start = startingRoom(Estate.project(S, fresh()));
+        return Estate.review(S, {...start, quote, reward:S.rewards.claims['layer:estate:first'] ? null : writer.estateReward(start.basis)});
+      },
+      estateCommit(request) {
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition()) return {ok:false,refused:true,error:'Estate owner unavailable'};
+        try {
+          const candidate = request.action === 'reset' ? Estate.prepare(S,request) : Estate.pending(S).candidate;
+          const result = Economy.saveStateAcknowledged(candidate);
+          if (result.ok) {
+            S = candidate;
+            if (request.action === 'finish') { Estate.clearReview(); layerRuntimeReset('estate'); }
+            mark();
+          }
+          return result;
+        } catch(error) { return {ok:false,refused:true,error:error.message}; }
+      },
+      estateCrewValid:(crew,source) => crew.length === (source.legacy.ups.crew ? 2 : 0) && crew.every(t =>
+        typeof t.name === 'string' && LOOKS.some(l => l.id === t.look && l.trait === t.trait) &&
+        Number.isSafeInteger(t.talent) && t.talent >= 0 && t.talent <= 12 && t.coach === 0 && t.rerolls === 0 && t.xp === 0 && t.lv === 1 && t.hat === 0 && typeof t.shiny === 'boolean'),
+      estateRoom:source => Estate.project(source, fresh(), true)
+    } : {}),
+    ...(layers?.enabled ? {
+      layerPreview, layerMuseName:id => MUSES.find(m => m.id === id)?.name || id,
+      layerSettled:() => !challengeActive() && !S.meta.automation?.challenge?.pending && !S.meta.automation?.media?.pending && !layerChoices.size && trainingPool?.mode() !== 'suspended' &&
+        !document.querySelector('.mg01-overlay') && (!pg || S.meta.productionGoal === undefined || pg.valid(S.meta.productionGoal)) &&
+        (!extensions.get('automation') || extensions.get('automation').validConfig(S.meta.automation)),
+      layerCommit(request) {
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition()) return {ok:false, error:'Imprint save owner unavailable'};
+        try {
+          let candidate;
+          if (request.action === 'found') {
+            const q = layers.quote(S);
+            if (!layers.same(q,request.quote) || !layers.same(S.meta.layers,request.expected)) throw Error('Foundation changed. Review it again.');
+            if (layerOffer && layerOffer.legacy !== JSON.stringify(S.legacy)) throw Error('Legacy upgrades changed. Review the foundation again.');
+            const offer = layerOffer && layers.same(layerOffer.quote,q) ? layerOffer : layerPreview();
+            candidate = layers.project(S, fresh());
+            candidate.desks[0].paws = offer.room.desks[0].paws; candidate.desks[0].crew = JSON.parse(JSON.stringify(offer.room.desks[0].crew)); candidate.hold = offer.room.hold;
+            candidate.looks = {...candidate.looks, ...offer.room.looks};
+            if (offer.reward) candidate.rewards.claims['layer:imprint:first'] = {status:'prepared', origin:'new', descriptor:offer.reward};
+            const pending = {...layers.epochFields(S),id:layers.identityKey('imprint',[q.count + 1,q.total],layers.epochFields(S)), total:q.total, seed:offer.seed, marker:bananas.acknowledgement(), candidate};
+            candidate = {...S, meta:{...S.meta, layers:{...layers.current(S), pending}}};
+          } else if (request.action === 'finish') {
+            candidate = JSON.parse(JSON.stringify(layers.pending(S).candidate));
+          } else candidate = {...S, meta:{...S.meta, layers:layers.proposal(S,request)}};
+          candidate.lastSeen = Date.now();
+          const result = Economy.saveStateAcknowledged(candidate);
+          if (result.ok) {
+            if (request.action === 'finish') { S = candidate; layerOffer = null; layerRuntimeReset(); }
+            else { S.meta = candidate.meta; S.lastSeen = candidate.lastSeen; }
+            mark();
+          }
+          return result;
+        } catch(error) { return {ok:false, refused:true, error:error.message}; }
+      }
+    } : {}),
+    ...(folio ? {
+      folioDesks:DESKS.map(d => d.name),
+      folioCommit(request) {
+        if (!writer?.owns() || !writer.transacting() || window.VaultSaveGate?.blocked || writer.localDisposition()) return {ok:false, error:'Folio save owner unavailable'};
+        try {
+          const manual = !!(S.focus && !S.autoFocus && !S.written[S.focus]) || !!(pg?.active(pgContext) && S.meta.productionGoal.manual);
+          const patch = folio.proposal(S, request, bananas.acknowledgement(), manual);
+          const candidate = {...S, meta:{...S.meta, folio:patch.folio}, lastSeen:S.rewards.awayCheckpoint ? S.lastSeen : Date.now()};
+          if (request.action === 'finish') { const stamps = layers?.stamp(S); if (stamps) candidate.meta.layers = stamps; }
+          if (patch.bank) candidate.bank = patch.bank;
+          if (patch.letters) candidate.desks = S.desks.map((d,i) => i === patch.letters.desk ? {...d, letters:patch.letters.pool} : d);
+          if (patch.earned) candidate.run = {...S.run, earned:S.run.earned + patch.earned};
+          const result = Economy.saveStateAcknowledged(candidate);
+          if (result.ok) {
+            S.meta = candidate.meta; S.lastSeen = candidate.lastSeen;
+            if (patch.bank) { S.bank = candidate.bank; bankV++; }
+            if (patch.letters) S.desks[patch.letters.desk].letters = patch.letters.pool;
+            if (patch.earned) S.run = candidate.run;
+            mark();
+          }
+          return result;
+        } catch(error) { return {ok:false, refused:true, error:error.message}; }
+      }
+    } : {}),
+    ...(trainingPool ? {
+      trainingPoolFacts,
+      commitTrainingPool(expected, next) {
+        if (window.VaultSaveGate?.blocked || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ok:false, error:'Save owner is unavailable' };
+        const current = S.meta.trainingPool;
+        if ((current === undefined ? null : JSON.stringify(current)) !== expected || current !== undefined && !trainingPool.valid(current) || !trainingPool.valid(next)) return { ok:false, error:'Training choice changed or is unsupported' };
+        const training = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const result = layerChoiceResult('trainingPool', Economy.saveStateAcknowledged({ ...S, meta:{ ...S.meta, trainingPool:training }, lastSeen }));
+        if (result.ok) { S.meta.trainingPool = training; S.lastSeen = lastSeen; mark(); }
+        return result;
+      }
+    } : {}),
+    ...(new URLSearchParams(location.search).get('lg03') === '1' ? {
+      automationAllowed: () => !masteryActive() && !window.VaultSaveGate?.blocked && progressing() && (!writer || !writer.localDisposition() && writer.guard(S)),
+      museEnabled:gardenPrototype, seatMuse, commitMuse, museContext, museScore, museSelection, clearMuseIncomplete,
+      museStatus:() => ({pending:!!musePending}),
+      retryMuse:() => musePending ? commitMuse(musePending) : {ok:false,retryable:false,error:'No waiting seating choice'},
+      reconcileMuse() {
+        const m = S.meta.automation?.muse?.manual;
+        if (!gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed() || !extensions.get('automation').validConfig(S.meta.automation) ||
+            !m || m.complete || layers.epochMatches(S,m) && m.imprint === layers.identity(S) && m.printing === S.printing) return;
+        const candidate = {...S,meta:{...S.meta}}; clearMuseIncomplete(candidate);
+        if (writer.guard(candidate) && Economy.saveStateAcknowledged(candidate).ok) { S.meta = candidate.meta; mark(); }
+      },
+      gardenEnabled:gardenPrototype,
+      mediaEnabled:mediaPrototype, validMedia, mediaPlan, mediaValidate, mediaCommit,
+      mediaNext:() => { const q = mediaSelection(); return q ? {division:q.D.id,name:q.D.name,index:q.before,cost:q.cost} : null; },
+      mediaAttempt:() => { const q = mediaSelection(); return q ? writer.mediaRelease({...layers.epochFields(S),division:q.D.id,quantity:1,origin:'auto'}) : {ok:false,error:'Waiting for a loaded, unlocked release costing at most 5% of your wallet.'}; },
+      pitchEnabled:pitchPrototype, validPitch, trackedPitch, clearPitchPending,
+      pitchSaleValidate, pitchSaleCommit,
+      pitchStatus:() => ({pending:!!commissionPending,notice:commissionNotice}),
+      retryCommission:() => commissionPending && commission(commissionPending.i,commissionPending.origin,null,commissionPending),
+      pitchAttempt:() => { const i = pitchSelection(); return i < 0 ? {ok:false,error:'Waiting for a reachable wanted offer and free focus.'} : commission(i,'auto'); },
+      clearGardenPending:state => extensions.get('automation')?.clearGardenPending(state),
+      commitGarden,
+      reconcileGarden() {
+        const helper = extensions.get('automation');
+        if (!gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed() || !helper.validConfig(S.meta.automation) ||
+            !S.meta.automation?.garden?.manual?.pending || helper.pendingCrop(S)) return;
+        const candidate = {...S, meta:{...S.meta}};
+        helper.clearGardenPending(candidate);
+        if (writer.guard(candidate) && Economy.saveStateAcknowledged(candidate).ok) { S.meta = candidate.meta; mark(); }
+      },
+      gardenAttempt(cfg) {
+        const desk = DESKS.findIndex(d => d.id === cfg.desk), i = cfg.bed, b = S.garden.beds[i];
+        if (!Number.isInteger(i) || i < 0 || i >= S.garden.beds.length || !S.desks[desk]?.owned) return {ok:false, error:'Configured bed or desk is unavailable'};
+        if (!b) return plant(i,cfg.letter,desk,'auto');
+        if (b.ch !== cfg.letter || b.desk !== desk || savedWallNow() < b.ready) return {ok:false, error:'Waiting for a matching ripe crop'};
+        return extensions.get('automation').gardenAction(gardenRequest('harvest',[i],null,null,'auto'));
+      },
+      automationDesks: () => DESKS.map((d, index) => ({ id:d.id, name:d.name, index, owned:S.desks[index].owned })),
+      commitAutomation(expected, next) {
+        if (!extensionAPI.automationAllowed()) return { ok:false, error:'Save owner is unavailable' };
+        if (challengeActive() && !challengeHandover()) return {ok:false,error:'A11 handover waiting'};
+        const current = S.meta.automation;
+        if ((current === undefined ? null : JSON.stringify(current)) !== expected || !extensions.get('automation').validConfig(current) || !next || !extensions.get('automation').validConfig(next) || JSON.stringify(current?.tiers) !== JSON.stringify(next.tiers) || JSON.stringify(current?.garden?.manual) !== JSON.stringify(next.garden?.manual) || !pitchSame(current?.pitch?.manual,next.pitch?.manual) || !pitchSame(current?.pitch?.sale,next.pitch?.sale) || !pitchSame(current?.media?.manual,next.media?.manual) || (current?.media?.sequence ?? 0) !== (next.media?.sequence ?? 0) || !pitchSame(current?.media?.pending,next.media?.pending) || !museSame(current?.muse?.manual,next.muse?.manual) || current?.net && current.net.version !== next.net?.version) return { ok:false, error:'Automation save changed or is unsupported' };
+        if (!pitchSame(current?.challenge,next.challenge)) return {ok:false,error:'A11 settings use their named owner'};
+        if (!pitchSame(current?.print?.manual,next.print?.manual) || !pitchSame(current?.print?.pending,next.print?.pending) || printingEnabled() && next.print?.enabled && (!(S.intro.done && S.meta.estate?.count >= 1 && current?.print?.manual?.complete) || next.print.disclosed !== true)) return {ok:false,error:'Auto-print proof or disclosure is unavailable'};
+        const automation = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const result = layerChoiceResult('automation', Economy.saveStateAcknowledged({ ...S, meta:{ ...S.meta, automation }, lastSeen }));
+        if (result.ok) { S.meta.automation = automation; S.lastSeen = lastSeen; mark(); }
+        return result;
+      },
+      quoteAutomationTier(id) {
+        const current = S.meta.automation, valid = extensions.get('automation').validConfig(current);
+        const level = current?.tiers?.[id] ?? 0, price = [1, 2, 4][level];
+        const gate = { hire:S.printing >= 1, shop:S.printing >= 2, coach:!!S.chDone.hands,
+          restore:S.printing >= 4 && !!S.chDone.haiku, net:S.printing >= 5 && !!S.chDone.timed };
+        const error = !Object.hasOwn(gate, id) || !valid ? 'Unsupported automation tier' :
+          !S.intro.done || !gate[id] ? 'Helper is locked' : level === 3 ? 'Max level' :
+          !extensionAPI.automationAllowed() ? 'Save owner is unavailable' :
+          !Number.isSafeInteger(S.legacy.stars) || S.legacy.stars < price ? 'Not enough Legacy stars' : '';
+        return { ok:!error, error, level, price };
+      },
+      buyAutomationTier(id, expectedLevel, expected) {
+        const q = extensionAPI.quoteAutomationTier(id), current = S.meta.automation;
+        if (!q.ok || q.level !== expectedLevel || (current === undefined ? null : JSON.stringify(current)) !== expected ||
+          !extensions.get('automation').tierRequestAllowed(id, expectedLevel, expected))
+          return { ok:false, retryable:false, error:q.error || 'Automation tier changed. Choose the upgrade again.' };
+        const automation = current === undefined ? {version:1} : JSON.parse(JSON.stringify(current));
+        automation.tiers = { ...automation.tiers, version:1, [id]:q.level + 1 };
+        if (id === 'net') automation.net = { enabled:false, ordinary:0, golden:0, ...automation.net, version:2 };
+        const legacy = { ...S.legacy, stars:S.legacy.stars - q.price }, lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const result = layerChoiceResult('automation', Economy.saveStateAcknowledged({ ...S, legacy, meta:{ ...S.meta, automation }, lastSeen }));
+        if (result.ok) { S.legacy = legacy; S.meta.automation = automation; S.lastSeen = lastSeen; mark(); }
+        return result;
+      },
+      quoteAutomationHire(i, reservePercent) {
+        if (S.printing < 1 || !S.intro.done) return { ok:false, error:'Requires Printing 2' };
+        if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
+        const d = Number.isInteger(i) && S.desks[i], u = UPS.find(x => x.k === 'paw');
+        if (!d?.owned) return { ok:false, error:'Desk is not owned' };
+        if (trainingPool && trainingPool.mode() !== 'local') {
+          const plan = trainingQuote(u, d, i, 1);
+          return { ...plan, error:plan.error || (!plan.n ? 'Typist cap reached' : '') };
+        }
+        if (!Number.isInteger(reservePercent) || reservePercent < 0 || reservePercent > 100 || reservePercent % 5) return { ok:false, error:'Unsupported reserve' };
+        const lock = upLock(u, d), plan = upPlan(u, d, i, 1), held = totalLetters(d);
+        if (lock) return { ok:false, error:lock };
+        if (!plan.n) return { ok:false, error:'Typist cap reached' };
+        if (held < plan.cost) return { ok:false, error:'Waiting for affordable letters', cost:plan.cost };
+        if (held - plan.cost < Math.ceil(held * reservePercent / 100)) return { ok:false, error:'Waiting for letter reserve', cost:plan.cost };
+        return { ok:true, cost:plan.cost };
+      },
+      quoteAutomationRestore(i) {
+        if (S.printing < 4 || !S.chDone.haiku || !S.intro.done) return { ok:false, error:'Requires Printing 5 and Haiku completion' };
+        if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
+        const d = Number.isInteger(i) && S.desks[i];
+        if (!d?.owned) return { ok:false, error:'Desk is not owned' };
+        const level = S.meta.automation?.tiers?.restore ?? 0;
+        if (!extensions.get('automation').validConfig(S.meta.automation)) return { ok:false, error:'Unsupported automation tier' };
+        const price = mkCost(i), margin = [2, 1.75, 1.5, 1][level], error = challengeShopLock('mk') || (d.mk >= 2 ? 'Restoration cap reached' :
+          !(bananas.get() >= margin * price) ? `Waiting for wallet of at least ${margin} times the restoration price` : '');
+        return { ok:!error, error, price };
+      },
+      restoreAutomationOne(i) {
+        return extensionAPI.quoteAutomationRestore(i).ok && !!buy('mk', i);
+      },
+      automationCoachTargets() {
+        return S.desks.flatMap((d, index) => d.owned ? d.crew.slice(0, d.paws).map((_, paw) =>
+          ({ index, paw, ...extensionAPI.quoteAutomationCoach(index, paw) })) : []);
+      },
+      quoteAutomationCoach(i, p) {
+        if (!S.chDone.hands || !S.intro.done) return { ok:false, error:'Requires No Hands completion' };
+        if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
+        const d = Number.isInteger(i) && S.desks[i], t = d?.owned && Number.isInteger(p) && p >= 0 && p < d.paws && d.crew[p];
+        if (!t) return { ok:false, error:'Monkey is not owned' };
+        const coach = t.coach || 0, price = coachCost(i, t);
+        const error = coach >= COACH_MAX ? 'Coaching cap reached' :
+          !(price <= bananas.get() / 20) ? 'Waiting for cost at most 5% of wallet' : '';
+        return { ok:!error, error, price, coach, level:levelOf(t.xp), name:t.name, desk:DESKS[i].name };
+      },
+      coachAutomationOne(i, p) {
+        return extensionAPI.quoteAutomationCoach(i, p).ok && !!coachTypist(i, p);
+      },
+      quoteAutomationShop(key) {
+        if (!['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(key)) return { ok:false, error:'Unsupported shop item' };
+        const price = SHOP[key], owned = !!S[key], lock = shopLock(key);
+        const error = owned ? 'Owned' : lock || (S.printing < 2 || !S.intro.done ? 'Requires Printing 3' :
+          !extensionAPI.automationAllowed() ? 'Progression or save is paused' :
+          !(price < bananas.get() / 10) ? 'Waiting for price below 10% of wallet' : '');
+        return { ok:!error, price, owned, error };
+      },
+      buyAutomationShopOne(key) {
+        return extensionAPI.quoteAutomationShop(key).ok && !!buy(key);
+      },
+      hireAutomationOne(i, reservePercent) {
+        return extensionAPI.quoteAutomationHire(i, reservePercent).ok && !!buyUp('paw', i, 1);
+      }
+    } : {}),
+    ...(new URLSearchParams(location.search).get('mg01') === '1' ? {
+      commitMinigames(expected, next) {
+        if (window.VaultSaveGate?.blocked || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ok:false, error:'Save owner is unavailable' };
+        const current = S.meta.minigames;
+        if ((current === undefined ? null : JSON.stringify(current)) !== expected || current && current.version !== 1 || !next || next.version !== 1) return { ok:false, error:'Break Room save changed or is unsupported' };
+        const minigames = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const result = layerChoiceResult('minigames', Economy.saveStateAcknowledged({ ...S, meta:{ ...S.meta, minigames }, lastSeen }));
+        if (result.ok) { S.meta.minigames = minigames; S.lastSeen = lastSeen; mark(); }
+        return result;
+      }
+    } : {}),
+    ...(writer ? {
+      expandedManual, expandedAccess,
+      rewardBasis, rewardAwards:() => allAwards().map(({ id, tier, name }) => ({ id, tier, name })), goalFacts,
+      rewardDeskName:i => DESKS[i]?.name,
+      goalAwards:() => allAwards().map(({ id, tier, name, desc }, order) => ({ id, tier, name, desc, order })),
+      openAward(id) { if (!progressing() || !tabVisible('records') || !allAwards().some(a => a.id === id)) return false;
+        ui.sub.records = 'awards'; setTab('records');
+        const card = document.getElementById('o-award-' + id), pane = $('#o-records');
+        if (card && pane) { pane.scrollTop += card.getBoundingClientRect().top - pane.getBoundingClientRect().top - 60; card.focus({ preventScroll:true }); }
+        return !!card;
+      },
+      nativeRush:() => buffOn('rush'),
+      vaultBoundary, vaultCommit, lampCommit, lampHold, lampRelease,
+      vaultContext:() => ({cap:awayCap(),eff:awayEff(),intro:!introActive(),lamp:S.lamp}),
+      lampSaved:command => extensionEvent('lampSaved',command),
+      lampRefused:message => extensionEvent('lampRefused',message),
+      vaultResume:() => { if (writer.owns() && writer.boundaryProgressing()) paused = false; },
+      vaultPrepare:() => writer.owns() && !paused && !writer.transacting(),
+      vaultComplete:() => { last=performance.now(); },
+      rewardCommit(candidate) {
+        if (!writer.owns()) return { ok:false, error:'Not the save owner' };
+        const result = Economy.saveStateAcknowledged(candidate);
+        if (result.ok) {
+          const checkpoint = S.rewards.awayCheckpoint;
+          if (checkpoint && candidate.rewards.awayCheckpoint) {
+            const nextCheckpoint = candidate.rewards.awayCheckpoint;
+            Object.assign(checkpoint.report, nextCheckpoint.report); Object.assign(checkpoint.sold, nextCheckpoint.sold);
+            nextCheckpoint.report = checkpoint.report; nextCheckpoint.sold = checkpoint.sold;
+            Object.assign(checkpoint, nextCheckpoint); candidate.rewards.awayCheckpoint = checkpoint;
+          }
+          S.rewards = candidate.rewards; S.prem = candidate.prem; S.run = candidate.run;
+          if (expanded) { S.awards = candidate.awards; if (candidate.meta.expandedAwards !== undefined) S.meta.expandedAwards = candidate.meta.expandedAwards; if (candidate.meta.speedFundingAwards !== undefined) S.meta.speedFundingAwards = candidate.meta.speedFundingAwards; }
+          S.desks.forEach((d, i) => { d.letters = candidate.desks[i].letters; });
+          mark();
+        }
+        return result;
+      },
+      rewardContinue:() => { if (S.rewards.awayCheckpoint) simulateAway(0); if (progressing()) { checkAwards(true); buildStage(); mark(); } }
+    } : {}),
+    clock: { speed, monotonicNow:() => performance.now(), wallNow: () => Date.now(), productionNow },
+    register(id, hooks) {
+      if (extensions.has(id)) return false;
+      if (!/^[a-z][a-z0-9-]*$/.test(id) || !hooks || typeof hooks !== 'object') throw new Error('Invalid extension');
+      if (hooks.speed && speedProvider) throw new Error('Production speed already registered');
+      if (hooks.tab && TABS.some(t => t[0] === hooks.tab[0])) throw new Error('Tab already registered');
+      extensions.set(id, hooks); if (hooks.speed) speedProvider = hooks.speed;
+      if (hooks.tab) {
+        const tab = hooks.tab; TABS.push(tab);
+        TAB_GATES[tab[0]] = () => !hooks.visible || hooks.visible(extensionAPI);
+        RENDER[tab[0]] = () => hooks.render(extensionAPI, $('#o-' + tab[0]));
+        $('.o-panel').insertAdjacentHTML('beforeend', `<section class="o-pane" id="o-${esc(tab[0])}" role="tabpanel" hidden></section>`);
+        document.getElementById('oTabs').insertAdjacentHTML('beforeend', tabBtn(tab));
+      }
+      hooks.init?.('load', extensionAPI); mark(); return true;
+    }
+  };
+  IMI.ops.extensions = extensionAPI; IMI.ops.clock = extensionAPI.clock;
   /* Balance harness hook (tools/balance.html): lets a bot drive the real game logic. Not used by the site itself. */
   Object.defineProperty(IMI.ops, 'dev', { configurable: true, get: () => ({
     S: () => S, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
+    ...(layers?.enabled ? {layerFrequency:freqNow, layerOfflineDist:offlineDist} : {}),
     GARDEN_COSTS, MILES, focusNeeds, focusRecipe, stock, totalLetters, soldCount, kidsSold, kidsListed, KIDS, libSold, LIBS, touchBank: () => { bankV++; mark(); }, sky, marketBias, BARO_COST, typistSpeed, autoRate, coachTypist, rerollTypist, unrollTypist, coachCost, rerollCost, COACH_MAX, COACH_STEP, upCap, pubSell, pubStatus, PUB_COST, PUB_PERIOD, PUB_RULES, keeperPeriod, keeperUpCost, keeperLv, KEEPER_UP_MAX, royBase, divBase, salePay, marketMult, checkAwards, starsNow, museSlots, registerPitch, pitchActive, PITCH_MAX, buffs, makeCopies,
-    plant, harvest, gardenTime, gardenYield, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, ROY_BASE, RATE, comboHit: () => comboHit(), setSel: i => { S.sel = i; }
+    plant, harvest, gardenTime, gardenYield, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
    }) });
 
   /* ================= banking & writing ================= */
@@ -1610,10 +3569,11 @@
     S.stats.words++; S.bank[w] = stock(w) + 1; bankV++; ui.lastBanked = w; ui.bankedAt = performance.now(); mark(); IMI.emit('bank', { word: w }); return true;
   }
   function keeperStep(d, i) {
-    if (!keepersReady()) return;
+    if (worksActive() || !keepersReady()) return;
     const k = d.keeper; if (!k.owned || !k.on) return;
     const r = focusRecipe(d), words = BAND_WORDS[i];
     if (r) for (const w of words) if (r.need[w] && stock(w) < r.need[w] && canMake(d, w)) { bankWord(d, w); keeperFloat(i, w); return; }
+    if (folioGoal() || pg?.active(pgContext)) return;
     const reserved = r ? focusNeeds(d, i).oneCopy : {};
     let best = null, bestStock = Infinity;
     for (const w of words) {
@@ -1630,7 +3590,7 @@
     const t = $('#oTray'); if (!t) return; const b = t.getBoundingClientRect();
     floatText('+' + w, b.left + 20 + rand() * Math.max(10, b.width - 80), b.top); if (typists.length) kick(false);
   }
-  const canWrite = r => !S.written[r.id] && inPlay(r) && progress(r) === r.total;
+  const canWrite = r => titleAvailable(r) && !S.written[r.id] && inPlay(r) && progress(r) === r.total;
   /* the title's word chips lift off the card and pour into the sell button, like pages into a binding */
   function gatherWords(btn) {
     const card = btn.closest('.o-card'); if (!card || IMI.reduceMotion) return;
@@ -1645,16 +3605,41 @@
   }
   /* opts.auto: the publisher's assistant is selling (lighter fanfare); opts.silent: bulk sales while away (no effects, no news); opts.mult: price at this market multiplier */
   function writeTitle(id, fromEl, opts = {}) {
-    const r = RBY[id]; if (!r || !canWrite(r)) return;
+    if (challengeActive() && (opts.auto || opts.silent || !challengeHandover())) return;
+    const r = RBY[id]; if (!r || !canWrite(r) || !challengeSaleAllowed(r) || (chal('patientpress') || masteryActive()) && (opts.auto || opts.silent)) return;
+    if (masteryActive() && S.meta.challengeMastery.active.required.includes(id)) return writer.masteryAction({action:'sale',id});
+    if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === id) {
+      if (opts.silent || document.hidden || IMI.screen() !== 'game') return;
+      return writer.pitchSale({action:'prepare',...layers.epochFields(S),id,auto:!!opts.auto});
+    }
+    if (boardEnabled() && !opts.auto && !opts.silent && CommissionBoard.current(S)?.active?.status === 'active' && CommissionBoard.eligible(r) && !S.challenge && !workPaused()) {
+      const action = CommissionBoard.observed(S) >= CommissionBoard.current(S).active.expiresAt ? 'expire' : 'sale';
+      const result = writer.boardAction({action,...(action === 'sale' ? {id} : {})});
+      if (action === 'sale' || !result.ok) return result;
+    }
+    challengeBeforeSale(S,r);
     if (fromEl) gatherWords(fromEl);
     for (const w in r.need) { S.bank[w] -= r.need[w]; if (S.bank[w] <= 0) delete S.bank[w]; }
     bankV++;
     const quiet = !!opts.silent, mk = opts.mult != null ? opts.mult : marketMult(r.band), pay = salePay(r, mk); S.stats.lump += pay; if (!quiet) S.stats.bestMult = Math.max(S.stats.bestMult || 0, mk);
-    dropCaches(); S.written[id] = true; introProgress(); if (r.gen) S.stats.pitchSold = (S.stats.pitchSold || 0) + 1;
+    dropCaches(); S.written[id] = true; challengeAfterSale(S); introProgress(); if (r.gen) S.stats.pitchSold = (S.stats.pitchSold || 0) + 1;
+    pg?.clearManual(S, id);
     if (S.focus === id) S.focus = null;
     pickAutoFocus();
     const at = fromEl ? IMI.centerOf(fromEl) : undefined;
-    if (quiet) bananas.add(pay); else bananas.earn(pay, at);
+    if (quiet && writer && S.rewards.awayCheckpoint) {
+      const cp = S.rewards.awayCheckpoint; cp.sold.n++; cp.sold.pay += pay;
+      if (!writer.awayCredit(pay, cp.phase)) return;
+    } else {
+      const sample = printingHelper()?.printSampleToken(), balance = bananas.get();
+      if (quiet) bananas.add(pay); else bananas.earn(pay, at);
+      printingHelper()?.printPosting(bananas.get() - balance,sample);
+    }
+    salePublished(r,pay,mk,at,opts);
+  }
+
+  function salePublished(r,pay,mk,at,opts) {
+    const id = r.id, quiet = !!opts.silent;
     if (at) { IMI.burst(at[0], at[1], ['banana', 'spark', 'leaf'], 14); shock(at[0], at[1], '#ffd23a', true); }
     if (!opts.auto && !quiet) { flash('#fff6d6'); shake(2); }
     ui.fresh = id; if (!(ui.tab === 'press' && ui.sub.press === 'shelf')) ui.shelfNew = (ui.shelfNew || 0) + 1;      // the Shelf tab wears a badge until you look
@@ -1669,6 +3654,7 @@
     else if (!quiet && n % 4 === 0) IMI.banner(PX ? 'BESTSELLER!' : 'Bestseller!');
     mark(); if (!quiet) save();
     IMI.emit('sold', { id, pay });
+    if (imprintChallenge()) checkChallenge();
   }
 
   /* ================= training upgrades (spend this desk's letters) ================= */
@@ -1689,10 +3675,12 @@
   const coachCost = (i, t) => roundMoney(COACH_BASE[i] * Math.pow(COACH_GROW, t.coach || 0));
   const rerollCost = (i, t) => roundMoney(REROLL_BASE[i] * Math.pow(1.5, t.rerolls || 0));
   function coachTypist(i, p) {
+    if (challengeActive() && !challengeHandover()) return;
     const t = S.desks[i].crew[p]; if (!t || (t.coach || 0) >= COACH_MAX || !bananas.spend(coachCost(i, t))) return false;
     t.coach = (t.coach || 0) + 1; IMI.sfx.ding(); logIt(`${t.name} was coached to +${t.coach * COACH_STEP}%.`); mark(); save(); return true;
   }
   function rerollTypist(i, p) {
+    if (challengeActive() && !challengeHandover()) return;
     const t = S.desks[i].crew[p]; if (!t || !bananas.spend(rerollCost(i, t))) return false;
     t.prev = { trait: t.trait, talent: t.talent || 0, look: t.look };                     // one undo: the roll you just replaced
     const look = rollLook(t.look); ui.lastLook = { id: look.id, fresh: !(S.looks || {})[look.id] }; seeLook(look.id);
@@ -1705,20 +3693,47 @@
   }
   const upLevel = (u, d, i) => (u.k === 'paw' ? Math.max(0, d.paws - (i ? 1 : 0)) : d.up[u.k]);
   const upMax = u => (u.k === 'paw' ? u.max : u.tier ? 5 : u.max);
-  const upCap = (u, d) => (u.tier ? (d.mk >= 2 ? 5 : d.mk >= 1 ? 4 : 3) : upMax(u));      // levels 4 and 5 of the tiered upgrades need the machine restored (Shop > Restorations)
-  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base; return Math.round(u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l)); };
+  const upCap = (u, d) => (u.k === 'paw' && chal('smallcrew') ? 2 : u.tier ? (d.mk >= 2 ? 5 : d.mk >= 1 ? 4 : 3) : upMax(u));      // levels 4 and 5 of the tiered upgrades need the machine restored (Shop > Restorations)
+  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base; return Math.round((trainingPool && trainingPool.mode() !== 'local' ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l))); };
   const upLock = (u, d) => {
-    if (u.needs === 'hold' && !S.hold) return 'Needs Hold to type (in the Shop)';
+    if (u.k === 'paw' && chal('smallcrew') && d.paws >= 2) return 'Small Crew allows 2 typists per desk';
+    if (u.needs === 'hold' && !toolOn('hold')) return 'Needs Hold to type (in the Shop)';
     if (u.tier) { const lv = d.up[u.k]; if (lv >= upCap(u, d) && lv < 5) return `Needs ${MK_NAMES[lv - 2]} (restore this machine in the Shop)`; }
     return '';
   };
   /* how many levels a purchase of `want` covers and what it costs (Max stops where your letters run out) */
+  function trainingIngredients() {
+    const required = S.desks.map(() => ({})), r = focusRecipe();
+    for (const [w, count] of Object.entries(r?.need || {})) {
+      const missing = Math.max(0, count - stock(w)), band = bandOf(w.length);
+      for (const ch of w) required[band][ch] = (required[band][ch] || 0) + missing;
+    }
+    return required;
+  }
+  function worksFloors() { return activeWork()?.floors(S,trainingIngredients()) || S.desks.map(() => ({})); }
+  function localTrainingHave(d,i) { const floor=worksFloors()[i];return Object.entries(d.letters).reduce((n,[ch,count])=>n+Math.max(0,count-(floor[ch]||0)),0); }
+  function trainingPoolFacts(cost) {
+    pickAutoFocus();
+    const required=trainingIngredients(),demo=worksFloors();
+    for(let i=0;i<required.length;i++)for(const [ch,n]of Object.entries(demo[i]))required[i][ch]=(required[i][ch]||0)+n;
+    return trainingPool.plan(S.desks.map((d, i) => ({ owned:d.owned, letters:d.letters, id:DESKS[i].id })), required, S.meta.automation, cost);
+  }
+  function trainingQuote(u, d, i, want) {
+    const pooled = trainingPool && trainingPool.mode() !== 'local';
+    const plan = upPlan(u, d, i, want);
+    if (!d?.owned || !plan.n || upLock(u, d)) return { ...plan, ok:false, error:upLock(u, d) || 'Training unavailable' };
+    if (pooled) {
+      if (trainingPool.mode() === 'suspended' || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ...plan, ok:false, error:'Shared training suspended' };
+      return { ...plan, ...trainingPoolFacts(plan.cost) };
+    }
+    return { ...plan, ok:(worksActive() ? localTrainingHave(d,i) : totalLetters(d)) >= plan.cost };
+  }
   function upPlan(u, d, i, want) {
-    const max = upCap(u, d), have = totalLetters(d); let lv = u.k === 'paw' ? d.paws : d.up[u.k], n = 0, cost = 0;
+    const max = upCap(u, d), pooled = trainingPool && trainingPool.mode() !== 'local', facts = pooled ? trainingPoolFacts(0) : null, have = pooled ? facts.spendable || 0 : worksActive() ? localTrainingHave(d,i) : totalLetters(d); let lv = u.k === 'paw' ? d.paws : d.up[u.k], n = 0, cost = 0;
     while (n < want && lv + n < max) {
       const l = u.k === 'paw' ? Math.max(0, lv + n - (i ? 1 : 0)) : lv + n;
-      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base, c = Math.round(u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l));
-      if (want === Infinity && n > 0 && cost + c > have) break;
+      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base, c = Math.round((pooled ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l)));
+      if (want === Infinity && (pooled || n > 0) && cost + c > have) break;
       cost += c; n++;
     }
     return { n, cost };
@@ -1730,24 +3745,45 @@
     if (u.k === 'rapid') return `${holdRate({ ...d, up: { ...d.up, rapid: level } })}/s held typing`;
     return `${Math.round(UPV[u.k][level] * 100)}% ${u.k === 'ribbon' ? 'swap chance' : 'configured bias'}`;
   }
-  function buyUp(k) {
-    const i = S.sel, d = cur(), u = UPS.find(x => x.k === k); if (!u) return;
+  function buyUp(k, i = S.sel, want = buyWant()) {
+    if (challengeActive() && !challengeHandover()) return;
+    const d = S.desks[i], u = UPS.find(x => x.k === k); if (!u || !d?.owned) return;
     if (upLock(u, d)) return;
-    const plan = upPlan(u, d, i, buyWant()); if (plan.n <= 0 || totalLetters(d) < plan.cost) return;
-    let left = plan.cost;                               // spend from the biggest piles first
-    while (left-- > 0) { const top = Object.keys(d.letters).sort((a, b) => d.letters[b] - d.letters[a])[0]; takeLetter(d, top); }
+    const plan = trainingQuote(u, d, i, want); if (!plan.ok) return;
+    if (plan.deductions) {
+      for (const { i:donor, ch, n } of plan.deductions) {
+        const pile = S.desks[donor]; pile.letters[ch] -= n;
+        if (!pile.letters[ch]) delete pile.letters[ch];
+        let remaining = n;
+        pile.tray = pile.tray.slice().reverse().filter(letter => letter !== ch || remaining-- <= 0).reverse();
+      }
+    } else {
+      let left = plan.cost;                               // incumbent local spending
+      const floor = worksActive() ? worksFloors()[i] : {};
+      while (left-- > 0) { const top = Object.keys(d.letters).filter(ch => d.letters[ch] > (floor[ch] || 0)).sort((a, b) => d.letters[b] - d.letters[a])[0]; takeLetter(d, top); }
+    }
     if (u.k === 'paw') { d.paws += plan.n; ensureCrew(d); } else d.up[u.k] += plan.n;
     introProgress();
     IMI.sfx.ding(); mark(); save();
     if (u.k === 'paw') IMI.emit('hire', { n: plan.n, desk: i });
+    return true;
   }
 
   /* ================= shop (spend bananas) ================= */
+  function shopLock(what) {
+    const constraint = challengeShopLock(what); if (constraint) return constraint;
+    if (what === 'dbl' && !S.hold) return 'Needs Hold to type';
+    if ((what === 'agent' || what === 'analyst') && soldCount() < 2) return 'Needs 2 sold titles';
+    if ((what === 'metro' || what === 'dbl' || what === 'contracts') && !S.desks[2].owned) return 'Unlocks with Lagoon Sprint';
+    return '';
+  }
   function buy(what, arg) {
+    if (challengeActive() && !challengeHandover()) return;
     const i = +arg;
+    if (challengeShopLock(what)) return;
     if (what === 'desk') {
       const d = S.desks[i], p = DESKS[i].price;
-      if (chal('haiku') && i >= 2) return;
+      if ((chal('haiku') || masteryActive()) && i >= 2) return;
       if (d.owned || !S.desks[i - 1]?.owned || !bananas.spend(p)) return;
       d.owned = true; d.keeper.owned = true; d.paws = 1; ensureCrew(d); pickAutoFocus(); S.sel = i; ui.dropIn = true; cheer(2000, 'NEW!'); newsPush(`${DESKS[i].name} installed. The monkeys argue over who touches it first.`); IMI.banner(PX ? 'NEW TYPEWRITER!' : 'New Typewriter!'); buildStage(); IMI.emit('desk', { i });
       logIt(`${DESKS[i].name} installed on the canopy. It types ${DESKS[i].lo}–${DESKS[i].hi} letter words.`);
@@ -1774,13 +3810,12 @@
       const x = DEALS.find(q => q.id === arg); if (!x || S.deals[x.id] || soldCount() < x.need || !bananas.spend(x.cost)) return;
       S.deals[x.id] = true; logIt(`Signed a publishing deal: ${x.name}.`);
     } else if (SHOP[what] && !S[what]) {
-      if (what === 'dbl' && !S.hold) return;
-      if ((what === 'agent' || what === 'analyst') && soldCount() < 2) return;
-      if ((what === 'metro' || what === 'dbl' || what === 'contracts') && !S.desks[2].owned) return;
+      if (shopLock(what)) return;
       if (!bananas.spend(SHOP[what])) return;
       S[what] = true;
     } else return;
     IMI.sfx.ding(); mark(); save();
+    return true;
   }
 
   /* ================= icons ================= */
@@ -2164,14 +4199,16 @@
     const fr = keepersReady() ? focusRecipe(d) : null, ft = $('#oFocus');
     const want = fr ? focusNeeds(d, S.sel).missing : {};               // quiet ingredient markers, separate from the Golden Keys buff
     $$('.o-key[data-k]').forEach(k => { const needed = !!want[k.dataset.k]; k.classList.toggle('want', needed); k.title = needed ? 'Needed for your current title. Taps still type random letters.' : ''; });
-    if (ft) morph(ft, fr ? `<span class="o-fgoal">Goal</span><b class="o-ftitle">${esc(fr.title)}</b>${bar(progress(fr), fr.total)}<span class="o-fn">${progress(fr)}/${fr.total}</span>` : '');
+    if (ft) { ft.dataset.act = pg ? 'pgopen' : 'go'; ft.title = pg ? pg.status(pgContext) : ft.title; }
+    if (ft) morph(ft, pg ? `<span class="o-fgoal">${pg.active(pgContext) ? DESKS[S.meta.productionGoal.band].hi + '-letter set' : 'Auto'}</span><b class="o-ftitle">${esc(fr?.title || pg.status(pgContext))}</b>${fr ? bar(progress(fr), fr.total) : ''}<span class="o-fn">Titles</span>` : fr ? `<span class="o-fgoal">Goal</span><b class="o-ftitle">${esc(fr.title)}</b>${bar(progress(fr), fr.total)}<span class="o-fn">${progress(fr)}/${fr.total}</span>` : '');
     morph($('#oSky'), skyLine());
     morph($('#oStats'), `<span class="o-s1"><b>${cnt('f-let' + S.sel, totalLetters(d))}</b> letters</span><span class="o-s2"><b>${d.paws}</b> typists · <b>${autoRate(d).toFixed(2)}</b>/s</span>` +
-      (S.hold ? `<span class="o-sx"><b>${holdRate(d)}</b>/s held</span>` : '') + `<span class="o-sx o-dim">${D.lo}–${D.hi} letter words</span>` +
+      (toolOn('hold') ? `<span class="o-sx"><b>${holdRate(d)}</b>/s held</span>` : '') + `<span class="o-sx o-dim">${D.lo}–${D.hi} letter words</span>` +
       (stormy() ? '<span class="o-sx o-warn">Storm! Half speed.</span>' : ''));
     const now = performance.now();
-    morph($('#oMiles'), `<span class="o-dim">Tap streak goals${S.best ? ` (best x${S.best})` : ''}:</span>` + MILES.map(m => `<span class="o-mile${combo.n >= m.n ? ' hit' : ''}${now < (ui.mcd[m.n] || 0) ? ' cd' : ''}" title="${esc(m.desc)}">x${m.n} ${m.name}</span>`).join(''));
-    $('#oGuide').textContent = !d.paws ? 'Nobody is typing yet. Collect a few letters by hand, then hire a first typist in Train.' : S.hold ? 'Hold a finger, the mouse, or Space on the machine to type fast. Spend letters in Train or turn them into words in Words.'
+    $('#oMiles').classList.toggle('ui01', HIGH_MILES.some(m => m.n > combo.n));
+    morph($('#oMiles'), `<span class="o-dim">Tap streak goals${S.best ? ` (best x${S.best})` : ''}:</span>` + [...MILES, ...HIGH_MILES.filter(m => m.n > combo.n).slice(0, 1)].map(m => `<span class="o-mile${m.recognition ? ' high' : ''}${combo.n >= m.n ? ' hit' : ''}${now < (ui.mcd[m.n] || 0) ? ' cd' : ''}" title="${esc(m.desc)}">x${m.n} ${m.name}</span>`).join(''));
+    $('#oGuide').textContent = !d.paws ? 'Nobody is typing yet. Collect a few letters by hand, then hire a first typist in Train.' : toolOn('hold') ? 'Hold a finger, the mouse, or Space on the machine to type fast. Spend letters in Train or turn them into words in Words.'
       : 'Tap or click the typewriter (focus it and press Space too). Spend letters in Train or make words in Words.';
     syncTypists();
   }
@@ -2182,6 +4219,7 @@
 
   /* the look book: every look, grouped by rarity; the ones you have not found yet are silhouettes with only their rarity and trait showing */
   function lookBook() {
+    if (window.Hall?.enabled) return Hall.render(S,LOOKS,RARITY,lookArt,esc,progressing() && writer.guard(S));
     const seen = S.looks || {}, onCrew = {};
     S.desks.forEach(d => d.owned && d.crew.forEach(t => { onCrew[t.look] = (onCrew[t.look] || 0) + 1; }));
     const tiers = ['l', 'e', 'r', 'c'];
@@ -2194,17 +4232,18 @@
   function renderTraining() {
     const d = cur(), i = S.sel, have = totalLetters(d), want = buyWant();
     const tsub = ui.sub.training || 'crew';
-    morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
-      <p class="o-lede">Train hires and trains the monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>letters from this desk</b> (the biggest piles go first). You hold ${fmt(have)}.</p>
+    morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', window.Hall?.enabled ? 'Hall of Monkeys' : `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
+      ${trainingPool ? trainingPool.controls(esc, fmt) : ''}
+      <p class="o-lede">Train hires and trains the monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>${trainingPool && trainingPool.mode() !== 'local' ? 'protected shared surplus' : 'letters from this desk'}</b> (${trainingPool && trainingPool.mode() !== 'local' ? 'the biggest removable piles' : 'the biggest piles'} go first). You hold ${fmt(have)}.</p>
       ${keepersReady() ? `<div class="o-row o-left"><span class="o-dim">Keeper</span>${keeperSeg(i)}</div>` : '<p class="o-dim">Letters stay here until your keeper is introduced.</p>'}
       <div class="o-row o-left"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
       <div class="o-grid">${UPS.map(u => {
-        const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), lock = upLock(u, d), done = lvl >= max, plan = upPlan(u, d, i, want);
+        const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), lock = upLock(u, d), done = lvl >= max, plan = trainingQuote(u, d, i, want);
         const first = u.k === 'paw' && i === 0 && d.paws === 0 && plan.n === 1;
         return `<div class="o-card"><div class="o-row"><h3>${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${lvl}/${max}</span></div>
           ${pips(lvl, max)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p><details class="o-updetail"><summary>How it works</summary><p>${u.desc}</p></details>${lock ? `<p class="o-warn">${lock}</p>` : ''}
           ${done ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${upEffect(u, d, lvl + (lock ? 1 : plan.n))}</p>`}
-          <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || have < plan.cost ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button></div>`;
+          <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button></div>`;
       }).join('')}</div>
       <h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
       ${d.crew.length ? `<div class="o-grid o-crew">${d.crew.map((t, p) => {
@@ -2276,12 +4315,12 @@
     return `<div class="o-card o-book${done ? ' done' : ''}${ui.fresh === r.id ? ' fresh' : ''}${ready ? ' ready' : ''}"><div class="o-row"><h3>${esc(r.title)}${r.gen && !done ? ' <small class="o-pit">COMMISSIONED</small>' : ''}</h3><span class="o-tag b${r.band}">${DESKS[r.band].lo}–${DESKS[r.band].hi}</span></div>
           <p class="o-dim">${r.total} words · rights ${price(done ? r.pay : salePay(r))}${!done && marketMult(r.band) !== 1 ? ` <span class="o-dim">(x${marketMult(r.band).toFixed(2)})</span>` : ''}${foc ? ' <span class="o-tag o-now">NOW WRITING</span>' : ''}</p>
           <div class="o-progrow">${bar(done ? r.total : progress(r), r.total)}<span class="o-dim">${done ? r.total : progress(r)}/${r.total}</span></div>
-          ${done ? '' : `<div class="o-chips">${chipsFor(r)}</div>`}
+          ${!titleAvailable(r) ? '<p class="o-warn">Archived, retire entry to resume sales</p>' : ''}${done ? '' : `<div class="o-chips">${chipsFor(r)}</div>`}
           ${done ? '' : `<div class="o-chips o-needs"><span class="o-dim">Needs</span>${needDesks(r).map(b => `<span class="o-chip b${b}${S.desks[b].owned ? ' ok' : ''}">${DESKS[b].name.split(' ')[0]}</span>`).join('')}${lock !== undefined ? `<span class="o-warn">Needs ${DESKS[lock].name}</span>` : ''}</div>`}
           ${done ? `<i class="o-stamp${ui.fresh === r.id ? ' slam' : ''}">SOLD!</i>` : ''}
           ${ui.read === r.id ? `<div class="o-read">${esc(r.text)}</div>` : ''}
-          <div class="o-row"><button type="button" class="o-btn sm" data-act="read" data-id="${r.id}">${ui.read === r.id ? 'Close' : 'Read'}</button>
-            ${done ? '<span class="o-lvl">WRITTEN &amp; SOLD</span>' : `<button type="button" class="o-btn sm" data-act="focus" data-id="${r.id}" ${foc || lock !== undefined ? 'disabled' : ''}>${foc ? 'Focused' : 'Focus'}</button>
+          <div class="o-row o-actions"><button type="button" class="o-btn sm" data-act="read" data-id="${r.id}">${ui.read === r.id ? 'Close' : 'Read'}</button>
+            ${done ? '<span class="o-lvl">WRITTEN &amp; SOLD</span>' : `<button type="button" class="o-btn sm" data-act="focus" data-id="${r.id}" ${foc || lock !== undefined || !titleAvailable(r) ? 'disabled' : ''}>${foc ? 'Focused' : 'Focus'}</button>
             <button type="button" class="o-btn sm gold" data-act="write" data-id="${r.id}" ${ready ? '' : 'disabled'}>${ready && marketMult(r.band) >= 1.4 ? 'Sell now!' : 'Write &amp; sell'}</button>`}</div></div>`;
   }
   /* sort modes for the Titles list. Whatever the mode, the order is tiered first: ready to write, the focused title, titles you can work on now,
@@ -2324,6 +4363,7 @@
       ${rows.length > shown.length ? `<div class="o-row"><button type="button" class="o-btn sm" data-act="libmore">Show more (${(rows.length - shown.length).toLocaleString('en-US')})</button></div>` : ''}`;
   }
   function pubBar() {
+    if ((chal('patientpress') || masteryActive())) return `<p class="o-warn">${masteryActive() ? 'Publisher suspended for manual Small Crew mastery.' : 'Publisher disabled by Patient Press.'} Manual selling is available.</p>`;
     if (!S.pub.tier) return '';
     const rules = [['any', 'Any', 'Sell as soon as a title is finished'], ['fair', 'Fair', 'Hold titles until the market is at least x1.0'], ['hot', 'Hot', 'Hold titles until the market is HOT (x1.4 or more)']];
     return `<div class="o-card o-pubbar"><div class="o-row o-left"><span class="o-seg"><button type="button" data-act="pubon" aria-pressed="${S.pub.on}" title="Let the assistant sell finished titles for you">Auto-sell ${S.pub.on ? 'on' : 'off'}</button></span>
@@ -2333,20 +4373,20 @@
   function renderPress(force) {
     const pane = $('#o-press'); if (!force && pane.contains(document.activeElement) && document.activeElement.matches('input')) return;
     const sold = soldCount(), ready = readyList().length;
-    const tabs = [['titles', 'Titles', ready || ''], ...(sold >= 1 ? [['shelf', 'Shelf', ui.shelfNew || ''], ['pitches', 'Pitches', firstPitch() ? '!' : ''], ['market', 'Market']] : []), ...(sold >= 3 ? [['archive', 'Archive']] : [])];
+    const tabs = [['titles', 'Titles', ready || ''], ...((sold >= 1 || boardEnabled() && CommissionBoard.access(S) || seasonsEnabled() && Seasons.access(S)) ? [['shelf', 'Shelf', ui.shelfNew || '']] : []), ...(sold >= 1 ? [ ['pitches', 'Pitches', firstPitch() ? '!' : ''], ['market', 'Market']] : []), ...(sold >= 3 ? [['archive', 'Archive']] : [])];
     if (!tabs.some(t => t[0] === ui.sub.press)) ui.sub.press = 'titles';
     const sub = ui.sub.press;
     let body = '';
     if (sub === 'titles') {
       const fr = focusRecipe();
-      body = `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle">Now writing: <b>${esc(fr.title)}</b></span><span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span>Pick a title below</span>'}</div><div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) : '<span class="o-dim">Auto picks the best title</span>'}<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span></div></div>
+      body = `${pg ? pg.controls(pgContext, esc) : `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle">Now writing: <b>${esc(fr.title)}</b></span><span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span>Pick a title below</span>'}</div><div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) : '<span class="o-dim">Auto picks the best title</span>'}<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span></div></div>`}
 
         ${pubBar()}
         <div id="oTitleList">${pressList()}</div>${KIDS.length ? `<p class="o-dim o-kidsline">Kids' reading list: ${kidsSold()} of ${KIDS.length} written${LIBS.length ? ` · Library stories: ${libSold()} of ${LIBS.length} written` : ''}</p>` : ''}`;
     } else if (sub === 'shelf') {
       ui.shelfNew = 0;
       const written = Object.keys(S.written).length;
-      body = `<div class="o-card o-shelf"><div class="o-row"><h3>Your bookshelf</h3><span class="o-dim">${written} sold · royalties ${fmtRate(royRate())}/s</span></div>${sold ? '<p class="o-dim">Tap a spine to read it.</p>' : '<p class="o-dim">Sell a title to put it here.</p>'}${shelfHTML()}</div>`;
+      body = `<div class="o-card o-shelf"><div class="o-row"><h3>Your bookshelf</h3><span class="o-dim">${written} sold · royalties ${fmtRate(royRate())}/s</span></div>${sold ? '<p class="o-dim">Tap a spine to read it.</p>' : '<p class="o-dim">Sell a title to put it here.</p>'}${shelfHTML()}</div>${boardEnabled() ? CommissionBoard.render(extensionAPI) : ''}${seasonsEnabled() ? Seasons.render(extensionAPI) : ''}`;
     } else if (sub === 'pitches') body = pitchHTML();
     else if (sub === 'market') body = `<p class="o-lede">Publishers pay more or less depending on demand. Sell when your title’s band is HOT. The weather and the time of day change demand.</p>${skyCard()}${marketHTML()}`;
     else body = `<div class="o-card o-archive"><h3>The Archive</h3>
@@ -2398,13 +4438,13 @@
   }
   function renderShop() {
     const blue = S.desks[2].owned, have = bananas.get();
-    const item = (name, desc, cost, owned, lock, act, i) => `<div class="o-card"><div class="o-row"><h3>${name}</h3>${owned ? '<span class="o-lvl">OWNED</span>' : price(cost)}</div><p>${desc}</p>${lock && !owned ? `<p class="o-warn">${lock}</p>` : ''}
-      ${owned ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="${act}" ${i != null ? `data-i="${i}"` : ''} ${lock || have < cost ? 'disabled' : ''}>Buy</button>`}</div>`;
+    const item = (name, desc, cost, owned, lock, act, i) => { lock = challengeShopLock(act) || lock; return `<div class="o-card"><div class="o-row"><h3>${name}</h3>${owned ? '<span class="o-lvl">OWNED</span>' : price(cost)}</div><p>${desc}</p>${lock && !owned ? `<p class="o-warn">${lock}</p>` : ''}
+      ${owned ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="${act}" ${i != null ? `data-i="${i}"` : ''} ${lock || have < cost ? 'disabled' : ''}>Buy</button>`}</div>`; };
     morph($('#o-shop'), `
       <p class="o-lede">The Shop spends the bananas your titles earn. Typewriters and room-wide upgrades are bought here.</p>
       <h3 class="o-h">Typewriters</h3><div class="o-grid">${DESKS.slice(1).map((D, n) => {
         const i = n + 1, d = S.desks[i];
-        return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, chal('haiku') && i >= 2 ? 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
+        return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, (chal('haiku') || masteryActive()) && i >= 2 ? masteryActive() ? 'Small Crew mastery allows only Bamboo and Hibiscus' : 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
       }).join('')}</div>
       <h3 class="o-h">Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span></h3><div class="o-grid">${DEALS.map(x => item(cart('d-' + x.id) + x.name, x.desc, x.cost, !!S.deals[x.id], soldCount() < x.need ? `Needs ${x.need} sold title${x.need > 1 ? 's' : ''}` : '', 'deal', x.id)).join('')}</div>
       <h3 class="o-h">Restorations</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>
@@ -2434,9 +4474,9 @@
   /* little dots on the department tabs when something there is worth doing */
   function badgeFor(k) {
     const d = cur(), i = S.sel;
-    if (k === 'training') return UPS.some(u => { const lvl = u.k === 'paw' ? d.paws : d.up[u.k]; return d.owned && lvl < upMax(u) && !upLock(u, d) && totalLetters(d) >= upCost(u, d, i); }) ? '!' : '';
+    if (k === 'training') return UPS.some(u => trainingQuote(u, d, i, 1).ok) ? '!' : '';
     if (k === 'lab') return d.owned && BAND_WORDS[i].some(w => !stock(w) && canMake(d, w)) ? '!' : '';
-    if (k === 'lab' && S.garden.beds.some(b => b && Date.now() >= b.ready)) return '!';
+    if (k === 'lab' && S.garden.beds.some(b => b && savedWallNow() >= b.ready)) return '!';
     if (k === 'muses') { const slots = museSlots(); return slots && S.muses.seated.slice(0, slots).some(x => !x) && MUSES.some(m => S.muses.owned[m.id] && !S.muses.seated.includes(m.id)) ? '!' : (slots && MUSES.some(m => !S.muses.owned[m.id] && bananas.get() >= m.cost) ? '!' : ''); }
     if (k === 'studios') return DIVS.some(D => divUnlocked(D) && divCount(D) < divCap(D) && bananas.get() >= divPlan(D, 1).cost) ? '!' : '';
     if (k === 'records') return ui.unseen ? String(ui.unseen) : '';
@@ -2465,15 +4505,29 @@
     const col = document.createElement('span'); col.className = 'hud-col'; const sc = hudEl.querySelector('#score');
     hudEl.insertBefore(col, sc); col.appendChild(sc); col.appendChild(hudRate);
   }
-  const buffBar = document.createElement('div'); buffBar.className = 'o-buffbar'; buffBar.setAttribute('aria-live', 'polite'); document.body.appendChild(buffBar);
+  const buffBar = document.createElement('div'); buffBar.className = 'o-buffbar'; buffBar.setAttribute('aria-live', 'polite');
+  const buffDisplay = {};
+  const BUFF_DETAILS = {
+    frenzy: 'All typists work twice as fast.', golden: 'Every tap types two letters.',
+    snack: 'Typists work 50% faster.', rush: 'Royalties pay seven times as much.',
+    sluggish: 'Typists work more slowly.', critic: 'Royalties are halved.'
+  };
   function renderBuffs() {
-    const now = performance.now(), on = Object.keys(buffs).filter(buffOn);
-    morph(buffBar, on.map(k => `<span class="o-buff ${k} ${BUFF_INFO[k][1]}">${BUFF_INFO[k][0]}${k === 'golden' ? ' · 2 letters/tap' : ''} ${Math.ceil((buffs[k] - now) / 1000)}s</span>`).join('') + (S.challenge ? `<span class="o-buff chal">OULIPO: ${esc(chDef(S.challenge.id).name)} ${chProgress()}</span>` : ''));
-    if (buffBar.childElementCount) {                                 // float the chips over the room (under its stats), or at the top of the panel
-      const st = ui.tab === 'floor' && $('#oStage');
-      const top = Math.round(st && stageBoxC ? stageBoxC.top + 10 : st ? st.getBoundingClientRect().top + 10 : $('.o-panel').getBoundingClientRect().top + 8) + 'px';   // the stage's cached box: no layout per render
-      if (buffBar.style.top !== top) buffBar.style.top = top;
+    if (!progressing()) return;
+    const now = productiveMono(), on = Object.keys(buffs).filter(buffOn), floor = ui.tab === 'floor';
+    const host = floor ? $('#o-floor') : $('.o-wrap');
+    if (host && !buffBar.closest('.o-writer-content') && buffBar.parentNode !== host) {
+      if (floor) host.prepend(buffBar); else host.insertBefore(buffBar, $('.o-panel'));
     }
+    for (const k of Object.keys(buffDisplay)) if (!on.includes(k)) delete buffDisplay[k];
+    morph(buffBar, on.map((k, i) => {
+      const remaining = Math.max(0, buffs[k] - now), old = buffDisplay[k];
+      if (!old || remaining > old.remaining + 250) buffDisplay[k] = { total: remaining };
+      const display = buffDisplay[k]; display.remaining = remaining;
+      const ratio = Math.min(1, remaining / display.total), desc = BUFF_DETAILS[k];
+      const meter = `<span class="o-buff-meter" role="img" aria-label="${esc(BUFF_INFO[k][0])}: ${Math.ceil(remaining / 1000)} seconds remaining"><i style="transform:scaleX(${ratio.toFixed(4)})"></i></span>`;
+      return `<div class="o-buff ${k} ${BUFF_INFO[k][1]}">${floor && i < 2 ? `<b>${BUFF_INFO[k][0]}</b><span class="o-buff-desc">${desc}</span>${meter}` : `<details><summary aria-label="${BUFF_INFO[k][0]}: read effect details"><b>${BUFF_INFO[k][0]}</b>${meter}</summary><span>${desc}</span></details>`}</div>`;
+    }).join('') + (S.challenge ? `<div class="o-buff chal"><b>OULIPO: ${esc(chDef(S.challenge.id).name)}</b><span>${chProgress()}</span></div>` : ''));
     const st = $('#oStage'); if (st) { st.classList.toggle('frenzy', buffOn('frenzy')); st.classList.toggle('golden', buffOn('golden')); }
     const r = royRate() + divRate(); hudRate.textContent = r > 0 ? `+${fmtRate(r)}/s` : ''; hudRate.hidden = r <= 0;
   }
@@ -2501,7 +4555,7 @@
     $$('.o-pane').forEach(p => { p.hidden = p.id !== 'o-' + ui.tab; });
     const D = DESKS[S.sel];
     const wrap = $('.o-wrap');                                       // on .o-wrap itself: its own defaults would otherwise shadow these
-    wrap.dataset.tab = ui.tab;
+    wrap.dataset.tab = ui.tab; root.dataset.tab = ui.tab;
     const roomId = ui.tab === 'floor' ? DESKS[S.sel].id : null;
     if ((document.documentElement.dataset.room || null) !== roomId) { if (roomId) document.documentElement.dataset.room = roomId; else delete document.documentElement.dataset.room; }
     wrap.style.setProperty('--tw', D.color); wrap.style.setProperty('--tw-font', D.font); wrap.style.setProperty('--tw-fs', D.fs || '');
@@ -2520,6 +4574,7 @@
     renderChrome();
     if (ui.tab === 'floor') renderFloorInfo(); else { RENDER[ui.tab](); markCan($('#o-' + ui.tab)); }
     const lt = totalLetters(cur()); if (lt !== lastLetters) { lastLetters = lt; IMI.emit('letters', { total: lt, typed: S.stats.letters }); }
+    extensionEvent('afterRender', { tab: ui.tab, pane: $('#o-' + ui.tab) });
     IMI.emit('render');
   }
 
@@ -2528,10 +4583,29 @@
   root.innerHTML = `<div class="o-wrap" data-tab="floor">
     <div class="o-ticker" id="oTicker" role="marquee" aria-label="News" title="Tap for the next headline"><b class="o-tkr-tag">NEWS</b><div class="o-tkr-view"><span class="o-tkr-text" id="oTkrText"></span></div></div>
     <div class="o-desks" id="oDesks"></div>
+    ${writer ? '<div id="oGoals" class="o-goals" hidden data-own></div><span id="oGoalNotice" class="o-goal-sr" role="status" aria-live="polite" data-own></span>' : ''}
     <div class="o-panel">${TABS.map(([k]) => `<section class="o-pane" id="o-${k}" role="tabpanel" ${k === 'floor' ? '' : 'hidden'}></section>`).join('')}</div>
   </div>`;
   document.getElementById('oTabs').innerHTML = TABS.map(tabBtn).join('');                  // the departments live in the side rail (index.html / classic.html)
   hydrate(root); hydrate(document.getElementById('oTabs'));
+
+  if (writer) {
+    let host, next, panel, panelHost, panelNext;
+    writer.onStatusPresentation(content => {
+      if (content) {
+        if (!host) {
+          host = buffBar.parentNode; next = buffBar.nextSibling;
+          panel = content.parentNode; panelHost = panel.parentNode; panelNext = panel.nextSibling;
+        }
+        if (buffBar.parentNode !== content) content.appendChild(buffBar);
+        if (panel.parentNode !== $('.o-panel')) $('.o-panel').appendChild(panel);
+      } else if (host) {
+        host.insertBefore(buffBar, next?.parentNode === host ? next : null);
+        panelHost.insertBefore(panel, panelNext?.parentNode === panelHost ? panelNext : null);
+        host = next = panel = panelHost = panelNext = null;
+      }
+    });
+  }
 
   function setTab(t) {
     if (!tabVisible(t)) return;
@@ -2556,12 +4630,12 @@
   const tap = () => { press(S.sel, false); };
   root.addEventListener('pointerdown', e => {
     if (!e.target.closest('#oStage')) return;
-    e.preventDefault(); $('#oStage').focus({ preventScroll: true }); tap(); if (!chal('hands')) shock(e.clientX, e.clientY, combo.n >= 20 ? '#ff9a3a' : '#fff6d6', false, true); if (S.hold) holding = true;
+    e.preventDefault(); $('#oStage').focus({ preventScroll: true }); tap(); if (!chal('hands')) shock(e.clientX, e.clientY, combo.n >= 20 ? '#ff9a3a' : '#fff6d6', false, true); if (toolOn('hold')) holding = true;
   });
   ['pointerup', 'pointercancel', 'blur'].forEach(ev => window.addEventListener(ev, () => { holding = false; }));
   root.addEventListener('keydown', e => {
     if (!e.target.closest('#oStage') || (e.code !== 'Space' && e.code !== 'Enter')) return;
-    e.preventDefault(); if (e.repeat) return; tap(); if (S.hold) holding = true;
+    e.preventDefault(); if (e.repeat) return; tap(); if (toolOn('hold')) holding = true;
   });
   window.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') holding = false; });
   root.addEventListener('focusout', e => { if (e.target.closest('#oStage')) holding = false; });
@@ -2586,6 +4660,8 @@
     else if (r === 'r') { IMI.banner(fresh ? (PX ? 'NEW RARE LOOK!' : 'New rare look!') : (PX ? 'RARE LOOK!' : 'Rare look!')); shock(at[0], at[1], '#5fc8ff'); }
     else if (fresh) IMI.banner(PX ? 'NEW LOOK!' : 'New look!');
   }
+  const resetExplanation = 'Reset progress is unavailable while this save has Diamond Bananas, reward history or Vault items. Second Printing remains available when no purchase or save recovery is pending.';
+  const resetBlocked = () => !!(S.prem.earned || S.prem.bought || S.prem.earnedTotal || S.prem.boughtTotal || S.prem.vault || Object.keys(S.prem.credits || {}).length || Object.keys(S.rewards.claims || {}).length || Object.keys(S.rewards.storedGold?.tokens || {}).length || S.rewards.walletHead || S.rewards.awayCheckpoint);
   const ACTIONS = {
     keyhelp: () => {
       if (document.querySelector('.o-modal')) return;
@@ -2608,14 +4684,11 @@
       const nm = window.prompt('Name this typist', t.name); if (nm && nm.trim()) { t.name = nm.trim().slice(0, 16); typists = []; syncTypists(true); mark(); save(); }
     },
     commission: el => {
+      if (!challengeCommissionAllowed()) return;
+      if (pitchPrototype()) return commission(+el.dataset.i,'manual',el);
       const i = +el.dataset.i, p = S.offers[i]; if (!p || pitchActive() >= PITCH_MAX) return;
       S.pitches.push(p); registerPitch(p); S.stats.pitched = (S.stats.pitched || 0) + 1; S.offers[i] = genPitch(buildRecipe({ ...p, text: p.text }).band);
-      ui.fresh = p.id; setTimeout(() => { if (ui.fresh === p.id) ui.fresh = null; mark(); }, 2200);
-      pickAutoFocus();
-      const at = IMI.centerOf(el); floatText('+1 COMMISSION', at[0], at[1] - 20, '#ffd23a', true);
-      IMI.say(`Commissioned “${p.title}”. Find it under Pitches > Your commissions.`);
-      IMI.sfx.ding(); logIt(`Commissioned a new title: “${p.title}”.`); newsPush(`Agents confirm a new pitch: “${p.title}”. Monkeys hurry to the typewriters.`); mark(); save();
-      setTimeout(() => { const c = document.querySelector('#o-press .o-book.fresh'); if (c) c.scrollIntoView({ behavior: IMI.reduceMotion ? 'auto' : 'smooth', block: 'nearest' }); }, 60);
+      commissionPublished(p,el);
     },
     repitch: () => { const c = repitchCost(); if (!bananas.spend(c)) return; S.offers = newOffers(); IMI.sfx.tick(); mark(); save(); },
     release: el => releaseDiv(el.dataset.id),
@@ -2626,15 +4699,21 @@
       if (y) { IMI.sfx.key(); IMI.burst(at[0], at[1], ['leaf', 'spark'], 8); floatText(`+${y} ${ch}`, at[0], at[1] - 10); vib(12); mark(); save(); }
     },
     harvestall: () => {
-      let got = 0; S.garden.beds.forEach((b, i) => { got += harvest(i) || 0; });
+      let got = 0;
+      if (gardenPrototype()) {
+        const indices = S.garden.beds.flatMap((b,i) => b && savedWallNow() >= b.ready ? [i] : []);
+        if (indices.length) got = extensions.get('automation')?.gardenAction(gardenRequest('harvest',indices,null,null,'manual')).amount || 0;
+      } else S.garden.beds.forEach((b, i) => { got += harvest(i) || 0; });
       if (got) { IMI.sfx.ding(); floatText(`+${got} letters`, innerWidth / 2, 200, '#7be05a', true); mark(); save(); }
     },
     museinvite: el => { const mu = MUSES.find(x => x.id === el.dataset.id); if (!mu || S.muses.owned[mu.id] || !bananas.spend(mu.cost)) return; S.muses.owned[mu.id] = true; IMI.sfx.ding(); logIt(`${mu.name} accepted your invitation to the Muse Salon.`); newsPush(`${mu.name} arrives at the Muse Salon. The monkeys pretend to have read the books.`); mark(); save(); },
-    museseat: el => { const id = el.dataset.id, k = +el.dataset.slot; if (!S.muses.owned[id] || k >= museSlots()) return; const M = S.muses; const old = M.seated.indexOf(id); if (old >= 0) M.seated[old] = null; M.seated[k] = id; IMI.sfx.ding(); mark(); save(); },
-    museout: el => { S.muses.seated[+el.dataset.slot] = null; IMI.sfx.tick(); mark(); save(); },
-    chpick: el => { ui.nextCh = el.dataset.id; IMI.sfx.tick(); mark(); },
+    museseat: el => { if (challengeSeatsLocked()) return; const id = el.dataset.id, k = +el.dataset.slot; if (gardenPrototype()) return seatMuse(k,id); if (!S.muses.owned[id] || k >= museSlots()) return; const M = S.muses; const old = M.seated.indexOf(id); if (old >= 0) M.seated[old] = null; M.seated[k] = id; IMI.sfx.ding(); mark(); save(); },
+    museout: el => { if (challengeSeatsLocked()) return; if (gardenPrototype()) return seatMuse(+el.dataset.slot,null); S.muses.seated[+el.dataset.slot] = null; IMI.sfx.tick(); mark(); save(); },
+    chpick: el => { const c = chDef(el.dataset.id); if (el.dataset.id && (!c || !challengeSelectable(c))) return; ui.nextCh = el.dataset.id; printingHelper()?.printChoice(); IMI.sfx.tick(); mark(); },
     printask: () => askPrint(),
-    chabandon: () => { if (S.challenge) endChallenge('abandon'); },
+    'mastery-review': el => masteryReview(el.dataset.medal),
+    'mastery-abandon': () => writer.masteryAction({action:'abandon'}),
+    chabandon: () => { if (challengeActive()) {if (confirm('Abandon this Small Crew run? No compensation or reward.')) {printingHelper()?.challengeLocalOff(); writer.challengeAction({action:'abandon'});} return;} if (S.challenge) endChallenge('abandon'); },
     legbuy: el => {
       const u = LEG.find(x => x.id === el.dataset.id); if (!u) return; const lv = legLvl(u.id), cost = u.costs[lv];
       if (lv >= u.max || S.legacy.stars < cost) return; S.legacy.stars -= cost; S.legacy.ups[u.id] = lv + 1;
@@ -2645,9 +4724,15 @@
     bankword: el => { const at = IMI.centerOf(el); if (bankWord(cur(), el.dataset.w)) { IMI.sfx.key(); vib(8); shock(at[0], at[1], '#7be05a'); floatText('+' + el.dataset.w, at[0], at[1] - 10); } },
     buy: el => { const at = IMI.centerOf(el), before = bananas.get(); buy(el.dataset.what, el.dataset.i); if (bananas.get() < before) { IMI.burst(at[0], at[1], ['banana', 'spark', 'star'], 12); vib(25); boughtFx(el); } },
     write: el => writeTitle(el.dataset.id, el),
-    focus: el => { const r = RBY[el.dataset.id]; if (!r || lockedDesk(r) !== undefined) return; S.focus = el.dataset.id; S.autoFocus = false; mark(); save(); IMI.emit('focus', { id: S.focus }); },
-    unfocus: () => { S.focus = null; S.autoFocus = true; pickAutoFocus(); mark(); save(); },
-    autofocus: () => { S.autoFocus = true; S.focus = null; pickAutoFocus(); mark(); save(); },
+    pgopen: () => { ui.sub.press = 'titles'; setTab('press'); },
+    pgauto: () => pg?.configure(pgContext, { enabled: false, manual: null }),
+    pgband: el => pg?.configure(pgContext, { enabled: true, band: +el.dataset.band, manual: null }),
+    pgadvance: () => pg?.configure(pgContext, { advance: !S.meta.productionGoal?.advance }),
+    pgreturn: () => pg?.configure(pgContext, { manual: null }),
+    pgretry: () => pg?.retry(pgContext),
+    focus: el => { if (folioGoal() && !writer.folioAction({action:'return', expected:S.meta.folio}).ok) return; const r = RBY[el.dataset.id]; if (!r || !titleAvailable(r)) return; if (pg?.active(pgContext)) return pg.configure(pgContext, { manual: el.dataset.id }); if (!r || lockedDesk(r) !== undefined) return; S.focus = el.dataset.id; S.autoFocus = false; mark(); save(); IMI.emit('focus', { id: S.focus }); },
+    unfocus: () => { if (pg?.active(pgContext)) return pg.configure(pgContext, { manual: null }); S.focus = null; S.autoFocus = true; pickAutoFocus(); mark(); save(); },
+    autofocus: () => { if (pg?.active(pgContext)) return pg.configure(pgContext, { manual: null }); S.autoFocus = true; S.focus = null; pickAutoFocus(); mark(); save(); },
     ktoggle: el => { if (!keepersReady()) return; const k = S.desks[+el.dataset.i].keeper; k.on = !k.on; IMI.sfx.tick(); mark(); save(); },
     kon: () => { cur().keeper.on = true; mark(); save(); },
     koff: () => { cur().keeper.on = false; mark(); save(); },
@@ -2660,28 +4745,41 @@
     libf: el => { ui.libf = el.dataset.f; ui.libLimit = 24; saveView(); mark(); },
     libcap: el => { ui.libcap = el.dataset.c; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); },
     libsort: el => { ui.libsort = el.dataset.s; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); },
-    pubon: () => { S.pub.on = !S.pub.on; IMI.sfx.tick(); mark(); save(); },
-    pubrule: el => { S.pub.rule = el.dataset.r; IMI.sfx.tick(); mark(); save(); },
+    pubon: () => { if ((chal('patientpress') || masteryActive())) return; S.pub.on = !S.pub.on; IMI.sfx.tick(); mark(); save(); },
+    pubrule: el => { if ((chal('patientpress') || masteryActive())) return; S.pub.rule = el.dataset.r; IMI.sfx.tick(); mark(); save(); },
     liblock: () => { ui.libshow = !ui.libshow; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); },
     libmore: () => { ui.libLimit += 24; mark(); },
     sub: el => { ui.sub[el.dataset.dept] = el.dataset.sub; IMI.sfx.tick(); mark(); IMI.emit('tab', { tab: el.dataset.dept, sub: el.dataset.sub }); const p = $('#o-' + el.dataset.dept); if (p) p.scrollTop = 0; },
     golist: () => { const n = $('#oTitleList'); if (n) n.scrollIntoView({ behavior: IMI.reduceMotion ? 'auto' : 'smooth', block: 'start' }); },
-    autotoggle: () => { if (S.autoFocus) S.autoFocus = false; else { S.autoFocus = true; S.focus = null; pickAutoFocus(); } IMI.sfx.tick(); mark(); save(); },
+    autotoggle: () => { if (pg?.active(pgContext)) return pg.configure(pgContext, { manual: null }); if (S.autoFocus) S.autoFocus = false; else { S.autoFocus = true; S.focus = null; pickAutoFocus(); } IMI.sfx.tick(); mark(); save(); },
     archf: el => { ui.archf = el.dataset.f; renderArchive(); },
     pull: el => { ui.pulled = ui.pulled === el.dataset.id ? null : el.dataset.id; ui.sub.press = 'shelf'; IMI.sfx.tick(); if (ui.tab !== 'press') setTab('press'); else mark(); },
     read: el => { ui.read = ui.read === el.dataset.id ? null : el.dataset.id; mark(); },
-    reset: () => { if (confirm('Reset Typewriter Ops and bananas?')) { IMI.pickups?.clear(); bananas.spend(bananas.get()); S = fresh(); goldEnd?.(); royAcc = coinBank = 0; Object.assign(ui, { tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, libLimit: 24, sub: {}, pulled: null, read: null, shelfNew: 0 }); saveView(); combo.n = combo.t = 0; ui.mcd = {}; Object.keys(buffs).forEach(k => buffs[k] = 0); holding = false; keeperT = []; rt.forEach(r => r.timers = []); try { localStorage.removeItem('imi-tour'); } catch { /* storage blocked */ } IMI.tour?.reset(); save(); buildStage(); mark(); } }
+    reset: () => { if (resetBlocked()) { IMI.say(resetExplanation); return; } if (imprintChallenge() && !challengeSettled()) return; if (confirm('Reset Typewriter Ops and bananas?')) { if (writer && !bananas.resetAcknowledged().ok) { writer.resetFailure(); return; } IMI.pickups?.clear(); if (!writer) bananas.spend(bananas.get()); S = fresh(); extensionEvent('init', 'full-reset'); extensionEvent('reset', { kind: 'full-reset' }); goldEnd?.(); royAcc = coinBank = 0; Object.assign(ui, { tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, libLimit: 24, sub: {}, pulled: null, read: null, shelfNew: 0 }); saveView(); combo.n = combo.t = 0; ui.mcd = {}; Object.keys(buffs).forEach(k => buffs[k] = 0); holding = false; keeperT = []; rt.forEach(r => r.timers = []); try { localStorage.removeItem('imi-tour'); } catch { /* storage blocked */ } IMI.tour?.reset(); save(); buildStage(); mark(); } }
   };
+  const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgauto','pgband','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','coach','reroll','ovrset','bankword']);
+  if (writer) for (const name of Object.keys(ACTIONS)) {
+    const action = ACTIONS[name]; ACTIONS[name] = (...args) => { if (progressing() && (!challengeActive() || !challengeInterventions.has(name) || challengeHandover())) return action(...args); };
+  }
   root.addEventListener('click', e => {
+    if (!progressing()) return;
     const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
-    ACTIONS[el.dataset.act]?.(el); renderT = 9;                    // a tap redraws on the next tick, whatever the render spacing is
+    const act = el.dataset.act;
+    if (challengeActive() && /^(folio|archive|works-demo|works-play|automation):/.test(act) && !act.startsWith('automation:challenge-') && !challengeHandover()) return;
+    if (ACTIONS[el.dataset.act]) ACTIONS[el.dataset.act](el);
+    else { const [id, name] = el.dataset.act.split(':'); extensions.get(id)?.actions?.[name]?.(el, extensionAPI); }
+    renderT = 9;                    // a tap redraws on the next tick, whatever the render spacing is
   });
   root.addEventListener('change', e => {
+    if (!progressing()) return;
     const el = e.target.closest('[data-in]');
+    if (challengeActive() && (el?.dataset.in === 'kdef' || e.target.dataset.lg03Reserve || e.target.dataset.lg06a) && !challengeHandover()) return;
+    if (el && el.dataset.in === 'pgcollection') pg?.configure(pgContext, { collection: el.value, manual: null });
     if (el && el.dataset.in === 'libsort') { ui.libsort = el.value; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); }
     if (el && el.dataset.in === 'kdef') { cur().keeper.def = Math.max(0, Math.min(9999, el.value | 0)); save(); mark(); }
   });
   root.addEventListener('input', e => {
+    if (!progressing()) return;
     const el = e.target.closest('[data-in]'); if (!el) return;
     if (el.dataset.in === 'ovrw') ui.ovr = el.value; else if (el.dataset.in === 'ovrn') ui.ovrn = el.value | 0;
   });
@@ -2689,53 +4787,167 @@
   tk.addEventListener('click', () => startNews());
   tk.addEventListener('pointerenter', () => { try { ticker.anim && ticker.anim.pause(); } catch { /* ignore */ } });
   tk.addEventListener('pointerleave', () => { try { ticker.anim && ticker.anim.play(); } catch { /* ignore */ } });
-  bananas.watch(b => { if (b !== lastBananas) { if (b > lastBananas) S.run.earned = (S.run.earned || 0) + (b - lastBananas); lastBananas = b; mark(); } });
+  bananas.watch((b, event) => { if (b !== lastBananas) { if (b > lastBananas && !event?.reward) S.run.earned = (S.run.earned || 0) + (b - lastBananas); lastBananas = b; mark(); } });
 
   /* ================= main loop ================= */
   let coinClock = 0, chalClock = 0, gardenClock = 0, marketClock = 0, awardClock = 0, royAcc = 0, royClock = 0, royFloat = 2.4, goldIn = 25 + rand() * 25, buffWas = false, last = performance.now(), keeperT = [], focusClock = 0, saveT = 0, renderT = 0, renderGap = .25;
-  function tick() {
-    const now = performance.now(), dt = Math.min(0.25, (now - last) / 1000); last = now;
+  function tick(frame = null) {
+    if (!progressing()) return;
+    if (!frame && printingEnabled()) printingHelper()?.sampleUpdate();
+    const now = frame?.now ?? performance.now(), realDt = frame?.realDt ?? Math.min(0.25, (now - last) / 1000), multiplier = frame?.multiplier ?? speed(), dt = realDt * multiplier;
+    if (!frame || frame.phase === 0) {
+    last = now;
+    if (frame) Object.assign(frame, {now,realDt,multiplier,heldInput:holding && toolOn('hold')});
+    if (!document.hidden) { const extra = (dt - realDt) * 1000; productionExtra += extra; advanceDeadlines(extra); }
     S.desks.forEach(ensureCrew);
     gardenClock += dt; if (gardenClock >= 1) { gardenClock = 0; gardenTick(); }
+    if (frame) frame.phase = 1;
+    }
     if (document.hidden) return;                                   // hidden time is paid out as offline progress when you come back
+    if (!frame || frame.phase === 1) {
     S.desks.forEach((d, i) => {
+      if (frame && (i < frame.desk || !progressing())) return;
       if (!d.owned || !d.paws) return;
       const T = rt[i].timers, base = pawSecs(d);
       while (T.length < d.paws) T.push(rand() * base);
-      for (let p = 0; p < d.paws; p++) { const secs = base / typistSpeed(d.crew[p]) / deskMk(d); T[p] -= dt; let guard = 0; while (T[p] <= 0 && guard++ < 8) { T[p] += secs; press(i, true, p); } }
+      for (let p = 0; p < d.paws; p++) {
+        if (frame && p < frame.paw) continue;
+        const secs = base / typistSpeed(d.crew[p]) / deskMk(d);
+        if (!frame || !frame.debited) T[p] -= dt;
+        if (frame) { frame.desk=i; frame.paw=p; frame.debited=true; }
+        let guard = frame?.presses || 0;
+        while (T[p] <= 0 && guard++ < 8) {
+          T[p] += secs; if (frame) frame.presses=guard;
+          press(i, true, p);
+          if (frame && !progressing()) return;
+        }
+        if (frame) { frame.paw=p+1; frame.presses=0; frame.debited=false; }
+      }
+      if (frame) { frame.desk=i+1; frame.paw=0; }
     });
-    const stH = $('#oStage'); if (stH) stH.classList.toggle('holding', !!(holding && S.hold));
-    if (holding && S.hold) { holdAcc += holdRate(cur()) * dt; let g = 0; while (holdAcc >= 1 && g++ < 12) { holdAcc -= 1; press(S.sel, false); } } else holdAcc = 0;
+    if (frame) { if (!progressing()) return; frame.phase=2; }
+    }
+    if (!frame || frame.phase === 2) {
+    const stH = $('#oStage'); if (stH) stH.classList.toggle('holding', !!(holding && toolOn('hold')));
+    if (frame ? frame.heldInput : holding && toolOn('hold')) {
+      if (!frame || !frame.holdStarted) holdAcc += holdRate(cur()) * dt;
+      if (frame) frame.holdStarted=true;
+      let g = frame?.holdPresses || 0;
+      while (holdAcc >= 1 && g++ < 12) { holdAcc -= 1; if(frame)frame.holdPresses=g; press(S.sel, false); if(frame&&!progressing())return; }
+    } else holdAcc = 0;
+    if (frame) frame.phase=3;
+    }
+    if (!frame || frame.phase === 3) {
     focusClock += dt; if (focusClock >= 1) { focusClock = 0; if (!S.focus && S.autoFocus) pickAutoFocus(); }
+    worksAdvance();
     S.desks.forEach((d, i) => { if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; while (keeperT[i] >= keeperPeriod(i) && g++ < 4) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); } if (g >= 4) keeperT[i] = 0; });
-    if (S.challenge) { chalClock += dt; if (chalClock >= 1) { chalClock = 0; checkChallenge(); dirty = true; } }
+    if (frame) frame.phase=4;
+    }
+    if (!frame || frame.phase === 4) {
+    if (S.challenge) {
+      if (!frame || !frame.challengeStarted) chalClock += dt;
+      if (frame) frame.challengeStarted=true;
+      if (chalClock >= 1) { chalClock = 0; checkChallenge(); dirty = true; }
+    }
+    if (!progressing()) return;
+    if (frame) frame.phase=5;
+    }
+    if (!frame || frame.phase === 5) {
+    if (!frame || !frame.awardsStarted) {
     const buffNow = anyBuff(); if (buffNow || buffWas) dirty = true; buffWas = buffNow;
-    marketClock += dt; if (marketClock >= 6) { marketClock = 0; marketStep(); }
-    S.stats.secs += dt; if (IMI.screen() === 'game') S.stats.playSecs += dt; awardClock += dt; if (awardClock >= 1) { awardClock = 0; checkAwards(); }
-    const rr = royRate(), dr = divRate(); royAcc += (rr + dr) * dt; royClock += dt;
-    if (royClock >= .25 && royAcc >= cash(1)) { const n = floorMoney(royAcc), share = dr / ((rr + dr) || 1); royAcc -= n; royClock = 0; S.royTotal += n * (1 - share); S.divTotal += n * share; bananas.add(n); coinBank += n; }
-    coinClock += dt; if (coinClock >= 1.1) { coinClock = 0; royCoins(); }
+    marketClock += realDt; if (marketClock >= 6) { marketClock = 0; marketStep(); }
+      S.stats.secs += realDt; if (IMI.screen() === 'game') S.stats.playSecs += dt; awardClock += realDt;
+      if (frame) { frame.awardsStarted=true; frame.awardsDue=awardClock>=1; }
+    }
+    if (frame ? frame.awardsDue : awardClock >= 1) { awardClock = 0; checkAwards(); }
+    if (!progressing()) return;
+    if (frame) frame.phase=6;
+    }
+    if (!frame || frame.phase === 6) {
+    const paidSeconds = writer ? writer.incomeSeconds(dt, Math.max(0, buffs.rush - now + dt * 1000), Math.max(0, buffs.critic - now + dt * 1000)) : dt;
+    const rr = writer ? royBase() : royRate(), dr = writer ? divBase() : divRate();
+    if (!frame || !frame.incomeStarted) {
+      if (archiveFeature?.enabled && S.meta.archive !== undefined && (!frame || !frame.archiveStarted)) {
+        if (frame) frame.archiveStarted = true;
+        const end = Math.max(Date.now(), S.meta.archive.through, archiveSpans.at(-1)?.end || 0);
+        const start = Math.max(S.meta.archive.through, archiveSpans.at(-1)?.end || end - realDt * 1000);
+        // Real productive dt is already speed-scaled once; wall time only selects the age stage.
+        if (!archiveSpans.length) archiveSampleToken = printingHelper()?.printSampleToken() ?? null;
+        else if (!extensionAPI.printSampleAllowed()) archiveSampleToken = null;
+        archiveSpans.push({start,end:Math.max(end,start + .001),seconds:dt});
+        if (archiveSpans.length >= 100 && !archiveSettle()) return;
+      }
+      if (royAcc === 0) royaltySampleToken = printingHelper()?.printSampleToken();
+      else if (!extensionAPI.printSampleAllowed()) royaltySampleToken = null;
+      royAcc += (rr + dr) * paidSeconds; royClock += dt;
+      if (writer) writer.consumeGold(dt * 1000);
+      if (frame) frame.incomeStarted=true;
+    }
+    if (royClock >= .25 && royAcc >= cash(1)) {
+      const n = floorMoney(royAcc), share = dr / ((rr + dr) || 1);
+      if (frame && bananas.add(n) === false) { writer.boundaryFailure('Historical income waiting for the wallet save.'); return; }
+      royAcc -= n; royClock = 0; S.royTotal += n * (1 - share); S.divTotal += n * share;
+      if (!frame) { const balance = bananas.get(); bananas.add(n); printingHelper()?.printPosting(bananas.get() - balance,royaltySampleToken); }
+      royaltySampleToken = printingHelper()?.printSampleToken();
+      coinBank += n;
+    }
+    if (frame) frame.phase=7;
+    }
+    if (!frame || frame.phase === 7) {
+    coinClock += realDt; if (coinClock >= 1.1) { coinClock = 0; royCoins(); }
     if (divCount(DIVS[4])) { premiereClock += dt; if (premiereClock >= 300) { premiereClock = 0; premiere(); } }
-    royFloat -= dt; if (royFloat <= 0) { royFloat = 2.4; royPing(); }
+    royFloat -= realDt; if (royFloat <= 0) { royFloat = 2.4; royPing(); }
+    if (multiplier !== 1 && goldEnd && productionNow() >= goldUntil) goldEnd();
     if (!document.hidden) { goldIn -= dt * (museOn('christie') ? 1.3 : 1) * (1 + .25 * legLvl('golden')) * (1 + .03 * S.desks.reduce((a, d) => a + d.crew.reduce((b, t) => b + (t.trait === 'scout' ? trMul(t) : 0), 0), 0)); if (goldIn <= 0) { goldIn = 55 + rand() * 80; spawnGold(); } }
-    if (S.pub.tier && S.pub.on) { pubClock += dt; if (pubClock >= pubPeriod()) { pubClock = 0; pubSell(); } } else pubClock = 0;
-    renderT += dt;
+    if (frame) frame.phase=8;
+    }
+    if (!frame || frame.phase === 8) {
+    if (frame) frame.phase=9;
+    if (!(chal('patientpress') || masteryActive()) && S.pub.tier && S.pub.on) { pubClock += dt; if (pubClock >= pubPeriod()) { pubClock = 0; pubSell(); } } else pubClock = 0;
+    if (frame && !progressing()) return;
+    }
+    if (!frame || frame.phase === 9) {
+    extensionEvent('tick', { realSeconds: realDt, gameSeconds: dt, ...(extensions.has('automation') ? { replay:!!frame } : {}) });
+    renderT += realDt;
     if (renderT >= renderGap && dirty) {                           // renders are spaced by how long they take, so a slow phone spends a fixed share of its time here
       renderT = 0; dirty = false; const t0 = performance.now(); render();
       renderGap = Math.min(1, Math.max(LOW() ? .5 : .25, (performance.now() - t0) * .007));
     }
-    saveT += dt; if (saveT >= 5) { saveT = 0; save(); }
+    saveT += realDt; if (saveT >= 5) { saveT = 0; save(); }
+    if (frame) frame.phase=10;
+    }
   }
   window.addEventListener('beforeunload', save);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); else { last = performance.now(); welcomeBack(30); setTimeout(dailyLater, 1200); } });
+  document.addEventListener('visibilitychange', () => { if (!progressing()) return; if (document.hidden) save(); else { last = performance.now(); welcomeBack(30); setTimeout(dailyLater, 1200); } });
   if (typeof Weather !== 'undefined') Weather.on('change', () => { paintWindow(); mark(); });
   /* the sky announces itself in the ticker; with a barometer it also warns shortly before a change */
   const SKY_NEWS = ['The clouds clear over the canopy. Honeycomb gift books look brighter already.', 'Drizzle on the canopy. Cosy-reading weather: Hibiscus titles are in demand.', 'Rain! The monkeys put on leaf hats and the water starts to rise.', 'STORM. The typists cling to their vines and Lagoon drama sells.'];
   IMI.on('sky', e => { skyC = null; if (e.night !== e.prev.night) newsPush(e.night ? 'Night falls. Owls clock in and bedtime books sell.' : 'The sun comes up. The owls go home grumbling.'); else newsPush(SKY_NEWS[e.wx]); mark(); });
   IMI.on('skysoon', e => { if (S.baro >= 1) newsPush(`Forecast: ${World.label(e.ev)} in about ${Math.max(1, Math.round(e.etaMs / 1000))} seconds.`); });
 
-  introProgress(); pickAutoFocus(); S.desks.forEach(ensureCrew); if (totalReleased() > 0) loadArchive(); checkAwards(true); buildStage(); render(); startNews(); welcomeBack(60); setTimeout(dailyLater, 1800);
+  for (const [id, hooks] of window.__OPS_EXTENSIONS || []) extensionAPI.register(id, hooks);
+  window.VaultPlay?.install(extensionAPI);
+  function startGame() {
+  if (writer && S.prem.vault && (S.prem.vault.transition || S.rewards.awayCheckpoint) && !writer.boundaryProgressing()) {
+    if (!writer.runLocalTransaction({id:'boundary:startup',kind:'settlement',settle:vaultBoundary,build:p=>p,continue:()=>{}})) return false;
+  }
+  if (writer && !started && window.VaultPlay?.enabled() && !writer.lampStartup()) return false;
+  if (started || !progressing()) return false;
+  started = true;
+  introProgress(); pickAutoFocus(); S.desks.forEach(ensureCrew); if (totalReleased() > 0) loadArchive();
+  if (writer && S.rewards.awayCheckpoint) simulateAway(0);
+  if (!progressing()) { started = false; return false; }
+  checkAwards(true);
+  if (!progressing()) { started = false; return false; }
+  buildStage(); render(); startNews(); welcomeBack(60);
+  if (!progressing()) { started = false; return false; }
+  setTimeout(dailyLater, 1800);
   IMI.onScreen(name => { if (name === 'game') { mark(); buildStage(); startNews(); render(); } else render(); });
   setInterval(tick, 50);
   requestAnimationFrame(loop);
+  return true;
+  }
+  startGame();
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

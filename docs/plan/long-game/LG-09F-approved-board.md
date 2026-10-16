@@ -1,0 +1,9 @@
+# LG-09F daily Commission board approval
+
+OWNER APPROVED 2026-10-15. Owner selected "Approve revised Commission board" for the complete question in evidence/LG-09/owner-approval-board/receipt.json. Authority LG-09F-owner-review-r2.md and LG-09F-parent-review-r2.md. Original design applies only where not superseded by R2. Historical UNAPPROVED labels remain creation history.
+
+Authorize local opt-in free Short shelf delivery at intro/displayedPrinting2 with retained later-layer access. Manually sell1 eligible available unsold authored Bamboo book within10 real minutes; existing stock allowed. One successful completion per UTC day, free expiry/abandon retries/no streak or skip penalty. Attempts and completed unclaimed bonuses survive ordinary resets; wall time continues hidden/away/closed/held and across resets. Strictly-before-deadline acceptance qualifies; exact Retry may finish later. Completed reward never expires.
+
+Reward frozen at reviewed Start: Economy.round(clamp(300*rewardBasis().bananas,6250,250000)), existing sustained royalty/division basis and speed once;100bananas/s gives30000. Ordinary sale price separate, fixed bonus once at Claim. Named acknowledged sale/progress/Claim/receipt and Retry/cold/early recognition, bounded optional unknown-preserving state. Exclude Publisher/away/challenge/mastery/A11/generated/kids-library/work/minigames. Daily completion allowance consumed at original acceptedAt UTC day, no reset/Claim renewal. No recurringDB/new allocation.
+
+R2 explicitly replaces R1 per-room cadence, reset closure/projection/adapter requirement; no Layers/Estate/reset-owner rewrite authorized. LG-09G leases only this stage. Routine implementation choices/correctness repairs need no repeated approval. Seasons/Hall/other briefs/new currencies/DB/payments/prices/legal text/commit/deploy/default activation and pacing remain separate.

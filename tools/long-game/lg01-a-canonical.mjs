@@ -1,0 +1,15 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+const [rawPath, output, reference] = process.argv.slice(2);
+const rawBytes = await readFile(rawPath), raw = JSON.parse(rawBytes);
+assert.equal(raw.complete, true);
+assert.equal(raw.actualMinutes, 60);
+assert.deepEqual(raw.errors, []);
+assert.deepEqual(raw.httpErrors, []);
+const excluded = ['capturedAt', 'sourceCommit', 'sourceHashes', 'url', 'wallSeconds'];
+const canonical = JSON.stringify(Object.fromEntries(Object.entries(raw).filter(([key]) => !excluded.includes(key))), null, 2) + '\n';
+await writeFile(output, canonical, { flag: 'wx' });
+if (reference) assert.equal(canonical, await readFile(reference, 'utf8'));
+await writeFile(output + '.receipt.json', JSON.stringify({ rawPath, rawHash: createHash('sha256').update(rawBytes).digest('hex'), excluded, sourceHashes: raw.sourceHashes, complete: true, reference: reference || null, parity: reference ? true : null }, null, 2) + '\n', { flag: 'wx' });
+console.log(reference ? 'Complete sixty-minute canonical parity PASS' : 'Complete sixty-minute baseline sealed');

@@ -1,0 +1,15 @@
+# LG-09F Commission board owner package, revision 2
+
+UNAPPROVED,2026-10-15. Recommend this reduced first slice after [parent review](LG-09F-parent-review-r2.md). Original [design](LG-09F-commission-board-design.md) and R1 remain history. R2 replaces per-room recurrence/reset closure with a daily allowance and retained attempts, removing the reset-owner prerequisite. No implementation or runtime claim.
+
+Free optional Short shelf delivery in Titles > Shelf, unlocked at intro/displayedPrinting2 with retained later-layer access. Manually sell1 available unsold authored Bamboo book within10 real minutes. The six existing readers qualify; existing stock allowed. Publisher/away/challenge/mastery/A11/generated/kids-library/work/minigame activity does not qualify. No book reservation or goal changes.
+
+One successful completion per UTC calendar day. Expiry/abandonment retries are free; no streak or skip penalty. Same brief remains available later, no exclusive rotating offer or missed-reward backlog. Active attempt and completed unclaimed payout survive ordinary resets/challenge entry/Imprint/Estate. Clock continues through those transitions, hidden/away/closed/held time; a brief never blocks ordinary progression. Completed reward has no expiry, Claim before another Start. Full explicit user reset retains its existing wipe semantics.
+
+Reward fixed at reviewed Start: five minutes of existing sustained royalty/division income, minimum6250/maximum250000 actual bananas, nearest25. Formula Economy.round(clamp(300*rewardBasis().bananas,6250,250000)); speed included once in basis.100bananas/s pays30000. The ordinary sale pays its actual market price separately; Claim pays the fixed bonus once. No recurring DB/new medal/currency/reward RNG or changes to existing awards/daily/firsts.
+
+Wall-clock expiry follows execution.md and master pacing, resolving older game-time example wording. Sale acceptance strictly before deadline qualifies; equality fails, timely prepared sale may finish exact Retry later. Quiet end timestamp, no flashing/countdown offer. Local clock limits are explicit; no server/account. Daily allowance is consumed with acknowledged completion using acceptedAt's UTC day; Claim/resets/Retry cannot renew it. Delayed Claim can be followed by a new Start on a later eligible day.
+
+Implementation uses optional bounded board state, named acknowledged qualifying manual-sale/bonus-claim owners and early recovery recognition, existing Core credit bridge, exact Retry and receipts. Presentation sold events cannot count. Existing reset owners retain state unchanged; no new reset adapter, per-room counter or Layers/Estate rewrite. No product code changed for this proposal.
+
+Approval would authorize local opt-in implementation of this R2 package only, then proportional main-path/reload/one monetary failure check, one ordinary-reset retention check and both360 layouts. Seasons/Hall/other briefs/newDB/payments/prices/legal/default activation/deployment and LG13 pacing remain separate. Historical R1 per-room/reset wording is excluded.

@@ -9,6 +9,9 @@
      Reduced motion: this file does nothing at all.
    The canvas only runs a frame loop while a particle is alive, and redraws at most 24 times a second: stepped motion is the pixel look, and it is cheap. */
 (() => {
+  function start() {
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const root = document.documentElement, IMI = window.IMI;
   if (root.dataset.style !== 'pixel' || !IMI || IMI.reduceMotion || !window.PXA) return;
   const S = 3, TAU = Math.PI * 2, fine = matchMedia('(pointer: fine)').matches;
@@ -235,4 +238,6 @@
       n++;
     }
   });
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

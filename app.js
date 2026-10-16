@@ -1,6 +1,9 @@
 /* PIXEL EDITION: art layer. Sprites, particles, the title screen's monkey and the header toy visuals.
    Sound, the banana counter, screens and toy logic live in core.js; this file hands them an `art` object. */
 (() => {
+  function start() {
+  if (window.VaultSaveGate?.blocked) return;
+  const { setTimeout, clearTimeout, setInterval, clearInterval, requestAnimationFrame, cancelAnimationFrame } = window.Rewards?.enabled ? Rewards.timers : window;
   const { $, rand, pick, restart, reduceMotion } = Core;
   const root = document.documentElement, fine = matchMedia('(pointer: fine)').matches;
 
@@ -189,4 +192,6 @@
   });
   IMI.onScreen(name => { if (name === 'menu') requestAnimationFrame(placeVines); });
   requestAnimationFrame(frame);
+  }
+  if (window.Rewards?.enabled) Rewards.start(start); else start();
 })();

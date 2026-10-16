@@ -1,0 +1,12 @@
+﻿from pathlib import Path
+s=Path('tools/long-game/lg02d-net-r2-seal.cjs').read_text(encoding='utf-8-sig')
+s=s.replace("const hash=b=>", "const evidence=out;\nconst finalOut=path.join(evidence,'closure-final');fs.mkdirSync(finalOut);\nconst hash=b=>")
+s=s.replace("fs.writeFileSync(path.join(out,n)","fs.writeFileSync(path.join(finalOut,n)")
+s=s.replace("['tools/long-game/lg02d-net-r2-native.cjs','cap-sealed']", "['tools/long-game/lg02d-net-r2-native.cjs','cap-complete']")
+s=s.replace("['tools/long-game/lg02d-net-r2-default.cjs','sealed']", "['tools/long-game/lg02d-net-r2-default.cjs','complete']")
+s=s.replace("'sealed-default.json'", "'complete-default.json'")
+s=s.replace("failure-sealed", "failure-complete").replace("session72186", "session36646").replace("cap-sealed", "cap-complete")
+s=s.replace("const target=path.join(out,name+'.patch')", "const target=path.join(finalOut,name+'.patch')")
+s=s.replace("dest=path.join(out,'source',f)", "dest=path.join(finalOut,'source',f)")
+s=s.replace("17 focused", "18 focused")
+Path('tools/long-game/lg02d-net-r2-seal-final.cjs').write_text(s,encoding='utf-8',newline='\n')

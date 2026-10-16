@@ -1,0 +1,13 @@
+# LG-08G local Printing prerequisite acceptance
+
+ACCEPTED LOCALLY 2026-10-15 after independent gpt-6-sol medium PASS. Fixed opt-in ordinary manual Printing and acknowledged new manual proof only. No automatic entry, sampler, timer/card or autonomous readiness accepted here. Approved A10 successor remains authorized separately.
+
+Six product files Ops/Rewards/Core/earlygate/Automation/SW65. Parent rechecked six current hashes against evidence/LG-08/printing-ack-r1/final-source.json after review. Layers unchanged. Fixed source-bound frozen intent -> exact seed-wallet ACK -> detached successor ACK -> room/proof/events publication; no callback/caller candidate or amount authority. Proof may precede Estate1, never inferred from old reset event/count. Flag-off/challenge/fullreset retain historical path.
+
+Reused15 final actual-owner checks,12focused final guards,6syntax exits0, before/frozen five-minute default equality and exact raw reconstruction. Candidate-save hold after wallet ACK retains old live room/stars/proof until Retry/cold completion, freezes crew/gain/rollover. Retained unknown/premium/MG/Archive/sevenWorks data supported; no new reward category. Missing flags/malformed early envelope block before Core.
+
+Fresh independent9check native cold path loaded exact final-held actual failed-save artifact. Missing flags preserve both raw keys; Resume finishes gain2/seed25000/one Printing+epoch+edition/proof once, frozen crew traits retained. Redundant Retry/stale quote/reload no repeat stars/rollover/claims, owner/running/guardtrue/heldfalse after recovery, no page errors. First review liveXP assertion and missingSWresponse expectation remain failed harness attempts, final comparison uses frozen identity/traits and diskSW hash. No product edit in review.
+
+Parent/reviewer opened both360 recovery images: full copy/Resume visible, no blocker, reused no-page-scroll/53pxaction/Low/reducedmotion measurements. Newproof Imprint/Estate native retention, broaderfault/lifecycle/cache/away/device/zoom/screenreader/performance and naturalLG13pacing remain unverified. Original firstfixture/hookorder/stalereference/crewXP/packaging failures retained with corrected final proofs. No physical cross-key atomicity claim or expanded historical reset acceptance.
+
+Ownedbrowser/serverclosed, protectedresources/artstderr/priorTemp preserved. Both leases released. No stage/commit/deploy/defaultactivation. Evidence LG-08G-printing-review-result-r1.md, printing-review-r1/fresh-cold-final.json; implementation Handoff/schema-handoff/final-results/guard-final-guards/final-source. Next LG-08H sampler/card and narrowly guarded auto origin on SAME command/protocol, no second reset owner.

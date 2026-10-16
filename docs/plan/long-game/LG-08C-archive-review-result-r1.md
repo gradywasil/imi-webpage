@@ -1,0 +1,29 @@
+# LG-08C independent Archive review, round 1
+
+**PASS: local default-off Archive prototype, 2026-10-15.** No product change, activation, commit, or deployment. This is not pacing, public, physical-device, accessibility, or release acceptance.
+
+## Candidate and findings
+
+All 12 current product files match `evidence/LG-08/archive-r1/final-source.json` by SHA-256. The fresh Pixel browser loaded all nine applicable changed runtime files with those bytes; the other registered shell, balance page, and service worker were checked on disk. The task patch reconstructs all 12 final files against the writer's dirty-before bytes; Git reported CRLF whitespace warnings on the new file, but byte reconstruction passed. No material finding within this review lease.
+
+The source has one authored title availability rule at `ops.js:26`, used by focus, `canWrite`, ready/Publisher consumers, and PG through `production-goal.js:11-12,38,63`. Archive commands in `archive.js:99-139` bind epoch and revision; slot, copy, material, entry, and withdrawal changes are one acknowledged candidate in `ops.js:2480-2512`. The original recipe basis, finite copy ledger, real-age stage gates, and frozen income calculation are in `archive.js:9-89`. Shared reset retention clears temporary work at `layers.js:106`; Estate settles Archive income before reset at `estate.js:51-56` and `rewards.js:570-579`. The fixed wallet intent and successor are at `rewards.js:588-630` and `ops.js:2480-2512`; the early pending gate is at `vault-save-gate.js:35-43`. These are source-qualified observations, backed where noted below by actual-owner evidence.
+
+## Fresh actual-owner Estate path
+
+`evidence/LG-08/archive-review-r1/estate-smoke-verified.json` records the single compact native Chrome path. It reused the writer's acknowledged `final-candidate-retained-save.json` in an isolated origin, with controlled eligibility: second Estate, five local Imprints, displayed Printing 8, 720 lifetime stars, a 60-hour Ape entry, and a 60-second counted absence. This fixture is not natural progression or waiting. The saved lamp efficiency made the stage-2 interval worth 40 bananas plus a retained 1.342958 fraction, so exactly one 25-banana denomination paid; income sequence advanced 7 to 8. The reset succeeded, advanced epoch 1 to 2 and Estate count 1 to 2, reset room/words/local Imprints, and retained entry key/title/slot, frozen basis 1/pay 1500, age 48h, two deposits, used copy, revision, sequence 8, cursor, and fraction 16.342958333343027. Temporary work was null. The existing `layer:estate:first` claim stayed unchanged and the second reset offered no first reward.
+
+After reload, ownership, guard, and progression were normal with no hold or page error. The entry and copy ledger remained intact. Startup acknowledged a **new** short productive interval: sequence 9 and fraction 16.526458333382763, while the seeded wallet stayed 25000. This is continuation after the reset, not replay of the paid pre-reset interval. Both browser and ephemeral server closed; port 61848 was used, outside the protected ports. User resources and the prior reviewer Temp folder were untouched.
+
+Two earlier fixture failures remain as `estate-smoke.json` and `estate-smoke-final.json`. The first fixture gave startup a 60-second stale `lastSeen`, causing startup to consume the intended interval before the explicit check. The second asserted an identical Archive checkpoint after reload even though reload legitimately produced a short interval. Neither was a product failure; both are retained rather than relabelled as passes. The final helper is `tools/long-game/lg08c-review-r1-estate.cjs`.
+
+## Reused and bounded evidence
+
+The writer's final-source-matched native main path has 36 passing checks and no page errors; the focused arithmetic/cold path has 12, including chronological stage boundaries, unsupported-state refusal, held-time exclusion, fixed wallet-paid successor recovery without duplicate credit, and ordinary offline Publisher continuation after Archive settlement. Nine changed JavaScript syntax checks passed. The before/frozen five-minute default report, meta, and errors are equal. `patch-verification.json` reports exact reconstruction. Earlier syntax collision, BOM/source mismatch, raced snapshot and cold fixture, genuine pagehide guard defect, and away-checkpoint object defect remain recorded as historical failures and corrected final proofs, not erased.
+
+I opened the six final 360x560 Pixel/Classic images covering mature Archive entries, sacrifice confirmation, and title withdrawal. The visible text explains the copy sacrifice, frozen rate, age/material stages, and sale withdrawal. Existing final measurements show internal pane scrolling, no page scroll, and Archive targets at least 40px. The mature images frame entry text rather than every action; the action geometry is supported by the existing measurements and source. No concrete breakpoint concern called for another capture.
+
+Natural material gathering and 12/48-hour waiting, a fresh Archive-bearing Imprint reset, dedicated hosted-minigame income, broader lifecycle/cache/fault work, physical devices/native zoom/screen readers, all-profile/full-hour balance and LG-13 pacing remain unverified. The provisional 2000:1 authored spread remains an approved prototype choice for owner playtest, not a final balance result.
+
+## Handoff
+
+The Archive prototype can support the separately scoped, nonrewarding Works demo. Keep its own optional retained namespace and fixed acknowledged boundaries; do not interpret Archive income or curated copies as Works material, and keep Folio/Archive work conflicts and reset epochs explicit. Final scripts, bills, rewards, public activation, and pacing still require their separate decisions. Review lease released.

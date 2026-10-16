@@ -1,0 +1,20 @@
+# LG-05C independent review r1
+
+2026-10-14. **FAIL for the frozen local candidate's text quality; functional contract PASS within the reused bounded evidence; normal navigation UNVERIFIED fresh. Local readiness: HOLD for one narrow label correction and a valid fresh normal-pointer check.** This is a review disposition, not product acceptance or activation.
+
+## Finding
+
+`layers.js:137` still contains the literal UTF-8 text `Buy Mixed shelf Â· 2 Seals`. It renders an extra `Â` in the purchase control. The parent text-only patch corrected six pre-existing label characters at `layers.js:145-146` and `folio.js:133`, but did not include this new shelf label. Repro: open an eligible unowned shelf from Folio; inspect the purchase button text. Correct only this label under a separate implementation lease, then update the executing identity. No review-owned product file was changed.
+
+## Source and evidence assessment
+
+- Read the full LG-05C implementation and review briefs, approved Group C design and receipt, parent/owner reviews, plan READMEs and skeleton policy. Inspected the current Layers/Folio code, shared `ops.js` salePay call, Rewards layerAction, the implementation task patch and parent text patch. The current source gives a two-current-Seal prerequisite purchase through the acknowledged proposal path; slot/remove/clear validate earned distinct stamps and preserve unrelated state. Shelf bonus is 0/5/10%, independent of active genre, and is multiplied into the existing genre/Muse factor before `salePay`'s single rounding. Disabled, unowned and unsupported data give neutral factors. No Ops, Rewards, Core, Economy or save-gate delta appears in the scoped manifests.
+- Reused the candidate's eleven functional lanes as evidence of prerequisite, insufficient/stale/duplicate refusal, real failed-write Retry without double debit, slot validation, exact bonus and sale payment, unchanged royalty and 6,250 Folio payout, reload, ordinary Printing and foundation projection retention. Stamps were seeded fixtures. Reused the separately focused pointer passes for both 360px editions and the T3 real-button pass. Opened the existing current top and confirmation slot PNGs for both styles; the shelf is readable, controls occupy the internal pane, and the images support the reported 40px controls. These are v51 runtime results with the disclosed SW52 text-only delta, not fresh SW52 functional results.
+- The original combined helper's `Waiting for selector .layer-shelf failed` remains a **failed lane with unknown cause**. Its earlier passing functional cases do not turn the combined run into PASS. The separate pointer passes do not explain or erase that failure.
+- Fresh isolated T3 incognito origin `127.0.0.1:60741` loaded the current scripts. A controlled state reconstructed from the preserved failure record was rejected into a waiting-save state. The real pointer click left Folio open; direct Rewards purchase returned `Finish the waiting save before using Imprints.` Live and saved shelf ownership stayed absent. Because this fixture lacked valid acknowledgement provenance, this check is **UNVERIFIED for normal navigation and purchase**, not a product failure or a repeat of the original timeout. No further helper campaign was run.
+
+## Current identity and limits
+
+SHA-256: `layers.js` `21570daa6781042a683ea654d3376e78c3c700209552c8d162bc2cea55e9fd27`; `layers.css` `12079906966180d7681ff317b484941ce70a8be2c1a825f9ace7ff1d8d3af9d5`; `folio.js` `ed45d361d0fc47c2275e30114ddfbbad5e6d7c156908dfd0a5852a0d50967082`; `sw.js` `a3a1194e1be2e97eac05d0bf3e067d678b9277b78c9d23564a99107498601922`. Protected five hashes matched the implementation manifest. `node --check` passed for Layers, Folio and SW. The original implementation manifest's v51 hashes remain historical for its changed files.
+
+Default control and no Ops change are reused from LG-05B, with the candidate's disabled factor-1 check. Natural stamp earning, natural pacing, physical phones, shared/public saves, broad lifecycle and full balance acceptance remain unverified. No product edits, children, commit, stage, deployment or activation were made.

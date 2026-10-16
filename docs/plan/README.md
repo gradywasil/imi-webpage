@@ -1,5 +1,7 @@
 # Typewriter Ops: game plan
 
+**Owner update2026-10-14:** upcoming long-game skeleton tasks use [proportionate validation](long-game/skeleton-validation-policy.md), superseding older blanket exhaustive verification at this prototype stage. Save compatibility, both editions, no page scroll, kid safety and scope still apply.
+
 This folder is the work queue. Each `NN-*.md` file is one self-contained task for one agent session. **Read this README first, then only your task file.** Do not explore the repo beyond what your task names; the file map and rules below are meant to save you that.
 
 ## Order of work

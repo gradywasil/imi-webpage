@@ -1,0 +1,18 @@
+# LG-03E independent review r1
+
+2026-10-14. **PASS for the bounded final candidate.** Ready for parent consideration of local, `lg03=1`, default-Off acceptance. This review does not activate the net or claim broad product acceptance.
+
+## What I checked
+
+- Read the full LG-03E brief, owner approval and parent design review, plan READMEs and skeleton policy. The owner explicitly approved reuse of the unchanged legacy golden random-effect routine. I treated that as settled.
+- Current SHA256 identities match all ten entries in `implementation-a5-r1/source-boundary-final.json`. `node --check` passed for automation.js, pickups.js, ops.js and sw.js. The task delta and current source confine product edits to those files. The gold tables/effect body, ordinary positioning, four-helper purchase scheduler and full Rewards presentation callback remain unchanged. The SW change is `imi-v43` to `imi-v44`.
+- Source inspection found the Printing 6, Deadline and intro gate, default Off, separately persisted five-step phases, acknowledged admission before a catch, first-viewport admission, production-clock manual interval, ordinary-then-golden two-item service, and per-instance clear-before-effect claims. The supported-data guard, pending Retry behavior, source-only full reset, load/Printing reference clearing and progression/menu/modal/visibility cancellation are bounded to the leased code. Rewards startup registers the screen cancellation listener during extension load init before the later game-start listener. The MutationObserver keeps only two item references and checks eligibility before doing item work.
+- Independently compared `default-before.json` with authoritative `default-final-r3.json`: `result.report`, `result.meta` and `result.errors` are equal after excluding source/capture wrappers. This is a five-minute default control, not a whole-hour claim.
+- Opened all four final 360x560 Pixel/Classic On/Off images. The card, status and toggle are readable inside the existing pane; no material UI blocker. Reused the source-bound 135 focused checks, `held-recovery-r4.json`, `preview-final.json` and `classic-live-settled.json`. The held receipt asserts buff-bar restoration after product render. Its immediate-after-Retry `false` is diagnostic only. The earlier first failures remain in implementation evidence.
+- Ran one fresh actual-component smoke on a separate cold Rewards-enabled page with current loaded function markers and matching source hashes. Both real item types advanced independent phases in acknowledged storage. A manual ordinary catch paid once; a golden net catch after one controlled production second paid once. A second direct claim on each removed instance gave no second grant. See `evidence/LG-03/review-a5-r1/fresh-component-smoke.json`.
+
+## Findings and boundary
+
+- **FAIL:** None in the accessible bounded lanes. The first fresh fixture attempt directly changed a new game's Printing state and triggered Rewards' missing-metadata hold. I preserved that diagnostic in the fresh receipt, discarded the invalid fixture, and cold-loaded the existing valid saved fixture. It is not a product defect.
+- **UNVERIFIED:** Physical devices, full accessibility, reduced-motion/Low matrices, broad lifecycle/fault/worker-transition/profile campaigns, long-horizon pacing and tiers/challenges. Full reset was source-reviewed only. These remain deferred by the skeleton policy.
+- **Acceptance boundary:** Suitable for the parent's local default-Off candidate decision on the exact approved scope. No new source fix, follow-up platform, default activation, commit or deployment is indicated by this review.

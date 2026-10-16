@@ -1,0 +1,5 @@
+﻿const fs=require('node:fs'),http=require('node:http'),path=require('node:path');
+const root=process.cwd(),out='docs/plan/long-game/evidence/LG-06/implementation-garden-r1';
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'};
+const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL(req.url,'http://local').pathname);if(!f.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(f,(e,b)=>{res.writeHead(e?404:200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store','X-LG06A-Server':'implementation-garden-r1'});res.end(e?'missing':b);});});
+server.listen(0,'127.0.0.1',()=>{const identity={pid:process.pid,root,port:server.address().port,started:new Date().toISOString(),owner:'LG-06A implementation-garden-r1'};fs.writeFileSync(out+'/server.json',JSON.stringify(identity,null,2),{flag:'wx'});console.log(JSON.stringify(identity));});

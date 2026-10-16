@@ -1,0 +1,37 @@
+# LG-11A payments preflight and smallest next stage
+
+## Goal
+
+Prepare a concrete owner-review proposal for master LG-11's small payments Worker, based on actual restricted local Vault contracts and family constraints. Documents only. Identify blockers and smallest reviewable local/mock prerequisite before any public checkout. No payment provider, open launch default, price, legal copy, deployment or actual paid grant is approved by this lease. Do not build payments now.
+
+## Ownership and reading
+
+Own NEW LG-11A-payments-design.md, LG-11A-owner-review.md, NEW evidence/LG-11/payments-design-r1/** except parent-dispatch.json, and this Status/Handoff. All product/worker/config/ignore files and previous docs/evidence read-only. No helpers/code/tests/browser/server/accounts/signups/credentials/provider API calls/dependencies/children/art/stage/commit/push/deploy/default activation. You are not alone in dirty checkout; preserve unrelated bytes. Every proposed line of code must justify existence.
+
+Read docs/plan/README.md, long-game README LG-11/12/13/ownership/open Q5/Q6/Q8/Q9/Q10, premium-currency.md in full especially architecture/kids/failure/placeholder prices, skeleton policy; LG-02 owner approval/restricted coordinator/receipt validation/recovery acceptance and exact current vault.js/vault-save-gate.js/rewards.js/Ops interfaces as needed. Read actual wrangler.jsonc/.assetsignore and verify whether worker exists. No broad source/evidence inventory; capture only genuinely used named inputs, not hundreds of historical artifacts. Read LG-10B acceptance for current earned115 maximum and unapproved future120 ceiling; do not amend premium prices.
+
+## Exact deliverables
+
+1. Describe current deployed/static architecture versus implemented local restricted purchase/receipt seams, what is trusted now and what cannot become a server authority unchanged. Separate fake/local receipts from future verified paid entitlements; never imply an existing local coordinator proves real-payment safety. Identify exact integration exports/contract and smallest lease. Master LG-11 owns worker/**, no Ops writes; if real client integration needs game edits, explicitly stage separate later lease instead of smuggling it into backend.
+
+2. Resolve design contradictions concretely for owner review: pseudocode stores receipt email while family spec keeps payer details at provider; recommend minimum opaque provider/receipt identifiers and no unnecessary email in game/Worker. Redeem-once-global wording conflicts with lost-save recovery: define idempotent repeatable retrieval of a stable verified receipt by authorized purchaser, with local apply-once IDs and no loss/duplicate balance after response loss or save failure. Explain local-edit trust limit without anti-cheat/deleting legitimate purchases. Distinguish restore purchase history from restoring spent/earned balance, saves, entitlements and multiple devices. Do not silently promise accountless cross-device balance consistency.
+
+3. Provider-neutral proposed routes checkout/webhook/redeem/recover; fixed server pack-to-DB mapping, no caller amount authority; provider signature verification/replay/idempotency/atomic receipt state; authentic receipt/source validation at client boundary; recovery code kept by purchaser, no code in URL/logs; rate limits/secret boundaries/no player data; failure/retry/refund/revocation behavior requiring explicit design decisions. Recommend KV versus D1 by actual concurrency/atomicity needs, no unnecessary infrastructure or generic platform. No installed tooling/backend writes here. Current facts about Cloudflare/providers must use official primary sources if researched; do not assert unverified fees/country/tax/legal claims or browse broad comparisons. A provider-neutral proposal can leave unsupported provider-specific details open.
+
+4. Explicit owner decision list: Q5 no consumables and Q6 no accounts are DEFAULTS NOT CONFIRMED. Present them as choices needed before relying on them, alongside provider/parent-held recovery model/refund-restoration semantics. Endless/pack prices remain unset tunables, not invented numbers. NG+/heavy-payer/defaults not needed for this prerequisite remain open, no unrelated decision campaign. No user-facing policy/legal copy finalization; LG-12 and owner's legal review remain distinct prerequisites before first sale.
+
+5. Parent gate/hide-store/ad-free/kids are fixed requirements, not re-litigated. Treat every player as possible minor, adult provider-hosted checkout only after gate, quiet store/hidden prices, no data fields/chat/ads/gacha/FOMO. Earned DB/spending keep working if backend down or store hidden. No real-money buttons enabled in first backend/mock stage; no default activation/deployment. Explain how payer checkout external navigation is specifically gated while ordinary game stays contained. A gate is product behavior, not a legal-compliance guarantee.
+
+6. Recommend one smallest concrete next task, preferably provider-neutral local Worker/contract or test-only mock with paid activation blocked, and exact files/commands/non-goals/meaningful checks. Indicate which decisions actually block that stage; do not force provider/final prices if placeholders can remain explicit and real checkout disabled. No build dependencies in static game; backend tooling if later needed belongs worker/** and separately approved. worker/** excluded served assets via future narrow .assetsignore lease. Root worker deployment wiring not authorized. Distinguish proposal approval, local candidate review, paid activation and deployment.
+
+7. Concise cohesive owner package with recommendation, proposed route/recovery/data model, conflicts and minimum required decisions; all new mechanics UNAPPROVED. Do not ask owner directly. Include source-basis and focused static consistency/math if useful, before/after used-input hashes. No runtime/payment/security/compliance acceptance claim. No new architecture research campaign when actual contracts suffice; expose genuine blocker instead of guessing.
+
+## Status
+
+PARENT REVIEW COMPLETE 2026-10-15. See LG-11A-parent-review.md. Parent recommends returning to documents-only scope of missing free-Vault spending/effects/admission before the authored synthetic receipt mock. Owner chooses order; no implementation authorized by this review.19 used-input hashes matched. Design lease released; new payment/recovery/default/price rules remain unapproved.
+
+DOCUMENTS READY FOR PARENT REVIEW 2026-10-15. LG-11A-payments-design.md and LG-11A-owner-review.md prepared. All new mechanics UNAPPROVED. No provider/prices/open defaults/payment implementation/activation approved. Documents lease released; stop for parent review then owner decision.
+
+## Handoff notes
+
+See evidence/LG-11/payments-design-r1/Handoff.md, source-basis.md and input-before.json/input-after.json. Recommend a separately leased provider-neutral test-only contract mock, checkout disabled, no game integration, plus separate worker/** asset exclusion before creating backend files. Provider/final prices/Q5/Q6 need not block that synthetic stage; live recovery/refund/account/catalogue choices remain explicit. Current receipt/settlement source does not supply paid authority or public admission. Original deliverable/ownership text above is preserved. No runtime/payment/security/compliance acceptance, code/config edits, helpers/tests/browser/server/provider calls, children, stage/commit/deploy or default activation.

@@ -1,0 +1,9 @@
+﻿.lg09k-seasons { overflow-wrap:anywhere; }
+.lg09k-seasons summary { cursor:pointer; min-height:40px; display:flex; align-items:center; }
+.lg09k-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.lg09k-actions button { min-height:40px; white-space:normal; }
+html[data-style="pixel"] .lg09k-seasons { padding-top:8px; }
+html[data-style="pixel"] .lg09k-seasons h3 { font-family:var(--font-px); }
+html[data-style="pixel"] .lg09k-actions button { border-radius:0; }
+html[data-style="classic"] .lg09k-seasons { border-radius:14px; }
+html[data-style="classic"] .lg09k-actions button { border-radius:10px; }

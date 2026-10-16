@@ -1,0 +1,17 @@
+# LG-09H owner decision page
+
+UNAPPROVED, 2026-10-15. One cohesive proposal. Source inspection is complete; implementation is not authorized. Read LG-09H-hall-design.md for the contract and evidence/LG-09/hall-design-r1/catalogue.md for all 30 edition mappings. Raw inputs are bound by source-manifest.json.
+
+Approve or revise these choices together:
+
+1. Reuse Train > Look book as Hall when Train is revealed. Keep all 30 looks and the existing four look rarities, 16 Common / 7 Rare / 5 Epic / 2 Legendary. Talent is separate, +0..12%, and adds no collection categories. One first set is a deliberate smaller slice of masterLG09's plural sets.
+2. Count acknowledged local observations. Grandfather exact saved seen bits and explicit valid saved current-crew looks from the raw first-load snapshot. This proves neither purchase nor past crew ownership, and cannot restore already lost history. New progress uses manual Save discoveries and an acknowledged detached state save. Existing hires/rerolls stay unchanged. No provenance campaign or new RNG.
+3. Track team requires exactly v01..v05. Show every member and reward in advance. Historical completion may claim too. Claim once per continuing local save for one stored Royalty Rush, x7 royalties/divisions for 15 game seconds. Zero DB, no new stat or automation reward, no change to 68 awards, +1% income, 109 DB or daily/board rewards. This historical Hall reward is a new policy choice, distinct from LG-01's old-award waiver.
+4. Accept the dependency on existing chance-based looks for this disclosed deterministic set reward under the no-random-prizes rule. This is not yet an approved exception. If unacceptable, return for a revised collection-only proposal. No draw/shop redesign or paid-only completion may fill that gap.
+5. Retain Hall evidence/claims/tokens across ordinary progression resets. Permit only the narrow Hall-enabled legacy looks copy, existing writer hold/Retry integration and Hall cold recognition. Full local erase follows the existing local timeline policy; this does not settle paid restoration.
+
+Real implementation prerequisites are exclusive ownership of the listed nine product files, fresh source-hash matching, raw persisted evidence capture before ensureCrew, an ACK operation publishing Hall metadata with receipt/token together, and exact Hall token recognition in existing activation/inventory/recovery. Current award-only token filters and legacy reset looks loss must be addressed. Neither is solved by drawing the collection page.
+
+Next lease, only after separate approval: new hall.js/.css; narrow ops.js, rewards.js, vault-save-gate.js; registration in index.html, classic.html, tools/balance.html and sw.js. No Core/Economy authority change, renderer edit, generic reset rewrite, new art, dependency, child task, harness run, default activation, stage, commit or deploy. Parent must issue a new scoped implementation task against refreshed hashes. This design lease is released.
+
+Validation now is static source/catalogue/math/hash inspection only. Later proof is actual discovery, saved set Claim/activation/reload, one save failure/Retry, bounded duplicate checks, named reset retention, source-matched default five-minute control if Ops changes and two active 360x560 edition images. No runtime, visual, pacing, public-use or full masterLG09 acceptance is claimed. Seasons, expanded awards, payments and finite-pool changes remain separate.
