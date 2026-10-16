@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const http=require('node:http');
-test('inline settings, acknowledged recovery and Shop tiers in both editions',async()=>{
+test('inline settings, acknowledged recovery and Legacy tiers in both editions',async()=>{
  const puppeteer=require(process.env.PUPPETEER_MODULE||'C:/Users/arran/pp/node_modules/puppeteer-core');
  const root=path.resolve(__dirname,'..'), evidence=path.join(root,'docs/plan/long-game/evidence/UI-03A-inline-automation');
  const server=http.createServer((req,res)=>{
@@ -57,28 +57,29 @@ test('inline settings, acknowledged recovery and Shop tiers in both editions',as
    await go('shop');
    await page.click('[data-act="automation:shop-move"][data-item="contracts"][data-direction="-1"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.shop.priority[0]==='contracts');
+   await go('legacy');await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,350));
    await page.click('[data-act="automation:upgrade"][data-helper="hire"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.tiers.hire===1);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),19);
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);
    assert.equal(await page.evaluate(id=>IMI.ops.extensions.state().meta.automation.desks[id].reservePercent,desk),40);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.shop.priority[0]),'contracts');
-   const screens=[['training','hire'],['training','coach'],['shop','helpers'],['shop','shop'],['shop','restore'],['lab','garden'],['press','pitch','pitches'],['studios','media'],['muses','muse'],['legacy','print','press'],['legacy','challenge','challenges'],['floor','net']];
+   const screens=[['training','hire'],['training','coach'],['legacy','helpers','upgrades'],['shop','shop'],['shop','restore'],['lab','garden'],['press','pitch','pitches'],['studios','media'],['muses','muse'],['legacy','print','press'],['legacy','challenge','challenges'],['floor','net']];
    for(const [tab,helper,sub] of screens){
     await go(tab);
     if(sub){await page.click(`[data-dept="${tab}"][data-sub="${sub}"]`);await new Promise(r=>setTimeout(r,350));}
     const sel=`#o-${tab} [data-automation="${helper}"]`;
     assert(await page.$(sel),sel);
-    if(tab!=='floor') await page.$eval(sel,el=>el.scrollIntoView({block:'start'}));
+    if(tab!=='floor') await page.$eval(helper==='helpers'?sel+' .o-card':sel,el=>el.scrollIntoView({block:'start'}));
     await page.screenshot({path:path.join(evidence,`${edition}-360-${helper}.png`)});
     results.push(await page.evaluate(({tab,helper})=>{
      const pane=document.querySelector('#o-'+tab),slot=pane.querySelector('[data-automation="'+helper+'"]');
      const ids=[...document.querySelectorAll('[id]')].map(el=>el.id);
-     return {edition:document.documentElement.dataset.style,tab,helper,controls:slot.querySelectorAll('button,input,select').length,duplicates:ids.filter((id,i)=>ids.indexOf(id)!==i),pageScroll:document.documentElement.scrollHeight>innerHeight,fits:slot.getBoundingClientRect().left>=0&&slot.getBoundingClientRect().right<=innerWidth,wrongPurchase:[...document.querySelectorAll('[data-act="automation:upgrade"]')].some(el=>!el.closest('#o-shop'))};
+     return {edition:document.documentElement.dataset.style,tab,helper,controls:slot.querySelectorAll('button,input,select').length,duplicates:ids.filter((id,i)=>ids.indexOf(id)!==i),pageScroll:document.documentElement.scrollHeight>innerHeight,fits:slot.getBoundingClientRect().left>=0&&slot.getBoundingClientRect().right<=innerWidth,wrongPurchase:[...document.querySelectorAll('[data-act="automation:upgrade"]')].some(el=>!el.closest('#o-legacy'))};
     },{tab,helper}));
    }
    await go('training');await page.click('[data-dept="training"][data-sub="book"]');await new Promise(r=>setTimeout(r,350));assert.equal(await page.$('#o-training [data-automation]'),null);
-   await go('shop');await page.click('[data-act="automation:settings"][data-helper="hire"]');
+   await go('legacy');await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,350));await page.click('[data-act="automation:settings"][data-helper="hire"]');
    await page.waitForSelector('#o-training:not([hidden]) [data-lg03-reserve]');
    await go('press');await page.click('[data-dept="press"][data-sub="titles"]');await new Promise(r=>setTimeout(r,350));assert.equal(await page.$('#o-press [data-automation="pitch"]'),null);
    await page.evaluate(()=>{
@@ -95,10 +96,11 @@ test('inline settings, acknowledged recovery and Shop tiers in both editions',as
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.print.N===45);
    await page.$eval('[data-automation="print"]',el=>el.scrollIntoView({block:'start'}));
    await page.screenshot({path:path.join(evidence,`${edition}-360-retained-print.png`)});
-   for(const [width,height,tab,helper] of [[1280,800,'shop','helpers'],[390,700,'training','hire']]){
+   for(const [width,height,tab,helper] of [[1280,800,'legacy','helpers'],[390,700,'training','hire']]){
     await page.setViewport({width,height,isMobile:width<900,hasTouch:width<900});await go(tab);
+    if(tab==='legacy'){await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,350));}
     if(tab==='training'){await page.click('[data-dept="training"][data-sub="crew"]');await new Promise(r=>setTimeout(r,350));}
-    await page.$eval(`[data-automation="${helper}"]`,el=>el.scrollIntoView({block:'start'}));
+    await page.$eval(`[data-automation="${helper}"]${helper==='helpers'?' .o-card':''}`,el=>el.scrollIntoView({block:'start'}));
     await page.screenshot({path:path.join(evidence,`${edition}-${width}-${helper}.png`)});
    }
    await context.close();

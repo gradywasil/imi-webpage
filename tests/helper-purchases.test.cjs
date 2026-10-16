@@ -35,8 +35,8 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
     s.meta.automation={version:1,ownership:{version:1,owned:{}}};s.daily={last:new Date().toDateString(),streak:1};localStorage.setItem('imi-ops-v1',JSON.stringify(s));
    });
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
-   const go=async tab=>{await page.evaluate(tab=>IMI.ops.extensions.setTab(tab),tab);await new Promise(r=>setTimeout(r,400));};
-   await go('shop');
+   const go=async tab=>{await page.evaluate(tab=>IMI.ops.extensions.setTab(tab),tab);await new Promise(r=>setTimeout(r,400));if(tab==='legacy'){await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,400));}};
+   await go('legacy');
    assert.equal(await page.$$eval('[data-act="automation:settings"]',els=>els.length),11);
    assert.equal(await page.$eval('[data-act="automation:buy"][data-helper="shop"]',el=>el.disabled),true);
    await page.click('[data-act="automation:buy"][data-helper="hire"]');
@@ -44,7 +44,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),9);
    assert.equal(await page.evaluate(()=>Object.values(IMI.ops.extensions.state().meta.automation.desks||{}).some(d=>d.enabled)),false);
    const duplicate=await page.evaluate(()=>{const api=IMI.ops.extensions,q=api.quoteAutomationBase('hire');return api.buyAutomationBase('hire',q.expected);});assert.equal(duplicate.ok,false);
-   await go('shop');
+   await go('legacy');
    await page.waitForSelector('[data-act="automation:upgrade"][data-helper="hire"]');
    await page.click('[data-act="automation:settings"][data-helper="hire"]');
    await new Promise(r=>setTimeout(r,400));
@@ -57,7 +57,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return {stars:s.legacy.stars,owned:s.meta.automation.ownership.owned.hire,on:Object.values(s.meta.automation.desks).some(d=>d.enabled)};}),{stars:9,owned:true,on:true});
    record(edition+' actual Buy/settings/enable/save/reload and duplicate refusal');
    if(edition==='index')fs.writeFileSync(path.join(evidence,'projection-fixture.json'),JSON.stringify(await page.evaluate(()=>IMI.ops.extensions.state()),null,2));
-   await go('shop');
+   await go('legacy');
    await page.evaluate(()=>{window.helperSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1')throw Error('UI03C controlled failed purchase save');return window.helperSetItem.call(this,k,v);};});
    record(edition+' failed-buy preflight',await page.evaluate(()=>({q:IMI.ops.extensions.quoteAutomationBase('coach'),button:document.querySelector('[data-act="automation:buy"][data-helper="coach"]').outerHTML})));
    await page.click('[data-act="automation:buy"][data-helper="coach"]');
@@ -80,18 +80,18 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
     results.push(['tier without base',api.buyAutomationTier('shop',0,JSON.stringify(m)).ok]);
     results.push(['A11 selection',(()=>{try{AutoChallenge.selection(s);return true;}catch{return false;}})()]);return results;});
    enforce.forEach(([id,ok])=>assert.equal(ok,false,id));record(edition+' settings/base tier/A11 selection enforcement',enforce);
-   await page.evaluate(()=>{const api=IMI.ops.extensions;api.state().legacy.stars=0;api.mark();});await go('shop');
+   await page.evaluate(()=>{const api=IMI.ops.extensions;api.state().legacy.stars=0;api.mark();});await go('legacy');
    assert.equal(await page.$eval('[data-act="automation:buy"][data-helper="shop"]',el=>el.disabled),true);
    for(const [width,height] of [[360,560],[1280,800]]){
-    await page.setViewport({width,height,isMobile:width===360,hasTouch:width===360});await go('shop');
-    await page.$eval('[data-automation="helpers"]',el=>el.scrollIntoView({block:'start'}));
+    await page.setViewport({width,height,isMobile:width===360,hasTouch:width===360});await go('legacy');
+    await page.$eval('[data-automation="helpers"] .o-card',el=>el.scrollIntoView({block:'start'}));
     const layout=await page.evaluate(()=>{const slot=document.querySelector('[data-automation="helpers"]');return {pageScroll:document.documentElement.scrollHeight>innerHeight,fit:slot.getBoundingClientRect().right<=innerWidth,minHeight:Math.min(...[...slot.querySelectorAll('button')].map(el=>el.getBoundingClientRect().height)),low:document.documentElement.dataset.fx,reduced:IMI.reduceMotion};});
     assert.equal(layout.pageScroll,false);assert.equal(layout.fit,true);assert(layout.minHeight>=40);assert.equal(layout.low,'low');assert.equal(layout.reduced,true);
     results.layouts.push({edition,width,height,...layout});await page.screenshot({path:path.join(evidence,`${edition}-${width}-shop.png`)});
    }
    await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.printing=1;s.chDone={};s.legacy.stars=10;s.meta.automation={version:1,tiers:{version:1,hire:1},garden:{version:1,enabled:false,bed:0,letter:'E',desk:'mint',manual:{complete:false}},pitch:{version:1,enabled:false},print:{version:1,manual:{complete:true}},future:{keep:'unknown'}};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));sessionStorage.setItem('ui03cFailAdmission','1');});
    await page.evaluateOnNewDocument(()=>{if(sessionStorage.getItem('ui03cFailAdmission')){window.helperSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'&&JSON.parse(v).meta.automation?.ownership)throw Error('UI03C controlled failed admission');return window.helperSetItem.call(this,k,v);};}});
-   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());await go('shop');await page.waitForSelector('[data-act="automation:retry"]');
+   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());await go('legacy');await page.waitForSelector('[data-act="automation:retry"]');
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership),undefined);
    const stoppedAt=await page.evaluate(()=>IMI.ops.extensions.state().stats.playSecs);
    await new Promise(r=>setTimeout(r,150));
@@ -106,7 +106,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    const tiers=await page.evaluate(()=>{const api=IMI.ops.extensions,s=api.state(),out=[];for(const level of [1,2]){const q=api.quoteAutomationTier('hire'),r=api.buyAutomationTier('hire',level,JSON.stringify(s.meta.automation));out.push({price:q.price,ok:r.ok,stars:s.legacy.stars,level:s.meta.automation.tiers.hire});}return out;});
    assert.deepEqual(tiers,[{price:2,ok:true,stars:8,level:2},{price:4,ok:true,stars:4,level:3}]);record(edition+' grandfathered existing tier keeps paid 2/4-star upgrade path',tiers);
    await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.meta.automation.ownership={version:99,owned:{hire:true},future:['keep']};localStorage.setItem('imi-ops-v1',JSON.stringify(s));});
-   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);await go('shop');
+   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);await go('legacy');
    assert.deepEqual(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership),{version:99,owned:{hire:true},future:['keep']});
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.quoteAutomationBase('net').ok),false);record(edition+' unsupported ownership preserved and blocked');
    await page.evaluate(()=>{localStorage.removeItem('imi-ops-v1');});await page.close();

@@ -2208,7 +2208,7 @@
         ${masteryHTML()}<div class="lg03-inline" data-own data-automation="challenge"></div>
         ${masteryActive() ? '' : active}
         ${done.length ? `<h3 class="o-h">Completed perks</h3><div class="o-grid">${done.map(c => `<div class="o-card"><h3>${c.name} ✓</h3><p>${c.perk}</p></div>`).join('')}</div>` : ''}`;
-    else body = `<p class="o-dim">Legacy stars unspent: <b>${L.stars}</b></p><div class="o-grid">${legCards}</div>`;
+    else body = `<p class="o-dim">Legacy stars unspent: <b>${L.stars}</b></p><div class="o-grid">${legCards}<div class="lg03-purchases" data-own data-automation="helpers"></div></div>`;
     morph($('#o-legacy'), subTabs('legacy', tabs) + body + (layers?.enabled && (S.printing >= 7 || layers.identity(S)) ? '<div class="o-card layers"><h3>Imprints</h3><p>A new room with retained Legacy and permanent Press Seal purchases.</p><button class="o-btn" data-act="layers:open">Review Imprints</button></div>' : ''));
     hydrate($('#o-legacy'));
   }
@@ -3392,7 +3392,7 @@
         if (challengeActive() && !challengeHandover()) return {ok:false,error:'A11 handover waiting'};
         const current = S.meta.automation;
         if ((current === undefined ? null : JSON.stringify(current)) !== expected || !extensions.get('automation').validConfig(current) || !next || !extensions.get('automation').validConfig(next) || JSON.stringify(current?.tiers) !== JSON.stringify(next.tiers) || JSON.stringify(current?.garden?.manual) !== JSON.stringify(next.garden?.manual) || !pitchSame(current?.pitch?.manual,next.pitch?.manual) || !pitchSame(current?.pitch?.sale,next.pitch?.sale) || !pitchSame(current?.media?.manual,next.media?.manual) || (current?.media?.sequence ?? 0) !== (next.media?.sequence ?? 0) || !pitchSame(current?.media?.pending,next.media?.pending) || !museSame(current?.muse?.manual,next.muse?.manual) || current?.net && current.net.version !== next.net?.version) return { ok:false, error:'Automation save changed or is unsupported' };
-        if (!extensions.get('automation').settingsOwned(current,next)) return {ok:false,error:'Buy the base helper in Shop first; ownership is retained by its purchase owner'};
+        if (!extensions.get('automation').settingsOwned(current,next)) return {ok:false,error:'Buy the base helper in Legacy > Upgrades first; ownership is retained by its purchase owner'};
         if (!pitchSame(current?.challenge,next.challenge)) return {ok:false,error:'A11 settings use their named owner'};
         if (!pitchSame(current?.print?.manual,next.print?.manual) || !pitchSame(current?.print?.pending,next.print?.pending) || printingEnabled() && next.print?.enabled && (!(S.intro.done && S.meta.estate?.count >= 1 && current?.print?.manual?.complete) || next.print.disclosed !== true)) return {ok:false,error:'Auto-print proof or disclosure is unavailable'};
         const automation = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
@@ -3453,7 +3453,7 @@
         return result;
       },
       quoteAutomationHire(i, reservePercent) {
-        if (!extensions.get('automation').owned('hire')) return {ok:false,error:'Buy the base helper in Shop first'};
+        if (!extensions.get('automation').owned('hire')) return {ok:false,error:'Buy the base helper in Legacy > Upgrades first'};
         if (S.printing < 1 || !S.intro.done) return { ok:false, error:'Requires Printing 2' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i], u = UPS.find(x => x.k === 'paw');
@@ -3471,7 +3471,7 @@
         return { ok:true, cost:plan.cost };
       },
       quoteAutomationRestore(i) {
-        if (!extensions.get('automation').owned('restore')) return {ok:false,error:'Buy the base helper in Shop first'};
+        if (!extensions.get('automation').owned('restore')) return {ok:false,error:'Buy the base helper in Legacy > Upgrades first'};
         if (S.printing < 4 || !S.chDone.haiku || !S.intro.done) return { ok:false, error:'Requires Printing 5 and Haiku completion' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i];
@@ -3490,7 +3490,7 @@
           ({ index, paw, ...extensionAPI.quoteAutomationCoach(index, paw) })) : []);
       },
       quoteAutomationCoach(i, p) {
-        if (!extensions.get('automation').owned('coach')) return {ok:false,error:'Buy the base helper in Shop first'};
+        if (!extensions.get('automation').owned('coach')) return {ok:false,error:'Buy the base helper in Legacy > Upgrades first'};
         if (!S.chDone.hands || !S.intro.done) return { ok:false, error:'Requires No Hands completion' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i], t = d?.owned && Number.isInteger(p) && p >= 0 && p < d.paws && d.crew[p];
@@ -3504,7 +3504,7 @@
         return extensionAPI.quoteAutomationCoach(i, p).ok && !!coachTypist(i, p);
       },
       quoteAutomationShop(key) {
-        if (!extensions.get('automation').owned('shop')) return {ok:false,error:'Buy the base helper in Shop first'};
+        if (!extensions.get('automation').owned('shop')) return {ok:false,error:'Buy the base helper in Legacy > Upgrades first'};
         if (!['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(key)) return { ok:false, error:'Unsupported shop item' };
         const price = SHOP[key], owned = !!S[key], lock = shopLock(key);
         const error = owned ? 'Owned' : lock || (S.printing < 2 || !S.intro.done ? 'Requires Printing 3' :
@@ -4490,7 +4490,7 @@
         ${item(cart('s-agent') + 'Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'agent')}
         ${item(cart('s-analyst') + 'Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'analyst')}
       </div>
-      <h3 class="o-h">Helpers</h3><div class="lg03-inline" data-own data-automation="helpers"></div><h3 class="o-h">Room-wide upgrades</h3><div class="lg03-inline" data-own data-automation="shop"></div><div class="o-grid">
+      <h3 class="o-h">Room-wide upgrades</h3><div class="lg03-inline" data-own data-automation="shop"></div><div class="o-grid">
         ${item(cart('s-hold') + 'Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold')}
         ${item(cart('s-metro') + 'Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, blue ? '' : 'Unlocks with Lagoon Sprint', 'metro')}
         ${item(cart('s-dbl') + 'Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, !blue ? 'Unlocks with Lagoon Sprint' : !S.hold ? 'Needs Hold to type' : '', 'dbl')}
@@ -4754,8 +4754,6 @@
     buy: el => { const at = IMI.centerOf(el), before = bananas.get(); buy(el.dataset.what, el.dataset.i); if (bananas.get() < before) { IMI.burst(at[0], at[1], ['banana', 'spark', 'star'], 12); vib(25); boughtFx(el); } },
     write: el => writeTitle(el.dataset.id, el),
     pgopen: () => { ui.sub.press = 'titles'; setTab('press'); },
-    pgauto: () => pg?.configure(pgContext, { enabled: false, manual: null }),
-    pgband: el => pg?.configure(pgContext, { enabled: true, band: +el.dataset.band, manual: null }),
     pgadvance: () => pg?.configure(pgContext, { advance: !S.meta.productionGoal?.advance }),
     pgreturn: () => pg?.configure(pgContext, { manual: null }),
     pgretry: () => pg?.retry(pgContext),
@@ -4786,7 +4784,7 @@
     read: el => { ui.read = ui.read === el.dataset.id ? null : el.dataset.id; mark(); },
     reset: () => { if (resetBlocked()) { IMI.say(resetExplanation); return; } if (imprintChallenge() && !challengeSettled()) return; if (confirm('Reset Typewriter Ops and bananas?')) { if (writer && !bananas.resetAcknowledged().ok) { writer.resetFailure(); return; } IMI.pickups?.clear(); if (!writer) bananas.spend(bananas.get()); S = fresh(); extensionEvent('init', 'full-reset'); extensionEvent('reset', { kind: 'full-reset' }); goldEnd?.(); royAcc = coinBank = 0; Object.assign(ui, { tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, libLimit: 24, sub: {}, pulled: null, read: null, shelfNew: 0 }); saveView(); combo.n = combo.t = 0; ui.mcd = {}; Object.keys(buffs).forEach(k => buffs[k] = 0); holding = false; keeperT = []; rt.forEach(r => r.timers = []); try { localStorage.removeItem('imi-tour'); } catch { /* storage blocked */ } IMI.tour?.reset(); save(); buildStage(); mark(); } }
   };
-  const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgauto','pgband','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','coach','reroll','ovrset','bankword']);
+  const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','coach','reroll','ovrset','bankword']);
   if (writer) for (const name of Object.keys(ACTIONS)) {
     const action = ACTIONS[name]; ACTIONS[name] = (...args) => { if (progressing() && (!challengeActive() || !challengeInterventions.has(name) || challengeHandover())) return action(...args); };
   }
@@ -4804,6 +4802,7 @@
     if (!progressing()) return;
     const el = e.target.closest('[data-in]');
     if (challengeActive() && (el?.dataset.in === 'kdef' || e.target.dataset.lg03Reserve || e.target.dataset.lg06a) && !challengeHandover()) return;
+    if (el && el.dataset.in === 'pgrange') pg?.configure(pgContext, el.value === 'auto' ? { enabled: false, manual: null } : { enabled: true, band: +el.value, manual: null });
     if (el && el.dataset.in === 'pgcollection') pg?.configure(pgContext, { collection: el.value, manual: null });
     if (el && el.dataset.in === 'libsort') { ui.libsort = el.value; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); }
     if (el && el.dataset.in === 'kdef') { cur().keeper.def = Math.max(0, Math.min(9999, el.value | 0)); save(); mark(); }

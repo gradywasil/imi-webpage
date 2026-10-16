@@ -1,6 +1,6 @@
 /* Use incumbent card/buttons; only arrange the new Titles controls. */
 .pg01-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-block: 8px; }
-.pg01-controls .o-btn, .pg01-controls select { min-height: 40px; }
+.pg01-controls .o-btn, .pg01-controls select, .pg01-controls summary { min-height: 40px; }
 .pg01-controls label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%; }
 .pg01-controls select { max-width: 100%; font: inherit; color: inherit; background: var(--panel, #142016); }
 .pg01-controls [aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: -3px; }
@@ -9,3 +9,5 @@ html[data-style="pixel"] .pg01-controls select { border-radius: 0; }
 html[data-style="classic"] .pg01-controls select { border-radius: 8px; }
 .pg01-controls p { overflow-wrap: anywhere; }
 .o-focus[data-act="pgopen"] { min-height: 40px; }
+
+.pg01-controls summary { box-sizing: border-box; padding-block: 10px; cursor: pointer; }

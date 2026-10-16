@@ -52,3 +52,8 @@ html[data-style="classic"] .lg08h-print, html[data-style="classic"] .lg08h-print
 .lg08l-challenge p { margin: .5rem 0; overflow-wrap: anywhere; }
 .lg08l-challenge button { min-height: 44px; max-width: 100%; }
 html[data-style="classic"] .lg08l-challenge { border-radius: 12px; }
+
+/* Share the ordinary Legacy grid and card styles, outside inline settings. */
+.lg03-purchases { display: contents; }
+.lg03-purchases > p { grid-column: 1 / -1; }
+.lg03-purchases .o-card p { overflow-wrap: anywhere; }
