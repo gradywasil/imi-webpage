@@ -14,6 +14,46 @@
   const restoreUnlocked = () => api.state().printing >= 4 && !!api.state().chDone.haiku && api.state().intro.done;
   const netUnlocked = () => api.state().printing >= 5 && !!api.state().chDone.timed && api.state().intro.done;
   const helpers = ['hire', 'coach', 'shop', 'restore', 'net'];
+  const bases = [...helpers, 'garden', 'pitch', 'media', 'muse', 'print', 'challenge'];
+  let admission = null;
+  const validOwnership = o => o === undefined || object(o) && o.version === 1 && object(o.owned) && bases.every(id => o.owned[id] === undefined || typeof o.owned[id] === 'boolean');
+  const owned = (id, source = api.state()) => validOwnership(source.meta.automation?.ownership) && source.meta.automation?.ownership?.owned?.[id] === true;
+  function baseGate(id) {
+    const gates = {hire:unlocked,coach:coachUnlocked,shop:shopUnlocked,restore:restoreUnlocked,net:netUnlocked,
+      garden:gardenUnlocked,pitch:pitchUnlocked,media:mediaUnlocked,muse:museUnlocked,print:printUnlocked,challenge:() => AutoChallenge.earned(api.state())};
+    return !!gates[id]?.();
+  }
+  function captureAdmission() {
+    const m = saved();
+    if (!supported(m) || m?.ownership !== undefined) { admission = null; return; }
+    const retained = {};
+    for (const id of bases) {
+      const cfg = m?.[id];
+      const configured = id === 'hire' ? Object.values(m?.desks || {}).some(d => object(d) && Object.keys(d).length) :
+        object(cfg) && (cfg.enabled === true || !cfg.manual ? Object.keys(cfg).some(k => !['version','manual'].includes(k)) :
+          id === 'garden' && (cfg.bed !== undefined && cfg.bed !== 0 || cfg.letter !== undefined && cfg.letter !== 'E' || cfg.desk !== undefined && cfg.desk !== 'mint') ||
+          id === 'print' && cfg.N !== undefined || id === 'media' && cfg.sequence > 0);
+      if (baseGate(id) || configured || m?.tiers?.[id] > 0 ||
+          api.state().chDone[{garden:'handplanted',pitch:'onebrief',media:'paperonly',muse:'fixedcast'}[id]]) retained[id] = true;
+    }
+    admission = {version:1,owned:retained};
+  }
+  function admit() {
+    if (!admission || pending || !api.automationAllowed()) return;
+    const m = saved();
+    if (printEdit || challengeEdit || m?.print?.pending || m?.challenge?.pending || m?.pitch?.sale || m?.media?.pending || gardenPending || api.museStatus().pending) return;
+    write({admission,expected:m === undefined ? null : JSON.stringify(m)});
+  }
+  function buyBase(el) {
+    const id = el.dataset.helper, q = api.quoteAutomationBase(id);
+    if (pending || admission || !q.ok) return;
+    write({base:id,expected:q.expected});
+  }
+  function settingsOwned(current, next) {
+    if (JSON.stringify(current?.ownership) !== JSON.stringify(next.ownership)) return false;
+    if (api.automationDesks().some(d => next.desks?.[d.id]?.enabled && !current?.desks?.[d.id]?.enabled && !owned('hire'))) return false;
+    return bases.filter(id => id !== 'hire').every(id => !next[id]?.enabled || current?.[id]?.enabled || owned(id));
+  }
   const level = id => saved()?.tiers?.[id] ?? 0;
   const interval = id => [20, 15, 10, 5][level(id)];
   const margin = () => [2, 1.75, 1.5, 1][level('restore')];
@@ -75,7 +115,7 @@
     try { return Layers.current(api.state()).count >= 1; } catch { return false; }
   }
   function gardenReady(request = null) {
-    return api.state().challenge?.id !== 'handplanted' && gardenUnlocked() && gardenSetting().enabled && (!request || request.config === JSON.stringify(saved().garden)) && (!gardenPending || gardenPending === request) && !pending && !suspended.has('garden') &&
+    return api.state().challenge?.id !== 'handplanted' && owned('garden') && gardenUnlocked() && gardenSetting().enabled && (!request || request.config === JSON.stringify(saved().garden)) && (!gardenPending || gardenPending === request) && !pending && !suspended.has('garden') &&
       !document.hidden && IMI.screen() === 'game' && api.automationAllowed();
   }
   function gardenAction(p) {
@@ -100,7 +140,7 @@
     const cfg = safe ? gardenSetting() : {}, disabled = !safe || !!pending, on = cfg.enabled && !suspended.has('garden');
     const text = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
     const progress = cfg.manual?.complete ? 'Manual cycle complete.' : pendingCrop(api.state()) ? 'Manual planting saved. Harvest that same ripe crop by hand.' : 'Plant a new crop, then harvest it ripe by hand. Older crops and statistics do not count.';
-    return `<section class="o-card lg06a-garden"><h3>Auto-garden</h3><p>Free. Requires Imprint 1, introduction complete and one saved manual plant-to-harvest cycle. ${progress}</p><p>One action every ${earnedInterval('garden')} active game seconds: plant an empty bed, or harvest its matching ripe crop. Replant on a later attempt. No offline actions.</p><label>Bed<select data-lg06a="bed" ${disabled ? 'disabled' : ''}>${api.state().garden.beds.map((_,i) => `<option value="${i}" ${cfg.bed === i ? 'selected' : ''}>Bed ${i+1}</option>`).join('')}</select></label><label>Letter<select data-lg06a="letter" ${disabled ? 'disabled' : ''}>${Array.from({length:26},(_,i) => String.fromCharCode(65+i)).map(ch => `<option ${cfg.letter === ch ? 'selected' : ''}>${ch}</option>`).join('')}</select></label><label>Desk<select data-lg06a="desk" ${disabled ? 'disabled' : ''}>${api.automationDesks().filter(d => d.owned).map(d => `<option value="${d.id}" ${cfg.desk === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select></label><button data-act="automation:garden-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !gardenUnlocked()) ? 'disabled' : ''}>Auto-garden: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'handplanted' ? 'Paused by the current challenge.' : !safe ? 'Unsupported garden data preserved. Actions disabled.' : suspended.has('garden') ? 'Off locally. Retry to save Off.' : text(gardenNotice) || (on ? `Waiting for the next ${earnedInterval('garden')}-second attempt.` : 'Off')}</p>${gardenPending ? '<button data-act="automation:garden-retry">Retry garden action</button>' : ''}<p>Hand-planted first clear: 45-second attempts, keeping the usual unlock.</p></section>`;
+    return `<section class="o-card lg06a-garden"><h3>Auto-garden</h3><p>Imprint 1. ${progress}</p><details><summary>Action rules</summary><p>One action every ${earnedInterval('garden')} active game seconds: plant an empty bed, or harvest its matching ripe crop. Replant on a later attempt. No offline actions.</p></details><label>Bed<select data-lg06a="bed" ${disabled ? 'disabled' : ''}>${api.state().garden.beds.map((_,i) => `<option value="${i}" ${cfg.bed === i ? 'selected' : ''}>Bed ${i+1}</option>`).join('')}</select></label><label>Letter<select data-lg06a="letter" ${disabled ? 'disabled' : ''}>${Array.from({length:26},(_,i) => String.fromCharCode(65+i)).map(ch => `<option ${cfg.letter === ch ? 'selected' : ''}>${ch}</option>`).join('')}</select></label><label>Desk<select data-lg06a="desk" ${disabled ? 'disabled' : ''}>${api.automationDesks().filter(d => d.owned).map(d => `<option value="${d.id}" ${cfg.desk === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select></label><button data-act="automation:garden-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !gardenUnlocked()) ? 'disabled' : ''}>Auto-garden: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'handplanted' ? 'Paused by the current challenge.' : !safe ? 'Unsupported garden data preserved. Actions disabled.' : suspended.has('garden') ? 'Off locally. Retry to save Off.' : text(gardenNotice) || (on ? `Waiting for the next ${earnedInterval('garden')}-second attempt.` : 'Off')}</p>${gardenPending ? '<button data-act="automation:garden-retry">Retry garden action</button>' : ''}</section>`;
   }
   const pitchSetting = () => ({version:1,enabled:false,...saved()?.pitch});
   let pitchElapsed = 0, pitchLast = null, pitchNotice = '';
@@ -110,7 +150,7 @@
     try { return Layers.current(api.state()).count >= 2; } catch { return false; }
   }
   function pitchReady(retry = false) {
-    return api.challengeCommissionAllowed() && pitchUnlocked() && pitchSetting().enabled && !pending && !suspended.has('pitch') && (!api.pitchStatus().pending || retry) &&
+    return api.challengeCommissionAllowed() && owned('pitch') && pitchUnlocked() && pitchSetting().enabled && !pending && !suspended.has('pitch') && (!api.pitchStatus().pending || retry) &&
       !document.hidden && IMI.screen() === 'game' && api.automationAllowed() && !IMI.tour?.active() &&
       !document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])');
   }
@@ -128,7 +168,7 @@
     const cfg = safe ? pitchSetting() : {}, on = cfg.enabled && !suspended.has('pitch'), status = api.pitchStatus();
     const text = v => String(v).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const progress = cfg.manual?.complete ? 'Manual commission and sale saved.' : api.trackedPitch() ? 'Commission saved. Bank its words and sell that exact title during visible play.' : 'Commission a new title by hand, then sell it during visible play. Older sales do not count.';
-    return `<section class="o-card lg06b-pitch"><h3>Auto-pitch</h3><p>Free. Requires Imprint 2 and introduction complete. ${progress}</p><p>Every ${earnedInterval('pitch')} active game seconds, commission the lowest reachable band with demand at least x1.00, then offer order. Respects production sets, manual titles and Folio. Eight open commissions maximum. No offline actions or automatic repitch.</p><button data-act="automation:pitch-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !pitchUnlocked()) ? 'disabled' : ''}>Auto-pitch: ${on ? 'On' : 'Off'}</button><p role="status">${!api.challengeCommissionAllowed() ? 'Paused by the current challenge.' : !safe ? 'Unsupported pitch data preserved. Actions disabled.' : suspended.has('pitch') ? 'Off locally. Retry to save Off.' : text(status.pending ? status.notice : pitchNotice || status.notice || (on ? `Waiting for the next ${earnedInterval('pitch')}-second attempt.` : 'Off'))}</p>${status.pending ? '<button data-act="automation:pitch-retry">Retry commission</button>' : ''}<p>One brief first clear: 45-second attempts, keeping the usual unlock.</p></section>`;
+    return `<section class="o-card lg06b-pitch"><h3>Auto-pitch</h3><p>Imprint 2. ${progress}</p><details><summary>Action rules</summary><p>Every ${earnedInterval('pitch')} active game seconds, commission the lowest reachable band with demand at least x1.00, then offer order. Respects production sets, manual titles and Folio. Eight open commissions maximum. No offline actions or automatic repitch.</p></details><button data-act="automation:pitch-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !pitchUnlocked()) ? 'disabled' : ''}>Auto-pitch: ${on ? 'On' : 'Off'}</button><p role="status">${!api.challengeCommissionAllowed() ? 'Paused by the current challenge.' : !safe ? 'Unsupported pitch data preserved. Actions disabled.' : suspended.has('pitch') ? 'Off locally. Retry to save Off.' : text(status.pending ? status.notice : pitchNotice || status.notice || (on ? `Waiting for the next ${earnedInterval('pitch')}-second attempt.` : 'Off'))}</p>${status.pending ? '<button data-act="automation:pitch-retry">Retry commission</button>' : ''}</section>`;
   }
   const mediaSetting = () => ({version:1,enabled:false,manual:{complete:false},sequence:0,pending:null,...saved()?.media});
   let mediaElapsed = 0, mediaLast = null, mediaNotice = '';
@@ -138,7 +178,7 @@
     try { return Layers.current(api.state()).count >= 3; } catch { return false; }
   }
   function mediaReady() {
-    return api.state().challenge?.id !== 'paperonly' && mediaUnlocked() && mediaSetting().enabled && !mediaSetting().pending && !pending && !suspended.has('media') &&
+    return api.state().challenge?.id !== 'paperonly' && owned('media') && mediaUnlocked() && mediaSetting().enabled && !mediaSetting().pending && !pending && !suspended.has('media') &&
       !document.hidden && IMI.screen() === 'game' && api.automationAllowed() && !IMI.tour?.active() &&
       !document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])');
   }
@@ -155,7 +195,7 @@
     if (!api.mediaEnabled()) return '';
     const cfg = safe ? mediaSetting() : {}, on = cfg.enabled && !suspended.has('media'), q = safe ? api.mediaNext() : null;
     const text = v => String(v).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    return `<section class="o-card lg06c-media"><h3>Auto-media</h3><p>Free. Imprint 3 + introduction. ${cfg.manual?.complete ? 'Manual release saved.' : 'Release media by hand once; no old-release backfill.'}</p><p>Every ${earnedInterval('media')} active game seconds: next catalogue index, then division order. Auto cost at most 5% of wallet; ordinary manual affordability.</p><p>${q ? `Next: ${text(q.name)}, #${q.index+1}, ${Economy.fmt(q.cost)} bananas.` : 'No loaded, unlocked release within 5% of wallet.'}</p><button data-act="automation:media-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !mediaUnlocked()) ? 'disabled' : ''}>Auto-media: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'paperonly' ? 'Paused by the current challenge.' : !safe ? 'Unsupported media data preserved. Actions disabled.' : suspended.has('media') ? 'Off locally. Retry to save Off.' : cfg.pending ? 'Release held for exact debit recovery. Retry to finish.' : text(mediaNotice || (on ? `Waiting for the next ${earnedInterval('media')}-second attempt.` : 'Off'))}</p>${cfg.pending ? '<button data-act="automation:media-retry">Retry media release</button>' : ''}<p>Paper only first clear: 45-second attempts, keeping the usual unlock.</p></section>`;
+    return `<section class="o-card lg06c-media"><h3>Auto-media</h3><p>Imprint 3. ${cfg.manual?.complete ? 'Manual release saved.' : 'Release media by hand once.'}</p><details><summary>Action rules</summary><p>Every ${earnedInterval('media')} active game seconds: next catalogue index, then division order. Auto cost at most 5% of wallet; ordinary manual affordability.</p></details><p>${q ? `Next: ${text(q.name)}, #${q.index+1}, ${Economy.fmt(q.cost)} bananas.` : 'No loaded, unlocked release within 5% of wallet.'}</p><button data-act="automation:media-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !mediaUnlocked()) ? 'disabled' : ''}>Auto-media: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'paperonly' ? 'Paused by the current challenge.' : !safe ? 'Unsupported media data preserved. Actions disabled.' : suspended.has('media') ? 'Off locally. Retry to save Off.' : cfg.pending ? 'Release held for exact debit recovery. Retry to finish.' : text(mediaNotice || (on ? `Waiting for the next ${earnedInterval('media')}-second attempt.` : 'Off'))}</p>${cfg.pending ? '<button data-act="automation:media-retry">Retry media release</button>' : ''}</section>`;
   }
   const museSetting = () => ({version:1,enabled:false,...saved()?.muse});
   let museElapsed = 0, museLast = null, museNotice = '';
@@ -177,7 +217,7 @@
       !IMI.tour?.active() && !document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])');
   }
   function museReady(request = null) {
-    return !api.challengeSeatsLocked() && museUnlocked() && museSetting().enabled && !suspended.has('muse') && !pending &&
+    return !api.challengeSeatsLocked() && owned('muse') && museUnlocked() && museSetting().enabled && !suspended.has('muse') && !pending &&
       (!api.museStatus().pending || !!request) && museActive();
   }
   function museSuspend() { suspended.add('muse'); resetMuseClock(); }
@@ -205,7 +245,7 @@
     if (!api.museEnabled()) return '';
     const cfg = safe ? museSetting() : {}, on = cfg.enabled && !suspended.has('muse'), waiting = api.museStatus().pending;
     const progress = cfg.manual?.complete ? 'Two manual Muses saved.' : `Seat two different owned Muses by hand: ${cfg.manual?.ids?.length || 0}/2.`;
-    return `<section class="o-card lg06d-muse"><h3>Muse director</h3><p>Free. Imprint 5 + introduction. ${progress}</p><p>Every ${earnedInterval('muse')} active game seconds, improve one seat: best ready-title sale first, productive night typing second. No offline seating.</p><p>May replace royalty, keeper or division benefits.</p><button data-act="automation:muse-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || waiting || !museUnlocked()) ? 'disabled' : ''}>Muse director: ${on ? 'On' : 'Off'}</button><p role="status">${api.challengeSeatsLocked() ? 'Paused by the current challenge.' : !safe ? 'Unsupported settings preserved. Actions disabled.' : waiting ? 'Seating not saved. Retry the waiting choice.' : suspended.has('muse') ? 'Off locally. Turn On to resume.' : museNotice || (on ? `Waiting for the next ${earnedInterval('muse')}-second attempt. Pauses for Folio.` : 'Off')}</p>${waiting ? '<button data-act="automation:muse-retry">Retry seating</button>' : ''}<p>Fixed cast first clear: 45-second attempts, keeping the usual unlock.</p></section>`;
+    return `<section class="o-card lg06d-muse"><h3>Muse director</h3><p>Imprint 5. ${progress}</p><details><summary>Action rules</summary><p>Every ${earnedInterval('muse')} active game seconds, improve one seat: best ready-title sale first, productive night typing second. No offline seating.</p></details><p>May replace royalty, keeper or division benefits.</p><button data-act="automation:muse-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || waiting || !museUnlocked()) ? 'disabled' : ''}>Muse director: ${on ? 'On' : 'Off'}</button><p role="status">${api.challengeSeatsLocked() ? 'Paused by the current challenge.' : !safe ? 'Unsupported settings preserved. Actions disabled.' : waiting ? 'Seating not saved. Retry the waiting choice.' : suspended.has('muse') ? 'Off locally. Turn On to resume.' : museNotice || (on ? `Waiting for the next ${earnedInterval('muse')}-second attempt. Pauses for Folio.` : 'Off')}</p>${waiting ? '<button data-act="automation:muse-retry">Retry seating</button>' : ''}</section>`;
   }
   function validPrint(p) {
     return p === undefined || object(p) && p.version === 1 &&
@@ -260,11 +300,12 @@
   }
   let challengeWasReserved = false, challengeOff = false, challengeEdit = null, challengeElapsed = 0, challengeAttempt = false, challengeNotice = '';
   const challengeSetting = () => saved()?.challenge;
-  const challengeOn = () => !!(api?.challengeEnabled() && challengeSetting()?.enabled && !challengeOff && !challengeEdit);
+  const challengeOn = () => !!(api?.challengeEnabled() && (owned('challenge') || challengeSetting()?.active) && challengeSetting()?.enabled && !challengeOff && !challengeEdit);
   const challengeReserved = () => !!(api?.challengeEnabled() && (challengeSetting()?.active || challengeSetting()?.pending || challengeOn() && challengeSetting()?.selected?.length && !api.challengeFacts().nextChallenge));
   const challengeControl = () => challengeReserved() && !!challengeSetting()?.active;
   function challengeLocalOff() { challengeOff = true; challengeElapsed = 0; cancelNet(); printChoice(); }
   function challengeSave(fields) {
+    if (pending) { challengeNotice = 'Retry the waiting helper save first.'; api.mark(); return; }
     challengeElapsed = 0; challengeEdit = fields.enabled === false ? {enabled:false} : {...challengeEdit,...fields};
     const r = Rewards.challengeAction({action:'settings',fields:challengeEdit,expected:JSON.stringify(challengeSetting() ?? null)});
     if (r.ok) {challengeOff = !challengeEdit.enabled; challengeEdit = null; challengeNotice = '';}
@@ -299,7 +340,7 @@
   function challengeToggle() {
     if (challengeOn() || challengeEdit?.enabled) {challengeLocalOff(); challengeSaveOff(); return;}
     const s = api.state();
-    if (!AutoChallenge.earned(s) || challengeEdit) return;
+    if ((!owned('challenge') && !challengeSetting()?.active) || !AutoChallenge.earned(s) || challengeEdit || pending || admission) return;
     const enable = () => challengeSave({enabled:true,disclosed:true,selected:['smallcrew'],gold:JSON.parse(JSON.stringify(s.meta.challengeMastery.highest))});
     const el = document.createElement('div'); el.className = 'o-modal'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-labelledby','lg08l-title');
     el.innerHTML = `<div class="o-modal-card o-vault-gate"><h3 id="lg08l-title">${challengeSetting()?.active ? 'Resume exit only?' : 'Enable one Small Crew run?'}</h3><div class="o-vault-gate-content" tabindex="0" role="region" aria-label="One-run reset and Off limits"><p>One ordinary Printing pays your actual pending stars, then resets bananas, machines, typists, word bank, run tools, deals, divisions, Muses and garden. Ordinary history and permanent benefits remain. Requires Estate 3, saved manual Gold, already purchased Veteran Crew and at least one pending Printing star.</p><p>The clerk focuses and sells only the six Bamboo readers, including before Publisher. Real typists and free keepers supply every word. No purchases or grants. Each entry, focus, sale and exit waits 60 eligible game seconds. A1-A9 and Banana net pause during control; A10 is reserved with On/N preserved. Compatible PG remains authoritative; conflicting goals or archived readers wait for your choice.</p><p>Six sales clear ordinary Small Crew with no medal, repeat reward, DB or star payout. The following exit saves Off. Another run needs a new explicit enable. Manual changes hand over with Off. Off prevents new actions and preserves the challenge; already durable commands finish once. Failed Off saves need Retry. Reload follows durable settings. Completed Off can resume only its exit.</p></div><div class="o-row"><button class="o-btn" data-cancel>Keep Off</button><button class="o-btn gold" data-enable>Enable one run</button></div></div>`;
@@ -312,7 +353,7 @@
     if (!api.challengeEnabled()) return '';
     const c = challengeSetting(), r = c?.active, esc = x => String(x).replace(/[&<>"]/g,k => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
     const on = challengeOn(), requestedOn = challengeEdit?.enabled, reason = challengeNotice || (!AutoChallenge.valid(c) ? 'Unsupported settings preserved.' : !AutoChallenge.earned(api.state()) ? 'Requires Estate 3, introduction, ordinary Small Crew clear, genuine manual Gold and purchased Veteran Crew.' : !AutoChallenge.compatible(api.state()) ? 'Waiting for compatible PG: disabled or band 0/authored/no manual/no advance.' : api.challengeFacts().nextChallenge ? 'Manual next-challenge choice wins. Timer paused.' : !on ? 'Off. No new clerk actions.' : !challengeReady() ? 'Paused by current view, work or waiting save.' : 'Waiting for next fair turn.');
-    return `<section class="o-card lg08l-challenge"><h3>Auto-challenge: one Small Crew run</h3><p>Free earned clerk. Six fixed Bamboo readers, real production, actual market sales. No purchases, medals or repeat payout.</p><button data-act="automation:challenge-toggle" aria-pressed="${on}" ${!on && !requestedOn && (!AutoChallenge.earned(api.state()) || c?.active && c.active.phase !== 'completed-awaiting-exit' || challengeEdit) ? 'disabled' : ''}>${requestedOn ? 'Stop requested enable' : r?.phase === 'completed-awaiting-exit' && !on ? 'Resume exit only' : 'Auto-challenge: ' + (on ? 'On' : 'Off')}</button><p>Phase: ${esc(r?.phase ?? c?.last?.outcome ?? 'idle')}. Saved progress: ${r?.sold.length ?? c?.last?.sold.length ?? 0}/6. Target: ${esc(r?.target ?? 'next due focus')}. Turn: ${Math.floor(challengeElapsed)}/60 game seconds.</p><p role="status">${esc(reason)}</p>${challengeEdit ? '<button data-act="automation:challenge-retry">Retry Auto-challenge settings</button>' : ''}${r && r.phase !== 'completed-awaiting-exit' ? '<button data-act="automation:challenge-continue">Continue manually</button><button data-act="automation:challenge-abandon">Review Abandon</button>' : ''}<p>Off preserves the challenge. Durable commands finish once; unsaved Off is lost on reload. Completion exits Off without another reset. A10 is reserved; other helpers pause during clerk control.</p></section>`;
+    return `<section class="o-card lg08l-challenge"><h3>Auto-challenge: one Small Crew run</h3><p>One Small Crew run, six Bamboo readers. No purchases or repeat payout.</p><button data-act="automation:challenge-toggle" aria-pressed="${on}" ${!on && !requestedOn && (!AutoChallenge.earned(api.state()) || c?.active && c.active.phase !== 'completed-awaiting-exit' || challengeEdit) ? 'disabled' : ''}>${requestedOn ? 'Stop requested enable' : r?.phase === 'completed-awaiting-exit' && !on ? 'Resume exit only' : 'Auto-challenge: ' + (on ? 'On' : 'Off')}</button><p>Small Crew: ${r?.sold.length ?? c?.last?.sold.length ?? 0}/6 titles${r?.phase === 'completed-awaiting-exit' ? ' · ready to exit' : ''}.</p><p role="status">${esc(reason)}</p>${challengeEdit ? '<button data-act="automation:challenge-retry">Retry Auto-challenge settings</button>' : ''}${r && r.phase !== 'completed-awaiting-exit' ? '<button data-act="automation:challenge-continue">Continue manually</button><button data-act="automation:challenge-abandon">Review Abandon</button>' : ''}<p>Off preserves the challenge. Durable commands finish once; unsaved Off is lost on reload. Completion exits Off without another reset. A10 is reserved; other helpers pause during clerk control.</p></section>`;
   }
 
   function printUnlocked(source = api.state(), owner = api) {
@@ -331,17 +372,17 @@
   }
   function validPrintDecision(d, source, quote, owner = api) {
     const cfg = source.meta.automation?.print, r = d && printRule(d.earned,d.paid,d.seconds,d.N);
-    return !!(printUnlocked(source,owner) && cfg.enabled === true && cfg.disclosed === true && d?.version === 1 && d.seconds === 300 &&
+    return !!(owned('print',source) && printUnlocked(source,owner) && cfg.enabled === true && cfg.disclosed === true && d?.version === 1 && d.seconds === 300 &&
       d.N === (cfg.N ?? 30) && d.config === JSON.stringify(cfg) && d.earned === quote.earned && d.gain === quote.gain &&
       r?.eligible && d.gain === r.gain && d.gap === r.gap && d.estimate === r.estimate);
   }
   function printReady() {
-    if (challengeReserved() || !printUnlocked() || !printSetting().enabled || printSetting().disclosed !== true || printOff || printEdit || pending) return false;
+    if (challengeReserved() || !owned('print') || !printUnlocked() || !printSetting().enabled || printSetting().disclosed !== true || printOff || printEdit || pending) return false;
     try { api.printingReady(); return true; } catch { return false; }
   }
   function printAuthorize() { sampleUpdate(); return printAttempt && printReady() && !!printDecision(); }
   function savePrint(fields) {
-    if (!api.printingEnabled() || !supported(saved())) return;
+    if (!api.printingEnabled() || !supported(saved()) || pending) return;
     printChoice();
     printEdit = {...(printEdit || {}),...fields};
     const current = saved(), next = JSON.parse(JSON.stringify(current ?? {version:1}));
@@ -358,11 +399,11 @@
   function togglePrint() {
     printChoice();
     if (printSetting().enabled && !printOff || printEdit?.enabled) { turnPrintOff(); return; }
-    if (!printUnlocked() || printEdit || pending) return;
+    if (!owned('print') || !printUnlocked() || printEdit || pending || admission) return;
     const enable = () => savePrint({enabled:true,disclosed:true});
     if (printSetting().disclosed) return enable();
     const el = document.createElement('div'); el.className = 'o-modal'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-labelledby','lg08h-title');
-    el.innerHTML = `<div class="o-modal-card o-vault-gate"><h3 id="lg08h-title">Enable Auto-print?</h3><div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Auto-print reset losses"><p>Auto-print can start an ordinary Printing without asking again when your rule is met. It spends your current room to collect pending Legacy stars. You lose bananas, machines, typists, run upgrades, deals, divisions, Muses, garden and word bank. Awards, Legacy, earlier editions and saved Folio, Archive and Works materials and first claims follow ordinary Printing retention. It will not start during a challenge, hosted break, active work or waiting save. You can turn it Off in Automation.</p></div><div class="o-row"><button class="o-btn" data-cancel>Keep Off</button><button class="o-btn gold" data-enable>Enable Auto-print</button></div></div>`;
+    el.innerHTML = `<div class="o-modal-card o-vault-gate"><h3 id="lg08h-title">Enable Auto-print?</h3><div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Auto-print reset losses"><p>Auto-print can start an ordinary Printing without asking again when your rule is met. It spends your current room to collect pending Legacy stars. You lose bananas, machines, typists, run upgrades, deals, divisions, Muses, garden and word bank. Awards, Legacy, earlier editions and saved Folio, Archive and Works materials and first claims follow ordinary Printing retention. It will not start during a challenge, hosted break, active work or waiting save. You can turn it Off beside Second Printing.</p></div><div class="o-row"><button class="o-btn" data-cancel>Keep Off</button><button class="o-btn gold" data-enable>Enable Auto-print</button></div></div>`;
     const close = () => { el.remove(); api.mark(); };
     el.querySelector('[data-cancel]').onclick = close;
     el.querySelector('[data-enable]').onclick = () => { close(); if (printUnlocked()) enable(); };
@@ -375,11 +416,11 @@
   function printCard(safe) {
     if (!api.printingEnabled()) return '';
     const cfg = safe ? printSetting() : {enabled:false,N:30}, r = printRule(api.state().run.earned,samplePaid,sampleSeconds,cfg.N), on = safe && cfg.enabled && !printOff;
-    const reason = !safe ? 'Unsupported settings preserved.' : printOff && cfg.enabled ? 'Off locally. Retry to save Off.' : printNotice || (!printUnlocked() ? 'Requires Estate 1, introduction and a new saved manual Printing.' : !on ? 'Off' : !printReady() ? 'Paused by current work, view or waiting save.' : sampleSeconds < 300 ? 'Collecting a full visible production sample.' : !r?.rate ? 'No positive sampled income.' : !r.gain ? 'Waiting for a pending Legacy star.' : !r.eligible ? 'Next-star estimate is within your threshold.' : 'Rule met. Waiting for the next fair attempt.');
-    return `<section class="o-card lg08h-print"><h3>Auto-print</h3><p>Free. Estate 1 and one new saved manual Printing. Manual proof: ${cfg.manual?.complete ? 'saved' : 'needed'}.</p><button data-act="automation:print-toggle" aria-pressed="${!!on}" ${!safe || !on && (!printUnlocked() || printEdit || pending) ? 'disabled' : ''}>Auto-print: ${on ? 'On' : 'Off'}</button><label for="lg08h-N">Next-star threshold N, real minutes</label><input id="lg08h-N" type="number" min="5" max="240" step="1" value="${cfg.N}" ${!safe ? 'disabled' : ''}><button data-act="automation:print-apply" ${!safe ? 'disabled' : ''}>Apply threshold</button><p>Sample: ${sampleActive ? '' : 'Paused, '}${sampleSeconds}/300 visible real seconds. Production: ${r?.rate ? Economy.fmt(r.rate) : '--'} bananas/real second.</p><p>Pending stars: ${r?.gain ?? '--'}. Next star: ${r?.estimate == null ? '--' : r.estimate.toFixed(2) + ' real minutes'}. Attempt: ${Math.floor(printElapsed)}/60 eligible game seconds.</p><p role="status">${reason.replace(/[&<>"]/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</p>${printEdit ? '<button data-act="automation:print-retry">Retry Auto-print settings</button>' : ''}<p>On may reset the room and spend its bananas, machines and run progress. Ordinary Printing retention applies. Off prevents the next reset; an already committed Printing finishes once and cannot be cancelled.</p></section>`;
+    const reason = !safe ? 'Unsupported settings preserved.' : printOff && cfg.enabled ? 'Off locally. Retry to save Off.' : printNotice || (!printUnlocked() ? 'Requires Estate 1, introduction and a new saved manual Printing.' : !on ? 'Off' : !printReady() ? 'Paused while other work is active.' : sampleSeconds < 300 ? 'Collecting a full visible production sample.' : !r?.rate ? 'Waiting for income.' : !r.gain ? 'Waiting for a pending Legacy star.' : !r.eligible ? 'Next-star estimate is within your threshold.' : 'Ready for the next attempt.');
+    return `<section class="o-card lg08h-print"><h3>Auto-print</h3><p>Estate 1 and a new manual Printing. Proof: ${cfg.manual?.complete ? 'saved' : 'needed'}.</p><button data-act="automation:print-toggle" aria-pressed="${!!on}" ${!safe || !on && (!printUnlocked() || printEdit || pending) ? 'disabled' : ''}>Auto-print: ${on ? 'On' : 'Off'}</button><label for="lg08h-N">Wait threshold, real minutes</label><input id="lg08h-N" type="number" min="5" max="240" step="1" value="${cfg.N}" ${!safe ? 'disabled' : ''}><button data-act="automation:print-apply" ${!safe ? 'disabled' : ''}>Apply threshold</button><p>Sample: ${sampleActive ? '' : 'Paused, '}${sampleSeconds}/300 visible real seconds. Production: ${r?.rate ? Economy.fmt(r.rate) : '--'} bananas/real second.</p><p>Pending stars: ${r?.gain ?? '--'}. Next star: ${r?.estimate == null ? '--' : r.estimate.toFixed(2) + ' real minutes'}.</p><p role="status">${reason.replace(/[&<>"]/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</p>${printEdit ? '<button data-act="automation:print-retry">Retry Auto-print settings</button>' : ''}<p>On may reset the room and spend its bananas, machines and run progress. Ordinary Printing retention applies. Off prevents the next reset; an already committed Printing finishes once and cannot be cancelled.</p></section>`;
   }
   function supported(m, owner = api) {
-    return m === undefined || object(m) && m.version === 1 && validPrint(m.print) && (m.challenge === undefined || !!window.AutoChallenge?.valid(m.challenge)) && (!owner.museEnabled() || validMuse(m.muse)) && (!owner.mediaEnabled() || owner.validMedia(m.media)) && (!owner.gardenEnabled() || validGarden(m.garden,owner)) && (!owner.pitchEnabled() || owner.validPitch(m.pitch)) &&
+    return m === undefined || object(m) && m.version === 1 && validOwnership(m.ownership) && validPrint(m.print) && (m.challenge === undefined || !!window.AutoChallenge?.valid(m.challenge)) && (!owner.museEnabled() || validMuse(m.muse)) && (!owner.mediaEnabled() || owner.validMedia(m.media)) && (!owner.gardenEnabled() || validGarden(m.garden,owner)) && (!owner.pitchEnabled() || owner.validPitch(m.pitch)) &&
       (m.tiers === undefined || object(m.tiers) && m.tiers.version === 1 && helpers.every(id =>
         m.tiers[id] === undefined || Number.isInteger(m.tiers[id]) && m.tiers[id] >= 0 && m.tiers[id] <= 3)) &&
       ((m.tiers?.net ?? 0) > 0 ? m.net?.version === 2 : m.net?.version !== 2) && (m.desks === undefined || object(m.desks) && owner.automationDesks().every(({id}) => {
@@ -400,7 +441,9 @@
   }
   function reset() { resetMuseClock(); museNotice = ''; resetMediaClock(); mediaNotice = ''; resetPitchClock(); pitchNotice = ''; resetGardenClock(); gardenPending = null; gardenNotice = ''; netLease = null; cancelNet(true); elapsed = shopElapsed = coachElapsed = restoreElapsed = restoreCursor = turn = cursor = 0; pending = null; notice = ''; suspended.clear(); }
   function write(p) {
-    const result = p.upgrade ? api.buyAutomationTier(p.upgrade, p.level, p.expected) : api.commitAutomation(p.expected, p.next);
+    const result = p.admission ? api.admitAutomation(saved() === undefined ? null : JSON.stringify(saved()), p.admission) : p.base ? api.buyAutomationBase(p.base,p.expected) : p.upgrade ? api.buyAutomationTier(p.upgrade, p.level, p.expected) : api.commitAutomation(p.expected, p.next);
+    if (p.admission && result.ok) admission = null;
+    if (p.base && result.retryable === false) { pending = null; notice = result.error; api.mark(); return; }
     if (p.upgrade) {
       if (p.upgrade === 'hire') elapsed = cursor = 0;
       else if (p.upgrade === 'shop') shopElapsed = 0;
@@ -409,7 +452,7 @@
       else cancelNet();
       if (result.retryable === false) { pending = null; notice = result.error; api.mark(); return; }
     }
-    if (!p.upgrade) {
+    if (!p.upgrade && !p.base && !p.admission) {
       if (p.muse) resetMuseClock(); else if (p.media) resetMediaClock(); else if (p.pitch) resetPitchClock(); else if (p.garden) resetGardenClock(); else if (p.net) { if (!result.ok) cancelNet(); } else if (p.restore) restoreElapsed = restoreCursor = 0; else if (p.coach) coachElapsed = 0; else if (p.shop) shopElapsed = 0; else elapsed = 0;
     }
     if (!result.ok) { pending = p; notice = 'Could not save this change. Automation is paused. Retry to keep it.'; }
@@ -440,7 +483,7 @@
     return `<p>Level ${n} of 3. ${effect}. ${n === 3 ? 'Max level.' : `Next upgrade: ${q.price} Legacy star${q.price === 1 ? '' : 's'}. ${q.error || ''}`}</p>${n === 3 ? '' : `<button data-act="automation:upgrade" data-helper="${id}" data-level="${n}" ${pending || !q.ok ? 'disabled' : ''}>Upgrade ${id === 'net' ? 'net' : `auto-${id}`} (${q.price} star${q.price === 1 ? '' : 's'})</button>`}`;
   }
   function netReady() {
-    return !challengeControl() && !api.masteryActive() && netUnlocked() && supported(saved()) && netSetting().enabled && !pending && !suspended.has('net') &&
+    return !challengeControl() && !api.masteryActive() && owned('net') && netUnlocked() && supported(saved()) && netSetting().enabled && !pending && !suspended.has('net') &&
       !document.hidden && IMI.screen() === 'game' && api.automationAllowed() && !IMI.tour?.active() &&
       !document.querySelector('.mg01-overlay, .o-modal, .o-celebrate, .set-pop:not([hidden])');
   }
@@ -579,25 +622,72 @@
     const q = api.quoteAutomationHire(d.index, cfg.reservePercent);
     return q.ok ? `Waiting for next hire, one globally per ${interval('hire')} active game seconds` : q.error;
   }
-  function render(_, pane) {
-    const safe = supported(saved());
+  const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+  const destinations = {hire:['training','crew'], coach:['training','crew'], shop:['shop'], restore:['shop'], net:['floor'], garden:['lab'], pitch:['press','pitches'], media:['studios'], muse:['muses'], print:['legacy','press'], challenge:['legacy','challenges']};
+  const names = {hire:'Auto-hire',coach:'Auto-coach',shop:'Auto-shop',restore:'Auto-restore',net:'Banana net',garden:'Auto-garden',pitch:'Auto-pitch',media:'Auto-media',muse:'Muse director',print:'Auto-print',challenge:'Auto-challenge'};
+  function inlineCard(id, safe, slot) {
     const shop = safe ? shopSetting() : {enabled:false, priority:order}, off = suspended.has('shop') || !shop.enabled;
     const coachOff = !safe || suspended.has('coach') || !coachSetting().enabled;
     const restoreOff = !safe || suspended.has('restore') || !restoreSetting().enabled;
-    const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
-    api.morph(pane, `<div class="lg03-panel"><h2>Automation</h2>${api.masteryActive() ? '<p role="status">All helpers, including Banana net and Auto-print, are suspended for the manual Small Crew trial. Saved settings remain in place.</p>' : ''}<p>Visible active play only. Earned upgrades spend Legacy stars. Levels and settings survive Printing. Eight purchase helpers and Auto-print share one due helper per tick. Banana net keeps its separate item timing. No offline automation.</p>${challengeCard()}${printCard(safe)}${museCard(safe)}${mediaCard(safe)}${pitchCard(safe)}${gardenCard(safe)}${!safe ? '<p role="status">Unsupported automation save. It is preserved; automation and edits are disabled.</p>' : ''}<section class="o-card lg03-net"><h3>Banana net</h3>${tierCard('net', safe)}<p>${netUnlocked() ? 'Unlocked by Printing 6 and Deadline.' : 'Locked until Printing 6, Deadline completion and introduction completion.'} Selects ${safe ? [60,70,80,100][level('net')] : 60}% of new ordinary and golden bananas in separate deterministic sequences. You get the first game second to collect manually.</p><button data-act="automation:net-toggle" aria-label="Banana net" aria-pressed="${safe && !suspended.has('net') && netSetting().enabled}" ${!safe || pending || !netUnlocked() ? 'disabled' : ''}>Banana net: ${safe && !suspended.has('net') && netSetting().enabled ? 'On' : 'Off'}</button><p role="status">${safe ? escape(netStatus()) : 'Automatic catching disabled'}</p><p>Visible, unblocked play only. No catches behind minigames, dialogs, Settings or tours. No offline catches. Skips stay clickable. Selection never guarantees payout. Settings and sequences survive Printing.</p></section><section class="o-card lg03-restore"><h3>Auto-restore</h3>${tierCard('restore', safe)}<p>${restoreUnlocked() ? 'Unlocked by Printing 5 and Haiku.' : 'Locked until Printing 5, Haiku completion and introduction completion.'} Every 20 active game seconds, check desks in turn. Restore one level only with at least ${safe ? margin() : 2} times its current price in your wallet. Skip unowned desks and Mk III.</p><button data-act="automation:restore-toggle" aria-label="Auto-restore" aria-pressed="${!restoreOff}" ${!safe || pending || !restoreUnlocked() ? 'disabled' : ''}>Auto-restore: ${restoreOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(restoreStatus()) : 'Automatic restoration disabled'}</p><p>Settings stay across Printing. Restorations follow the usual Printing reset.</p></section><section class="o-card lg03-coach"><h3>Auto-coach</h3>${tierCard('coach', safe)}<p>${coachUnlocked() ? 'Unlocked by No Hands.' : 'Locked until No Hands is completed.'} Coach the lowest XP-level eligible monkey, then the least coached, then desk and crew order. Each current coaching cost must be at most 5% of your current wallet. Skip capped, unowned or too-expensive monkeys.</p><button data-act="automation:coach-toggle" aria-label="Auto-coach" aria-pressed="${!coachOff}" ${!safe || pending || !coachUnlocked() ? 'disabled' : ''}>Auto-coach: ${coachOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(coachStatus()) : 'Automatic coaching disabled'}</p><p>Settings stay across Printing. Run coaching follows the usual Printing reset.</p></section><section class="o-card lg03-shop"><h3>Auto-shop</h3>${tierCard('shop', safe)}<p>${shopUnlocked() ? 'Unlocked at Printing 3.' : 'Locked until Printing 3.'} Buy the first eligible item below, only when its price is strictly less than 10% of your current wallet. Skip owned, locked or too-expensive items.</p><button data-act="automation:shop-toggle" aria-label="Auto-shop" aria-pressed="${!off}" ${!safe || pending || !shopUnlocked() ? 'disabled' : ''}>Auto-shop: ${off ? 'Off' : 'On'}</button><p role="status">${suspended.has('shop') ? 'Off locally. Retry to save Off.' : pending ? 'Paused until Retry saves' : off ? 'Off' : 'Waiting for next purchase'}</p><ol class="lg03-priority">${shop.priority.map((id, i) => {
+    if (id === 'hire') {
+      const d = api.automationDesks().find(d => d.id === slot.dataset.desk && d.owned);
+      if (!d || !unlocked()) return '';
+      const cfg = safe ? setting(d.id) : {enabled:false, reservePercent:25}, off = suspended.has(d.id) || !cfg.enabled;
+      return `<section class="o-card lg03-desk"><h3>Auto-hire</h3><p>One hire every ${safe ? interval('hire') : 20}s across enabled desks.</p><button data-act="automation:toggle" data-desk="${d.id}" aria-label="Auto-hire on ${d.name}" aria-pressed="${!off}" ${!safe || pending ? 'disabled' : ''}>Auto-hire: ${off ? 'Off' : 'On'}</button><label for="lg03-reserve-${d.id}">Letter reserve: ${cfg.reservePercent}%</label><select id="lg03-reserve-${d.id}" data-lg03-reserve="${d.id}" ${!safe || pending ? 'disabled' : ''}>${Array.from({length:21}, (_, i) => i * 5).map(n => `<option value="${n}" ${n === cfg.reservePercent ? 'selected' : ''}>${n}%</option>`).join('')}</select><p>${safe ? status(d) : 'Automatic hiring disabled'}</p></section>`;
+
+    }
+    if (id === 'net') return netUnlocked() ? `<section class="lg03-net"><button data-act="automation:net-toggle" aria-label="Banana net" aria-pressed="${safe && !suspended.has('net') && netSetting().enabled}" ${!safe || pending ? 'disabled' : ''}>Banana net: ${safe && !suspended.has('net') && netSetting().enabled ? 'On' : 'Off'}</button><p role="status">${safe ? escape(netStatus()) : 'Unsupported settings preserved'}</p></section>` : '';
+    if (id === 'restore') return restoreUnlocked() ? `<section class="o-card lg03-restore"><h3>Auto-restore</h3><p>Every 20s; keep ${safe ? margin() : 2} times the price in bananas.</p><details><summary>How it works</summary><p>${restoreUnlocked() ? 'Unlocked by Printing 5 and Haiku.' : 'Locked until Printing 5, Haiku completion and introduction completion.'} Every 20 active game seconds, check desks in turn. Restore one level only with at least ${safe ? margin() : 2} times its current price in your wallet. Skip unowned desks and Mk III.</p></details><button data-act="automation:restore-toggle" aria-label="Auto-restore" aria-pressed="${!restoreOff}" ${!safe || pending || !restoreUnlocked() ? 'disabled' : ''}>Auto-restore: ${restoreOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(restoreStatus()) : 'Automatic restoration disabled'}</p></section>` : '';
+    if (id === 'coach') return coachUnlocked() ? `<section class="o-card lg03-coach"><h3>Auto-coach</h3><p>Coach for at most 5% of bananas.</p><details><summary>How it works</summary><p>${coachUnlocked() ? 'Unlocked by No Hands.' : 'Locked until No Hands is completed.'} Coach the lowest XP-level eligible monkey, then the least coached, then desk and crew order. Each current coaching cost must be at most 5% of your current wallet. Skip capped, unowned or too-expensive monkeys.</p></details><button data-act="automation:coach-toggle" aria-label="Auto-coach" aria-pressed="${!coachOff}" ${!safe || pending || !coachUnlocked() ? 'disabled' : ''}>Auto-coach: ${coachOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(coachStatus()) : 'Automatic coaching disabled'}</p></section>` : '';
+    if (id === 'shop') return shopUnlocked() ? `<section class="o-card lg03-shop"><h3>Auto-shop</h3><p>Spend under 10% of bananas, in this order.</p><details><summary>How it works</summary><p>${shopUnlocked() ? 'Unlocked at Printing 3.' : 'Locked until Printing 3.'} Buy the first eligible item below, only when its price is strictly less than 10% of your current wallet. Skip owned, locked or too-expensive items.</p></details><button data-act="automation:shop-toggle" aria-label="Auto-shop" aria-pressed="${!off}" ${!safe || pending || !shopUnlocked() ? 'disabled' : ''}>Auto-shop: ${off ? 'Off' : 'On'}</button><p role="status">${suspended.has('shop') ? 'Off locally. Retry to save Off.' : pending ? 'Paused until Retry saves' : off ? 'Off' : 'Waiting for next purchase'}</p><ol class="lg03-priority">${shop.priority.map((id, i) => {
       const name = items.find(([key]) => key === id)[1], q = api.quoteAutomationShop(id), disabled = !safe || pending || !shopUnlocked();
       return `<li><div><strong>${name}</strong><p>${Economy.fmt(q.price)} bananas · ${q.owned ? 'Owned' : q.error || 'Eligible'}</p></div><div class="lg03-order"><button data-act="automation:shop-move" data-item="${id}" data-direction="-1" aria-label="Move ${name} up" ${disabled || i === 0 ? 'disabled' : ''}>Up</button><button data-act="automation:shop-move" data-item="${id}" data-direction="1" aria-label="Move ${name} down" ${disabled || i === shop.priority.length - 1 ? 'disabled' : ''}>Down</button></div></li>`;
-    }).join('')}</ol><p>Settings stay across Printing. Run upgrades follow the usual Printing reset.</p></section><h3>Auto-hire · Printing 2</h3>${tierCard('hire', safe)}<p>One hire globally per ${safe ? interval('hire') : 20} active game seconds. Reserve protects a percentage of total held desk letters after each hire.</p>${api.automationDesks().filter(d => d.owned).map(d => {
-      const cfg = safe ? setting(d.id) : {enabled:false, reservePercent:25}, off = suspended.has(d.id) || !cfg.enabled;
-      return `<section class="o-card lg03-desk"><h3>${d.name}</h3><button data-act="automation:toggle" data-desk="${d.id}" aria-label="Auto-hire on ${d.name}" aria-pressed="${!off}" ${!safe || pending ? 'disabled' : ''}>Auto-hire: ${off ? 'Off' : 'On'}</button><label for="lg03-reserve-${d.id}">Letter reserve: ${cfg.reservePercent}%</label><select id="lg03-reserve-${d.id}" data-lg03-reserve="${d.id}" ${!safe || pending ? 'disabled' : ''}>${Array.from({length:21}, (_, i) => i * 5).map(n => `<option value="${n}" ${n === cfg.reservePercent ? 'selected' : ''}>${n}%</option>`).join('')}</select><p>${safe ? status(d) : 'Automatic hiring disabled'}</p></section>`;
-    }).join('')}<p role="status">${notice}</p>${pending ? '<button data-act="automation:retry">Retry save</button>' : ''}</div>`);
+    }).join('')}</ol></section>` : '';
+    const locked = {
+      garden:[api.gardenEnabled(),gardenUnlocked(),'Imprint 1, then plant and harvest a new crop by hand.'],
+      pitch:[api.pitchEnabled(),pitchUnlocked(),'Imprint 2, then commission and sell a new title by hand.'],
+      media:[api.mediaEnabled(),mediaUnlocked(),'Imprint 3, then release media by hand.'],
+      muse:[api.museEnabled(),museUnlocked(),'Imprint 5, then seat two different Muses by hand.'],
+      print:[api.printingEnabled(),printUnlocked(),'Estate 1, then complete a new manual Printing.'],
+      challenge:[api.challengeEnabled(),AutoChallenge.earned(api.state()),'Estate 3, Small Crew clear, manual Gold and purchased Veteran Crew.']
+    }[id];
+    if (locked && !locked[0]) return '';
+    if (locked && !locked[1] && saved()?.[id] === undefined) return `<section class="o-card"><h3>${names[id]}</h3><p>Unlock: ${locked[2]}${api.state().intro.done ? '' : ' Complete the introduction first.'}</p></section>`;
+    const builders = {garden:gardenCard,pitch:pitchCard,media:mediaCard,muse:museCard,print:printCard,challenge:challengeCard};
+    return builders[id]?.(safe) || '';
+  }
+  function afterRender({pane}) {
+    if (!pane) return;
+    const safe = supported(saved());
+    const slots = [...pane.querySelectorAll('[data-automation]')];
+    let recoveryShown = false;
+    for (const slot of slots) {
+      const id = slot.dataset.automation;
+      let html;
+      if (id === 'helpers') {
+        const conditions = ['Printing 2','No Hands clear','Printing 3','Printing 5 and Haiku','Printing 6 and Deadline','Imprint 1 and manual crop cycle','Imprint 2 and manual pitch sale','Imprint 3 and manual release','Imprint 5 and two manual Muses','Estate 1 and manual Printing','Estate 3, Small Crew, manual Gold and Veteran Crew'];
+        const purposes = ['Hire typists with a letter reserve.','Coach eligible crew.','Buy room upgrades in priority order.','Restore typewriters with a wallet margin.','Select new falling bananas.','Plant and harvest matching crops.','Commission and sell pitches.','Release the next media work.','Improve seated Muses.','Print when your saved rule is met.','Complete one Small Crew run.'];
+        html = '<p>Base helpers cost 1 Legacy star each. Buying keeps them Off. Complete each unlock and the introduction.</p>' + bases.map((id,i) => {
+          const q = api.quoteAutomationBase(id), have = owned(id);
+          return `<section class="o-card"><h3>${names[id]}</h3><p>${purposes[i]}</p><p>Unlock: ${conditions[i]}.</p><p>${have ? 'Owned' : 'Base: 1 Legacy star. ' + escape(q.error)}</p>${have ? helpers.includes(id) ? tierCard(id,safe) : '' : `<button data-act="automation:buy" data-helper="${id}" ${!q.ok || pending || admission ? 'disabled' : ''}>Buy ${names[id]} (1 star)</button>`}<button data-act="automation:settings" data-helper="${id}">Settings</button></section>`;
+        }).join('');
+      } else {
+        html = inlineCard(id,safe,slot);
+        if (html && !owned(id)) html = '<p>Buy this helper in Shop for 1 Legacy star.</p>' + html.replace(/<button([^>]*aria-pressed="false"[^>]*)>/g,'<button$1 disabled>');
+      }
+      if (html && !recoveryShown) {
+        html = `${api.masteryActive() ? '<p role="status">Helpers paused during manual Small Crew mastery.</p>' : ''}${!safe ? '<p role="status">Unsupported settings preserved. Helpers disabled.</p>' : ''}${pending ? `<p role="status">${escape(notice)}</p><button data-act="automation:retry">Retry save</button>` : ''}` + html;
+        recoveryShown = true;
+      }
+      api.morph(slot,html);
+    }
   }
   const hooks = {
-    tab:['automation', 'monkey', 'Automation', 'Earned active-play helpers', 'Auto', true],
-    visible:() => api.printingEnabled() && api.state().intro.done || unlocked() || coachUnlocked() || api.gardenEnabled() && api.state().intro.done, render,
-    init(reason, current) { api = current; reset(); resetSample(); printChoice(); if (reason === 'load') IMI.onScreen(() => { sampleUpdate(); cancelNet(); resetGardenClock(); resetPitchClock(); resetMediaClock(); resetMuseClock(); }); },
-    identitySettled:() => !pending && !gardenPending,
+    afterRender,
+    init(reason, current) { api = current; reset(); captureAdmission(); resetSample(); printChoice(); if (reason === 'load') IMI.onScreen(() => { sampleUpdate(); cancelNet(); resetGardenClock(); resetPitchClock(); resetMediaClock(); resetMuseClock(); }); },
+    admit, admissionPending:() => !!admission, owned, baseGate, settingsOwned, admissionAllowed:o => admission !== null && JSON.stringify(o) === JSON.stringify(admission),
+    baseRequestAllowed:(id,expected) => !admission && (!pending || pending.base === id && pending.expected === expected),
+    identitySettled:() => !admission && !pending && !gardenPending,
     challengeOn, challengeAuthorize, challengeReserved, challengeLocalOff, challengeSaveOff,
     reset, turnPrintOff, printChoice, printRule, printDecision, validPrintDecision, printAuthorize, printPosting, resetSample, sampleUpdate, printSampleToken:(committed = false) => sampleUpdate(committed) ? sampleGeneration : null, printSampleStatus:() => ({seconds:sampleSeconds,paid:samplePaid,active:sampleActive,elapsed:printElapsed,generation:sampleGeneration}), pendingGarden:() => !!gardenPending, pendingChoice:() => !!pending, earnedInterval, validMuse, museReady, museActive, museSuspend, museEvidence, museResult, mediaReady, pitchReady, validConfig:supported, pendingCrop, gardenEvidence, clearGardenPending, gardenAction, gardenReady,
     firstClearFloor(id, current) {
@@ -622,7 +712,7 @@
       if (netReady() && item.valid() && itemLiveDOM(item)) netItems[kind] = {item, admitted:false};
     },
     netCleared(kind, item) { if (netItems[kind]?.item === item) netItems[kind] = null; },
-    actions:{ 'challenge-toggle':challengeToggle, 'challenge-retry':() => {if (challengeEdit) challengeSave(challengeEdit);}, 'challenge-continue':() => {challengeLocalOff(); const r = Rewards.challengeAction({action:'continue'}); if (!r.ok) challengeNotice = r.error; api.mark();}, 'challenge-abandon':() => {if (confirm('Abandon this Small Crew run? No compensation or reward.')) {challengeLocalOff(); const r = Rewards.challengeAction({action:'abandon'}); if (!r.ok) challengeNotice = r.error; api.mark();}}, 'print-toggle':togglePrint, 'print-retry':() => { if (printEdit) savePrint(printEdit); }, 'print-apply':() => { const raw = document.getElementById('lg08h-N')?.value, N = Number(raw); printChoice(); if (!raw || !Number.isSafeInteger(N) || N < 5 || N > 240) { printNotice = 'Enter a whole number from 5 to 240. Settings unchanged.'; api.mark(); return; } savePrint({N}); }, 'muse-toggle':editMuse, 'muse-retry':() => { resetMuseClock(); const r = api.retryMuse(); if (!r.ok && r.retryable === false) { museNotice = r.error; api.mark(); } }, 'media-toggle':editMedia, 'media-retry':() => { resetMediaClock(); Rewards.retry(); }, 'pitch-toggle':editPitch, 'pitch-retry':() => { resetPitchClock(); api.retryCommission(); }, 'garden-toggle':() => editGarden('enabled', suspended.has('garden') || !gardenSetting().enabled), 'garden-retry':() => { if (gardenPending) gardenAction(gardenPending); }, upgrade, toggle:el => { const id = el.dataset.desk; edit(id, 'enabled', !setting(id).enabled); }, 'net-toggle':editNet, 'restore-toggle':editRestore, 'coach-toggle':editCoach, 'shop-toggle':() => editShop('enabled', !shopSetting().enabled), 'shop-move':move, retry:() => { if (pending) write(pending); } },
+    actions:{ buy:buyBase, settings:el => { const [tab,sub] = destinations[el.dataset.helper] || []; if (!tab) return; api.setTab(tab); if (sub) { document.querySelector(`[data-dept="${tab}"][data-sub="${sub}"]`)?.click(); api.setTab(tab); } if (tab !== 'floor') document.querySelector(`[data-automation="${el.dataset.helper}"]`)?.scrollIntoView({block:'nearest'}); }, 'challenge-toggle':challengeToggle, 'challenge-retry':() => {if (challengeEdit) challengeSave(challengeEdit);}, 'challenge-continue':() => {challengeLocalOff(); const r = Rewards.challengeAction({action:'continue'}); if (!r.ok) challengeNotice = r.error; api.mark();}, 'challenge-abandon':() => {if (confirm('Abandon this Small Crew run? No compensation or reward.')) {challengeLocalOff(); const r = Rewards.challengeAction({action:'abandon'}); if (!r.ok) challengeNotice = r.error; api.mark();}}, 'print-toggle':togglePrint, 'print-retry':() => { if (printEdit) savePrint(printEdit); }, 'print-apply':() => { const raw = document.getElementById('lg08h-N')?.value, N = Number(raw); printChoice(); if (!raw || !Number.isSafeInteger(N) || N < 5 || N > 240) { printNotice = 'Enter a whole number from 5 to 240. Settings unchanged.'; api.mark(); return; } savePrint({N}); }, 'muse-toggle':editMuse, 'muse-retry':() => { resetMuseClock(); const r = api.retryMuse(); if (!r.ok && r.retryable === false) { museNotice = r.error; api.mark(); } }, 'media-toggle':editMedia, 'media-retry':() => { resetMediaClock(); Rewards.retry(); }, 'pitch-toggle':editPitch, 'pitch-retry':() => { resetPitchClock(); api.retryCommission(); }, 'garden-toggle':() => editGarden('enabled', suspended.has('garden') || !gardenSetting().enabled), 'garden-retry':() => { if (gardenPending) gardenAction(gardenPending); }, upgrade, toggle:el => { const id = el.dataset.desk; edit(id, 'enabled', !setting(id).enabled); }, 'net-toggle':editNet, 'restore-toggle':editRestore, 'coach-toggle':editCoach, 'shop-toggle':() => editShop('enabled', !shopSetting().enabled), 'shop-move':move, retry:() => { if (pending) write(pending); } },
     tick({gameSeconds, replay}) {
       if (api.masteryActive()) {cancelNet(); resetSample(); printElapsed = 0; return;}
       const control = challengeControl();
@@ -668,13 +758,13 @@
       if (replay || document.hidden || IMI.screen() !== 'game' || pending || !supported(saved()) || !api.automationAllowed()) return;
       const desks = api.automationDesks();
       if (!Number.isFinite(gameSeconds) || gameSeconds <= 0) return;
-      const hireOn = !control && unlocked() && desks.some(d => setting(d.id).enabled && !suspended.has(d.id));
-      const shopOn = !control && shopUnlocked() && shopSetting().enabled && !suspended.has('shop');
-      const coachOn = !control && coachUnlocked() && coachSetting().enabled && !suspended.has('coach');
+      const hireOn = !control && owned('hire') && unlocked() && desks.some(d => setting(d.id).enabled && !suspended.has(d.id));
+      const shopOn = !control && owned('shop') && shopUnlocked() && shopSetting().enabled && !suspended.has('shop');
+      const coachOn = !control && owned('coach') && coachUnlocked() && coachSetting().enabled && !suspended.has('coach');
       elapsed = hireOn ? Math.min(interval('hire'), elapsed + gameSeconds) : 0;
       shopElapsed = shopOn ? Math.min(interval('shop'), shopElapsed + gameSeconds) : 0;
       coachElapsed = coachOn ? Math.min(interval('coach'), coachElapsed + gameSeconds) : 0;
-      const restoreOn = !control && restoreUnlocked() && restoreSetting().enabled && !suspended.has('restore');
+      const restoreOn = !control && owned('restore') && restoreUnlocked() && restoreSetting().enabled && !suspended.has('restore');
       restoreElapsed = restoreOn ? Math.min(20, restoreElapsed + gameSeconds) : 0;
       const due = [elapsed + 1e-9 >= interval('hire'), shopElapsed + 1e-9 >= interval('shop'), coachElapsed + 1e-9 >= interval('coach'), restoreElapsed + 1e-9 >= 20, gardenActive && gardenElapsed + 1e-9 >= earnedInterval('garden'), pitchActive && pitchElapsed + 1e-9 >= earnedInterval('pitch'), mediaActive && mediaElapsed + 1e-9 >= earnedInterval('media'), museActiveNow && museElapsed + 1e-9 >= earnedInterval('muse'), printActive && printElapsed + 1e-9 >= 60, challengeReady() && challengeElapsed + 1e-9 >= 60];
       let service = -1;

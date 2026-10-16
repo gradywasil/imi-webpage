@@ -1565,6 +1565,7 @@ html[data-style="pixel"] .o-lookname b { font-family: var(--font-px); font-size:
 .o-room { display: none; position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 html[data-room] .o-room { display: block; }
 html[data-room] #game > :not(.o-room) { position: relative; z-index: 1; }
+html[data-room] #game > .rail { z-index: 40; }
 .o-room > .o-wall { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 12px, transparent 12px 24px), linear-gradient(180deg, #0f3a26, #0a2a1c); }   /* Bamboo, and the base the others replace */
 :where(html[data-style="classic"]) .o-room > .o-wall { background: radial-gradient(ellipse 70% 60% at 50% 35%, rgba(120,217,160,.12), transparent 70%), linear-gradient(180deg, #1c4a2c, #0c2616); }
 .o-room > .o-desktop { top: var(--desk-top, 78%); height: auto; }
@@ -1690,17 +1691,14 @@ html[data-style="classic"] .o-vault-gate button { border-radius: 10px; }
 /* UI-01: bounded notices and shared action geometry retain each edition's paint. */
 #opsRoot[data-streak]::before { --heat: rgba(181,140,240,.3); }
 html[data-fx="low"] #opsRoot::before { animation: none !important; transition: none; }
-.o-buff { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; max-width: 100%; padding: 8px; text-align: center; overflow-wrap: anywhere; animation: none; }
+.o-buff { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; max-width: 100%; padding: 4px 8px; text-align: center; overflow-wrap: anywhere; animation: none; }
 .o-buff::after { display: none; }
 .o-buff b { font-weight: 400; }
-.o-buff span, .o-buff details { font-family: inherit; font-size: 14px; line-height: 1.25; }
-.o-buff details { width: 100%; }
-.o-buff summary { min-height: 40px; display: flex; flex-direction: column; justify-content: center; gap: 4px; cursor: pointer; }
+.o-buff span { font-family: inherit; font-size: 14px; line-height: 1.25; }
 .o-buff-meter { display: block; width: 100%; height: 5px; background: rgba(26,15,20,.25); }
 .o-buff-meter i { display: block; height: 100%; background: #3a210d; transform-origin: left; }
 #o-floor > .o-buffbar { position: absolute; top: 48px; left: 0; z-index: 7; padding: 0 8px; max-height: 45%; overflow: auto; pointer-events: none; }
-#o-floor > .o-buffbar .o-buff { flex: 0 1 260px; }
-#o-floor > .o-buffbar details { pointer-events: auto; }
+#o-floor > .o-buffbar .o-buff { flex: 1 1 120px; }
 .o-wrap > .o-buffbar .o-buff { flex: 1 1 120px; padding: 4px 8px; }
 .o-wrap > .o-buffbar .o-buff.chal { justify-content: center; }
 html[data-style="classic"] .o-buff { border-radius: 12px; }

@@ -123,7 +123,7 @@ window.VaultPlay = (() => {
     function command(c) {close(); const r=Rewards.lampAction(c); if(r?.error)notice=r.error;api.mark();return r;}
     function render(a,host) {
       const s=a.state(),p=s.prem,v=p.vault,id=pending(s),r=v?.purchases[id],held=Rewards.held();
-      let body=`<h2>Diamond Vault</h2><p>${p.earned+p.bought} Diamond Bananas. ${p.earned} earned, ${p.bought} bought.</p><p>Earned by playing. Game speed: x${speed(s)}. Current offline cap: ${a.vaultContext().cap/3600} real hours. Offline efficiency: ${Math.round(a.vaultContext().eff*100)}%.</p>`;
+      let body=`<h2>Diamond Vault</h2><p>${p.earned+p.bought} Diamond Bananas. ${p.earned} earned, ${p.bought} bought.</p><p>Game speed: x${speed(s)}. Current offline cap: ${a.vaultContext().cap/3600} real hours. Offline efficiency: ${Math.round(a.vaultContext().eff*100)}%.</p>`;
       if (notice) body+=`<p role="status">${esc(notice)}</p>`;
       if (quote) {
         body+=`<section class="lg02d-lamp-review" role="dialog" aria-modal="true" aria-labelledby="lampReviewTitle" tabindex="0"><h3 id="lampReviewTitle">${name(quote.itemId)}</h3><p>${quote.itemId === speedItem ? 'Permanent x1.25 productive game time online and offline. The offline cap counts real hours; efficiency and world, calendar and minigame clocks stay unchanged.' : `Offline cap: 24 real hours. Offline efficiency stays ${Math.round(a.vaultContext().eff*100)}%. Requires ordinary Night Lamp tier 3 for this first purchase.`}</p><p>Uses ${quote.cost} earned and 0 bought Diamond Bananas. After purchase: ${quote.remaining} total.</p><p>Saved items can be undone here for 10 real seconds. Reloading or leaving ends Undo. This is game currency, not a money payment.</p>${button('cancel','Cancel')}${button('confirm',`Spend ${quote.cost} Diamond Bananas`)}</section>`;
@@ -136,7 +136,7 @@ window.VaultPlay = (() => {
         const history=Object.entries(v?.purchases||{}).reverse(),slice=history.slice(page*20,page*20+20);
         if(history.length)body+=`<details><summary>Local Diamond Banana history (${history.length})</summary>${slice.map(([key,h])=>`<p>${esc(key)}. ${esc(new Date(h.createdWallMs).toLocaleString())}. ${name(h.itemId)}. ${h.cost} DB, ${h.debitEarned} earned / ${h.debitBought} bought. ${h.status==='undoable'?'Waiting to activate':h.status==='active'?'Active':'Undone'}.</p>`).join('')}${page?button('previous','Previous'):''}${history.length>(page+1)*20?button('next','Next'):''}</details>`;
       }
-      body+='<p>Items stay through Second Printing. This game saves on this browser. Clearing browser data can lose your save.</p><p>No ads. Ever. Every layer, challenge and automation can be reached by playing. Diamond Bananas buy the exact permanent upgrades shown here. No random prizes or timed offers.</p>';
+      body+='<p>Items stay through Second Printing. Clearing browser data can lose your save.</p><details class="o-updetail"><summary class="o-btn">About the Vault</summary><p>No ads. Every layer, challenge and automation is reachable by playing. Diamond Bananas buy the upgrades shown here. No random prizes or timed offers.</p></details>';
       a.morph(host,`<div class="lg02d-lamp">${body}</div>`);
     }
     function openReview(itemId) {try{quote=Rewards.lampReview(itemId);inert(true);api.mark();queueMicrotask(()=>{render(api,document.getElementById('o-vault'));document.querySelector('[data-act="vault:cancel"]')?.focus();});}catch(e){notice=e.message;api.mark();}}

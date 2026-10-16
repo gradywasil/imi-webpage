@@ -99,7 +99,7 @@ window.Estate = (() => {
     try {
       const s = c.state(), e = current(s); let q, why = '';
       try { q = quote(s); } catch(error) { why = error.message; }
-      c.morph(pane,`<section class="o-card layers"><h3>The Estate</h3><p>Estates: ${e.count}. Charters: ${e.charters}.</p><p>Local Imprints ${e.localImprints} / 5. Lifetime Imprints ${Layers.current(s).count}.</p><p>Printing ${s.printing + 1} / 8. Newly awarded lifetime stars ${s.legacy.total - e.starBaseline} / 360. Pending run stars do not count.</p><p>${q ? `Endow for ${q.gain} Charters.` : escape(why)}</p>${button('review','Review Estate reset',!q)}${button('back','Back to Imprints')}${window.Archive?.enabled && e.count > 0 ? button('archive','Open Archive') : '<p>Archive opens after the first Estate with its development flag.</p>'}${notice ? `<p role="alert">${escape(notice)}</p>` : ''}</section>`);
+      c.morph(pane,`<section class="o-card layers"><h3>The Estate</h3><p>Estates: ${e.count}. Charters: ${e.charters}.</p><p>Local Imprints ${e.localImprints} / 5. Lifetime Imprints ${Layers.current(s).count}.</p><p>Printing ${s.printing + 1} / 8. Awarded stars ${s.legacy.total - e.starBaseline} / 360. Run stars excluded.</p><p>${q ? `Endow for ${q.gain} Charters.` : escape(why)}</p>${button('review','Review Estate reset',!q)}${button('back','Back to Imprints')}${window.Archive?.enabled && e.count > 0 ? button('archive','Open Archive') : '<p>Endow your first Estate to open the Archive.</p>'}${notice ? `<p role="alert">${escape(notice)}</p>` : ''}</section>`);
     } catch(error) { c.morph(pane,`<section class="o-card layers"><h3>Estate unavailable</h3><p>${escape(error.message)}</p></section>`); }
   }
   function preview() {

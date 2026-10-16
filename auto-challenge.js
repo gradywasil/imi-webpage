@@ -48,10 +48,11 @@ window.AutoChallenge = (() => {
     return enabled && s.intro.done && s.chDone.smallcrew && s.meta.estate?.count >= 3 && s.legacy.ups.crew === 1 &&
       gold(s.meta.challengeMastery?.highest) && valid(config(s));
   }
+  const owned = s => s.meta.automation?.ownership?.version === 1 && s.meta.automation.ownership.owned?.challenge === true;
   function selection(s) {
     validate(s);
     const c = config(s);
-    if (!earned(s) || !c?.enabled || !c.disclosed || !same(c.selected,['smallcrew']) || active(s) || !compatible(s) || !integer(c.sequence + 1)) throw Error('A11 requires Estate 3, saved manual Gold, Veteran Crew and a supported enabled selection.');
+    if (!owned(s) || !earned(s) || !c?.enabled || !c.disclosed || !same(c.selected,['smallcrew']) || active(s) || !compatible(s) || !integer(c.sequence + 1)) throw Error('A11 requires Estate 3, saved manual Gold, Veteran Crew and a supported enabled selection.');
     return {version:1,mode:'smallcrew-auto',rule:1,sequence:c.sequence+1,gold:copy(s.meta.challengeMastery.highest),config:JSON.stringify(c)};
   }
   function enter(s,selection,at) {
@@ -77,5 +78,5 @@ window.AutoChallenge = (() => {
     if (p.action === 'settings') s.meta.automation.challenge = {...c,...p.fields};
     delete config(s).pending;
   }
-  return Object.freeze({enabled,ids:Object.freeze(ids),config,active,gold,valid,validate,compatible,earned,selection,enter,outcome});
+  return Object.freeze({enabled,ids:Object.freeze(ids),config,active,gold,valid,validate,compatible,earned,owned,selection,enter,outcome});
 })();

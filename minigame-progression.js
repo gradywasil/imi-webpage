@@ -48,7 +48,7 @@
   }
   function tree(m) {
     const supported = valid(m);
-    return `<section class="mg02-tree" aria-labelledby="mg02-title"><h3 id="mg02-title">Permanent ideas</h3><p>Optional factory benefits. Spend only Inspiration earned in breaks.</p>${Object.entries(NODES).map(([id, n]) => {
+    return `<section class="mg02-tree" aria-labelledby="mg02-title"><h3 id="mg02-title">Permanent ideas</h3><p>Spend Inspiration on permanent factory boosts.</p>${Object.entries(NODES).map(([id, n]) => {
       const has = supported && owned(m, id), locked = id !== 'warm-up' && !owned(m, 'warm-up');
       const state = has ? 'Owned' : locked ? 'Requires Warm-up' : supported && m.wallet >= n.cost ? 'Buy' : 'Need more Inspiration';
       return `<div class="mg02-node"><div><h4>${n.name}</h4><p>${n.effect}</p><p>${n.cost} Inspiration</p></div><button data-mg01="purchase" data-node="${id}" ${!supported || has || locked || m.wallet < n.cost || m.active || overlay || pending ? 'disabled' : ''}>${state}<span class="mg02-label">: ${n.name}</span></button></div>`;
@@ -84,7 +84,7 @@
   }
   function render(_, pane) {
     const m = saved(), active = valid(m) && m.active;
-    api.morph(pane, `<div class="mg01-choices"><h2>Break Room</h2><p>${summary()}</p><p>The factory keeps working. Earn up to 10 Inspiration over your first minute of play, across free retries. Each rewarded break lasts 3 active minutes.</p>${active ? `<p>Saved break: ${GAMES[active.game].name}, ${active.played.toFixed(1)}s played.</p><div class="mg01-actions"><button data-mg01="resume">Resume saved break</button><button data-mg01="saved-bank">Bank saved credit</button></div>` : Object.entries(GAMES).map(([id, g]) => `<p>${g.name}</p><div class="mg01-actions"><button data-mg01="rewarded" data-game="${id}">Rewarded</button><button data-mg01="practice" data-game="${id}">Free practice</button></div>`).join('')}${tree(m)}<p role="status">${notice}</p>${pending ? '<button data-mg01="retry">Retry save</button>' : ''}</div>`);
+    api.morph(pane, `<div class="mg01-choices"><h2>Break Room</h2><p>${summary()}</p><p>Play for Inspiration. The factory keeps working.</p><details class="o-updetail"><summary class="o-btn">Break rules</summary><p>Earn up to 10 Inspiration in your first minute of play, across free retries. Rewarded breaks last 3 active minutes.</p></details>${active ? `<p>Saved break: ${GAMES[active.game].name}, ${active.played.toFixed(1)}s played.</p><div class="mg01-actions"><button data-mg01="resume">Resume saved break</button><button data-mg01="saved-bank">Bank saved credit</button></div>` : Object.entries(GAMES).map(([id, g]) => `<p>${g.name}</p><div class="mg01-actions"><button data-mg01="rewarded" data-game="${id}">Rewarded</button><button data-mg01="practice" data-game="${id}">Free practice</button></div>`).join('')}${tree(m)}<p role="status">${notice}</p>${pending ? '<button data-mg01="retry">Retry save</button>' : ''}</div>`);
   }
   function launch(game, rewarded, resume = false) {
     if (overlay || pending || !ensure() || !GAMES[game]) return;

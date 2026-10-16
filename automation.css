@@ -1,23 +1,31 @@
-.lg03-panel { max-width: 760px; margin: 0 auto; }
+.lg03-inline:empty { display: none; }
+.lg03-inline { min-width: 0; scroll-margin-top: 64px; }
+.lg03-inline .o-card { margin: 8px 0; }
+.lg03-inline summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; }
+.lg03-inline p { overflow-wrap: anywhere; }
+[data-automation="net"] { flex: 1 0 100%; width: 100%; }
+.lg03-inline .lg03-net { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.lg03-inline .lg03-net button { width: auto; min-height: 40px; padding: 4px 8px; font-size: 12px; }
+.lg03-net p { flex: 1; min-width: 60px; margin: 0; font-size: 12px; }
 .lg06a-garden label { display: grid; gap: 6px; margin: 12px 0; }
 .lg06a-garden select { width: 100%; min-width: 0; }
 .lg06a-garden p { line-height: 1.5; }
-.lg03-panel > p, .lg03-desk p { line-height: 1.5; }
+.lg03-inline > p, .lg03-desk p { line-height: 1.5; }
 .lg03-desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 160px); gap: 12px; align-items: center; }
 .lg03-desk h3, .lg03-desk p { grid-column: 1 / -1; margin: 0; }
 .lg03-desk button { grid-column: 1 / -1; }
-.lg03-panel button, .lg03-panel select { min-height: 44px; padding: 8px 12px; font: inherit; color: inherit; background: #1a0f14; border: 2px solid currentColor; cursor: pointer; }
-.lg03-panel :disabled { opacity: .6; cursor: default; }
+.lg03-inline button, .lg03-inline select { min-height: 44px; padding: 8px 12px; font: inherit; color: inherit; background: #1a0f14; border: 2px solid currentColor; cursor: pointer; }
+.lg03-inline :disabled { opacity: .6; cursor: default; }
 .lg03-shop > p, .lg03-coach > p, .lg03-priority p { line-height: 1.5; }
 .lg03-priority { padding-left: 24px; }
 .lg03-priority li { margin: 16px 0; }
 .lg03-priority p { margin: 4px 0 8px; }
 .lg03-order { display: flex; gap: 8px; }
-.lg03-panel :is(button, select):focus-visible { outline: 3px solid #e7ab45; outline-offset: 3px; }
-html[data-style="pixel"] .lg03-panel :is(button, select) { border-radius: 0; }
-html[data-style="pixel"] .lg03-panel h2 { font-family: var(--font-px); font-size: 16px; line-height: 1.6; }
-html[data-style="classic"] .lg03-panel :is(button, select) { border-radius: 12px; }
-@media (max-width: 600px) { .lg03-panel { font-size: 18px; } .lg03-desk { grid-template-columns: minmax(0, 1fr) 100px; gap: 10px; } }
+.lg03-inline :is(button, select):focus-visible { outline: 3px solid #e7ab45; outline-offset: 3px; }
+html[data-style="pixel"] .lg03-inline :is(button, select) { border-radius: 0; }
+html[data-style="pixel"] .lg03-inline h2 { font-family: var(--font-px); font-size: 16px; line-height: 1.6; }
+html[data-style="classic"] .lg03-inline :is(button, select) { border-radius: 12px; }
+@media (max-width: 600px) { .lg03-inline { font-size: 13px; } .lg03-desk { grid-template-columns: minmax(0, 1fr) 100px; gap: 10px; } }
 
 .lg06b-pitch p { line-height: 1.5; overflow-wrap: anywhere; }
 .lg06b-pitch button { min-height: 40px; max-width: 100%; }

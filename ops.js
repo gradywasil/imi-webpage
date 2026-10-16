@@ -254,6 +254,7 @@
   if (!S.garden || !Array.isArray(S.garden.beds)) S.garden = { beds: [null, null] };
   const saveAcknowledged = () => {
     if (!writer?.owns()) return { ok: false, error: 'Not the save owner' };
+    if (extensions.get('automation')?.admissionPending()) return {ok:false,error:'Retry helper admission before saving new progress'};
     if (writer.localDisposition()) return {ok:false, error:'Historical boundary owns the save'};
     if (!writer.guard(S)) return { ok: false, error: 'Reward metadata or transaction unresolved' };
     if (!archiveSettle()) return {ok:false,error:'Archive income waiting to save'};
@@ -432,7 +433,7 @@
     }
     if (challengeExtraMs && S.challenge) S.challenge.start -= challengeExtraMs;
   }
-  const BUFF_INFO = { frenzy: ['FRENZY', ''], golden: ['GOLDEN KEYS', ''], snack: ['SNACK BREAK x1.5', ''], rush: ['ROYALTY RUSH x7', ''], sluggish: ['SPOILED: SLOW', 'bad'], critic: ['BAD REVIEW: ROYALTIES HALF', 'bad'] };
+  const BUFF_INFO = { frenzy: ['FRENZY', ''], golden: ['GOLDEN KEYS', ''], snack: ['SNACK BREAK', ''], rush: ['ROYALTY RUSH', ''], sluggish: ['SPOILED SNACK', 'bad'], critic: ['BAD REVIEW', 'bad'] };
   const anyBuff = () => Object.keys(buffs).some(k => productiveMono() < buffs[k]);
 
   /* ---- royalties: every title on the shelf keeps paying, a little, forever ---- */
@@ -1196,10 +1197,10 @@
         <button type="button" class="o-btn gold" data-act="release" data-id="${D.id}" ${chal('paperonly') || full || bananas.get() < plan.cost ? 'disabled' : ''}>${full ? 'Catalogue complete' : `${plan.n > 1 ? `Release x${plan.n}` : `Release ${/^[aeiou]/.test(D.unit) ? 'an' : 'a'} ${D.unit}`} · ${price(plan.cost)}`}</button></div>`;
     }).join('');
     morph($('#o-studios'), `
-      <p class="o-lede">Media turns your Archive into passive income. Each release picks a real manuscript from the monkey library and earns bananas every second; longer manuscripts earn a little more. Selling titles unlocks new divisions.</p>
+      <p class="o-lede">Release Archive manuscripts for steady banana income. Sell titles to unlock divisions.</p>
       <div class="o-row o-left"><span>Division income <b>${fmtRate(divRate())}/s</b> · ${fmt(total)} of ${fmt(pool)} manuscripts released</span></div>
       <div class="o-row o-left"><span class="o-dim">Release</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
-      <div class="o-grid">${cards}</div>`);
+      <div class="lg03-inline" data-own data-automation="media"></div><div class="o-grid">${cards}</div>`);
     hydrate($('#o-studios'));
   }
 
@@ -1315,9 +1316,9 @@
         ${owned ? (seatBtns || (seated ? '' : '<p class="o-dim">Unlock a slot by selling more titles.</p>')) : `<button type="button" class="o-btn gold" data-act="museinvite" data-id="${mu.id}" ${have < mu.cost ? 'disabled' : ''}>Invite</button>`}</div>`;
     }).join('');
     morph($('#o-muses'), `
-      <p class="o-lede">Muses are literary patrons. Invite a Muse once, then seat up to three of them (slots open as you sell titles) and swap them whenever you like. A seated Muse works for you passively.</p>
+      <p class="o-lede">Invite Muses, then seat them for bonuses. Sell titles to open up to three seats.</p>
       ${chal('fixedcast') ? `<p role="status">${chProgress()}</p>` : ''}
-      <h3 class="o-h">Seated (${M.seated.slice(0, slots).filter(Boolean).length}/${slots})</h3><div class="o-grid">${seatedCards}</div>
+      <div class="lg03-inline" data-own data-automation="muse"></div><h3 class="o-h">Seated (${M.seated.slice(0, slots).filter(Boolean).length}/${slots})</h3><div class="o-grid">${seatedCards}</div>
       <h3 class="o-h">The guest list</h3><div class="o-grid">${cards}</div>`);
     hydrate($('#o-muses'));
   }
@@ -1730,7 +1731,7 @@
     if (p.action === 'settings') {
       const fields = p.fields;
       if (!fields || Object.keys(fields).some(k => !['enabled','disclosed','selected','gold'].includes(k)) || typeof fields.enabled !== 'boolean' || !fields.enabled && Object.keys(fields).some(k => k !== 'enabled') ||
-          fields.enabled && (!AutoChallenge.earned(source) || fields.disclosed !== true || !layers.same(fields.selected,['smallcrew']) || !layers.same(fields.gold,source.meta.challengeMastery.highest) || run && run.phase !== 'completed-awaiting-exit') ||
+          fields.enabled && (!AutoChallenge.owned(source) && !run || !AutoChallenge.earned(source) || fields.disclosed !== true || !layers.same(fields.selected,['smallcrew']) || !layers.same(fields.gold,source.meta.challengeMastery.highest) || run && run.phase !== 'completed-awaiting-exit') ||
           !AutoChallenge.valid({...source.meta.automation?.challenge,...fields,version:1,sequence:source.meta.automation?.challenge?.sequence ?? 0,cursor:0,selected:fields.selected ?? source.meta.automation?.challenge?.selected ?? []})) throw Error('Unsupported A11 settings choice.');
     } else {
       if (!run || p.run !== run.id) throw Error('A11 run changed.');
@@ -2200,11 +2201,11 @@
         <p>You restart machines, typists and bananas.</p>
         <p>This run has earned <b>${fmtBig(earned)}</b> bananas: <b>${gain}</b> Legacy star${gain === 1 ? '' : 's'} if you print now.${gain >= 1 ? '' : ` (The first star needs ${fmtBig(cash(500000))}.)`} The next star arrives at ${fmtBig(nextStarAt())}.</p>
         <p class="o-dim">Legacy: <b>${L.stars}</b> unspent of ${L.total} earned (+${2 * L.total}% income).</p>
-        <button type="button" class="o-btn gold" data-act="printask" ${gain >= 1 ? '' : 'disabled'}>Go to press</button></div>`;
+        <button type="button" class="o-btn gold" data-act="printask" ${gain >= 1 ? '' : 'disabled'}>Go to press</button></div><div class="lg03-inline" data-own data-automation="print"></div>`;
     else if (sub === 'challenges') body = `<h3 class="o-h">Challenge for the next printing (optional)</h3>
         <div class="o-filters"><span class="o-seg">${chips}</span></div>
         ${picked ? `<p>${picked.desc} First-clear benefit: ${challengeReward(picked)}${S.chDone[picked.id] ? ' <span class="o-dim">(already earned; replaying pays nothing)</span>' : ''}</p>` : `<p class="o-dim">${challengePrototype ? 'More constraints unlock at Printing 5 after the introduction, with reward saving enabled. The four Imprint challenges also require a founded Imprint. First clears pay the listed benefit once.' : 'Constraints make a run harder in a literary way. Each is worth stars and a permanent perk the first time you finish it.'}</p>`}
-        ${masteryHTML()}
+        ${masteryHTML()}<div class="lg03-inline" data-own data-automation="challenge"></div>
         ${masteryActive() ? '' : active}
         ${done.length ? `<h3 class="o-h">Completed perks</h3><div class="o-grid">${done.map(c => `<div class="o-card"><h3>${c.name} ✓</h3><p>${c.perk}</p></div>`).join('')}</div>` : ''}`;
     else body = `<p class="o-dim">Legacy stars unspent: <b>${L.stars}</b></p><div class="o-grid">${legCards}</div>`;
@@ -3145,11 +3146,11 @@
     seasonsEnabled, seasonsDisabled, seasonsFreeze, seasonsPending, seasonsCommit,
     boardEnabled, boardNames, boardFreeze, boardPending, boardCommit,
     challengeEnabled, challengeValidate, challengeReady, challengePending, challengeFreeze, challengeCommit,
-    challengeOff:() => {printingHelper()?.challengeLocalOff(); printingHelper()?.challengeSaveOff(); if (ui.tab === 'automation') RENDER.automation();},
+    challengeOff:() => {printingHelper()?.challengeLocalOff(); printingHelper()?.challengeSaveOff(); mark();},
     challengeFacts:() => ({nextChallenge:ui.nextCh,manualFocus:!S.autoFocus && !!S.focus,available:AutoChallenge.ids.filter(id => !titleAvailable(RBY[id])),target:challengeActive()?.target,ready:!!challengeActive()?.target && canWrite(RBY[challengeActive().target])}),
     masteryEnabled, masteryActive, masteryValidate, masteryFreeze, masteryPending, masteryCommit,
     printingEnabled, printingReady, printingReview, printingFreeze, printingPending, printingCommit,
-    printingOff:() => { printingHelper()?.turnPrintOff(); if (ui.tab === 'automation') RENDER.automation(); },
+    printingOff:() => { printingHelper()?.turnPrintOff(); mark(); },
     printSampleAllowed(committed = false) {
       return printingEnabled() && !printingHelper()?.challengeReserved() && writer?.owns() && !paused && !writer.held() && !writer.localDisposition() &&
         (committed && writer.transacting() || progressing() && writer.guard(S)) && !window.VaultSaveGate?.blocked &&
@@ -3391,11 +3392,40 @@
         if (challengeActive() && !challengeHandover()) return {ok:false,error:'A11 handover waiting'};
         const current = S.meta.automation;
         if ((current === undefined ? null : JSON.stringify(current)) !== expected || !extensions.get('automation').validConfig(current) || !next || !extensions.get('automation').validConfig(next) || JSON.stringify(current?.tiers) !== JSON.stringify(next.tiers) || JSON.stringify(current?.garden?.manual) !== JSON.stringify(next.garden?.manual) || !pitchSame(current?.pitch?.manual,next.pitch?.manual) || !pitchSame(current?.pitch?.sale,next.pitch?.sale) || !pitchSame(current?.media?.manual,next.media?.manual) || (current?.media?.sequence ?? 0) !== (next.media?.sequence ?? 0) || !pitchSame(current?.media?.pending,next.media?.pending) || !museSame(current?.muse?.manual,next.muse?.manual) || current?.net && current.net.version !== next.net?.version) return { ok:false, error:'Automation save changed or is unsupported' };
+        if (!extensions.get('automation').settingsOwned(current,next)) return {ok:false,error:'Buy the base helper in Shop first; ownership is retained by its purchase owner'};
         if (!pitchSame(current?.challenge,next.challenge)) return {ok:false,error:'A11 settings use their named owner'};
         if (!pitchSame(current?.print?.manual,next.print?.manual) || !pitchSame(current?.print?.pending,next.print?.pending) || printingEnabled() && next.print?.enabled && (!(S.intro.done && S.meta.estate?.count >= 1 && current?.print?.manual?.complete) || next.print.disclosed !== true)) return {ok:false,error:'Auto-print proof or disclosure is unavailable'};
         const automation = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
         const result = layerChoiceResult('automation', Economy.saveStateAcknowledged({ ...S, meta:{ ...S.meta, automation }, lastSeen }));
         if (result.ok) { S.meta.automation = automation; S.lastSeen = lastSeen; mark(); }
+        return result;
+      },
+      admitAutomation(expected, ownership) {
+        const helper = extensions.get('automation'), current = S.meta.automation;
+        if (!extensionAPI.automationAllowed() || !helper.admissionAllowed(ownership) || current?.ownership !== undefined ||
+            !helper.validConfig(current) || (current === undefined ? null : JSON.stringify(current)) !== expected)
+          return {ok:false,error:'Helper admission changed. Retry after the current save settles.'};
+        const automation = {...pitchCopy(current ?? {version:1}),ownership:pitchCopy(ownership)}, lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const result = layerChoiceResult('automation',Economy.saveStateAcknowledged({...S,meta:{...S.meta,automation},lastSeen}));
+        if (result.ok) { S.meta.automation = automation; S.lastSeen = lastSeen; mark(); }
+        return result;
+      },
+      quoteAutomationBase(id) {
+        const helper = extensions.get('automation'), current = S.meta.automation;
+        const error = !helper.validConfig(current) || !Object.hasOwn({hire:1,coach:1,shop:1,restore:1,net:1,garden:1,pitch:1,media:1,muse:1,print:1,challenge:1},id) ? 'Unsupported helper' :
+          !current?.ownership ? 'Waiting for saved helper admission' : helper.owned(id) ? 'Owned' : !helper.baseGate(id) ? 'Helper is locked' :
+          !extensionAPI.automationAllowed() ? 'Save owner is unavailable' : !Number.isSafeInteger(S.legacy.stars) || S.legacy.stars < 1 ? 'Not enough Legacy stars' : '';
+        return {ok:!error,error,price:1,expected:current === undefined ? null : JSON.stringify(current)};
+      },
+      buyAutomationBase(id, expected) {
+        const helper = extensions.get('automation'), q = extensionAPI.quoteAutomationBase(id);
+        if (!q.ok || q.expected !== expected || !helper.baseRequestAllowed(id,expected)) return {ok:false,retryable:false,error:q.error || 'Helper quote changed. Choose Buy again.'};
+        const automation = pitchCopy(S.meta.automation), legacy = {...S.legacy,stars:S.legacy.stars - 1}, lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        automation.ownership.owned[id] = true;
+        if (id === 'hire') { for (const d of Object.values(automation.desks ?? {})) d.enabled = false; }
+        else if (automation[id]) automation[id].enabled = false;
+        const result = layerChoiceResult('automation',Economy.saveStateAcknowledged({...S,legacy,meta:{...S.meta,automation},lastSeen}));
+        if (result.ok) {S.meta.automation = automation; S.legacy = legacy; S.lastSeen = lastSeen; mark();}
         return result;
       },
       quoteAutomationTier(id) {
@@ -3404,7 +3434,7 @@
         const gate = { hire:S.printing >= 1, shop:S.printing >= 2, coach:!!S.chDone.hands,
           restore:S.printing >= 4 && !!S.chDone.haiku, net:S.printing >= 5 && !!S.chDone.timed };
         const error = !Object.hasOwn(gate, id) || !valid ? 'Unsupported automation tier' :
-          !S.intro.done || !gate[id] ? 'Helper is locked' : level === 3 ? 'Max level' :
+          !extensions.get('automation').owned(id) ? 'Buy the base helper first' : !S.intro.done || !gate[id] ? 'Helper is locked' : level === 3 ? 'Max level' :
           !extensionAPI.automationAllowed() ? 'Save owner is unavailable' :
           !Number.isSafeInteger(S.legacy.stars) || S.legacy.stars < price ? 'Not enough Legacy stars' : '';
         return { ok:!error, error, level, price };
@@ -3423,6 +3453,7 @@
         return result;
       },
       quoteAutomationHire(i, reservePercent) {
+        if (!extensions.get('automation').owned('hire')) return {ok:false,error:'Buy the base helper in Shop first'};
         if (S.printing < 1 || !S.intro.done) return { ok:false, error:'Requires Printing 2' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i], u = UPS.find(x => x.k === 'paw');
@@ -3440,6 +3471,7 @@
         return { ok:true, cost:plan.cost };
       },
       quoteAutomationRestore(i) {
+        if (!extensions.get('automation').owned('restore')) return {ok:false,error:'Buy the base helper in Shop first'};
         if (S.printing < 4 || !S.chDone.haiku || !S.intro.done) return { ok:false, error:'Requires Printing 5 and Haiku completion' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i];
@@ -3458,6 +3490,7 @@
           ({ index, paw, ...extensionAPI.quoteAutomationCoach(index, paw) })) : []);
       },
       quoteAutomationCoach(i, p) {
+        if (!extensions.get('automation').owned('coach')) return {ok:false,error:'Buy the base helper in Shop first'};
         if (!S.chDone.hands || !S.intro.done) return { ok:false, error:'Requires No Hands completion' };
         if (!extensionAPI.automationAllowed()) return { ok:false, error:'Progression or save is paused' };
         const d = Number.isInteger(i) && S.desks[i], t = d?.owned && Number.isInteger(p) && p >= 0 && p < d.paws && d.crew[p];
@@ -3471,6 +3504,7 @@
         return extensionAPI.quoteAutomationCoach(i, p).ok && !!coachTypist(i, p);
       },
       quoteAutomationShop(key) {
+        if (!extensions.get('automation').owned('shop')) return {ok:false,error:'Buy the base helper in Shop first'};
         if (!['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(key)) return { ok:false, error:'Unsupported shop item' };
         const price = SHOP[key], owned = !!S[key], lock = shopLock(key);
         const error = owned ? 'Owned' : lock || (S.printing < 2 || !S.intro.done ? 'Requires Printing 3' :
@@ -3649,7 +3683,7 @@
     if (!quiet) logIt(`The Jungle Press bought the rights to “${r.title}”: ${fmtBig(pay)} bananas${mk !== 1 ? ` (market x${mk.toFixed(2)})` : ''}. It will not be reprinted.`);
     if (!quiet) newsPush(`EXTRA: The Jungle Press buys “${r.title}” for ${fmtBig(pay)} bananas${mk >= 1.3 ? ', cashing in on a hot market' : mk <= .8 ? ', in a cold market. Ouch' : ''}.`);
     const n = Object.keys(S.written).length;
-    if (authoredSold() === BOOKS && !r.gen) celebrate(PX ? 'THE COMPLETE WORKS' : 'The Complete Works', PX ? 'EVERY TITLE SOLD' : 'Every title sold', `<p class="o-cel-sub">${BOOKS} parodies, written by monkeys. The shelf is full.</p>`);
+    if (!r.gen && !r.kid && !r.lib && authoredSold() === BOOKS) celebrate(PX ? 'ORIGINAL COLLECTION' : 'Original collection', PX ? 'EVERY AUTHORED TITLE SOLD' : 'Every authored title sold', `<p class="o-cel-sub">${BOOKS} parodies, written by monkeys.</p>`);
     else if (!quiet && n === 1) IMI.banner(PX ? 'FIRST PRINTING!' : 'First Printing!');
     else if (!quiet && n % 4 === 0) IMI.banner(PX ? 'BESTSELLER!' : 'Bestseller!');
     mark(); if (!quiet) save();
@@ -3916,7 +3950,7 @@
       <div class="o-info">
         <div class="o-tray" id="oTray" aria-label="Recent letters"></div>
         <div class="o-stats" id="oStats"></div>
-        <div class="o-sky" id="oSky"></div>
+        <div class="o-sky" id="oSky"></div><div class="lg03-inline" data-own data-automation="net"></div>
         <button type="button" class="o-btn sm o-keyhelp" data-act="keyhelp">Key guide</button>
         <div class="o-miles" id="oMiles"></div>
         <p class="o-guide" id="oGuide"></p>
@@ -4234,7 +4268,7 @@
     const tsub = ui.sub.training || 'crew';
     morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', window.Hall?.enabled ? 'Hall of Monkeys' : `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
       ${trainingPool ? trainingPool.controls(esc, fmt) : ''}
-      <p class="o-lede">Train hires and trains the monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>${trainingPool && trainingPool.mode() !== 'local' ? 'protected shared surplus' : 'letters from this desk'}</b> (${trainingPool && trainingPool.mode() !== 'local' ? 'the biggest removable piles' : 'the biggest piles'} go first). You hold ${fmt(have)}.</p>
+      <p class="o-lede">Hire and train monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>${trainingPool && trainingPool.mode() !== 'local' ? 'protected shared surplus' : 'letters from this desk'}</b> (${trainingPool && trainingPool.mode() !== 'local' ? 'the biggest removable piles' : 'the biggest piles'} go first). You hold ${fmt(have)}.</p>
       ${keepersReady() ? `<div class="o-row o-left"><span class="o-dim">Keeper</span>${keeperSeg(i)}</div>` : '<p class="o-dim">Letters stay here until your keeper is introduced.</p>'}
       <div class="o-row o-left"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
       <div class="o-grid">${UPS.map(u => {
@@ -4243,9 +4277,9 @@
         return `<div class="o-card"><div class="o-row"><h3>${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${lvl}/${max}</span></div>
           ${pips(lvl, max)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p><details class="o-updetail"><summary>How it works</summary><p>${u.desc}</p></details>${lock ? `<p class="o-warn">${lock}</p>` : ''}
           ${done ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${upEffect(u, d, lvl + (lock ? 1 : plan.n))}</p>`}
-          <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button></div>`;
+          <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button>${u.k === 'paw' ? `<div class="lg03-inline" data-own data-automation="hire" data-desk="${DESKS[i].id}"></div>` : ''}</div>`;
       }).join('')}</div>
-      <h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
+      <div class="lg03-inline" data-own data-automation="coach"></div><h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
       ${d.crew.length ? `<div class="o-grid o-crew">${d.crew.map((t, p) => {
         const l = levelOf(t.xp), nx = LVL_XP[l], pv = LVL_XP[l - 1], pct = nx ? Math.round(100 * (t.xp - pv) / (nx - pv)) : 100, hh = hatById(t.hat);
         return `<div class="o-card o-crewcard${t.shiny ? ' shiny' : ''}" data-r="${rarOf(t)}"><div class="o-row"><button type="button" class="o-name" data-act="rename" data-p="${p}" title="Rename">${t.shiny ? '✦ ' : ''}${esc(t.name)}</button><span class="o-lvl">Lv ${l}</span></div>
@@ -4278,8 +4312,8 @@
     const ownedBank = Object.keys(S.bank).sort((a, b) => a.length - b.length || a.localeCompare(b));
     morph(pane, `
       ${keeperStrip()}
-      <p class="o-lede">Words turns <b>${esc(D.name)}</b> letters into words. Any letters on this desk can combine; letters never move between desks, but finished words go to the shared bank.</p>
-      ${gardenHTML()}
+      <p class="o-lede">Make words with <b>${esc(D.name)}</b> letters. Finished words join the shared bank.</p>
+      ${gardenHTML()}<div class="lg03-inline" data-own data-automation="garden"></div>
       <div class="o-card"><h3>Letters</h3>
         <div class="o-letters">${Object.keys(FREQ).sort().map(c => `<div class="o-lcell${d.letters[c] ? '' : ' zero'}" title="${Economy.exact(d.letters[c] || 0)} ${c} letters"><b>${c}</b>${fmt(d.letters[c] || 0)}</div>`).join('')}</div></div>
       <div class="o-card"><h3>Make a ${D.lo}–${D.hi} letter word</h3>
@@ -4387,7 +4421,7 @@
       ui.shelfNew = 0;
       const written = Object.keys(S.written).length;
       body = `<div class="o-card o-shelf"><div class="o-row"><h3>Your bookshelf</h3><span class="o-dim">${written} sold · royalties ${fmtRate(royRate())}/s</span></div>${sold ? '<p class="o-dim">Tap a spine to read it.</p>' : '<p class="o-dim">Sell a title to put it here.</p>'}${shelfHTML()}</div>${boardEnabled() ? CommissionBoard.render(extensionAPI) : ''}${seasonsEnabled() ? Seasons.render(extensionAPI) : ''}`;
-    } else if (sub === 'pitches') body = pitchHTML();
+    } else if (sub === 'pitches') body = pitchHTML() + '<div class="lg03-inline" data-own data-automation="pitch"></div>';
     else if (sub === 'market') body = `<p class="o-lede">Publishers pay more or less depending on demand. Sell when your title’s band is HOT. The weather and the time of day change demand.</p>${skyCard()}${marketHTML()}`;
     else body = `<div class="o-card o-archive"><h3>The Archive</h3>
         <p class="o-dim" id="oArchNote" data-own>Loading the stacks…</p>
@@ -4447,7 +4481,7 @@
         return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, (chal('haiku') || masteryActive()) && i >= 2 ? masteryActive() ? 'Small Crew mastery allows only Bamboo and Hibiscus' : 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
       }).join('')}</div>
       <h3 class="o-h">Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span></h3><div class="o-grid">${DEALS.map(x => item(cart('d-' + x.id) + x.name, x.desc, x.cost, !!S.deals[x.id], soldCount() < x.need ? `Needs ${x.need} sold title${x.need > 1 ? 's' : ''}` : '', 'deal', x.id)).join('')}</div>
-      <h3 class="o-h">Restorations</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>
+      <h3 class="o-h">Restorations</h3><div class="lg03-inline" data-own data-automation="restore"></div><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>
       <h3 class="o-h">Keepers</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? keeperCard(i, have) : '').join('')}</div>
       <h3 class="o-h">Garden</h3><div class="o-grid">${gardenCard(have)}</div>
       <h3 class="o-h">Market tools</h3><div class="o-grid">
@@ -4456,7 +4490,7 @@
         ${item(cart('s-agent') + 'Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'agent')}
         ${item(cart('s-analyst') + 'Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'analyst')}
       </div>
-      <h3 class="o-h">Room-wide upgrades</h3><div class="o-grid">
+      <h3 class="o-h">Helpers</h3><div class="lg03-inline" data-own data-automation="helpers"></div><h3 class="o-h">Room-wide upgrades</h3><div class="lg03-inline" data-own data-automation="shop"></div><div class="o-grid">
         ${item(cart('s-hold') + 'Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold')}
         ${item(cart('s-metro') + 'Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, blue ? '' : 'Unlocks with Lagoon Sprint', 'metro')}
         ${item(cart('s-dbl') + 'Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, !blue ? 'Unlocks with Lagoon Sprint' : !S.hold ? 'Needs Hold to type' : '', 'dbl')}
@@ -4507,11 +4541,6 @@
   }
   const buffBar = document.createElement('div'); buffBar.className = 'o-buffbar'; buffBar.setAttribute('aria-live', 'polite');
   const buffDisplay = {};
-  const BUFF_DETAILS = {
-    frenzy: 'All typists work twice as fast.', golden: 'Every tap types two letters.',
-    snack: 'Typists work 50% faster.', rush: 'Royalties pay seven times as much.',
-    sluggish: 'Typists work more slowly.', critic: 'Royalties are halved.'
-  };
   function renderBuffs() {
     if (!progressing()) return;
     const now = productiveMono(), on = Object.keys(buffs).filter(buffOn), floor = ui.tab === 'floor';
@@ -4520,13 +4549,13 @@
       if (floor) host.prepend(buffBar); else host.insertBefore(buffBar, $('.o-panel'));
     }
     for (const k of Object.keys(buffDisplay)) if (!on.includes(k)) delete buffDisplay[k];
-    morph(buffBar, on.map((k, i) => {
+    morph(buffBar, on.map(k => {
       const remaining = Math.max(0, buffs[k] - now), old = buffDisplay[k];
       if (!old || remaining > old.remaining + 250) buffDisplay[k] = { total: remaining };
       const display = buffDisplay[k]; display.remaining = remaining;
-      const ratio = Math.min(1, remaining / display.total), desc = BUFF_DETAILS[k];
+      const ratio = Math.min(1, remaining / display.total);
       const meter = `<span class="o-buff-meter" role="img" aria-label="${esc(BUFF_INFO[k][0])}: ${Math.ceil(remaining / 1000)} seconds remaining"><i style="transform:scaleX(${ratio.toFixed(4)})"></i></span>`;
-      return `<div class="o-buff ${k} ${BUFF_INFO[k][1]}">${floor && i < 2 ? `<b>${BUFF_INFO[k][0]}</b><span class="o-buff-desc">${desc}</span>${meter}` : `<details><summary aria-label="${BUFF_INFO[k][0]}: read effect details"><b>${BUFF_INFO[k][0]}</b>${meter}</summary><span>${desc}</span></details>`}</div>`;
+      return `<div class="o-buff ${k} ${BUFF_INFO[k][1]}"><b>${BUFF_INFO[k][0]}</b>${meter}</div>`;
     }).join('') + (S.challenge ? `<div class="o-buff chal"><b>OULIPO: ${esc(chDef(S.challenge.id).name)}</b><span>${chProgress()}</span></div>` : ''));
     const st = $('#oStage'); if (st) { st.classList.toggle('frenzy', buffOn('frenzy')); st.classList.toggle('golden', buffOn('golden')); }
     const r = royRate() + divRate(); hudRate.textContent = r > 0 ? `+${fmtRate(r)}/s` : ''; hudRate.hidden = r <= 0;
@@ -4765,6 +4794,7 @@
     if (!progressing()) return;
     const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
     const act = el.dataset.act;
+    if (extensions.get('automation')?.admissionPending() && !act.startsWith('automation:')) return;
     if (challengeActive() && /^(folio|archive|works-demo|works-play|automation):/.test(act) && !act.startsWith('automation:challenge-') && !challengeHandover()) return;
     if (ACTIONS[el.dataset.act]) ACTIONS[el.dataset.act](el);
     else { const [id, name] = el.dataset.act.split(':'); extensions.get(id)?.actions?.[name]?.(el, extensionAPI); }
@@ -4792,6 +4822,10 @@
   /* ================= main loop ================= */
   let coinClock = 0, chalClock = 0, gardenClock = 0, marketClock = 0, awardClock = 0, royAcc = 0, royClock = 0, royFloat = 2.4, goldIn = 25 + rand() * 25, buffWas = false, last = performance.now(), keeperT = [], focusClock = 0, saveT = 0, renderT = 0, renderGap = .25;
   function tick(frame = null) {
+    if (!frame && extensions.get('automation')?.admissionPending()) {
+      extensions.get('automation').admit();
+      if (extensions.get('automation').admissionPending()) { render(); return; }
+    }
     if (!progressing()) return;
     if (!frame && printingEnabled()) printingHelper()?.sampleUpdate();
     const now = frame?.now ?? performance.now(), realDt = frame?.realDt ?? Math.min(0.25, (now - last) / 1000), multiplier = frame?.multiplier ?? speed(), dt = realDt * multiplier;

@@ -1,7 +1,7 @@
 /* Service worker: makes the site installable and playable offline.
    Network first (so a deploy is picked up as soon as you are online), falling back to the last copy we saw.
    The game shell is stored up front; everything else (library texts, archives, fonts) is stored the first time it is used. */
-const VERSION = 'imi-v79';
+const VERSION = 'imi-v80';
 const SHELL = ['./', 'index.html', 'classic.html', 'library.html', 'styles.css', 'classic.css', 'ops.css', 'pickups.css', 'classic-fx.css', 'pixel-fx.css', 'library.css',
   'game-features.js', 'awards-catalogue.js', 'seasons.js', 'seasons.css', 'hall.js', 'hall.css', 'commission-board.js', 'commission-board.css', 'works.js', 'works-catalogue.js', 'works-play.js', 'archive.js', 'estate.js', 'layers.js', 'layers.css', 'folio.js', 'training-pool.js', 'production-goal.js', 'production-goal.css', 'auto-challenge.js', 'automation.js', 'automation.css', 'minigame-progression.js', 'minigame-progression.css', 'minigames/hosted-bridge.js', 'minigames/mg-core.js', 'minigames/mg-art.js', 'minigames/mg-art3.js', 'minigames/mg-crew.js', 'minigames/mg.css', 'minigames/barrel-catch.html', 'minigames/barrel-catch.js', 'minigames/coconut-shuffle.html', 'minigames/coconut-shuffle.js',
   'vault-save-gate.js', 'rewards.js', 'vault.js', 'vault-play.js', 'economy.js', 'core.js', 'app.js', 'classic.js', 'classic-fx.js', 'pixel-fx.js', 'pixel.js', 'crew-art.js', 'crew-svg.js', 'ops.js', 'tour.js', 'pickups.js', 'weather.js', 'mood.js', 'world.js', 'style-swap.js', 'readers.js', 'readers-kids.js', 'readers-w5.js', 'readers-w7.js', 'readers-w9.js', 'library.js', 'pwa.js',
