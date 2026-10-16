@@ -55,14 +55,16 @@
     };
   })();
 
-  /* ---------- pixel stage: a canvas at art resolution, upscaled by a whole number so every pixel stays square ---------- */
+  /* ---------- pixel stage: W x H are the game's own units; the canvas holds K x K pixels per unit (default 3) so sprites can be drawn at the main game's finer
+     resolution. g is pre-scaled by K, so existing unit-based drawing is unchanged; st.hi() draws a K-times-detailed sprite at its natural size. ---------- */
   function stage(host, W, H, opts = {}) {
-    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.className = 'mg-cv'; host.appendChild(cv);
-    const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
-    const st = { cv, g, W, H, sc: 3 };
+    const K = opts.K || 3, cv = document.createElement('canvas'); cv.width = W * K; cv.height = H * K; cv.className = 'mg-cv'; host.appendChild(cv);
+    const g = cv.getContext('2d'); g.imageSmoothingEnabled = false; g.setTransform(K, 0, 0, K, 0, 0);
+    const st = { cv, g, W, H, K, sc: 3 };
+    st.hi = (img, x, y, flipX) => { const w = img.width / K, hh = img.height / K, rx = Math.round(x * K) / K, ry = Math.round(y * K) / K; if (flipX) { g.save(); g.translate(rx + w, ry); g.scale(-1, 1); g.drawImage(img, 0, 0, w, hh); g.restore(); } else g.drawImage(img, rx, ry, w, hh); };
     function fit() {
       const padX = opts.padX || 8, padY = Math.max(opts.padY || 0, 66), FR = 11;          /* the wooden frame adds about 11 art pixels around the canvas */
-      st.sc = Math.max(1, Math.floor(Math.min((innerWidth - padX) / (W + FR), (innerHeight - padY) / (H + FR))));
+      st.sc = Math.max(1, Math.floor(Math.min((innerWidth - padX) / (W + FR), (innerHeight - padY) / (H + FR)) * K) / K);
       host.style.setProperty('--sc', st.sc + 'px');
       host.style.setProperty('--u', clamp(W * st.sc / 360, .8, 2.2).toFixed(2));
       host.style.width = W * st.sc + 'px'; host.style.height = H * st.sc + 'px';
@@ -116,6 +118,7 @@
     const mute = document.getElementById('mute'); if (mute) { mute.textContent = ''; mute.style.backgroundImage = icon(sfx.on ? 'snd' : 'mute'); }
   }
   function boot() {
+    if (new URLSearchParams(location.search).get('flat')) document.head.appendChild(Object.assign(document.createElement('style'), { textContent: '.backdrop,.mg-nav{display:none!important}*{animation-duration:0s!important;animation-delay:0s!important}' }));
     decorateNav();
     backdrop(); PXA.install();
     const dr = document.getElementById('drifters');
@@ -127,17 +130,17 @@
 
   /* ---------- tiny DOM helpers ---------- */
   const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
-  function spriteImg(cv, mult = 3, cls = '') { const i = h('canvas', 'mg-ico ' + cls); i.width = cv.width; i.height = cv.height; i.getContext('2d').drawImage(cv, 0, 0); i.style.width = `calc(${cv.width * mult}px * var(--u, 1))`; i.style.height = `calc(${cv.height * mult}px * var(--u, 1))`; return i; }
+  function spriteImg(cv, mult = 3, cls = '') { if (cv.hi) mult /= 3; const i = h('canvas', 'mg-ico ' + cls); i.width = cv.width; i.height = cv.height; i.getContext('2d').drawImage(cv, 0, 0); i.style.width = `calc(${cv.width * mult}px * var(--u, 1))`; i.style.height = `calc(${cv.height * mult}px * var(--u, 1))`; return i; }
 
   /* ---------- shared HUD + overlay: score, hearts, combo chip, meter, banner, flash, floating text ---------- */
   function ui(host, st, scoreIcon, maxHearts = 3) {
-    const A = MGArt.build(), q = {};
+    const A = MGArt.build(), q = {}, HEART = window.MGArt3 ? MGArt3.build() : A;
     const hud = h('div', 'mg-hud'); host.appendChild(hud);
     const scBox = h('div', 'sc'); scBox.append(spriteImg(scoreIcon || A.banana, 2), h('b', '', '0')); hud.appendChild(scBox);
     const scNum = scBox.querySelector('b');
     q.combo = h('div', 'mg-combo'); hud.appendChild(q.combo);
     const hearts = h('div', 'mg-hearts'); hud.appendChild(hearts);
-    const heartEls = Array.from({ length: maxHearts }, () => { const e = spriteImg(A.heart, 2); hearts.appendChild(e); return e; });
+    const heartEls = Array.from({ length: maxHearts }, () => { const e = spriteImg(HEART.heart, 2); hearts.appendChild(e); return e; });
     q.meter = h('div', 'mg-meter', '<b></b>'); host.appendChild(q.meter); q.meterFill = q.meter.firstChild;
     const banner = h('div', 'mg-banner'); host.appendChild(banner);
     const flash = h('div', 'mg-flash'); host.appendChild(flash);
@@ -159,7 +162,7 @@
     q.setScore = n => { target = n; if (n === 0 || n < shown) { shown = n; scNum.textContent = n; return; } if (!raf) roll(); };
     q.setHearts = (n, animate) => heartEls.forEach((e, i) => {
       const on = i < n ? '1' : '0'; if (e.dataset.on === on) return; const was = e.dataset.on; e.dataset.on = on;
-      const c = e.getContext('2d'); c.clearRect(0, 0, 9, 8); c.drawImage(on === '1' ? A.heart : A.heartOff, 0, 0);
+      const c = e.getContext('2d'); c.clearRect(0, 0, e.width, e.height); c.drawImage(on === '1' ? HEART.heart : HEART.heartOff, 0, 0);
       if (animate && on === '0') retrigger(e, 'lose'); else if (was === '0' && on === '1') retrigger(e, 'gain');
     });
     q.setCombo = (n, m) => { q.combo.classList.toggle('on', n >= 3); q.combo.innerHTML = `${n} COMBO${m > 1 ? ` <i>x${m}</i>` : ''}`; };
@@ -194,7 +197,7 @@
     S.title = () => {
       setPhase('title'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; ui.hideBanner();
       const leg = h('div', 'mg-legend');
-      (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
+      (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.hi ? 2 : cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
       const btns = h('div', 'mg-modes'); modes.forEach((m, i) => btns.appendChild(ui.btn(m.label, (m.cls || '') + (i === 0 ? ' primary' : ''), () => { S.start(m.k); })));
       const best = modes.map(m => (modes.length > 1 ? m.label.split(' ')[0] + ' ' : '') + S.best(m.k)).join('  ·  ');
       const ttl = h('h1', 'mg-title', o.title), longest = Math.max(...o.title.replace(/<[^>]+>/g, ' ').split(/\s+/).map(w => w.length));

@@ -1,0 +1,17 @@
+# Main integration, 2026-10-15
+
+Owner requested merging the long-game work into main, followed by the new minigame worktree changes. Long-game source, task/design/acceptance documents, tests and tool source were committed as 06402b2b, then main advanced to that commit. The five new worktree-minigames commits end at 2893e6ff and are included by the subsequent merge commit containing this report. No push, deployment or feature-default activation was requested or performed.
+
+Five merge conflicts were resolved in minigames/mg-core.js, barrel-catch.js/html and coconut-shuffle.js/html. The incoming supersampled rendering, shared detailed art and crew modules are retained. The long-game hosted bridge loading, session start/phase/advance/finish/quit and per-game input hooks are retained. No reward formula or progression gate was changed. sw.js advances imi-v77 to imi-v78 and includes mg-art3.js and mg-crew.js in its existing shell cache.
+
+Git text entries were normalized using the existing core.autocrlf setting. Existing working-file bytes outside merged paths were preserved; no unrelated content change was found. The separately modified art-integration recovery stderr log is unchanged and uncommitted. The nested minigame worktree remains clean at its original branch tip. Historical QA captures, copied fixture trees, generated JSON outputs and profiles remain local and were not added to Git. Some historical browser test tools depend on those local captures and their original environment; this merge does not make those suites portable or broadly accepted.
+
+## Verification
+
+- Syntax checks passed on 34 changed root/minigame JavaScript files before merging and on all 21 minigame JavaScript files plus sw.js after resolution.
+- The focused economy/Vault/funding set has the same result before and after: 83 tests, 79 passing, four failing. Existing failures are the null, number, string and array cold-recognition assertions in tests/vault-startup-gate.test.cjs. They existed before the minigame merge; no Vault/product repair was made under this integration task.
+- Fresh isolated browser checks passed for all 15 standalone games, default Pixel and Classic main-game boots, and two controlled-save hosted flows: Pixel Barrel and Classic Shuffle. Native hosted start/input, earned fractional Inspiration, return and raw saved state were checked. Both hosted active screenshots at 360x560 with Low effects/native reduced motion were opened by the integrating agent. No local HTTP or page exception was recorded in the successful run.
+- The browser check used a fresh ephemeral loopback server/profile and closed only those owned resources. No owner saves/services/tabs were used. Evidence and the initial helper import/server-path failures remain in C:/Users/arran/AppData/Local/Temp/imi-main-integration-mxz8tlpm. The successful result is browser-smoke.json; unit-after.txt retains the four existing assertions.
+- Static shell-cache paths were checked locally. Native service-worker upgrade/offline behavior, exhaustive devices/all gameplay paths, long-game pacing, public/shared Vault admission, payments and legal acceptance were not rerun or established.
+
+The preceding Regular R3 pilot stays partial, including its ordinary-pickup tool limitation. Merging source does not convert that observation into six-week or full LG-13 acceptance. Further minigame-to-progression integration beyond the existing two hosted games remains separate design work.

@@ -13,8 +13,8 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.kw = { k: K, max: 0, step: 7 }; PXA.monkeySets.kw.angles = [0]; PXA.monkeySets.kw.cache = {};
-  const A = MGArt.build(), { R, make, shapes: { ell, box, or, sub } } = MGArt, FONT = MGArt.FONT;
+  const A = MGArt.build(), A3 = MGArt3.build(), { R, shapes: { ell, box, or, sub } } = MGArt, make = MGArt3.make, { cvs, text } = MGArt3;
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   const ui = MG.ui(host, st, MGArt.tile('K')), fx = MG.fx();
   const { over, say, floatText, doFlash, bump, pulseCombo } = ui;
@@ -24,30 +24,44 @@
   const keyCache = {};
   function keySprite(ch, kind, down) {
     const id = ch + kind + (down ? 1 : 0); if (keyCache[id]) return keyCache[id];
-    const dy = down ? 1 : 0;
-    const cv = make(13, 14, px => {
-      if (!down) px.shape(ell(6.5, 7.6, 6.5, 6.3), R.woodD, 1);
-      px.shape(ell(6.5, 6.2 + dy, 6.5, 6), R.metal, 2);
-      px.shape(ell(6.5, 5.8 + dy, 5, 4.8), kind === 'blot' ? R.paper : FACE[kind] || R.paper, 3);
-      if (kind === 'blot') { px.shape(or(ell(6, 6, 4, 3.3), ell(9.2, 4.2, 2, 1.8), ell(3, 8.6, 1.6, 1.4), ell(7.5, 9, 1, 1.2)), R.ink, 4); px.tone(5, 5, 2, 4); }
+    const dy = down ? 3 : 0;
+    const cv = make(39, 42, px => {
+      if (!down) px.shape(ell(19.5, 22.8, 19.5, 18.9), R.woodD, 1);
+      px.shape(ell(19.5, 18.6 + dy, 19.5, 18), R.metal, 2);
+      px.shape(ell(19.5, 17.4 + dy, 15, 14.4), kind === 'blot' ? R.paper : FACE[kind] || R.paper, 3);
+      if (kind === 'blot') { px.shape(or(ell(18, 18, 12, 9.9), ell(27.6, 12.6, 6, 5.4), ell(9, 25.8, 4.8, 4.2), ell(22.5, 27, 3, 3.6)), R.ink, 4); px.tone(15, 15, 2, 4); }
+      else { px.tone(12, 8 + dy, 2, 3); px.tone(13, 8 + dy, 2, 3); px.tone(11, 9 + dy, 2, 3); }
     });
-    if (kind !== 'blot') {
-      const c = cv.getContext('2d'); c.fillStyle = '#1a0f14';
-      FONT[ch].split('').forEach((b, i) => { if (b === '1') c.fillRect(5 + (i % 3), 3 + dy + Math.floor(i / 3), 1, 1); });
-    }
+    if (kind !== 'blot') text(cv.getContext('2d'), ch, 14.5, 10 + dy, '#1a0f14', 2);
     return (keyCache[id] = cv);
   }
   const spaceCache = {};
   function spaceSprite(kind, down) {
     const id = kind + (down ? 1 : 0); if (spaceCache[id]) return spaceCache[id];
-    const dy = down ? 1 : 0;
-    return (spaceCache[id] = make(44, 13, px => {
-      if (!down) px.shape(box(1, 4, 42, 8), R.woodD, 1);
-      px.shape(or(box(2, dy, 40, 10), box(0, 2 + dy, 44, 6)), R.metal, 2);
-      px.shape(box(3, 2 + dy, 38, 6), FACE[kind] || R.paper, 3);
+    const dy = down ? 3 : 0;
+    return (spaceCache[id] = make(132, 39, px => {
+      if (!down) px.shape(box(3, 12, 126, 24), R.woodD, 1);
+      px.shape(or(box(6, dy, 120, 30), box(0, 6 + dy, 132, 18)), R.metal, 2);
+      px.shape(box(9, 6 + dy, 114, 18), FACE[kind] || R.paper, 3);
+      px.tone(12, 7 + dy, 2, 3); px.tone(13, 7 + dy, 2, 3); px.tone(14, 7 + dy, 2, 3);
     }));
   }
-
+  /* the machine body, baked once: grained wood plate, brass trim, screws, and the platen rail the paper rises from */
+  const bodyBg = cvs(W * 3, H * 3, x => {
+    const r = seeded(5), BY = 84 * 3, BW = W * 3, BH = (H - 84) * 3;
+    rectc(x, '#1a0f14', 0, BY, BW, BH); rectc(x, '#5a3517', 3, BY + 3, BW - 6, BH - 6);
+    for (let i = 0; i < 90; i++) rectc(x, r() < .5 ? '#4a2a12' : '#6a4120', 4 + Math.floor(r() * (BW - 14)), BY + 6 + Math.floor(r() * (BH - 14)), 8 + Math.floor(r() * 22), 1);
+    rectc(x, '#8a5a2b', 3, BY + 3, BW - 6, 5); rectc(x, '#a8723a', 3, BY + 3, BW - 6, 2); rectc(x, '#30180a', 3, BH + BY - 9, BW - 6, 6);
+    for (const [sx, sy] of [[12, BY + 12], [BW - 21, BY + 12], [12, BH + BY - 21], [BW - 21, BH + BY - 21]]) { rectc(x, '#1a0f14', sx - 1, sy - 1, 11, 11); rectc(x, '#c98f0e', sx, sy, 9, 9); rectc(x, '#ffd23a', sx, sy, 9, 2); rectc(x, '#8a5a0a', sx, sy + 7, 9, 2); rectc(x, '#5a3a06', sx + 4, sy + 1, 1, 7); }
+    rectc(x, '#1a0f14', (PAPER.x - 2) * 3, 12 * 3, (PAPER.w + 4) * 3, 18); rectc(x, '#5a3517', (PAPER.x - 1) * 3, 13 * 3, (PAPER.w + 2) * 3, 12); rectc(x, '#b57d3e', (PAPER.x - 1) * 3, 13 * 3, (PAPER.w + 2) * 3, 3); rectc(x, '#30180a', (PAPER.x - 1) * 3, 16 * 3, (PAPER.w + 2) * 3, 3);
+    for (let sx = (PAPER.x + 3) * 3; sx < (PAPER.x + PAPER.w - 2) * 3; sx += 24) rectc(x, '#8a5a2b', sx, 13 * 3 + 4, 1, 5);
+  });
+  const paperBg = cvs(PAPER.w * 3, PAPER.h * 3, (x, pw, ph) => {
+    const r = seeded(9); rectc(x, '#fff6d6', 0, 0, pw, ph); rectc(x, '#ede0b8', 0, ph - 6, pw, 6);
+    for (let i = 0; i < 40; i++) rectc(x, '#f2e6c0', Math.floor(r() * pw), Math.floor(r() * ph), 2, 1);
+    for (let ri = 0; ri < LINES; ri++) rectc(x, '#e6d8aa', 6, 4 * 3 + ri * 21 + 15, pw - 12, 1);
+    rectc(x, '#e8a0a0', 3 * 3, 0, 1, ph);
+  });
   /* ---------- state ---------- */
   let G = null, botOn = false;
   const monkey = { expr: 'normal', exprT: 0, hop: 0, blink: 0 };
@@ -189,36 +203,29 @@
   }
 
   /* ---------- draw ---------- */
-  function drawLetter(ch, x, y, col) { g.fillStyle = col; FONT[ch].split('').forEach((b, i) => { if (b === '1') g.fillRect(x + (i % 3), y + Math.floor(i / 3), 1, 1); }); }
+  const drawLetter = (ch, x, y, col) => text(g, ch, x, y, col, .75);
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
     /* the machine body: wooden plate with a brass trim and a platen roller */
-    g.fillStyle = '#1a0f14'; g.fillRect(0, 84, W, H - 84); g.fillStyle = '#5a3517'; g.fillRect(1, 85, W - 2, H - 86);
-    g.fillStyle = '#8a5a2b'; g.fillRect(1, 85, W - 2, 2); g.fillStyle = '#30180a'; g.fillRect(1, H - 3, W - 2, 2);
-    g.fillStyle = '#c98f0e'; for (const [x, y] of [[4, 88], [W - 6, 88], [4, H - 7], [W - 6, H - 7]]) g.fillRect(x, y, 2, 2);
-    g.fillStyle = '#1a0f14'; g.fillRect(PAPER.x - 2, 12, PAPER.w + 4, 6);
-    g.fillStyle = '#5a3517'; g.fillRect(PAPER.x - 1, 13, PAPER.w + 2, 4); g.fillStyle = '#b57d3e'; g.fillRect(PAPER.x - 1, 13, PAPER.w + 2, 1); g.fillStyle = '#30180a'; g.fillRect(PAPER.x - 1, 16, PAPER.w + 2, 1);
+    st.hi(bodyBg, 0, 0);
     /* paper */
     g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(PAPER.x + 2, PAPER.y + 2, PAPER.w, PAPER.h);
-    g.fillStyle = '#fff6d6'; g.fillRect(PAPER.x, PAPER.y, PAPER.w, PAPER.h); g.fillStyle = '#ede0b8'; g.fillRect(PAPER.x, PAPER.y + PAPER.h - 2, PAPER.w, 2);
+    st.hi(paperBg, PAPER.x, PAPER.y);
     const rows = G.paper;
     rows.forEach((row, ri) => {
       const y = PAPER.y + 4 + ri * 7;
       row.split('').forEach((ch, ci) => {
         if (ch === ' ') return;
         const last = ri === rows.length - 1 && ci === row.length - 1 && G.stampT > 0;
-        drawLetter(ch, PAPER.x + 4 + ci * 4, y + (last ? -1 : 0), last ? '#c98f0e' : '#1a0f14');
+        text(g, ch, PAPER.x + 4 + ci * 4, y + (last ? -1 : 0), last ? '#c98f0e' : '#2a1a20', 2 / 3);
       });
     });
     if (S.playing && Math.floor(performance.now() / 350) % 2 === 0) { const row = rows[rows.length - 1], y = PAPER.y + 4 + (rows.length - 1) * 7; g.fillStyle = '#c0392b'; g.fillRect(PAPER.x + 4 + row.length * 4, y + 6, 3, 1); }
 
     /* monkey on the machine, watching the paper */
-    const ex = monkey.exprT > 0 ? monkey.expr : monkey.blink > 0 ? 'blink' : 'normal';
-    const f = PXA.monkeyFrame('kw', ex, 0, false, monkey.hop > 0 ? 1 : 0, 0);
-    const hop = monkey.hop > 0 ? 3 : 0;
-    g.drawImage(f.cv, Math.round(MONKEY.x - f.pivot[0]), Math.round(MONKEY.foot - 41.5 * K - f.pivot[1] - hop));
-
+    const pose = monkey.exprT > 0 && monkey.expr === 'scared' ? 'scared' : monkey.exprT > 0 && monkey.expr === 'screech' ? 'cheer' : monkey.hop > 0 ? 'launch' : Math.floor(performance.now() / 420) % 2 ? 'breathe' : 'idle';
+    MGCrew.draw(st, pose, MONKEY.x, MONKEY.foot + 1, { flip: true });
     /* keys */
     for (const k of keys) {
       const raised = k.s !== 'idle' && (k.s !== 'ice' || k.diamond), mashing = k.s === 'ice' && !k.diamond;
@@ -227,9 +234,9 @@
       const wob = k.bad > 0 ? (Math.floor(k.bad * 40) % 2 ? 1 : -1) : 0;
       const down = k.down > 0;
       const cv = k.ch === ' ' ? spaceSprite(kind === 'blot' ? 'up' : kind, down) : keySprite(k.ch, kind === 'blot' ? 'blot' : kind, down);
-      g.drawImage(cv, k.x + wob, k.y + bob + (down ? 0 : 0));
+      st.hi(cv, k.x + wob, k.y + bob);
       if (k.bad > 0) { g.fillStyle = 'rgba(192,57,43,.45)'; g.fillRect(k.x + 1 + wob, k.y + 1, k.w - 2, k.h - 2); }
-      if (k.s === 'banana') g.drawImage(A.banana, Math.round(k.x + k.w / 2 - 9), k.y - 14 + bob);
+      if (k.s === 'banana') st.hi(A3.bananaS, k.x + k.w / 2 - A3.bananaS.width / 6, k.y - 11 + bob);
       if (raised && k.s !== 'blot') { const pul = .35 + .3 * Math.sin(performance.now() / 110 + k.x); g.fillStyle = k.s === 'ice' ? `rgba(155,232,255,${pul.toFixed(2)})` : `rgba(255,230,120,${pul.toFixed(2)})`; g.fillRect(k.x - 1 + wob, k.y + bob - 1, k.w + 2, 1); g.fillRect(k.x - 1 + wob, k.y + bob + k.h, k.w + 2, 1); g.fillRect(k.x - 1 + wob, k.y + bob, 1, k.h); g.fillRect(k.x + k.w + wob, k.y + bob, 1, k.h); }
       if (raised) {
         const frac = clamp(k.t / k.life, 0, 1), bw = Math.max(1, Math.round((k.ch === ' ' ? 40 : 11) * frac));
@@ -245,7 +252,7 @@
     for (const r of G.rings) { const kk = r.t / .5; g.globalAlpha = 1 - kk; g.strokeStyle = r.col; g.lineWidth = 1; g.beginPath(); g.arc(r.x + .5, r.y + .5, Math.round(r.max * kk), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     for (const f of G.flyers) {                                              /* a letter arcs from the key up to where it will be typed */
       const row = G.paper[G.paper.length - 1], tx = PAPER.x + 4 + row.length * 4 + 1, ty = PAPER.y + 4 + (G.paper.length - 1) * 7 + 2, k = f.t, e = k * k * (3 - 2 * k);
-      const x = lerp(f.x0, tx, e), y = lerp(f.y0, ty, e) - Math.sin(k * Math.PI) * 14; fx.trail(x, y, '#fff08c'); g.fillStyle = '#1a0f14'; g.fillRect(Math.round(x) - 3, Math.round(y) - 4, 7, 9); g.fillStyle = '#fff6d6'; g.fillRect(Math.round(x) - 2, Math.round(y) - 3, 5, 7); drawLetter(f.ch, Math.round(x) - 1, Math.round(y) - 2, '#1a0f14');
+      const x = lerp(f.x0, tx, e), y = lerp(f.y0, ty, e) - Math.sin(k * Math.PI) * 14; fx.trail(x, y, '#fff08c'); g.fillStyle = '#1a0f14'; g.fillRect(x - 3.33, y - 4.33, 7.33, 9.33); g.fillStyle = '#fff6d6'; g.fillRect(x - 2.67, y - 3.67, 6, 8); drawLetter(f.ch, x - 1.9, y - 2.4, '#1a0f14');
     }
     fx.draw(g);
     if (G.frenzy > 0 || G.mash > 0) { g.fillStyle = G.mash > 0 ? 'rgba(155,232,255,.1)' : 'rgba(255,210,58,.09)'; g.fillRect(0, 0, W, H); }
@@ -277,7 +284,6 @@
     for (const k of keys) { const dx = Math.max(k.x - 1 - px, 0, px - (k.x + k.w + 1)), dy = Math.max(k.y - 4 - py, 0, py - (k.y + k.h + 1)), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = k; } }
     if (best && bd < 36) press(best);
   });
-  ['normal', 'scared', 'screech', 'blink'].forEach(e => [0, 1].forEach(p => PXA.monkeyFrame('kw', e, 0, false, p, 0)));
   newGame(); S.title();
   if (params.get('autostart')) {
     S.start(); botOn = !!params.get('bot');

@@ -11,20 +11,56 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.pd = { k: .7, max: 14, step: 7 }; { const s = PXA.monkeySets.pd; s.angles = []; for (let a = -s.max; a <= s.max; a += s.step) s.angles.push(a); s.cache = {}; }
-  const A = MGArt.build(), { R, make, shapes: { ell, box, poly, or, and } } = MGArt;
+  const A = MGArt.build(), A3 = MGArt3.build(), { R, shapes: { ell, box, poly, or, and } } = MGArt, make = MGArt3.make, { cvs, text, hl } = MGArt3;
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'default';
-  const ui = MG.ui(host, st, A.banana), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana), fx = MG.fx();
 
-  /* obstacle sprites */
+  /* obstacle sprites (hi-res) */
   const SPR = {
-    log: make(28, 11, px => { px.shape(box(0, 1, 28, 9), R.wood, 1); px.shape(or(box(0, 4, 28, 1), box(0, 7, 28, 1)), R.woodD, 2); px.shape(ell(2, 5.5, 2, 4.5), R.woodL, 3); px.shape(ell(26, 5.5, 2, 4.5), R.woodL, 3); }),
-    rock: make(24, 19, px => { px.shape(poly([[1, 18], [3, 8], [8, 2], [16, 1], [21, 6], [23, 18]]), R.metal, 1); px.shape(poly([[3, 17], [5, 9], [9, 6], [12, 17]]), R.metal, 2); px.tone(8, 3, 2); px.tone(9, 3, 2); px.tone(7, 4, 2); }),
-    peel: make(18, 10, px => { px.shape(or(ell(9, 6, 3, 2.5), poly([[9, 6], [1, 3], [2, 8]]), poly([[9, 6], [17, 3], [16, 8]]), poly([[9, 6], [5, 1], [8, 2]])), R.banY, 1); px.shape(or(ell(2, 4, 1.4, 1.2), ell(16, 4, 1.4, 1.2)), R.stem, 2); }),
+    log: make(84, 33, px => {
+      px.shape(box(0, 3, 84, 27), R.wood, 1); px.shape(or(box(0, 12, 84, 2), box(0, 21, 84, 2)), R.woodD, 2); px.shape(ell(6, 16.5, 6, 13.5), R.woodL, 3); px.shape(ell(78, 16.5, 6, 13.5), R.woodL, 3);
+      px.shape(ell(78, 16.5, 3.4, 8), R.woodD, 4); px.shape(ell(78, 16.5, 1.4, 4), R.woodL, 5); for (let i = 0; i < 7; i++) px.dot(14 + i * 9, 6 + (i * 5) % 20, R.woodD, 0, 2); px.tone(14, 4, 2); px.shape(poly([[40, 3], [44, 0], [48, 3]]), R.leaf, 6);
+    }),
+    rock: make(72, 57, px => {
+      px.shape(poly([[3, 54], [9, 24], [24, 6], [48, 3], [63, 18], [69, 54]]), R.metal, 1); px.shape(poly([[9, 51], [15, 27], [27, 18], [36, 51]]), R.metal, 2); px.shape(poly([[40, 20], [52, 14], [60, 30], [48, 36]]), R.metal, 3);
+      hl(px, 24, 9, 6, 2, 2); hl(px, 21, 12, 4, 2, 2); px.shape(poly([[3, 54], [18, 45], [24, 54]]), R.leafD, 4); px.shape(poly([[20, 54], [30, 48], [34, 54]]), R.leaf, 4);
+    }),
+    peel: make(54, 30, px => {
+      px.shape(or(ell(27, 18, 9, 7.5), poly([[27, 18], [3, 9], [6, 24]]), poly([[27, 18], [51, 9], [48, 24]]), poly([[27, 18], [15, 3], [24, 6]])), R.banY, 1);
+      px.shape(or(ell(6, 12, 4.2, 3.6), ell(48, 12, 4.2, 3.6)), R.stem, 2); px.dot(27, 12, R.banY, 2, 1); hl(px, 24, 14, 5, 2, 2);
+    }),
   };
-  const bundles = Array.from({ length: 4 }, () => { const L = MGArt.LETTERS, r = () => L[Math.floor(Math.random() * 26)]; return MGArt.bundle(r(), r(), r()); });
-
+  const bundleHi = (a, b, c) => cvs(69, 45, (x, w, hh) => {
+    const tile = (ch, tx, ty, rot) => { x.save(); x.translate(tx + 10, ty + 13); x.rotate(rot); rectc(x, '#1a0f14', -10, -13, 21, 27); rectc(x, '#fff6d6', -9, -12, 19, 25); rectc(x, '#ede0b8', -9, 9, 19, 4); text(x, ch, -5, -8, '#1a0f14', 2); x.restore(); };
+    tile(a, 3, 12, -.22); tile(c, 45, 12, .22); tile(b, 24, 4, 0);
+    rectc(x, '#52301a', 8, 36, 53, 3); rectc(x, '#c0392b', 30, 33, 9, 9); rectc(x, '#e86a50', 30, 33, 9, 2); rectc(x, '#1a0f14', 29, 32, 11, 1);
+  });
+  const bundles = Array.from({ length: 4 }, () => { const L = MGArt.LETTERS, r = () => L[Math.floor(Math.random() * 26)]; return bundleHi(r(), r(), r()); });
+  /* the dirt path and the jungle walls scroll as baked hi-res strips: P units long, repeated */
+  const PATH_P = 48, SIDE_P = 80;
+  const pathTile = cvs(W * 3, PATH_P * 3, (x, tw, th) => {
+    const r = seeded(21); rectc(x, '#c08a4a', 0, 0, tw, th);
+    for (let i = 0; i < 2; i++) rectc(x, '#b57d3e', 36, i * 72, tw - 72, 36);
+    for (let i = 0; i < 260; i++) rectc(x, ['#b57d3e', '#cf9a58', '#a8723a'][i % 3], 40 + Math.floor(r() * (tw - 80)), Math.floor(r() * th), 1 + Math.floor(r() * 2), 1);
+    for (let i = 0; i < 38; i++) { const px = 42 + Math.floor(r() * (tw - 90)), py = Math.floor(r() * th); rectc(x, '#8a5a2b', px, py + 1, 3, 2); rectc(x, '#e8b878', px, py, 3, 1); }
+    rectc(x, '#5a3517', 30, 0, 3, th); rectc(x, '#8a5a2b', 33, 0, 3, th); rectc(x, '#5a3517', tw - 33, 0, 3, th); rectc(x, '#8a5a2b', tw - 36, 0, 3, th);
+    for (const lx of [W / 2 - LANE / 2, W / 2 + LANE / 2]) for (let y = 0; y < th; y += 60) { rectc(x, 'rgba(90,53,23,.55)', lx * 3, y, 2, 24); }
+    for (let i = 0; i < 16; i++) { const e = i % 2 ? 36 : tw - 36 - 9, py = Math.floor(r() * th); rectc(x, '#2f8a35', e - 2 + Math.floor(r() * 4), py, 2, 5); rectc(x, '#74c648', e + Math.floor(r() * 6), py + 1, 1, 3); }
+  });
+  const sideTile = cvs(W * 3, SIDE_P * 3, (x, tw, th) => {
+    const r = seeded(47);
+    for (const [x0, dir] of [[0, 1], [tw, -1]]) {
+      rectc(x, '#0f3318', dir > 0 ? 0 : tw - 30, 0, 30, th);
+      for (let i = 0; i < 7; i++) {
+        const cy = 14 + i * 34 + Math.floor(r() * 10), cx = (dir > 0 ? 6 : tw - 6) + Math.floor(r() * 10) * dir, rad = 18 + Math.floor(r() * 8);
+        for (const [c, rd, oy] of [['#17481f', rad, 0], ['#1f6a2a', rad - 4, -2], ['#2f8a35', rad - 9, -4], ['#3f9a3a', rad - 13, -5]]) { x.fillStyle = c; for (let j = -rd; j <= rd; j++) { const w = Math.round(Math.sqrt(rd * rd - j * j) * 1.05); x.fillRect(cx - w * 0 + (dir > 0 ? -w : -w), cy + j + oy, w * 2, 1); } }
+        rectc(x, '#74c648', cx - 6 * dir, cy - 8, 6, 1); rectc(x, '#74c648', cx - 3 * dir, cy - 9, 3, 1);
+      }
+    }
+  });
+  const dirtSpeck = null;
   /* ---------- state ---------- */
   let G = null, botOn = false;
   const p = { lane: 1, x: LX[1], vx: 0, z: 0, vz: 0, ph: 0, phT: 0, inv: 0, spin: 0, expr: 'normal', et: 0, blink: 0 };
@@ -130,45 +166,37 @@
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
-    const sc = Math.round(G.scroll);
-    /* the path */
+    const sc = G.scroll;
     g.fillStyle = 'rgba(10,30,18,.5)'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#c08a4a'; g.fillRect(12, 0, W - 24, H); g.fillStyle = '#b57d3e';
-    for (let y = -(sc % 24); y < H; y += 24) { g.fillRect(12, y, W - 24, 12); }
-    g.fillStyle = '#8a5a2b'; g.fillRect(12, 0, 2, H); g.fillRect(W - 14, 0, 2, H); g.fillStyle = '#5a3517'; g.fillRect(10, 0, 2, H); g.fillRect(W - 12, 0, 2, H);
-    g.fillStyle = '#e8b878'; for (let i = 0; i < 22; i++) g.fillRect(14 + (i * 37) % (W - 30), (((i * 53 + sc * 1) % (H + 20)) + H + 20) % (H + 20) - 10, 2, 1);
-    g.fillStyle = 'rgba(90,53,23,.5)'; for (const x of [W / 2 - LANE / 2, W / 2 + LANE / 2]) for (let y = -(sc % 20); y < H; y += 20) g.fillRect(x, y, 1, 8);
-    /* side jungle */
-    for (let i = 0; i < 8; i++) { const y = (((i * 31 - sc * 1.15) % (H + 40)) + H + 40) % (H + 40) - 20; g.fillStyle = '#17481f'; g.fillRect(0, y, 10, 14); g.fillRect(W - 10, y + 7, 10, 14); g.fillStyle = '#2f8a35'; g.fillRect(0, y, 8, 3); g.fillRect(W - 8, y + 7, 8, 3); g.fillStyle = '#74c648'; g.fillRect(2, y + 1, 3, 1); g.fillRect(W - 6, y + 8, 3, 1); }
-    g.fillStyle = 'rgba(255,246,214,.35)'; for (const q of G.lines) g.fillRect(Math.round(q.x), Math.round(q.y - q.l), 1, Math.round(q.l));
+    for (let y = -(sc % PATH_P) - PATH_P; y < H; y += PATH_P) st.hi(pathTile, 0, y + PATH_P);
+    for (let y = -((sc * 1.15) % SIDE_P) - SIDE_P; y < H; y += SIDE_P) st.hi(sideTile, 0, y + SIDE_P);    g.fillStyle = 'rgba(255,246,214,.35)'; for (const q of G.lines) g.fillRect(Math.round(q.x), Math.round(q.y - q.l), 1, Math.round(q.l));
     /* dash/road tint */
     if (G.dash > 0) { g.fillStyle = 'rgba(255,210,58,.12)'; g.fillRect(0, 0, W, H); for (let i = 0; i < 8; i++) { g.fillStyle = 'rgba(255,246,214,.5)'; g.fillRect(16 + (i * 29) % (W - 32), (((sc * 3 + i * 41) % H)), 1, 10); } }
     if (G.road > 0) { g.fillStyle = 'rgba(155,232,255,.12)'; g.fillRect(0, 0, W, H); }
     /* items, far to near */
     const items = G.items.slice().sort((a, b) => a.y - b.y);
     for (const it of items) {
-      const bob = it.type === 'banana' || it.type === 'golden' || it.type === 'diamond' || it.type === 'bundle' ? Math.round(Math.sin(G.t * 5 + it.ph) * 1.5) : 0;
-      const sp = it.type === 'banana' ? A.banana : it.type === 'golden' ? A.golden : it.type === 'diamond' ? A.diamond : it.type === 'bundle' ? bundles[Math.floor(it.ph) % 4] : SPR[it.type];
-      if (it.type === 'rock' || it.type === 'log' || it.type === 'peel') { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(Math.round(it.x - sp.width / 2 + 1), Math.round(it.y + sp.height / 2 - 1), sp.width, 2); }
-      g.drawImage(sp, Math.round(it.x - sp.width / 2), Math.round(it.y - sp.height / 2) + bob);
+      const bob = it.type === 'banana' || it.type === 'golden' || it.type === 'diamond' || it.type === 'bundle' ? Math.round(Math.sin(G.t * 5 + it.ph) * 4.5) / 3 : 0;
+      const sp = it.type === 'banana' ? A3.bananaS : it.type === 'golden' ? A3.goldenS : it.type === 'diamond' ? A3.diamondS : it.type === 'bundle' ? bundles[Math.floor(it.ph) % 4] : SPR[it.type];
+      const sw3 = sp.width / 3, sh3 = sp.height / 3;
+      if (it.type === 'rock' || it.type === 'log' || it.type === 'peel') { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(it.x - sw3 / 2 + 1, it.y + sh3 / 2 - 1, sw3, 2); }
+      st.hi(sp, it.x - sw3 / 2, it.y - sh3 / 2 + bob);
       if ((it.type === 'golden' || it.type === 'diamond') && Math.floor(G.t * 12 + it.ph) % 2 === 0) fx.spark(it.x, it.y, it.type === 'diamond' ? '#9be8ff' : '#fff08c');
     }
-    /* monkey */
+    /* the crew monkey runs down the path */
     const flick = p.inv > 0 && G.dash <= 0 && Math.floor(performance.now() / 70) % 2 === 0;
     if (!flick) {
-      const lean = clamp((LX[p.lane] - p.x) / 14, -1, 1) * -.24, ex = p.et > 0 ? p.expr : p.blink > 0 ? 'blink' : 'normal';
-      const f = PXA.monkeyFrame('pd', ex, p.spin > 0 ? 0 : lean, false, p.z > 0 ? 1 : p.ph, 0), jy = Math.round(p.z);
-      g.fillStyle = 'rgba(0,0,0,.28)'; const sw = Math.max(8, 16 - jy / 2); g.fillRect(Math.round(p.x - sw / 2), PY + 1, sw, 2);
-      if (G.dash > 0) { g.globalAlpha = .4; g.drawImage(f.cv, Math.round(p.x - f.pivot[0]), Math.round(PY - 41.5 * .7 - f.pivot[1]) - jy + 12); g.globalAlpha = 1; }
-      g.drawImage(f.cv, Math.round(p.x - f.pivot[0]), Math.round(PY - 41.5 * .7 - f.pivot[1]) - jy);
-    }
-    fx.draw(g); g.restore();
+      const jy = p.z, pose = p.spin > 0 ? 'scared' : p.z > 0 ? (p.vz > 0 ? 'launch' : 'fall') : p.ph ? 'run1' : 'run2', face = (LX[p.lane] - p.x) < -2 ? true : false;
+      g.fillStyle = 'rgba(0,0,0,.28)'; const sw = Math.max(8, 16 - jy / 2); g.fillRect(p.x - sw / 2, PY + 1, sw, 2);
+      if (G.dash > 0) MGCrew.draw(st, pose, p.x, PY + 12 - jy + 1, { alpha: .4, flip: face });
+      MGCrew.draw(st, pose, p.x, PY + 1 - jy, { flip: face });
+    }    fx.draw(g); g.restore();
   }
 
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'peeldash', title: 'PEEL<span>DASH</span>', sub: 'Run. Dodge. Grab bananas.',
-    legend: [[A.banana, '<em>10</em> per banana'], [SPR.rock, '<em class="bad">rock</em> = dodge it'], [SPR.log, '<em>log</em> = jump it'], [SPR.peel, '<em class="bad">peel</em> = jump it'], [A.golden, '<em>dash</em> invincible'], [A.diamond, '<em class="ice">river</em> x3']],
+    legend: [[A3.banana, '<em>10</em> per banana'], [SPR.rock, '<em class="bad">rock</em> = dodge it'], [SPR.log, '<em>log</em> = jump it'], [SPR.peel, '<em class="bad">peel</em> = jump it'], [A3.golden, '<em>dash</em> invincible'], [A3.diamond, '<em class="ice">river</em> x3']],
     hint: 'swipe / ← → to change lane · swipe up / ↑ / Space to jump', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
   });
   let sw = null;
@@ -186,7 +214,6 @@
     else if (k === 'arrowup' || k === 'w' || k === ' ') { if (S.playing) jump(); else if (k === ' ' && !e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); } e.preventDefault(); }
   });
 
-  ['normal', 'scared', 'screech', 'blink'].forEach(e => PXA.monkeySets.pd.angles.forEach(a => [0, 1].forEach(q => PXA.monkeyFrame('pd', e, a * Math.PI / 180, false, q, 0))));
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   if (params.get('dbg')) setInterval(() => { document.title = `d=${Math.round(G.dist)} b=${G.bananas} hearts=${G.hearts} t=${Math.round(G.t)}`; }, 200);

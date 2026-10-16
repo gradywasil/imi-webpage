@@ -14,7 +14,7 @@
     woodL: ['#7a4a1e', '#c08a4a', '#e8b878'], metal: ['#5a5a66', '#b8b8c4', '#f0f0f8'], paper: ['#c9b88a', '#fff6d6', '#ffffff'],
     star: ['#c8b84a', '#fff7b0', '#ffffff'], orange: ['#a84a0c', '#f08a1a', '#ffc060'], grape: ['#3a2068', '#6a48a8', '#b58cf0'],
     pine: ['#a8681a', '#f2b23a', '#ffe28a'], ice: ['#2a86b8', '#9be8ff', '#ffffff'], gold: ['#b38004', '#ffd23a', '#fffbe0'],
-    drop: ['#3a8ec8', '#7ec8f0', '#d6f0ff'],
+    drop: ['#3a8ec8', '#7ec8f0', '#d6f0ff'], rotten: ['#2a2008', '#6a5a1c', '#9a8a38'],
   };
   const ramps = [null], R = {};
   for (const k in DEF) { R[k] = ramps.length; ramps.push(DEF[k].map(hex)); }

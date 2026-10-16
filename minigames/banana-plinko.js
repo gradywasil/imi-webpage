@@ -12,13 +12,13 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  const A = MGArt.build(), { R, make, shapes: { ell, box, or } } = MGArt, FONT = MGArt.FONT;
+  const A = MGArt.build(), A3 = MGArt3.build(), { R, shapes: { ell, box, or } } = MGArt, make = MGArt3.make, { cvs, hl, text, textW } = MGArt3;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'crosshair';
-  const ui = MG.ui(host, st, A.banana, 0), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana, 0), fx = MG.fx();
   document.querySelector('.mg-hearts').style.display = 'none';
 
-  /* ---------- the banana: a crescent, rendered at 24 angles so every frame is crisp pixel art ---------- */
+  /* ---------- the banana: a crescent, rendered at 24 angles in hi-res so every frame is crisp pixel art ---------- */
   const CA = [0, -5.4], RA = 6.2, SPAN = 60 * Math.PI / 180, STEPS = 24;
   const ARC = [-46, -23, 0, 23, 46].map(d => { const t = Math.PI / 2 + d * Math.PI / 180; return [CA[0] + RA * Math.cos(t), CA[1] + RA * Math.sin(t)]; });
   function crescent(angle, tipPart) {
@@ -32,15 +32,25 @@
   const bananaFrames = {};
   for (const kind of ['normal', 'golden', 'diamond']) {
     const ramp = kind === 'golden' ? R.gold : kind === 'diamond' ? R.ice : R.banY;
-    bananaFrames[kind] = Array.from({ length: STEPS }, (_, i) => { const a = i / STEPS * Math.PI * 2; return make(18, 18, px => { px.shape(crescent(a, false), ramp, 1); px.shape(crescent(a, true), R.stem, 2); }); });
+    bananaFrames[kind] = Array.from({ length: STEPS }, (_, i) => { const a = i / STEPS * Math.PI * 2; const body = crescent(a, false), tip = crescent(a, true); return make(54, 54, px => { px.shape((x, y) => body(x / 3, y / 3), ramp, 1); px.shape((x, y) => tip(x / 3, y / 3), R.stem, 2); px.shape((x, y) => { const rx = x / 3, ry = y / 3; return body(rx, ry) && !body(rx - .25, ry - .25); }, ramp, 3); }); });
   }
   const bananaSpr = (kind, a) => bananaFrames[kind][((Math.round(a / (Math.PI * 2) * STEPS) % STEPS) + STEPS) % STEPS];
-  const pegSpr = make(9, 9, px => { px.shape(ell(4.5, 4.5, 3.6, 3.6), R.wood, 1); px.tone(3, 3, 2); px.tone(4, 3, 2); px.tone(3, 4, 2); });
-  const pegHot = make(9, 9, px => { px.shape(ell(4.5, 4.5, 3.6, 3.6), R.woodL, 1); px.tone(3, 3, 2); });
-  const bumpSpr = [make(15, 15, px => { px.shape(ell(7.5, 7.5, 6.8, 6.8), R.red, 1); px.shape(ell(7.5, 7.5, 3.8, 3.8), R.banY, 2); px.tone(4, 4, 2, 1); }), make(15, 15, px => { px.shape(ell(7.5, 7.5, 6.8, 6.8), R.banY, 1); px.shape(ell(7.5, 7.5, 3.8, 3.8), R.paper, 2); })];
-  const crateSpr = make(9, 7, px => { px.shape(box(0, 0, 9, 7), R.woodL, 1); px.shape(box(0, 3, 9, 1), R.woodD, 2); });
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const pegMk = ramp => make(27, 27, px => { px.shape(ell(13.5, 13.5, 10.8, 10.8), ramp, 1); hl(px, 8, 7, 4, 3, 2); hl(px, 7, 9, 3, 3, 2); px.dot(15, 17, ramp, 0, 2); px.dot(16, 17, ramp, 0, 2); px.dot(15, 18, ramp, 0, 2); });
+  const pegSpr = pegMk(R.wood), pegHot = pegMk(R.woodL);
+  const bumpMk = (outer, inner) => make(45, 45, px => { px.shape(ell(22.5, 22.5, 20.4, 20.4), outer, 1); px.shape(ell(22.5, 22.5, 11.4, 11.4), inner, 2); hl(px, 11, 10, 7, 3, 2); hl(px, 9, 13, 4, 4, 2); px.dot(22, 22, inner, 2, 3); });
+  const bumpSpr = [bumpMk(R.red, R.banY), bumpMk(R.banY, R.paper)];
+  const crateSpr = make(27, 21, px => { px.shape(box(0, 0, 27, 21), R.woodL, 1); px.shape(or(box(0, 9, 27, 3), box(8, 0, 2, 21), box(17, 0, 2, 21)), R.woodD, 2); hl(px, 1, 1, 24, 1, 2); });
   const ballBox = h('div', 'sc'); ballBox.append(spriteImg(bananaSpr('normal', 0), 1), h('b', '', '10')); document.querySelector('.mg-hud').appendChild(ballBox);
   const ballNum = ballBox.querySelector('b');
+  /* the crew works the board: costumes for the shovers, rotated about the hands for the swingers */
+  const WORK_LOOK = ['v07', 'v10'], SWING_LOOK = ['v26', 'v22', 'v20', 'v09'];
+  const rotCache = new Map();
+  function swingFrame(look, deg) {
+    const key = look + deg; let c = rotCache.get(key);
+    if (!c) { c = cvs(110, 110, x => { x.imageSmoothingEnabled = false; x.translate(55, 55); x.rotate(deg * Math.PI / 180); x.translate(-32, -15); x.drawImage(MGCrew.frame('swing', { look, expr: 'giggle' }), 0, 0); }); rotCache.set(key, c); }
+    return c;
+  }
 
   /* ---------- the board ---------- */
   const pegs = [];
@@ -160,44 +170,59 @@
   }
 
   /* ---------- draw ---------- */
-  function digits(txt, cx, y, col) { const w = txt.length * 4 - 1; g.fillStyle = col; txt.split('').forEach((ch, k) => FONT[ch].split('').forEach((b, i) => { if (b === '1') g.fillRect(Math.round(cx - w / 2) + k * 4 + (i % 3), y + Math.floor(i / 3), 1, 1); })); }
+  const digits = (txt, cx, y, col) => text(g, txt, cx - textW(txt, 2 / 3) / 2, y, col, 2 / 3);
+  /* the static board, baked once: dark felt panel, grained rails, the top rail, the workers' ledges and the swingers' branches */
+  let boardBg = null;
+  function bakeBoard() {
+    return cvs(W * 3, WORLD_H * 3, (x, tw, th) => {
+      const r = seeded(29);
+      rectc(x, 'rgba(10,30,20,.55)', (WALL - 1) * 3, 90, (W - 2 * WALL + 2) * 3, (BIN_TOP - 30) * 3);
+      for (let i = 0; i < 700; i++) rectc(x, r() < .5 ? 'rgba(60,110,70,.18)' : 'rgba(0,0,0,.2)', 14 + Math.floor(r() * (tw - 28)), 92 + Math.floor(r() * ((BIN_TOP - 31) * 3)), 1 + Math.floor(r() * 2), 1);
+      for (const [x0, w0] of [[0, WALL * 3], [(W - WALL) * 3, WALL * 3]]) { rectc(x, '#1a0f14', x0, 78, w0, th - 78); for (let i = 0; i < 90; i++) rectc(x, r() < .5 ? '#6e4220' : '#a8723a', x0 + 1 + Math.floor(r() * (w0 - 3)), 80 + Math.floor(r() * (th - 90)), 1, 3 + Math.floor(r() * 10)); }
+      rectc(x, '#8a5a2b', 3, 78, 6, th - 78); rectc(x, '#8a5a2b', tw - 9, 78, 6, th - 78); rectc(x, '#c08a4a', 3, 78, 2, th - 78); rectc(x, '#c08a4a', tw - 9, 78, 2, th - 78);
+      rectc(x, '#1a0f14', 6, 69, tw - 12, 12); rectc(x, '#5a3517', 9, 72, tw - 18, 9); rectc(x, '#b57d3e', 9, 72, tw - 18, 3); rectc(x, '#7a4a1e', 9, 78, tw - 18, 3);
+      for (let sx = 14; sx < tw - 14; sx += 26) rectc(x, '#c98f0e', sx, 74, 2, 2);
+      for (const w of WORKERS) { rectc(x, '#1a0f14', WALL * 3, (w.y + 3) * 3, (W - 2 * WALL) * 3, 12); rectc(x, '#8a5a2b', WALL * 3, (w.y + 4) * 3, (W - 2 * WALL) * 3, 6); rectc(x, '#c08a4a', WALL * 3, (w.y + 4) * 3, (W - 2 * WALL) * 3, 2); rectc(x, '#5a3517', WALL * 3, (w.y + 4) * 3 + 4, (W - 2 * WALL) * 3, 2); for (let sx = 18; sx < tw - 18; sx += 40) rectc(x, '#b57d3e', sx, (w.y + 4) * 3 + 1, 2, 3); }
+      for (const sw of SWINGS) { const bx = (sw.ax - 7) * 3, by = (sw.ay - 5) * 3; rectc(x, '#1a0f14', bx, by, 42, 15); rectc(x, '#7a4a1e', bx + 2, by + 2, 38, 10); rectc(x, '#b57d3e', bx + 2, by + 2, 38, 3); rectc(x, '#5a3517', bx + 2, by + 9, 38, 3); for (let i = 0; i < 6; i++) rectc(x, '#4a2a12', bx + 4 + Math.floor(r() * 30), by + 5 + Math.floor(r() * 4), 4, 1); x.fillStyle = '#2f8a35'; rectc(x, '#2f8a35', bx + 33, by - 2, 4, 3); rectc(x, '#74c648', bx + 33, by - 2, 2, 1); }
+    });
+  }
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
-    g.translate(0, -Math.round(cam));
-    /* the board: a dark panel with wooden rails */
-    g.fillStyle = 'rgba(10,30,20,.55)'; g.fillRect(WALL - 1, 30, W - 2 * WALL + 2, BIN_TOP - 30);
-    g.fillStyle = '#1a0f14'; g.fillRect(0, 26, WALL, WORLD_H - 26); g.fillRect(W - WALL, 26, WALL, WORLD_H - 26); g.fillStyle = '#8a5a2b'; g.fillRect(1, 26, 2, WORLD_H - 26); g.fillRect(W - 3, 26, 2, WORLD_H - 26);
-    g.fillStyle = '#5a3517'; g.fillRect(3, 24, W - 6, 3); g.fillStyle = '#b57d3e'; g.fillRect(3, 24, W - 6, 1);
-    /* the workers' ledges and the swingers' branches */
-    for (const w of WORKERS) { g.fillStyle = '#1a0f14'; g.fillRect(WALL, w.y + 3, W - 2 * WALL, 4); g.fillStyle = '#8a5a2b'; g.fillRect(WALL, w.y + 4, W - 2 * WALL, 2); g.fillStyle = '#b57d3e'; g.fillRect(WALL, w.y + 4, W - 2 * WALL, 1); }
-    for (const sw of SWINGS) { g.fillStyle = '#1a0f14'; g.fillRect(sw.ax - 7, sw.ay - 5, 14, 5); g.fillStyle = '#7a4a1e'; g.fillRect(sw.ax - 6, sw.ay - 4, 12, 3); g.fillStyle = '#b57d3e'; g.fillRect(sw.ax - 6, sw.ay - 4, 12, 1); }
+    g.translate(0, -Math.round(cam * 3) / 3);
+    st.hi(boardBg || (boardBg = bakeBoard()), 0, 0);
     /* aim marker */
-    if (S.playing && G.balls > 0) { const x = Math.round(clamp(aimX, 10, W - 10)), bob = Math.floor(performance.now() / 260) % 2; g.drawImage(bananaSpr(G.nextKind, Math.PI * 1.5 + 0), x - 9, DROP_Y - 10 + bob); g.fillStyle = 'rgba(255,246,214,.35)'; for (let y = DROP_Y + 8; y < 44; y += 4) g.fillRect(x, y, 1, 2); }
-    for (const p of pegs) { if (p.post) { g.fillStyle = '#1a0f14'; g.fillRect(Math.round(p.x) - 2, Math.round(p.y) - 2, 4, WORLD_H - Math.round(p.y)); g.fillStyle = '#8a5a2b'; g.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, WORLD_H - Math.round(p.y)); continue; } g.drawImage(p.hot > 0 ? pegHot : pegSpr, Math.round(p.x - 4.5), Math.round(p.y - 4.5)); }
-    for (const bm of BUMPERS) { const br = Math.round(Math.sin(performance.now() / 260 + bm.x) * 1 + (bm.flash > 0 ? 3 : 0)); g.fillStyle = bm.flash > 0 ? 'rgba(255,240,150,.55)' : 'rgba(255,200,80,.22)'; g.fillRect(Math.round(bm.x) - 9 - br, Math.round(bm.y) - 1, 2, 3); g.fillRect(Math.round(bm.x) + 8 + br, Math.round(bm.y) - 1, 2, 3); g.fillRect(Math.round(bm.x) - 1, Math.round(bm.y) - 9 - br, 3, 2); g.fillRect(Math.round(bm.x) - 1, Math.round(bm.y) + 8 + br, 3, 2); g.drawImage(bumpSpr[bm.flash > 0 ? 1 : 0], Math.round(bm.x - 7.5), Math.round(bm.y - 7.5)); }
+    if (S.playing && G.balls > 0) { const x = clamp(aimX, 10, W - 10), bob = Math.floor(performance.now() / 260) % 2; st.hi(bananaSpr(G.nextKind, Math.PI * 1.5 + 0), x - 9, DROP_Y - 10 + bob); g.fillStyle = 'rgba(255,246,214,.35)'; for (let y = DROP_Y + 8; y < 44; y += 4) g.fillRect(x - .17, y, .67, 2); }
+    for (const p of pegs) { if (p.post) { g.fillStyle = '#1a0f14'; g.fillRect(p.x - 2, p.y - 2, 4, WORLD_H - p.y); g.fillStyle = '#8a5a2b'; g.fillRect(p.x - 1.33, p.y - 1.33, 2.67, WORLD_H - p.y); g.fillStyle = '#c08a4a'; g.fillRect(p.x - 1.33, p.y - 1.33, .67, WORLD_H - p.y); continue; } st.hi(p.hot > 0 ? pegHot : pegSpr, p.x - 4.5, p.y - 4.5); }
+    for (const bm of BUMPERS) { const br = Math.round(Math.sin(performance.now() / 260 + bm.x) * 3 + (bm.flash > 0 ? 9 : 0)) / 3; g.fillStyle = bm.flash > 0 ? 'rgba(255,240,150,.55)' : 'rgba(255,200,80,.22)'; g.fillRect(bm.x - 9.67 - br, bm.y - .5, 2, 1.33); g.fillRect(bm.x + 8 + br, bm.y - .5, 2, 1.33); g.fillRect(bm.x - .5, bm.y - 9.67 - br, 1.33, 2); g.fillRect(bm.x - .5, bm.y + 8 + br, 1.33, 2); st.hi(bumpSpr[bm.flash > 0 ? 1 : 0], bm.x - 7.5, bm.y - 7.5); }
     /* working monkeys, the swingers and the spinners */
     const T = G.t;
-    for (const w of WORKERS) {
+    WORKERS.forEach((w, wi) => {
       const wx = w.cx + Math.sin(T * w.om + w.ph) * w.amp, wdir = Math.cos(T * w.om + w.ph) >= 0 ? 1 : -1;
-      g.save(); g.translate(Math.round(wx), 0); if (wdir < 0) g.scale(-1, 1); g.drawImage(A.monkeyS[Math.floor(T * 5) % 2], -6, w.y - 11); g.restore(); g.drawImage(crateSpr, Math.round(wx - 4), w.y - 16 - Math.round(Math.abs(Math.sin(T * 5)) * 1.5));
-    }
-    for (const sw of SWINGS) { const th = sw.amp * Math.sin(T * sw.om + sw.ph), tx = sw.ax + sw.len * Math.sin(th), ty = sw.ay + sw.len * Math.cos(th); const n = Math.ceil(sw.len); for (let i = 0; i <= n; i++) { const x = Math.round(lerp(sw.ax, tx, i / n)), y = Math.round(lerp(sw.ay, ty, i / n)); g.fillStyle = '#17481f'; g.fillRect(x - 1, y, 3, 1); g.fillStyle = '#2f8a35'; g.fillRect(x, y, 1, 1); } g.drawImage(A.monkeyS[1], Math.round(tx - 6), Math.round(ty - 4)); }
+      MGCrew.draw(st, Math.floor(T * 5) % 2 ? 'carry' : 'carry2', wx, w.y + 4, { look: WORK_LOOK[wi % WORK_LOOK.length], flip: wdir < 0 });
+      st.hi(crateSpr, wx - 4.5, w.y - 17 - Math.round(Math.abs(Math.sin(T * 5)) * 4.5) / 3);
+    });
+    SWINGS.forEach((sw, si) => {
+      const th = sw.amp * Math.sin(T * sw.om + sw.ph), tx = sw.ax + sw.len * Math.sin(th), ty = sw.ay + sw.len * Math.cos(th), n = Math.ceil(sw.len * 3);
+      for (let i = 0; i <= n; i++) { const t = i / n, x = Math.round(lerp(sw.ax, tx, t) * 3) / 3, y = Math.round(lerp(sw.ay, ty, t) * 3) / 3; g.fillStyle = '#17481f'; g.fillRect(x - .67, y, 1.33, .33); g.fillStyle = '#2f8a35'; g.fillRect(x - .33, y, .67, .33); g.fillStyle = '#4aa83e'; g.fillRect(x - .33, y, .33, .33); }
+      for (let k = 1; k < sw.len / 7; k++) { const t = k * 7 / sw.len, x = lerp(sw.ax, tx, t), y = lerp(sw.ay, ty, t), s = k % 2 ? 1 : -1; g.fillStyle = '#17481f'; g.fillRect(x + (s > 0 ? .33 : -3), y - .67, 2.67, 1.33); g.fillStyle = '#3f9a3a'; g.fillRect(x + (s > 0 ? .67 : -2.67), y - .33, 2, .67); }
+      const deg = Math.round(-th * 180 / Math.PI / 7) * 7, fr = swingFrame(SWING_LOOK[si % SWING_LOOK.length], deg); st.hi(fr, tx - 55 / 3, ty - 5 - 55 / 3);
+    });
     for (const sp of SPINNERS) {
       const a = T * sp.om, ca = Math.cos(a), sa = Math.sin(a);
-      for (let d = -sp.arm; d <= sp.arm; d += 1.5) { const x = Math.round(sp.x + d * ca), y = Math.round(sp.y + d * sa); g.fillStyle = '#1a0f14'; g.fillRect(x - 2, y - 2, 5, 5); }
-      for (let d = -sp.arm; d <= sp.arm; d += 1.5) { const x = Math.round(sp.x + d * ca), y = Math.round(sp.y + d * sa); g.fillStyle = '#8a5a2b'; g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = '#c9a063'; g.fillRect(x - 1, y - 1, 1, 1); }
-      g.drawImage(pegHot, Math.round(sp.x - 4.5), Math.round(sp.y - 4.5));
+      for (let d = -sp.arm; d <= sp.arm; d += .67) { const x = sp.x + d * ca, y = sp.y + d * sa; g.fillStyle = '#1a0f14'; g.fillRect(x - 1.8, y - 1.8, 3.6, 3.6); }
+      for (let d = -sp.arm; d <= sp.arm; d += .67) { const x = sp.x + d * ca, y = sp.y + d * sa; g.fillStyle = '#8a5a2b'; g.fillRect(x - 1.17, y - 1.17, 2.33, 2.33); g.fillStyle = '#c9a063'; g.fillRect(x - 1.17, y - 1.17, .83, .83); }
+      st.hi(pegHot, sp.x - 4.5, sp.y - 4.5);
     }
     /* bins */
     VALUES.forEach((v, i) => {
       const x = BIN_X + i * BIN_W, f = G.binFlash[i] > 0, col = v >= 100 ? '#c98f0e' : v >= 25 ? '#8a5a2b' : '#5a3517';
-      g.fillStyle = '#1a0f14'; g.fillRect(x, BIN_TOP + 10, BIN_W, WORLD_H - BIN_TOP - 10); g.fillStyle = f ? '#ffd23a' : col; g.fillRect(x + 1, BIN_TOP + 11, BIN_W - 2, WORLD_H - BIN_TOP - 14);
-      g.fillStyle = f ? '#fff6d6' : v >= 100 ? '#ffd23a' : '#b57d3e'; g.fillRect(x + 1, BIN_TOP + 11, BIN_W - 2, 1);
-      digits(String(v), x + BIN_W / 2, BIN_TOP + 17, f ? '#1a0f14' : '#fff6d6');
-      if (v >= 100) { g.fillStyle = '#74c648'; g.fillRect(x + 4, BIN_TOP + 25, 8, 2); g.fillRect(x + 7, BIN_TOP + 23, 2, 6); }
+      g.fillStyle = '#1a0f14'; g.fillRect(x, BIN_TOP + 10, BIN_W, WORLD_H - BIN_TOP - 10); g.fillStyle = f ? '#ffd23a' : col; g.fillRect(x + .67, BIN_TOP + 10.67, BIN_W - 1.33, WORLD_H - BIN_TOP - 13.33);
+      g.fillStyle = f ? '#fff6d6' : v >= 100 ? '#ffd23a' : '#b57d3e'; g.fillRect(x + .67, BIN_TOP + 10.67, BIN_W - 1.33, 1.33); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + .67, WORLD_H - 3.67, BIN_W - 1.33, 1.33); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(x + .67, BIN_TOP + 12, .67, WORLD_H - BIN_TOP - 16);
+      digits(String(v), x + BIN_W / 2, BIN_TOP + 15.5, f ? '#1a0f14' : '#fff6d6');
+      if (v >= 100) { g.fillStyle = '#74c648'; g.fillRect(x + 4, BIN_TOP + 24, 8, 2); g.fillRect(x + 7, BIN_TOP + 22, 2, 6); g.fillStyle = '#a8ec76'; g.fillRect(x + 4, BIN_TOP + 24, 8, .67); }
     });
-    for (const b of G.live) { const sp = bananaSpr(b.kind, b.a); g.drawImage(sp, Math.round(b.x - 9), Math.round(b.y - 9)); }
+    for (const b of G.live) { const sp = bananaSpr(b.kind, b.a); st.hi(sp, b.x - 9, b.y - 9); }
     fx.draw(g); g.restore();
     /* depth gauge on the right rail: where the view sits on the board, and where each banana is */
     const gy0 = 30, gh = H - 36, k = gh / WORLD_H;
@@ -209,7 +234,7 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'plinko', title: 'BANANA<span>PLINKO</span>', sub: 'It hooks, it flips, it tumbles.',
-    legend: [[bananaSpr('normal', Math.PI * 1.5), '<em>10</em> bananas to start'], [bumpSpr[0], '<em>bumpers</em> fire it away'], [A.monkeyS[0], '<em>monkeys</em> shove it around'], [A.heart, '<em>+1 banana</em> edge bin'], [bananaSpr('golden', Math.PI * 1.5), '<em>x3</em> golden banana'], [bananaSpr('diamond', Math.PI * 1.5), '<em class="ice">x5</em> bursts in five']],
+    legend: [[bananaSpr('normal', Math.PI * 1.5), '<em>10</em> bananas to start'], [bumpSpr[0], '<em>bumpers</em> fire it away'], [MGCrew.frame('idle', { look: 'v07' }), '<em>monkeys</em> shove it around'], [A3.heart, '<em>+1 banana</em> edge bin'], [bananaSpr('golden', Math.PI * 1.5), '<em>x3</em> golden banana'], [bananaSpr('diamond', Math.PI * 1.5), '<em class="ice">x5</em> bursts in five']],
     hint: 'move to aim · click / tap / Space to drop', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
   });
   addEventListener('pointermove', ev => { aimX = st.toArt(ev)[0]; });

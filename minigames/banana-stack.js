@@ -11,15 +11,23 @@
   const params = new URLSearchParams(location.search), RARE = +params.get('rare') || 0;
 
   MG.boot();
-  PXA.monkeySets.stk = { k: .7, max: 0, step: 7 }; PXA.monkeySets.stk.angles = [0]; PXA.monkeySets.stk.cache = {};
-  const A = MGArt.build();
+  const A = MGArt.build(), A3 = MGArt3.build(), { cvs, text } = MGArt3;
   const host = document.getElementById('stage'), st = MG.stage(host, W, H, { padY: 40 }), g = st.g;
   host.style.cursor = 'pointer';
-  const ui = MG.ui(host, st, A.banana, 0), fx = MG.fx();
+  const ui = MG.ui(host, st, A3.banana, 0), fx = MG.fx();
   document.querySelector('.mg-hearts').style.display = 'none';
 
   const THEMES = [['#e8b878', '#b57d3e', '#7a4a1e'], ['#a8ec76', '#4aa23c', '#1f6a2a'], ['#9ce0ff', '#3a8ec8', '#184c78'], ['#e4b0ff', '#8c58c8', '#4a2a78']];
   const GOLD = ['#fff7b0', '#ffd23a', '#b38004'], ICE = ['#ffffff', '#9be8ff', '#2a86b8'];
+
+  const rectc = (x, c, a, b, w, h) => { x.fillStyle = c; x.fillRect(a, b, w, h); }, seeded = s0 => () => ((s0 = (s0 * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const cloudSpr = cvs(66, 27, x => { x.fillStyle = '#fff6d6'; for (const [cx, cy, r] of [[14, 18, 9], [27, 12, 12], [42, 15, 11], [54, 19, 8], [33, 20, 10]]) for (let j = -r; j <= r; j++) { const w = Math.round(Math.sqrt(r * r - j * j)); x.fillRect(cx - w, cy + j, w * 2, 1); } rectc(x, '#d9d0b0', 6, 24, 54, 2); rectc(x, '#ffffff', 22, 5, 8, 2); });
+  const groundTop = cvs(W * 3, 36 * 3, (x, tw, th) => {
+    const r = seeded(9); rectc(x, '#5a3517', 0, 12, tw, th - 12); rectc(x, '#1f6a2a', 0, 0, tw, 14); rectc(x, '#2f8a35', 0, 0, tw, 8); rectc(x, '#74c648', 0, 0, tw, 2);
+    for (let i = 0; i < 160; i++) rectc(x, ['#3a1e0b', '#6a4120', '#4a2a12'][i % 3], Math.floor(r() * tw), 18 + Math.floor(r() * (th - 20)), 1 + Math.floor(r() * 3), 1 + Math.floor(r() * 2));
+    for (let i = 0; i < 26; i++) { const px0 = Math.floor(r() * tw), py0 = 20 + Math.floor(r() * (th - 26)); rectc(x, '#8c8670', px0, py0, 4, 3); rectc(x, '#b8b2a0', px0, py0, 4, 1); }
+    for (let i = 0; i < 120; i++) { const bx = Math.floor(r() * tw), bh = 3 + Math.floor(r() * 6); rectc(x, ['#2f8a35', '#3f9a3a', '#1f6a2a', '#74c648'][i % 4], bx, 6 - bh + 3, 1, bh + 3); }
+  });
 
   /* ---------- state ---------- */
   let G = null, botOn = false;
@@ -95,26 +103,28 @@
   }
 
   /* ---------- draw ---------- */
+  /* a banana crate at any width: planks, nails, a stencilled banana; gold and ice crates glint */
   function crate(x, y, w, kind, lvl, sway = 0) {
     const th = kind === 'gold' ? GOLD : kind === 'ice' ? ICE : THEMES[Math.floor(lvl / 10) % THEMES.length];
-    x = Math.round(x + sway); y = Math.round(y);
-    g.fillStyle = '#1a0f14'; g.fillRect(x - 1, y - 1, w + 2, CH + 2);
+    x = Math.round((x + sway) * 3) / 3; y = Math.round(y * 3) / 3; const T = 1 / 3;
+    g.fillStyle = '#1a0f14'; g.fillRect(x - T * 2, y - T * 2, w + T * 4, CH + T * 4);
     g.fillStyle = th[1]; g.fillRect(x, y, w, CH);
-    g.fillStyle = th[0]; g.fillRect(x, y, w, 1); g.fillStyle = th[2]; g.fillRect(x, y + CH - 2, w, 2);
-    g.fillStyle = th[2]; for (let px = x + 6; px < x + w - 4; px += 8) g.fillRect(px, y + 1, 1, CH - 3);
-    g.fillStyle = '#b8b8c4'; g.fillRect(x, y, 3, 2); g.fillRect(x + w - 3, y, 3, 2); g.fillRect(x, y + CH - 3, 3, 2); g.fillRect(x + w - 3, y + CH - 3, 3, 2);
-    if (kind === 'wood' && w > 16) { g.fillStyle = '#ffd23a'; g.fillRect(x + Math.floor(w / 2) - 2, y + 3, 5, 3); g.fillStyle = '#c98f0e'; g.fillRect(x + Math.floor(w / 2) - 2, y + 5, 5, 1); }
-    if (kind === 'gold') { g.fillStyle = '#fff'; g.fillRect(x + 3 + (Math.floor(performance.now() / 90) % Math.max(1, w - 8)), y + 1, 1, CH - 3); }
-    if (kind === 'ice' && Math.floor(performance.now() / 100) % 3 === 0) { g.fillStyle = '#fff'; g.fillRect(x + 4 + ((x * 3) % Math.max(1, w - 8)), y + 2, 2, 2); }
+    g.fillStyle = th[0]; g.fillRect(x, y, w, T * 2); g.fillRect(x, y, T * 2, CH); g.fillStyle = th[2]; g.fillRect(x, y + CH - T * 2, w, T * 2); g.fillRect(x + w - T * 2, y, T * 2, CH);
+    g.fillStyle = th[2]; g.fillRect(x + T * 2, y + CH * .34, w - T * 4, T); g.fillRect(x + T * 2, y + CH * .66, w - T * 4, T); g.fillStyle = th[0]; g.fillRect(x + T * 2, y + CH * .34 + T, w - T * 4, T); g.fillRect(x + T * 2, y + CH * .66 + T, w - T * 4, T);
+    g.fillStyle = th[2]; for (let px = x + 6; px < x + w - 4; px += 8) g.fillRect(px, y + 1, T, CH - 2.33);
+    for (const [nx, ny] of [[x + T * 2, y + T * 2], [x + w - T * 5, y + T * 2], [x + T * 2, y + CH - T * 5], [x + w - T * 5, y + CH - T * 5]]) { g.fillStyle = '#b8b8c4'; g.fillRect(nx, ny, T * 3, T * 3); g.fillStyle = '#f0f0f8'; g.fillRect(nx, ny, T, T); g.fillStyle = '#5a5a66'; g.fillRect(nx + T * 2, ny + T * 2, T, T); }
+    if (kind === 'wood' && w > 16) { const cx = x + w / 2; g.fillStyle = '#ffd23a'; g.fillRect(cx - 2.33, y + 3, 4.67, 1.33); g.fillRect(cx - 1.67, y + 4.33, 3.33, 1.33); g.fillRect(cx - .67, y + 5.67, 1.33, .67); g.fillStyle = '#c98f0e'; g.fillRect(cx - 2.33, y + 4.67, 4.67, T); }
+    if (kind === 'gold') { g.fillStyle = '#fff'; g.fillRect(x + 3 + (Math.floor(performance.now() / 90) % Math.max(1, w - 8)), y + 1, T * 2, CH - 2.33); }
+    if (kind === 'ice' && Math.floor(performance.now() / 100) % 3 === 0) { g.fillStyle = '#fff'; g.fillRect(x + 4 + ((x * 3) % Math.max(1, w - 8)), y + 2, 1.33, 1.33); }
   }
   function draw() {
     g.clearRect(0, 0, W, H); g.save();
     if (G.shake > .3) g.translate(Math.round(rng(-G.shake, G.shake) * .5), Math.round(rng(-G.shake, G.shake) * .5));
-    for (const c of G.clouds) { g.globalAlpha = .55; g.drawImage(PXA.spr.cloud.cv, Math.round(c.x), Math.round(c.y)); g.globalAlpha = 1; }
+    for (const c of G.clouds) { g.globalAlpha = .6; st.hi(cloudSpr, c.x - 9, c.y); g.globalAlpha = 1; }
     g.save(); g.translate(0, Math.round(G.cam));
     /* ground + height markers */
-    g.fillStyle = '#5a3517'; g.fillRect(0, GROUND, W, H - GROUND + 400); g.fillStyle = '#1f6a2a'; g.fillRect(0, GROUND, W, 4); g.fillStyle = '#74c648'; g.fillRect(0, GROUND, W, 1);
-    for (let m = 5; m < 400; m += 5) { const y = GROUND - m * CH; if (y + G.cam < -6) break; if (y + G.cam > H) continue; g.fillStyle = 'rgba(255,246,214,.35)'; for (let x = 0; x < W; x += 6) g.fillRect(x, y, 3, 1); g.fillStyle = 'rgba(255,246,214,.7)'; if (m % 10 === 0) g.fillRect(W - 14, y - 2, 12, 1); }
+    g.fillStyle = '#4a2a12'; g.fillRect(0, GROUND + 30, W, H - GROUND + 400); st.hi(groundTop, 0, GROUND - 2);
+    for (let m = 5; m < 400; m += 5) { const y = GROUND - m * CH; if (y + G.cam < -6) break; if (y + G.cam > H) continue; g.fillStyle = 'rgba(255,246,214,.35)'; for (let x = 0; x < W; x += 6) g.fillRect(x, y, 3, 1); g.fillStyle = 'rgba(255,246,214,.7)'; if (m % 10 === 0) { g.fillRect(W - 15, y - .33, 13, .67); text(g, String(m), W - 15 - String(m).length * 4, y - 3, 'rgba(255,246,214,.85)', 2 / 3); } }
     /* the tower, swaying a touch as it grows */
     G.tower.forEach((c, i) => { const sway = Math.sin(G.t * 1.6 + i * .5) * Math.min(i, 40) * .035; crate(c.x, crateY(c.lvl) + (c.landed > 0 ? Math.round(c.landed * 8) % 2 : 0), c.w, c.kind, c.lvl, sway); });
     for (const d of G.debris) crate(d.x, d.y, d.w, d.kind, d.lvl);
@@ -123,9 +133,8 @@
       const c = G.cur, lift = G.dropT > 0 ? Math.max(0, G.dropT / .12) * 8 : 0, y = crateY(c.lvl) - 14 + (14 - lift) * 0;
       const yy = crateY(c.lvl) - (G.dropT > 0 ? 0 : 14);
       crate(c.x, yy, c.w, c.kind, c.lvl);
-      const f = PXA.monkeyFrame('stk', monkey.t > 0 ? monkey.expr : monkey.blink > 0 ? 'blink' : 'normal', 0, false, G.dir > 0 ? 0 : 1, 0);
-      g.drawImage(f.cv, Math.round(c.x + c.w / 2 - f.pivot[0]), Math.round(yy - 41.5 * .7 - f.pivot[1] + 1));
-      g.fillStyle = 'rgba(255,246,214,.25)'; const t = top(); g.fillRect(Math.round(c.x + c.w / 2), Math.round(yy + CH + 1), 1, Math.max(0, crateY(t.lvl) - yy - CH - 1) | 0);
+      const rider = monkey.t > 0 && monkey.expr === 'screech' ? 'cheer' : G.dropT > 0 ? 'fall' : (Math.floor(performance.now() / 140) % 2 ? 'run1' : 'run2');
+      MGCrew.draw(st, rider, c.x + c.w / 2, yy + 1, { flip: G.dir < 0 });      g.fillStyle = 'rgba(255,246,214,.25)'; const t = top(); g.fillRect(Math.round(c.x + c.w / 2), Math.round(yy + CH + 1), 1, Math.max(0, crateY(t.lvl) - yy - CH - 1) | 0);
     }
     g.restore();
     fx.draw(g); g.restore();
@@ -134,13 +143,12 @@
   /* ---------- shell + input ---------- */
   const S = MG.shell({
     host, ui, id: 'stack', title: 'BANANA<span>STACK</span>', sub: 'Drop the crate. Line it up. Climb.',
-    legend: [[A.banana, '<em>10</em> per crate'], [A.golden, '<em>+50</em> golden crate'], [A.diamond, '<em class="ice">+200</em> diamond crate'], [A.coconut, '<em class="bad">miss</em> = game over']],
+    legend: [[A3.banana, '<em>10</em> per crate'], [A3.golden, '<em>+50</em> golden crate'], [A3.diamond, '<em class="ice">+200</em> diamond crate'], [A3.coconut, '<em class="bad">miss</em> = game over']],
     hint: 'tap / click / Space to drop', spaceStarts: false, onStart: () => newGame(), score: () => G.score,
   });
   addEventListener('pointerdown', ev => { if (S.playing && !ev.target.closest('.mg-over,.mg-nav')) drop(); });
   addEventListener('keydown', e => { if (e.key === ' ' && S.playing) { if (!e.repeat) drop(); e.preventDefault(); } else if (e.key === ' ' && !e.repeat && (S.phase === 'title' || S.phase === 'over')) { sfx.unlock(); S.start(); e.preventDefault(); } });
 
-  ['normal', 'screech', 'blink'].forEach(e => [0, 1].forEach(p => PXA.monkeyFrame('stk', e, 0, false, p, 0)));
   newGame(); S.title();
   if (params.get('autostart')) { S.start(); botOn = !!params.get('bot'); for (let i = 0, n = (+params.get('warp') || 0) * 60; i < n; i++) update(1 / 60); }
   MG.loop(update, draw);
