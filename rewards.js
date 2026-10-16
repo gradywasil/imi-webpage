@@ -1,7 +1,7 @@
 /* Approved LG-01 engine. Partial release: opt in only with ?lg01a=1. */
 window.Rewards = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg01a') === '1';
+  const enabled = (window.GameFeatures?.enabled('lg01a') ?? new URLSearchParams(location.search).get('lg01a') === '1');
   if (window.VaultSaveGate?.blocked || !enabled) return Object.freeze({ enabled: false });
   let owner = false, departed = false, requesting = false, release, booted = false, failed = false;
   const startup = [], finalizers = [], pending = new Map();
@@ -158,7 +158,7 @@ window.Rewards = (() => {
   const integer = n => Number.isSafeInteger(n) && n >= 0;
   const clone = n => JSON.parse(JSON.stringify(n));
   let api, volatile = null, busy = false, writing = false, fault = null;
-  const localEnabled = new URLSearchParams(location.search).get('lg02') === '1';
+  const localEnabled = (window.GameFeatures?.enabled('lg02') ?? new URLSearchParams(location.search).get('lg02') === '1');
   let localIntent = null, localExecuting = false, departureDisposition = null, completedLocalId = null;
   const localUnresolved = () => !!(localIntent || api?.state().prem?.vault?.transition);
   const localDisposition = () => departureDisposition || (localUnresolved() ? 'preserve' : null);

@@ -1,7 +1,7 @@
 /* LG-08C: finite authored copies and fixed, acknowledged Archive income. */
 window.Archive = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg08archive') === '1' && !!window.Estate?.enabled;
+  const enabled = (window.GameFeatures?.enabled('lg08archive') ?? new URLSearchParams(location.search).get('lg08archive') === '1') && !!window.Estate?.enabled;
   const object = x => !!x && typeof x === 'object' && !Array.isArray(x);
   const integer = x => Number.isSafeInteger(x) && x >= 0;
   const copy = x => JSON.parse(JSON.stringify(x));

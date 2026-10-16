@@ -1,7 +1,7 @@
 /* Development-only, earned active-play automation. */
 (() => {
   'use strict';
-  if (new URLSearchParams(location.search).get('lg03') !== '1') return;
+  if (!(window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1')) return;
   let api, elapsed = 0, shopElapsed = 0, coachElapsed = 0, restoreElapsed = 0, restoreCursor = 0, turn = 0, cursor = 0, pending = null, notice = '';
   const items = [['hold', 'Hold to type'], ['contracts', 'Writing contracts'], ['metro', 'Paw metronome'], ['dbl', 'Double touch'], ['agent', 'Literary agent'], ['analyst', 'Market analyst']];
   const order = items.map(([id]) => id);

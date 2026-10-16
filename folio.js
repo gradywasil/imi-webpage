@@ -1,7 +1,7 @@
 /* LG-05A: a separate, opt-in workstation. No book or reward-catalogue identities. */
 window.Folio = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg05folio') === '1';
+  const enabled = (window.GameFeatures?.enabled('lg05folio') ?? new URLSearchParams(location.search).get('lg05folio') === '1');
   const series = [
     {id:'pocket', name:'Pocket tales', leaves:['The ape.', 'The cap.', 'The sun.'], cash:6250, letters:250},
     {id:'journey', name:'Little journeys', leaves:['Pan Wendy.', 'Gold pass.', 'Sweet fudge.'], cash:12500, letters:500},

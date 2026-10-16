@@ -1,7 +1,7 @@
 /* One earned Small Crew run. No production, purchases or wallet authority. */
 window.AutoChallenge = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg08challenge') === '1';
+  const enabled = (window.GameFeatures?.enabled('lg08challenge') ?? new URLSearchParams(location.search).get('lg08challenge') === '1');
   const ids = ['ape-in-the-cape','goodnight-baboon','very-hungry-capuchin','three-little-twigs','chimp-in-the-hat','green-eggs-and-hamster'];
   const goldIDs = [...ids,'peter-panzee','swing-in-the-willows','charlie-chimpolate','wild-apes'];
   const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);

@@ -2,7 +2,7 @@
 window.AwardsCatalogue = (() => {
   'use strict';
   const flags = new URLSearchParams(location.search);
-  const enabled = flags.get('lg10awards') === '1' && flags.get('lg01a') === '1';
+  const enabled = (window.GameFeatures?.enabled('lg10awards') ?? flags.get('lg10awards') === '1') && (window.GameFeatures?.enabled('lg01a') ?? flags.get('lg01a') === '1');
   const policy = 'lg10a-db-only-v1';
   const rows = Object.freeze([
     Object.freeze({"id":"lg10-folio-trio","name":"Bound Together","desc":"Bind Pocket tales, Little journeys and Forest wonders in one Printing.","tier":1,"kind":"L"}),
@@ -56,7 +56,7 @@ window.AwardsCatalogue = (() => {
     } else fail();
     return qualifies ? {rule:1,source:base} : null;
   }
-  const fundingEnabled = enabled && flags.get('lg02funding') === '1';
+  const fundingEnabled = enabled && (window.GameFeatures?.enabled('lg02funding') ?? flags.get('lg02funding') === '1');
   const fundingPolicy = 'lg02e-db-only-v1';
   const fundingRows = Object.freeze([
     Object.freeze({id:'lg02e-stamps-four',name:'Four kinds of story',desc:'Earn four different Imprint genre stamps.',tier:2,kind:'D',amount:5}),

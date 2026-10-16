@@ -2,7 +2,7 @@
 window.Hall = (() => {
   'use strict';
   const flags = new URLSearchParams(location.search);
-  const enabled = flags.get('lg09hall') === '1' && flags.get('lg01a') === '1';
+  const enabled = (window.GameFeatures?.enabled('lg09hall') ?? flags.get('lg09hall') === '1') && (window.GameFeatures?.enabled('lg01a') ?? flags.get('lg01a') === '1');
   const id = 'hall:athletic-five:first', members = ['v01','v02','v03','v04','v05'];
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
   const known = id => /^v(0[1-9]|[12][0-9]|30)$/.test(id);

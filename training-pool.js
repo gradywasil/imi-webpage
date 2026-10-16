@@ -1,7 +1,7 @@
 /* PG-02: protected spending only. Letter inventories remain on their original desks. */
 window.TrainingPool = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('pg02') === '1';
+  const enabled = (window.GameFeatures?.enabled('pg02') ?? new URLSearchParams(location.search).get('pg02') === '1');
   const factors = [1, 4, 8, 16, 32, 64];
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
   const valid = p => object(p) && p.version === 1 && typeof p.enabled === 'boolean';

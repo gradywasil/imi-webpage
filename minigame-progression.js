@@ -1,7 +1,7 @@
 /* Development-only Break Room. Current Ops state is the sole durable authority. */
 (() => {
   'use strict';
-  if (new URLSearchParams(location.search).get('mg01') !== '1') return;
+  if (!(window.GameFeatures?.enabled('mg01') ?? new URLSearchParams(location.search).get('mg01') === '1')) return;
   const GAMES = { barrel:{ page:'barrel-catch', name:'Banana Barrel', modes:['bananas','fruit'] }, shuffle:{ page:'coconut-shuffle', name:'Coconut Shuffle', modes:['main'] } };
   const REFILL = 2 * 60 * 60 * 1000;
   const NODES = {

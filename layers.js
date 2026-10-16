@@ -2,7 +2,7 @@
 window.Layers = (() => {
   'use strict';
   const flags = new URLSearchParams(location.search);
-  const enabled = flags.get('lg05layers') === '1' && flags.get('lg05folio') === '1' && !!window.Rewards?.enabled;
+  const enabled = (window.GameFeatures?.enabled('lg05layers') ?? flags.get('lg05layers') === '1') && (window.GameFeatures?.enabled('lg05folio') ?? flags.get('lg05folio') === '1') && !!window.Rewards?.enabled;
   const genres = [
     {id:'mystery', name:'Mystery', letters:'CDELN', bands:[1,2], muse:'christie', text:'The lost hat was under the map.'},
     {id:'romance', name:'Romance', letters:'AEHRT', bands:[0,1], muse:'austen', text:'Two shy apes share a picnic and a kind note.'},

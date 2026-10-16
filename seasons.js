@@ -1,7 +1,7 @@
 ﻿/* Seasons records explicit, acknowledged observations of existing Stats units. */
 window.Seasons = (() => {
   'use strict';
-  const flags = new URLSearchParams(location.search), enabled = flags.get('lg09seasons') === '1' && flags.get('lg01a') === '1';
+  const flags = new URLSearchParams(location.search), enabled = (window.GameFeatures?.enabled('lg09seasons') ?? flags.get('lg09seasons') === '1') && (window.GameFeatures?.enabled('lg01a') ?? flags.get('lg01a') === '1');
   const anchor = 1767571200000, duration = 604800000;
   const integer = n => Number.isSafeInteger(n) && n >= 0;
   const object = n => n !== null && typeof n === 'object' && !Array.isArray(n);

@@ -470,7 +470,7 @@
   const readyList = () => { const now = performance.now(); if (!readyC || now - readyT > 250) { readyC = RECIPES.filter(canWrite); readyT = now; } return readyC; };
   const dropCaches = () => { listC = null; readyC = null; soldC = null; };
   const dealMult = () => DEALS.reduce((m, d) => (S.deals[d.id] ? m * (d.mult || 1) : m), 1) * (S.deals.clubs ? 1 + .03 * soldCount() : 1);
-  const royaltyScale = () => new URLSearchParams(location.search).get('pg03') === '1' ? 2 * (1 + .35 * Math.min(S.printing, 7)) : 1;
+  const royaltyScale = () => (window.GameFeatures?.enabled('pg03') ?? new URLSearchParams(location.search).get('pg03') === '1') ? 2 * (1 + .35 * Math.min(S.printing, 7)) : 1;
   const bookRoy = r => r.pay * (r.kid ? KID_ROY : r.lib ? LIB_ROY : 1) * ROY_BASE * royaltyScale() * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);
   const royBase = () => soldStats().pay * ROY_BASE * royaltyScale() * dealMult() * awardMult() * legacyMult() * (museOn('austen') ? 1.25 : 1);   // bookRoy summed over the shelf, with the shared factors pulled out of the loop
   const royRate = () => royBase() * passive();
@@ -696,7 +696,7 @@
     { n: 100, name: 'BANANA BONUS', desc: `${fmt(cash(50))} bananas per title written, plus ${fmt(cash(50))}` },
     { n: 200, name: 'MONKEY MANIA', desc: '30s of Frenzy and Golden Keys, plus 10 letters' }
   ];
-  const HIGH_MILES = new URLSearchParams(location.search).get('ui01') === '1' ? [
+  const HIGH_MILES = (window.GameFeatures?.enabled('ui01') ?? new URLSearchParams(location.search).get('ui01') === '1') ? [
     [500, 'LONG RUN'], [1000, 'MARATHON'], [2000, 'IRON PAWS'],
     [3000, 'UNBROKEN'], [4000, 'LEGEND'], [5000, 'TYPING MYTH']
   ].map(([n, name]) => ({ n, name, desc: `A streak of ${n} taps!`, recognition: true })) : [];
@@ -1328,7 +1328,7 @@
   const gardenTime = (ch, desk) => Math.round((30 + (12 - FREQ[ch]) * 8) * GARDEN_SLOW[desk == null ? S.sel : desk]);   // seconds: rare letters take longer
   const fmtSecs = n => (n >= 3600 ? `${Math.floor(n / 3600)}h ${Math.round(n % 3600 / 60)}m` : n >= 120 ? `${Math.round(n / 60)}m` : `${n}s`);
   const gardenYield = ch => Math.round(6 + (12 - FREQ[ch]) * 1.2);  // ...and give more
-  const gardenPrototype = () => new URLSearchParams(location.search).get('lg03') === '1' && !!layers?.enabled;
+  const gardenPrototype = () => (window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1') && !!layers?.enabled;
   const cropFor = (ch, desk) => ({ ch, desk, ready:savedWallNow() + gardenTime(ch, desk) * 1000 });
   function grantCrop(state, i) {
     const b = state.garden.beds[i], d = state.desks[b.desk] || state.desks[state.sel], y = gardenYield(b.ch);
@@ -1434,7 +1434,7 @@
   const editionMult = () => 1 + .35 * S.printing;
   const chal = id => !!S.challenge && S.challenge.id === id;
   const chDef = id => CHALLENGES.find(c => c.id === id);
-  const challengePrototype = new URLSearchParams(location.search).get('lg03') === '1';
+  const challengePrototype = (window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1');
   const challengeCatalog = () => CHALLENGES.filter(c => !c.helper || challengePrototype || S.chDone[c.id] || chal(c.id));
   const challengeSelectable = c => c.imprint ? gardenPrototype() && validChallengeImprint() && S.printing >= 4 && S.intro.done && !!writer?.owns() :
     !c.helper || challengePrototype && S.printing >= 4 && S.intro.done && !!writer?.owns();
@@ -1817,7 +1817,7 @@
   }
 
   // Manual Small Crew proof belongs to this fixed owner, never the ordinary first-clear counter.
-  const masteryEnabled = () => printingEnabled() && new URLSearchParams(location.search).get('lg08mastery') === '1';
+  const masteryEnabled = () => printingEnabled() && (window.GameFeatures?.enabled('lg08mastery') ?? new URLSearchParams(location.search).get('lg08mastery') === '1');
   const masteryIDs = ['ape-in-the-cape','goodnight-baboon','very-hungry-capuchin','three-little-twigs','chimp-in-the-hat','green-eggs-and-hamster','peter-panzee','swing-in-the-willows','charlie-chimpolate','wild-apes'];
   const masteryTargets = {bronze:6,silver:8,gold:10};
   const masteryActive = (s = S) => s.meta.challengeMastery?.active != null;
@@ -1947,7 +1947,7 @@
   }
 
   // LG-08G owns only ordinary Printing. Challenge/full reset keep their old path.
-  const printingEnabled = () => ['lg08print','lg03','lg01a','lg05folio','lg05layers','lg08estate'].every(k => new URLSearchParams(location.search).get(k) === '1');
+  const printingEnabled = () => ['lg08print','lg03','lg01a','lg05folio','lg05layers','lg08estate'].every(k => (window.GameFeatures?.enabled(k) ?? new URLSearchParams(location.search).get(k) === '1'));
   const printingHelper = () => extensions.get('automation') || (window.__OPS_EXTENSIONS || []).find(([id]) => id === 'automation')?.[1];
   const printInteger = n => Number.isSafeInteger(n) && n >= 0;
   let printingOffer = null, printingIntent = null;
@@ -3105,7 +3105,7 @@
   const snap = () => ({ typed: S.stats.letters, combo: combo.n, manual: S.stats.manual, intro: { ...S.intro }, letters: totalLetters(cur()), words: S.stats.words, paws: totalPaws(), sold: Object.keys(S.written).length, bananas: bananas.get(), ready: readyList().length, tab: ui.tab, sub: ui.sub, desk: S.sel, owned: S.desks.filter(d => d.owned).length, deskPrice: DESKS[1].price, gold: S.gold, printing: S.printing, stars: starsNow(), hireCost: PAW_COST[0], hot: S.market.v.some((v, b) => S.desks[b] && S.desks[b].owned && marketMult(b) >= 1.4), pitch: !!firstPitch(), museSlots: museSlots() });
   // Pickup growth uses visible play time and sustained income, never offline time or the wallet.
   const pickup = {
-    ...(new URLSearchParams(location.search).get('lg03') === '1' ? {
+    ...((window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1') ? {
       netCreated:(kind, item) => extensions.get('automation')?.netCreated(kind, item),
       netCleared:(kind, item) => extensions.get('automation')?.netCleared(kind, item)
     } : {}),
@@ -3347,7 +3347,7 @@
         return result;
       }
     } : {}),
-    ...(new URLSearchParams(location.search).get('lg03') === '1' ? {
+    ...((window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1') ? {
       automationAllowed: () => !masteryActive() && !window.VaultSaveGate?.blocked && progressing() && (!writer || !writer.localDisposition() && writer.guard(S)),
       museEnabled:gardenPrototype, seatMuse, commitMuse, museContext, museScore, museSelection, clearMuseIncomplete,
       museStatus:() => ({pending:!!musePending}),
@@ -3485,7 +3485,7 @@
         return extensionAPI.quoteAutomationHire(i, reservePercent).ok && !!buyUp('paw', i, 1);
       }
     } : {}),
-    ...(new URLSearchParams(location.search).get('mg01') === '1' ? {
+    ...((window.GameFeatures?.enabled('mg01') ?? new URLSearchParams(location.search).get('mg01') === '1') ? {
       commitMinigames(expected, next) {
         if (window.VaultSaveGate?.blocked || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ok:false, error:'Save owner is unavailable' };
         const current = S.meta.minigames;

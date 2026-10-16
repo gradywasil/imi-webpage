@@ -1,7 +1,7 @@
 /* LG-09E: the owner-approved seven-play anthology. No demo conversion. */
 window.WorksPlay = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg09works') === '1' && !!window.Archive?.enabled;
+  const enabled = (window.GameFeatures?.enabled('lg09works') ?? new URLSearchParams(location.search).get('lg09works') === '1') && !!window.Archive?.enabled;
   const copy = x => JSON.parse(JSON.stringify(x));
   const object = x => !!x && typeof x === 'object' && !Array.isArray(x);
   const integer = x => Number.isSafeInteger(x) && x >= 0;

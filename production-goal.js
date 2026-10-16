@@ -1,7 +1,7 @@
 /* PG-01: exact production sets. No state is created until an explicit acknowledged choice. */
 window.ProductionGoal = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('pg01') === '1';
+  const enabled = (window.GameFeatures?.enabled('pg01') ?? new URLSearchParams(location.search).get('pg01') === '1');
   const bands = [3, 5, 7, 9, 11, 13];
   const collections = { all: 'All collections', authored: 'Authored readers', kids: "Kids' reading list", library5: 'Library cap 5', library7: 'Library cap 7', library9: 'Library cap 9', pitches: 'Commissioned pitches' };
   let pending = null, error = '';

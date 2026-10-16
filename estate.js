@@ -1,7 +1,7 @@
 /* LG-08B. Fixed, optional Estate reset. Archive follows under a separate lease. */
 window.Estate = (() => {
   'use strict';
-  const enabled = new URLSearchParams(location.search).get('lg08estate') === '1' && !!window.Layers?.enabled;
+  const enabled = (window.GameFeatures?.enabled('lg08estate') ?? new URLSearchParams(location.search).get('lg08estate') === '1') && !!window.Layers?.enabled;
   const copy = x => JSON.parse(JSON.stringify(x));
   const same = window.Layers.same, integer = x => Number.isSafeInteger(x) && x >= 0;
   const object = x => !!x && typeof x === 'object' && !Array.isArray(x);

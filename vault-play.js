@@ -3,15 +3,15 @@ window.VaultPlay = (() => {
   'use strict';
   const item = 'lamp-plus:1', clone = x => JSON.parse(JSON.stringify(x));
   const speedItem = 'game-speed:1';
-  const speedEnabled = () => new URLSearchParams(location.search).get('lg02speed') === '1';
+  const speedEnabled = () => (window.GameFeatures?.enabled('lg02speed') ?? new URLSearchParams(location.search).get('lg02speed') === '1');
   const speedReady = () => true;
   const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-  const flags = () => ['lg01a','lg02','lg02lamp'].every(k => new URLSearchParams(location.search).get(k) === '1');
+  const flags = () => ['lg01a','lg02','lg02lamp'].every(k => (window.GameFeatures?.enabled(k) ?? new URLSearchParams(location.search).get(k) === '1'));
   // The task runner establishes this before navigation and records the external identities.
   // This assertion is not proof against other or stale documents on a shared origin.
   const isolated = () => window.__LG02_LAMP_TASK?.origin === location.origin &&
     /^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(location.origin);
-  const enabled = () => flags() && isolated();
+  const enabled = () => flags() && (!!window.GameFeatures && !GameFeatures.legacy || isolated());
   const available = () => true;
   const pending = s => Object.entries(s.prem?.vault?.purchases || {}).find(([,r]) => r.status === 'undoable')?.[0];
   const cap = s => s.prem?.vault?.active?.[item] ? 86400 : 0;
@@ -41,13 +41,11 @@ window.VaultPlay = (() => {
       return true;
     } catch { return false; }
   }
-  function supported(s, absent = false) {
+  function savedSupported(s, absent = false) {
     if (!object(s) || !object(s.prem)) return absent && object(s) && s.prem === undefined;
-    const p = s.prem, v = p.vault, m = s.meta || {}, a = m.automation || {};
+    const p = s.prem, v = p.vault;
     if ([p.bought,p.boughtTotal,p.spentBought].some(n => n !== undefined && n !== 0) ||
         Object.values(p.credits || {}).some(c => c.source !== 'earned')) return false;
-    if (Object.entries(m).some(([k,x]) => x?.pending != null && !(k==='archive' && archiveRecovery(s))) || Object.values(a).some(x => x?.pending != null || x?.manual?.pending != null) || m.minigames?.active != null ||
-        a.pitch?.sale != null || m.challengeMastery?.active != null || a.challenge?.active != null || s.challenge?.a11 || s.challenge?.mastery) return false;
     if (v === undefined) return absent && Vault.validate(s).status === 'absent';
     if (Vault.validate(s).status !== 'valid' || !object(v.freeLamp) || v.freeLamp.version !== 1 || v.freeLamp.rule !== 1 ||
         Object.keys(v.freeLamp).length !== 2 || Object.keys(v).some(k => !['version','nextSequence','purchases','owned','active','selections','settings','freeLamp','freeSpeed','transition'].includes(k))) return false;
@@ -58,11 +56,19 @@ window.VaultPlay = (() => {
     const cp = s.rewards?.awayCheckpoint;
     return !cp || cp.multiplier === speed(s) && !cp.capUnbounded && cp.cap === Vault.oldEffects(s)?.capSeconds;
   }
+  // Busy gameplay belongs to its existing owner; it only prevents new Vault commands.
+  function supported(s, absent = false) {
+    if (!savedSupported(s, absent)) return false;
+    const m = s.meta || {}, a = m.automation || {};
+    if (Object.entries(m).some(([k,x]) => x?.pending != null && !(k==='archive' && archiveRecovery(s))) || Object.values(a).some(x => x?.pending != null || x?.manual?.pending != null) || m.minigames?.active != null ||
+        a.pitch?.sale != null || m.challengeMastery?.active != null || a.challenge?.active != null || s.challenge?.a11 || s.challenge?.mastery) return false;
+    return true;
+  }
   function rawCheck(opsRaw, walletRaw) {
     try {
       const s = opsRaw === null ? null : JSON.parse(opsRaw), w = walletRaw === null ? null : JSON.parse(walletRaw);
       if (s?.prem && Object.hasOwn(s.prem,'vault')) {
-        if (!available() || !enabled() || s.prem.vault.freeSpeed && (!speedEnabled() || !speedReady()) || !supported(s) || !object(w) || w.economyVersion !== 1 || !Number.isSafeInteger(w.score) || w.score < 0) return false;
+        if (!available() || !enabled() || s.prem.vault.freeSpeed && (!speedEnabled() || !speedReady()) || !savedSupported(s) || !object(w) || w.economyVersion !== 1 || !Number.isSafeInteger(w.score) || w.score < 0) return false;
       }
       return true;
     } catch { return false; }
@@ -130,7 +136,7 @@ window.VaultPlay = (() => {
         const history=Object.entries(v?.purchases||{}).reverse(),slice=history.slice(page*20,page*20+20);
         if(history.length)body+=`<details><summary>Local Diamond Banana history (${history.length})</summary>${slice.map(([key,h])=>`<p>${esc(key)}. ${esc(new Date(h.createdWallMs).toLocaleString())}. ${name(h.itemId)}. ${h.cost} DB, ${h.debitEarned} earned / ${h.debitBought} bought. ${h.status==='undoable'?'Waiting to activate':h.status==='active'?'Active':'Undone'}.</p>`).join('')}${page?button('previous','Previous'):''}${history.length>(page+1)*20?button('next','Next'):''}</details>`;
       }
-      body+='<p>Items stay through Second Printing. This game saves on this browser. Clearing browser data can lose your save.</p><p>No ads. Ever. Every layer, challenge and automation can be reached by playing. Diamond Bananas buy the exact permanent upgrades shown here. No random prizes or timed offers.</p><p>Vault test: one game document on this isolated test origin. Shared saves and public purchases are not enabled.</p>';
+      body+='<p>Items stay through Second Printing. This game saves on this browser. Clearing browser data can lose your save.</p><p>No ads. Ever. Every layer, challenge and automation can be reached by playing. Diamond Bananas buy the exact permanent upgrades shown here. No random prizes or timed offers.</p>';
       a.morph(host,`<div class="lg02d-lamp">${body}</div>`);
     }
     function openReview(itemId) {try{quote=Rewards.lampReview(itemId);inert(true);api.mark();queueMicrotask(()=>{render(api,document.getElementById('o-vault'));document.querySelector('[data-act="vault:cancel"]')?.focus();});}catch(e){notice=e.message;api.mark();}}
@@ -147,5 +153,5 @@ window.VaultPlay = (() => {
     },true);
     window.IMI.settings.registerVault({render:()=>`<div class="set-row lg02d-lamp-setting"><span>Hide the Diamond store</span><button type="button" class="set-btn" data-set="lamp-hide" aria-pressed="${!!api.state().prem.vault?.settings.hideStore}">${api.state().prem.vault?.settings.hideStore?'On':'Off'}</button><p>Hide item prices and spending buttons. Your earned Diamond Bananas and owned items still work.</p><button type="button" class="set-btn" data-set="lamp-open">Vault, history and pending purchase</button></div>`,action:act=>act==='lamp-hide'?command({kind:'settings',hideStore:!api.state().prem.vault?.settings.hideStore}):api.setTab('vault')});
   }
-  return Object.freeze({available,enabled,isolated,speedEnabled,speedReady,supported,rawCheck,startupCheck,pending,cap,speed,review,project,empty,install});
+  return Object.freeze({available,enabled,isolated,speedEnabled,speedReady,supported,savedSupported,rawCheck,startupCheck,pending,cap,speed,review,project,empty,install});
 })();

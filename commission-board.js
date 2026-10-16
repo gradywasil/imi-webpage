@@ -1,7 +1,7 @@
 /* The daily board owns its bounded rules and projection; Ops owns real sales. */
 window.CommissionBoard = (() => {
   'use strict';
-  const flags = new URLSearchParams(location.search), enabled = flags.get('lg09board') === '1' && flags.get('lg01a') === '1';
+  const flags = new URLSearchParams(location.search), enabled = (window.GameFeatures?.enabled('lg09board') ?? flags.get('lg09board') === '1') && (window.GameFeatures?.enabled('lg01a') ?? flags.get('lg01a') === '1');
   const ids = ['ape-in-the-cape','goodnight-baboon','very-hungry-capuchin','three-little-twigs','chimp-in-the-hat','green-eggs-and-hamster'];
   const integer = n => Number.isSafeInteger(n) && n >= 0;
   const object = n => n !== null && typeof n === 'object' && !Array.isArray(n);
