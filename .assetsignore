@@ -9,3 +9,7 @@ package.json
 package-lock.json
 README.md
 icons/src
+docs/
+.claude/
+tests/
+tools/
