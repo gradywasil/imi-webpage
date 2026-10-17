@@ -96,7 +96,7 @@ window.Layers = (() => {
   // Overwrite only room fields. Everything else, including unknown top-level/meta data, survives.
   function projectRoom(s, fresh) {
     const next = copy(s);
-    const room = ['focus','autoFocus','printing','run','challenge','muses','garden','divs','offers','market','agent','analyst','baro','pub','lamp','deals','hold','metro','dbl','contracts','sel','written','bank','desks'];
+    const room = ['focus','autoFocus','printing','run','challenge','muses','garden','divs','offers','market','agent','analyst','pitchteam','carbon','baro','pub','lamp','deals','hold','metro','dbl','contracts','sel','written','bank','desks'];
     for (const key of room) next[key] = object(fresh[key]) ? {...next[key], ...fresh[key]} : copy(fresh[key]);
     // These maps are room inventory; old keys must not survive the merge above.
     for (const key of ['written','bank','deals']) next[key] = {};
@@ -224,7 +224,7 @@ window.Layers = (() => {
     } catch(e) { notice = e.message; api.mark(); }
   }
   if (enabled) (window.__OPS_EXTENSIONS ??= []).push(['layers', {
-    tab:['imprints','', 'Imprints','Legacy foundations','Imprints',true], visible:c => shelfFirst || c.state().printing >= 7 || identity(c.state()) > 0,
+    tab:['imprints','i-imprint', 'Imprints','Reset again for Press Seals','Imprints',true], visible:c => shelfFirst || c.state().printing >= 7 || identity(c.state()) > 0,
     init:(_reason,c) => { api = c; }, render,
     actions:{open:() => { shelfFirst = false; api.setTab('imprints'); }, back:() => api.setTab('legacy'), preview,
       folio:() => api.setTab('folio'), shelf:() => act('buy','shelf'),

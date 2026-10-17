@@ -1414,11 +1414,11 @@ window.Rewards = (() => {
     const history = !r.summaryAcknowledged && state().intro.done && !document.querySelector('.o-modal, .o-celebrate') ? historicalSummary() : '';
     const diamonds = state().prem.earned + state().prem.bought;
     return '<section class="o-goal-full" aria-label="Award goals">' + (complete ? '<p>All ' + api.rewardAwards().length + ' awards earned</p>' : goals.map(g =>
-      '<button type="button" class="o-goal-row" data-act="rewards:goal" data-id="' + g.id + '"><b>' + escape(g.name) + '</b><span>' + escape(g.desc + (g.printing ? ' · this Printing' : '') + ' ' + progressText(g)) + '</span><small>' + escape(rewardText(g.id)) + '</small></button>').join('') +
+      '<button type="button" class="o-goal-row" data-act="rewards:goal" data-id="' + g.id + '"><b>' + escape(g.name) + '</b><span>' + escape(g.desc + (g.printing ? ' · this Printing' : '') + ' ' + progressText(g)) + '</span><span class="o-goal-bar"><i style="width:' + (g.progress === null || !(g.target > 0) ? 0 : Math.max(0, Math.min(100, 100 * g.progress / g.target))).toFixed(1) + '%"></i></span><small>' + escape(rewardText(g.id)) + '</small></button>').join('') +
       (goals.length < 3 ? '<p>More goals as your room grows</p>' : '')) + '</section>' +
       '<section class="o-reward-inventory" aria-label="Stored rewards">' + (diamonds >= 1 ? '<p>Diamond Bananas: ' + diamonds + ' (' + state().prem.earned + ' earned, ' + state().prem.bought + ' bought)</p>' : '') +
-      '<button type="button" class="o-goal-row" data-act="rewards:activate" ' + (unavailable ? 'disabled' : '') + '>Royalty Rush · ' + count + ' stored · x7 royalties and division income for 15 game seconds' +
-      (active ? ' · Active' : api.nativeRush() ? ' · Native rush active' : !count ? ' · No stored tokens' : !canDisplayAct() ? ' · Waiting to save' : ' · Activate one') + '</button></section>' +
+      (count || active ? '<button type="button" class="o-goal-row" data-act="rewards:activate" ' + (unavailable ? 'disabled' : '') + '>Royalty Rush · ' + count + ' stored · x7 royalties and division income for 15 game seconds' +
+      (active ? ' · Active' : api.nativeRush() ? ' · Native rush active' : !count ? ' · No stored tokens' : !canDisplayAct() ? ' · Waiting to save' : ' · Activate one') + '</button>' : '') + '</section>' +
       (history ? '<div class="o-reward-history"><p>' + escape(history) + '</p><button type="button" class="o-goal-row" data-act="rewards:acknowledge">Dismiss summary</button></div>' : '');
   }
   function afterRender() {
@@ -1429,10 +1429,14 @@ window.Rewards = (() => {
     goalHost.hidden = !revealed || !goals.length;
     document.getElementById('opsRoot').classList.toggle('has-goals',revealed && goals.length > 0);
     const disabled = !canDisplayAct() ? ' disabled' : '';
-    const line = g => '<span class="o-goal-line"><span>' + escape(actionText(g)) + '</span><span>' + escape(progressText(g)) + '</span></span>';
-    api.morph(goalHost, '<button type="button" class="o-goals-phone" aria-label="Goals" aria-description="' + escape(goals.map(summary).join(' ')) + '" data-act="rewards:goal" data-id="' + (goals[0]?.id || '') + '"' + disabled + '>' + goals.map(line).join('') +
-      (goals.length < 3 ? '<span class="o-goal-line">More goals as your room grows</span>' : '') + '</button><div class="o-goals-desktop">' +
-      goals.map(g => '<button type="button" data-act="rewards:goal" data-id="' + g.id + '" aria-description="' + escape(summary(g)) + '"' + disabled + '>' + line(g) + '</button>').join('') + '</div>');
+    /* A small Goals tag over the room: three pips show how close each goal is, and a tap drops the list down. */
+    const frac = g => g.progress === null || !(g.target > 0) ? 0 : Math.max(0, Math.min(1, g.progress / g.target));
+    const line = g => '<span class="o-goal-line"><span>' + escape(actionText(g)) + '</span><span>' + escape(progressText(g)) + '</span></span><span class="o-goal-bar"><i style="width:' + (frac(g) * 100).toFixed(1) + '%"></i></span>';
+    const open = goalHost.classList.contains('open');
+    api.morph(goalHost, '<button type="button" class="o-goals-toggle" data-act="rewards:goals" aria-expanded="' + open + '" aria-label="Goals" aria-description="' + escape(goals.map(summary).join(' ')) + '"><b>Goals</b><span class="o-goal-pips" aria-hidden="true">' +
+      goals.map(g => '<i class="' + (frac(g) >= 1 ? 'full' : '') + '" style="--f:' + frac(g).toFixed(3) + '"></i>').join('') + '</span><span class="o-goal-caret" aria-hidden="true"></span></button><div class="o-goals-list"' + (open ? '' : ' hidden') + '>' +
+      goals.map(g => '<button type="button" class="o-goal-item" data-act="rewards:goal" data-id="' + g.id + '" aria-description="' + escape(summary(g)) + '"' + disabled + '>' + line(g) + '</button>').join('') +
+      (goals.length < 3 ? '<span class="o-goal-more">More goals as your room grows</span>' : '') + '</div>');
     const identity = goals.map(g => g.id).join('|');
     if (identity !== announced) { if (notice && announced) notice.textContent = 'Award goals updated. ' + goals.map(g => g.name).join(', '); announced = identity; }
   }
@@ -1449,7 +1453,8 @@ window.Rewards = (() => {
     },
     afterRender,
     vaultClosed:() => { if(lifetimeLease) {api.lampRelease(lifetimeLease); lifetimeLease=null;} },
-    actions:{ activate:() => activate(), goal:el => { if (canDisplayAct()) api.openAward(el.dataset.id); },
+    actions:{ activate:() => activate(), goal:el => { if (canDisplayAct()) { goalHost?.classList.remove('open'); api.openAward(el.dataset.id); } },
+      goals:() => { goalHost?.classList.toggle('open'); afterRender(); },
       acknowledge:() => { if (canDisplayAct()) saveUI(r => { r.summaryAcknowledged = true; }); } }
   }]);
   return Object.freeze({ enabled, owns, start, timers, onPagehide: callback => finalizers.push(callback),

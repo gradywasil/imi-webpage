@@ -2,7 +2,9 @@
 window.TrainingPool = (() => {
   'use strict';
   const enabled = (window.GameFeatures?.enabled('pg02') ?? new URLSearchParams(location.search).get('pg02') === '1');
-  const factors = [1, 4, 8, 16, 32, 64];
+  /* Letter cost multiplier by machine when training is shared. About 1.5x the typing-time gap between the machines (PAW_BASE), so a big stockpile
+     jump-starts a new machine but maxing one out still takes hours of every desk typing. */
+  const factors = [1, 8, 28, 90, 280, 900];
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
   const valid = p => object(p) && p.version === 1 && typeof p.enabled === 'boolean';
   let api, pending = null, error = '';

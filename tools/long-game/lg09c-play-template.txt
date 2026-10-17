@@ -1,0 +1,151 @@
+/* LG-09C: the owner-approved first permanent play. No demo conversion. */
+window.WorksPlay = (() => {
+  'use strict';
+  const enabled = new URLSearchParams(location.search).get('lg09works') === '1' && !!window.Archive?.enabled;
+  const copy = x => JSON.parse(JSON.stringify(x));
+  const object = x => !!x && typeof x === 'object' && !Array.isArray(x);
+  const integer = x => Number.isSafeInteger(x) && x >= 0;
+  const fail = message => {throw Error(message);};
+  // Frozen approved bytes and ordered bill. Historical proposal status in the descriptor stays intact.
+  const manifest = __MANIFEST__;
+  const descriptor = __DESCRIPTOR__;
+  const tokens=manifest.orderedTokens,bill=WorksMaterial.bill;
+  const identity=JSON.stringify(manifest),receipt=JSON.stringify(descriptor);
+  if(JSON.stringify(manifest.body.toUpperCase().match(/[A-Z]+/g))!==JSON.stringify(tokens)||tokens.length!==200||tokens.join('').length!==1000||Object.entries(manifest.perLetterBill).some(([ch,n])=>bill(tokens.join(''))[ch]!==n))fail('Approved Works content changed.');
+  // At most 200 words are scanned once. Production reads only 26 counters thereafter.
+  const suffix=Array.from({length:201},(_,i)=>bill(tokens.slice(i).join('')));
+  function remaining(index){
+    if(index===20000)return {};
+    const start=Math.max(200,index),ed=Math.floor(start/200),offset=start%200,result={};
+    for(const ch of Object.keys(manifest.perLetterBill))result[ch]=(suffix[offset][ch]||0)+Math.max(0,99-ed)*manifest.perLetterBill[ch];
+    return result;
+  }
+  function current(s){
+    const w=s.meta.works;if(w===undefined)return null;
+    if(!object(w)||w.version!==1||w.content!==identity||w.editions!==100||w.unlocked!==true||!integer(w.revision)||!integer(w.index)||w.index>20000||typeof w.working!=='boolean'||w.index===20000&&w.working||w.working&&s.meta.worksDemo?.working||!Array.isArray(w.trays)||w.trays.length!==s.desks.length||typeof w.signed!=='boolean')fail('Unsupported Works save. Preserve it for recovery.');
+    const cap=remaining(w.index),total={};
+    for(const tray of w.trays){
+      if(!object(tray))fail('Unsupported Works tray.');
+      for(const [ch,n]of Object.entries(tray)){
+        if(!/^[A-Z]$/.test(ch)||!integer(n)||!integer((total[ch]||0)+n))fail('Unsupported Works inventory.');
+        total[ch]=(total[ch]||0)+n;
+      }
+    }
+    if(Object.entries(total).some(([ch,n])=>n>(cap[ch]||0)))fail('Works tray exceeds remaining bill.');
+    if(w.signed ? w.index!==20000||!object(w.signature)||w.signature.claimId!==descriptor.claimId||w.signature.receipt!==receipt||w.signature.content!==identity||!object(w.playbill)||w.playbill.number!==1||w.playbill.title!==playbillTitle||w.playbill.body!==playbillBody : w.signature!==null||w.playbill!==null)fail('Unsupported Works signature. Preserve it for recovery.');
+    return copy(w);
+  }
+  function retained(s){if(s.meta.works!==undefined)current(s);}
+  function factor(s){if(!enabled)return 1;try{return current(s)?.signed?1+Math.min(7,descriptor.reward.automaticTypistRatePercentagePoints)/100:1;}catch{return 1;}}
+  const active=s=>enabled&&!!s.meta.works?.working&&!s.meta.worksDemo?.working&&!s.challenge;
+  const eligible=s=>s.intro.done&&Estate.current(s).count>=3&&Archive.current(s).entries.filter(e=>Archive.stage(e,Date.now())===2).length>=2;
+  const snapshot=s=>copy([s.meta.works??null,s.meta.worksDemo??null,s.desks.map(d=>[d.owned,d.letters,d.tray]),s.challenge,s.focus,s.autoFocus,s.bank,s.meta.productionGoal??null,s.meta.folio??null,s.meta.archive?.working??null]);
+  function bump(w){if(!integer(w.revision+1))fail('Works revision exhausted.');w.revision++;}
+  function inventory(s){for(const d of s.desks)if(!object(d.letters)||Object.entries(d.letters).some(([ch,n])=>!/^[A-Z]$/.test(ch)||!integer(n)))fail('Unsupported drawer inventory.');}
+  function plan(s,protectedFloor=[]){
+    const w=current(s);if(!w||!active(s))return null;
+    inventory(s);const desks=copy(s.desks);let changed=false;
+    // One edition per update, including when all remaining trays are affordable.
+    for(let step=0;step<200&&w.index<20000;step++){
+      if(!WorksMaterial.consume(desks,w.trays,tokens[w.index%200],w.index>=200,protectedFloor))break;
+      w.index++;changed=true;
+    }
+    if(!changed)return null;if(w.index===20000)w.working=false;
+    bump(w);return {works:w,desks};
+  }
+  function advance(s,protectedFloor){const p=plan(s,protectedFloor);if(p){s.meta.works=p.works;s.desks=p.desks;}return !!p;}
+  function route(s,i,ch,n){
+    if(!active(s))return 0;
+    const w=current(s);if(!w||!s.desks[i]?.owned||!/^[A-Z]$/.test(ch)||!integer(n))fail('Invalid Works generation.');
+    const left=(remaining(w.index)[ch]||0)-w.trays.reduce((sum,p)=>sum+(p[ch]||0),0),take=Math.min(n,left);
+    if(take){w.trays[i][ch]=(w.trays[i][ch]||0)+take;bump(w);s.meta.works=w;}
+    return take;
+  }
+  function floors(s,original=[]){
+    const result=s.desks.map(()=>({}));if(!active(s))return result;
+    const w=current(s);if(!w||w.index>=200)return result;
+    for(const [ch,n]of Object.entries(bill(tokens[w.index]))){
+      let left=n;
+      for(let i=0;i<s.desks.length&&left;i++)if(s.desks[i].owned){const take=Math.min(left,Math.max(0,(s.desks[i].letters[ch]||0)-(original[i]?.[ch]||0)));result[i][ch]=take;left-=take;}
+    }
+    return result;
+  }
+  function proposal(s,r,protectedFloor){
+    if(!enabled||!Layers.epochMatches(s,r)||r.content!==identity||!Layers.same(snapshot(s),r.expected))fail('Works changed. Review the action again.');
+    retained(s);inventory(s);
+    if(s.meta.minigames?.active||s.rewards.awayCheckpoint||s.meta.archive?.pending||s.meta.folio?.pending||s.meta.layers?.pending||s.meta.estate?.pending||s.meta.automation?.pitch?.sale||s.meta.automation?.media?.pending||s.prem.vault?.transition||Object.values(s.rewards.claims).some(c=>c.status==='prepared'))fail('Finish original production and waiting saves first.');
+    const next=copy(s);let w=current(s);
+    const conflict=s.challenge||s.meta.worksDemo?.working||s.meta.folio?.working||s.meta.archive?.working!=null||s.meta.folio!==undefined&&!Folio.valid(s.meta.folio);
+    if(r.action==='introduce'){
+      if(conflict)fail('Finish the challenge or pause other work first.');
+      if(w||!eligible(s))fail('Introduction requires Estate 3 and two active stage 2 classics.');
+      w={version:1,content:identity,editions:100,unlocked:true,revision:0,index:0,working:false,trays:s.desks.map(()=>({})),signed:false,signature:null,playbill:null};
+    }else{
+      if(!w)fail('Introduce your first play first.');
+      if(w.signed)fail('Your first play is already signed.');
+      if(r.action==='work'){
+        if(conflict)fail('Finish the challenge or pause other work first.');
+        if(w.index===20000)fail('All editions are ready. Sign your play.');
+        w.working=true;
+      }else if(r.action==='pause')w.working=false;
+      else if(r.action==='release'){
+        for(let i=0;i<w.trays.length;i++)for(const [ch,n]of Object.entries(w.trays[i])){
+          const d=next.desks[i],total=(d.letters[ch]||0)+n;if(!integer(total))fail('Released drawer inventory would overflow.');
+          d.letters[ch]=total;d.tray=[...d.tray,...Array(Math.min(n,80)).fill(ch)].slice(-80);
+        }
+        w.trays=s.desks.map(()=>({}));w.working=false;
+      }else if(r.action==='sign'){
+        if(w.index!==20000||w.working||conflict)fail('Finish all 100 editions and waiting work before signing.');
+        w.signed=true;w.signature={claimId:descriptor.claimId,receipt,content:identity};
+        w.playbill={number:1,title:playbillTitle,body:playbillBody};
+      }else if(r.action!=='advance')fail('Unknown Works command.');
+    }
+    bump(w);next.meta.works=w;
+    if(r.action==='work'||r.action==='advance')advance(next,protectedFloor);
+    return next;
+  }
+  const beforeSign='All 100 editions are ready. Sign your play to make your automatic typists 1% faster and keep Playbill 1.';
+  const completion="A Midsummer Night's Chimp is signed! Your automatic typists are 1% faster. Playbill 1 is yours.";
+  const playbillTitle="Playbill 1: A Midsummer Night's Chimp";
+  const playbillBody='100 editions, one royal basket, and breakfast for everyone. Signed by your monkey troupe. Automatic typists: +1 percentage point from Works.';
+  let api,notice='';
+  const esc=x=>String(x).replace(/[&<>\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const button=(act,text)=>`<button type="button" class="o-btn" data-act="works-play:${act}">${text}</button>`;
+  function act(action){
+    if(!api.archiveSettle())return;
+    const s=api.state(),r=Rewards.worksPlayAction({action,...Layers.epochFields(s),content:identity,expected:snapshot(s)});
+    notice=r.ok?'Play saved.':r.error;api.mark();
+  }
+  function confirm(action,text){
+    const focus=document.activeElement,el=document.createElement('div');el.className='o-modal layer-confirm';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Review play materials');
+    el.innerHTML=`<div class="o-modal-card"><h3>Review play materials</h3><div class="layer-details" tabindex="0"><p>${text}</p></div><div class="o-row">${button('cancel','Cancel')}${button('confirm','Confirm')}</div></div>`;
+    const close=()=>{el.remove();focus?.focus();};el.querySelector('[data-act="works-play:cancel"]').onclick=close;el.querySelector('[data-act="works-play:confirm"]').onclick=()=>{act(action);close();};
+    el.onkeydown=e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const b=el.querySelectorAll('button');if(e.shiftKey&&document.activeElement===b[0]){e.preventDefault();b[1].focus();}else if(!e.shiftKey&&document.activeElement===b[1]){e.preventDefault();b[0].focus();}}};
+    document.body.appendChild(el);el.querySelector('button').focus();
+  }
+  function render(c,pane){
+    api=c;
+    try{
+      const s=c.state(),w=current(s),total=w?w.trays.reduce((n,p)=>n+Object.values(p).reduce((a,b)=>a+b,0),0):0;
+      let html=`<section class="o-card layers"><h3>${manifest.title}</h3>`;
+      if(!w)html+=`<p>100 ordered editions. First 1,000 letters from ordinary drawers, then 99,000 newly typed letters. Introduction requires Estate 3 and two active curated stage 2 classics. Preview at Printing 4.</p>${eligible(s)?button('introduce','Review introduction'):'<p>First play locked.</p>'}`;
+      else if(w.signed)html+=`<p role="status">${completion}</p><h4>${playbillTitle}</h4><p>${playbillBody}</p>${button('continue','Continue playing')}`;
+      else if(w.index===20000)html+=`<p>${beforeSign}</p>${button('sign','Sign my play')}${button('continue','Return to production')}`;
+      else{
+        const word=tokens[w.index%200],pools=w.index<200?s.desks.filter(d=>d.owned).map(d=>d.letters):w.trays;
+        const missing=Object.entries(bill(word)).map(([ch,n])=>[ch,Math.max(0,n-pools.reduce((a,p)=>a+(p[ch]||0),0))]).filter(([,n])=>n);
+        html+=`<h4>Edition ${Math.floor(w.index/200)+1}/100, word ${w.index%200+1}/200: ${word}</h4><p>Source: ${w.index<200?'ordinary owned drawers, lowest desk first':'only newly typed reserved trays'}.</p><p>Missing: ${missing.map(([ch,n])=>`${ch} x ${n}`).join(', ')||'none, next bounded update consumes the word unless another goal protects it'}.</p><p>${s.challenge?'Challenge pauses Works supply and progress.':s.meta.worksDemo?.working?'Pause Works demo before resuming.':w.working?'Working. Keepers and Publisher paused; settings and book selection retained.':'Paused. Resume manually after resets.'}</p>${button(w.working?'pause':'work',w.working?'Pause play':'Work / resume play')}${button('advance','Save material progress')}${button('release','Review release')}${button('continue','Return to production')}`;
+      }
+      html+=`<details class="o-updetail"><summary>Read the play</summary>${manifest.body.split('\n\n').map(p=>`<p>${esc(p)}</p>`).join('')}</details><p>Reserved letters: ${total}. Only actual typing after introduction while working counts. Rewards, garden, conversions and released letters stay ordinary. Reserved letters survive progression resets, including stock from unowned desks. Release returns unspent letters once and permanently loses freshness. Consumed letters are never refunded.</p>`;
+      if(w)html+=w.trays.map((p,i)=>`<p>Desk ${i+1}${s.desks[i].owned?'':' (unowned)'} reserved: ${Object.entries(p).map(([ch,n])=>`${ch}:${n}`).join(' ')||'empty'}</p>`).join('');
+      html+=`<p>Typing and automatic progress use the ordinary short save window. Explicit actions and the once-only signature require acknowledged saves. Works automatic typists: ${w?.signed?'+1 percentage point':'no signed benefit'}; family cap 7 points.</p>${notice?`<p role="status">${esc(notice)}</p>`:''}</section>`;c.morph(pane,html);
+    }catch(e){c.morph(pane,'<section class="o-card layers"><h3>Works unavailable</h3><p>Unsupported Works save. Preserve it for recovery.</p></section>');}
+  }
+  if(enabled)(window.__OPS_EXTENSIONS??=[]).push(['works-play',{tab:['works-play','','Works','First permanent play','Works',true],visible:c=>!!c.state().meta.works||c.state().printing>=3,init:(_r,c)=>{api=c;},render,actions:{
+    introduce:()=>confirm('introduce','Introduce your first permanent play with empty fresh trays. Complete 100 ordered editions: 1,000 ordinary letters, then 99,000 genuinely new typed letters. Sign manually afterward for +1 percentage point automatic typist rate and Playbill 1. Pre-introduction stock and away output cannot count as fresh.'),
+    work:()=>act('work'),pause:()=>act('pause'),advance:()=>act('advance'),sign:()=>act('sign'),
+    release:()=>confirm('release','Return every unspent reserved letter to its producing drawer once, including unowned desks. Fresh status is permanently lost. Consumed letters are not refunded. Permanent progress remains. Work pauses.'),
+    continue:()=>{if(api.state().meta.works?.working)act('pause');if(!api.state().meta.works?.working){notice=api.state().meta.works?.signed?'Your first play is signed. Back to your monkeys!':'';api.setTab('floor');if(notice)api.worksPlayContinue();}}
+  }}]);
+  return {enabled,manifest:copy(manifest),descriptor:copy(descriptor),identity,current,retained,factor,active,eligible,snapshot,remaining,plan,advance,route,floors,proposal};
+})();

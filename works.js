@@ -145,7 +145,7 @@ window.WorksDemo = (() => {
       html+=`<p>Typing and automatic progress use the ordinary short save window. Explicit actions require acknowledged saves. Consumed demo letters are never refunded.</p>${notice?`<p role="status">${notice.replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))}</p>`:''}</section>`;c.morph(pane,html);
     }catch(e){c.morph(pane,'<section class="o-card layers"><h3>Works demo unavailable</h3><p>Unsupported demo save. Preserve it for recovery.</p></section>');}
   }
-  if(enabled)(window.__OPS_EXTENSIONS??=[]).push(['works-demo',{tab:['works-demo','','Works demo','Nonrewarding pipeline','Works demo',true],visible:c=>!!c.state().meta.worksDemo||c.state().printing>=3,init:(_r,c)=>{api=c;},render,actions:{
+  if(enabled)(window.__OPS_EXTENSIONS??=[]).push(['works-demo',{tab:['works-demo','i-works','Works demo','Preview, no rewards yet','Works demo',true],visible:c=>{try{return !!c.state().meta.worksDemo||eligible(c.state());}catch{return false;}},init:(_r,c)=>{api=c;},render,actions:{
     introduce:()=>confirm('introduce','Start the separate nonrewarding demo with empty fresh trays. Pre-introduction stock and away output cannot count as fresh. No completed play or permanent benefit is awarded.'),
     work:()=>act('work'),pause:()=>act('pause'),advance:()=>act('advance'),
     release:()=>confirm('release','Return every unspent reserved letter to its originating drawer once, including unowned desks. Fresh status is permanently lost. Consumed letters are not refunded. Work pauses.'),

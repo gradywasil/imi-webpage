@@ -178,3 +178,26 @@ Tiered upgrades (`vowel`, `ink`, `practice`, `stock`, `ribbon`) now have five le
 ## The sky (plan 13)
 
 Day, night and weather now follow `world.js` (a 14 minute day; weather re-rolled every 2.5 minutes, 55/15/21/9 % clear/drizzle/rain/storm) instead of toggles. The bot's virtual clock drives it. Active (30 min), seed 1: Lagoon 64.3 (was 80.5), first division 165 (167.5), first star 205.7 (216.6), Honeycomb 325.1 (334.1). Idle: Honeycomb 432.6 (431.8). Market bias averaged over two days per band: 0.064, 0.107, 0.042, 0.087, 0.035, 0.062 (the old fixed clear day gave only band 3 a flat +0.2). Storms halve typing speed, so about 9 % of the time is slower; owls and rain lovers get their boost on a schedule instead of on demand. No economy numbers were retuned.
+
+## Late-game ramps (Oct 2026)
+Numbers added in the late-game pass. None were run through the balance bot (it no longer loads); they are reasoned from the formulas below, so expect to tune them from play.
+
+| Knob | Value | Why |
+| --- | --- | --- |
+| Quick fingers (`fing`) | no cap; 15% faster per level for 10 levels, then 7% per level (`FING_SOFT`, `FING_LATE`); cost x1.6 per level to level 10, then x1.4 | Every level still helps, but each one costs 25% more time to earn than the last, so the climb slows without a wall |
+| Rapid touch (`rapid`) | no cap; cost x1.7 per level to 8, then x1.4 | Held typing grows by +2/s a level |
+| Keeper speed | no cap; x0.9 period to level 6, then x0.95; cost x1.8 to level 6, then x1.45; period floor 0.05 s (`KEEPER_MIN_PERIOD`) | The tick banks four words at most, so 0.05 s is the real ceiling |
+| Pitch assistants (`S.pitchteam`) | 250,000 base bananas, needs 3 sold titles | A second crew per desk banks words for the best commissioned pitch that is not the goal, at `SUB_SLOW` = 2 keeper periods per word. Also runs while away |
+| Carbon paper (`S.carbon`) | 1,500,000 base bananas, needs Honeycomb Ledger | Banking a word no longer takes its letters. Training keeps back only one copy of each letter the goal needs |
+| Shared training `factors` | `[1, 8, 28, 90, 280, 900]` (was `[1, 4, 8, 16, 32, 64]`) | About 1.5x the PAW_BASE ratio of each machine. A full set of upgrades on desk 3 is about 98k letters x 90, so an 8-hour stockpile (a few million) funds the first levels at once but not the last |
+| Break Room games | 14 games, 5k to 64M base bananas, bought in order | Each game owned adds 1 Inspiration to a full first minute of a rewarded break (base 10) |
+
+## Letter garden rework (Oct 2026)
+Untested by the bot; reasoned from the formulas.
+
+| Knob | Value | Why |
+| --- | --- | --- |
+| Fields | one per owned typewriter, 1 plot each (Bamboo keeps 2), up to `PLOT_MAX` = 4; plot cost `[750, 2000, 8000]` base x `PLOT_SCALE` `[1, 4, 15, 60, 250, 1000]` | Harvests go to the plot's own machine, so the garden helps slow late machines instead of one shared pile |
+| Experience | XP = base yield x (1 + 0.6 x machine index); field level = floor(sqrt(xp / 40)); head gardener level = floor(sqrt(total xp / 120)). Stored in `meta.farm`, kept through every Printing | Skill is the meta progression; plots and farmers are room items and are bought again each Printing |
+| Level effect | letters x (1 + 0.12 per field level) x (1 + 0.03 per head level); growth time / ((1 + 0.06 per field level) x (1 + 0.02 per head level)); `GARDEN_DESK_YIELD` `[1, 1.3, 1.8, 2.6, 4, 6]` | Level 10 on Bamboo is about 2.2x letters in 0.6x the time |
+| Farmers | tier 1/2/3 act every 12/6/3 s (harvest a ripe plot, else plant an empty one); need field level 1/5/12; cost `FARMER_BASE` per machine x `[1, 6, 36]`. Plant the letter the goal is missing most, else the one the machine holds least of | One worker per field. They also finish whole crop cycles while you are away |

@@ -1,0 +1,89 @@
+<!doctype html><base href="/tools/">
+<meta charset="utf-8">
+<title>Typewriter Ops balance harness</title>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/vault-save-gate.js"></script>
+<!-- Runs the real game logic (ops.js) on a virtual clock with a seeded RNG so a bot can play hours in seconds.
+     Driven by tools/balance.mjs (puppeteer). Not part of the site. -->
+<div id="opsRoot"></div><div id="hud"><b id="score">0</b></div><ol id="logList"></ol>
+<!-- ops.js builds its department tabs into the side rail and wires the menu button; the harness only needs somewhere for them to go -->
+<aside id="rail"><button id="railToggle" type="button"></button><nav id="oTabs"></nav></aside>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/rewards.js"></script>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/vault.js"></script>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/economy.js"></script>
+<script>
+function startBalance() {
+if (VaultSaveGate.blocked) return;
+window.__OPS_HEADLESS = true;
+// Ops runs at the site root; keep its archive requests rooted there in this /tools fixture.
+const siteFetch = window.fetch.bind(window);
+window.fetch = (input, options) => siteFetch(typeof input === 'string' && input.startsWith('library/') ? '../' + input : input, options);
+try { if (window.__LONG_GAME_FIXTURE) { for (const key of ['imi-ops-v1', 'imi-score']) localStorage.setItem(key, window.__LONG_GAME_FIXTURE[key]); } else localStorage.clear(); } catch (e) {}
+/* seeded random */
+(function () {
+  let a = 12345;
+  Math.random = function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  window.__seed = s => { a = s; };
+})();
+/* virtual clock */
+(function () {
+  let vnow = 1e6, id = 1; const EPOCH = 1.7e12, timers = [];
+  performance.now = () => vnow; Date.now = () => EPOCH + vnow;
+  window.setInterval = (fn, ms) => { const t = { id: id++, fn, ms, next: vnow + ms, rep: true }; timers.push(t); return t.id; };
+  window.setTimeout = (fn, ms) => { const t = { id: id++, fn, ms, next: vnow + (ms || 0), rep: false }; timers.push(t); return t.id; };
+  window.clearInterval = window.clearTimeout = tid => { const i = timers.findIndex(t => t.id === tid); if (i >= 0) timers.splice(i, 1); };
+  window.requestAnimationFrame = () => 0;
+  window.__advance = ms => {
+    const end = vnow + ms;
+    for (;;) {
+      let best = null; for (const t of timers) if (t.next <= end && (!best || t.next < best.next)) best = t;
+      if (!best) break;
+      vnow = Math.max(vnow, best.next);
+      if (best.rep) best.next += best.ms; else timers.splice(timers.indexOf(best), 1);
+      best.fn();
+    }
+    vnow = end;
+  };
+  window.__vnow = () => vnow;
+  window.__skip = ms => { vnow += ms; timers.forEach(t => { t.next += ms; }); };
+})();
+/* stub of the page bridge (classic edition, so no sprite engine is needed) */
+(function () {
+  let score = window.__LONG_GAME_FIXTURE ? Economy.loadScore() : 0; const watchers = [];
+  const paint = event => { document.getElementById('score').textContent = score; watchers.forEach(f => { if (event) f(score, event); else f(score); }); };
+  window.IMI = {
+    edition: 'classic', reduceMotion: true, sfx: new Proxy({}, { get: () => () => {} }), centerOf: () => [0, 0], say() {}, banner() {}, burst() {}, fall() {},
+    on() {}, off() {}, emit() {},
+    fmt: Economy.fmt, fmtRate: Economy.rate, exact: Economy.exact, screen: () => 'game', onScreen() {}, whenPlaying: f => f(),
+    bananas: { get: () => score, add: n => { score += n; paint(); }, spend: n => { if (n > score) return false; score -= n; paint(); return true; }, earn: n => { score += n; paint(); }, watch: f => watchers.push(f) }
+  };
+  if (Rewards.enabled) {
+    score = Economy.loadScore();
+    const b = IMI.bananas, running = () => Rewards.owns() && (!IMI.ops || IMI.ops.progression.running());
+    b.add = n => { if (!running() || !Economy.saveScoreAcknowledged(score + n).ok) return false; score += n; paint(); };
+    b.earn = b.add;
+    b.spend = n => { if (!running() || n > score || !Economy.saveScoreAcknowledged(score - n).ok) return false; score -= n; paint(); return true; };
+    b.saveAcknowledged = () => Economy.saveScoreAcknowledged(score);
+    b.acknowledgement = Economy.walletAcknowledgement;
+    b.resetAcknowledged = () => { if (!running()) return { ok:false,error:'Progression paused' }; const result=Economy.saveScoreAcknowledged(0,null); if(result.ok){ score=0;paint(); } return result; };
+    b.creditReward = request => { const result = Economy.creditReward(score, request); if (!result.ok) return result; if (!result.duplicate) { score = result.score; paint({ reward:request.id }); } return { ok:true,duplicate:result.duplicate,marker:result.marker }; };
+  }
+})();
+}
+if (Rewards.enabled) Rewards.start(startBalance); else startBalance();
+</script>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/world.js"></script>
+<script src="/readers.js"></script>
+<script src="/readers-kids.js"></script>
+<script src="/readers-w5.js"></script>
+<script src="/readers-w7.js"></script>
+<script src="/readers-w9.js"></script>
+<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/ops.js"></script>
+<script>
+if (!VaultSaveGate.blocked && !Rewards.enabled) document.write('<script src="/tools/long-game/fixture-lg02-b2-qa-r1-20261013/source/tools/bot.js"><\/script><script src="/tools/long-game-bot.js"><\/script>');
+else if (!VaultSaveGate.blocked) Rewards.start(() => {
+  // Enabled balance fixtures use a simulated bridge, never native Core evidence.
+  const bot = document.createElement('script'); bot.src = 'bot.js';
+  bot.onload = () => { const calendar = document.createElement('script'); calendar.src = 'long-game-bot.js'; document.body.appendChild(calendar); };
+  document.body.appendChild(bot);
+});
+</script>

@@ -115,7 +115,7 @@ window.Estate = (() => {
     } catch(error) {notice=error.message;api.mark();}
   }
   if (enabled) (window.__OPS_EXTENSIONS ??= []).push(['estate',{
-    tab:['estate','','Estate','Endow a new room','Estate',true],
+    tab:['estate','i-estate','Estate','Reset again for Charters','Estate',true],
     visible:c => {try {const e=current(c.state());return e.localImprints >= 3 || e.count > 0;} catch {return true;}},
     init:(_reason,c) => {api=c;},render,actions:{archive:() => api.setTab('archive'),review:preview,back:() => api.setTab('imprints')}
   }]);

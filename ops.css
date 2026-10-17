@@ -671,6 +671,12 @@ html[data-style="classic"] .o-seed.need { border-color: #e0a912; }
 html[data-style="pixel"] .o-pl-ch { font-size: 26px; }
 html[data-style="pixel"] .o-plot { background: #2a1a0c; border: 4px solid #5a3517; box-shadow: inset 0 -8px 0 #3d2410; }
 html[data-style="classic"] .o-plot { background: radial-gradient(ellipse at 50% 90%, #6b4423, #3d2410); border: 3px solid var(--wood-dark); border-radius: 14px; }
+.o-field { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; margin-top: 8px; border-left: 4px solid var(--c, #78d9a0); background: rgba(0,0,0,.18); }
+.o-field h4 { margin: 0; font-weight: 400; color: var(--c, #fff); }
+.o-field p { margin: 0; }
+.o-xpbar { flex: none; min-width: 0; height: 8px; }
+.o-xpbar i { background: var(--c, #7be05a); }
+html[data-style="classic"] .o-field { border-radius: 10px; }
 .o-plot.empty { border-style: dashed; opacity: .8; cursor: pointer; }
 .o-plot.empty .o-pl-ch { opacity: .6; }
 .o-plot.grow .o-pl-ch { opacity: .75; animation: o-sway 1.6s ease-in-out infinite alternate; }
@@ -1643,35 +1649,45 @@ html[data-style="pixel"] .o-lookcard b { font-family: var(--font-px); font-size:
 .o-writer-status button:focus-visible { outline: 3px solid #fff3cf; outline-offset: 4px; }
 html[data-style="pixel"] .o-writer-status { font-family: var(--font-px); font-size: 12px; border-radius: 0; }
 
-/* LG-01: normal 44px goals; enlarged phone text grows in layout flow. */
-.o-goals { flex: none; height: 44px; min-width: 0; }
-.o-goals[hidden], .o-goals-phone { display: none; }
-.o-goals-desktop { display: flex; gap: 8px; height: 44px; }
-.o-goals-desktop > button { flex: 1; min-width: 0; height: 44px; padding: 4px 10px; }
-.o-goal-line { display: flex; justify-content: space-between; gap: 6px; min-width: 0; }
+/* Goals: a small tag over the room (no layout footprint) that drops its list down; the Awards page lists them as quiet rows. */
+.o-goals { position: relative; flex: none; height: 0; z-index: 9; min-width: 0; }
+.o-goals[hidden], .o-wrap:not([data-tab="floor"]) .o-goals { display: none; }
+.o-goals-toggle { position: absolute; top: 46px; left: 10px; display: inline-flex; align-items: center; gap: 7px; min-height: 26px; padding: 2px 8px; color: var(--cream); background: rgba(26,15,20,.7); border: 2px solid #3a210d; }
+.o-goals-toggle b { font-weight: 400; }
+.o-goals-toggle:hover, .o-goals-toggle[aria-expanded="true"] { border-color: var(--banana, #ffd93b); }
+.o-goal-pips { display: inline-flex; gap: 3px; }
+.o-goal-pips i { position: relative; overflow: hidden; width: 14px; height: 6px; background: rgba(255,255,255,.2); }
+.o-goal-pips i::after { content: ''; position: absolute; inset: 0; transform-origin: left; transform: scaleX(var(--f, 0)); background: var(--banana, #ffd23a); }
+.o-goal-pips i.full::after { background: #7be05a; }
+.o-goal-caret { width: 0; height: 0; border: 4px solid transparent; border-top-color: currentColor; border-bottom-width: 0; transition: transform .15s; }
+.o-goals-toggle[aria-expanded="true"] .o-goal-caret { transform: rotate(180deg); }
+.o-goals-list { position: absolute; top: 76px; left: 10px; display: grid; gap: 8px; width: min(270px, calc(100% - 20px)); padding: 8px 10px; background: rgba(26,15,20,.92); border: 2px solid #3a210d; }
+.o-goals-list[hidden] { display: none; }
+.o-goal-item { display: grid; gap: 3px; width: 100%; padding: 0; text-align: left; color: var(--cream); background: none; border: 0; }
+.o-goal-item:hover .o-goal-line > span:first-child { color: var(--banana, #ffd23a); }
+.o-goal-more { color: rgba(255,246,214,.6); }
+.o-goal-line { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
 .o-goal-line > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.o-goal-line > span:last-child { flex: none; white-space: nowrap; }
-.o-goal-full, .o-reward-inventory, .o-reward-history { display: grid; gap: 8px; margin-bottom: 12px; }
-.o-goal-row { width: 100%; min-height: 44px; padding: 8px 10px; text-align: left; overflow-wrap: anywhere; }
-.o-goal-row > :is(b,span,small) { display: block; }
+.o-goal-line > span:last-child { flex: none; white-space: nowrap; opacity: .8; }
+.o-goal-bar { display: block; height: 4px; background: rgba(255,255,255,.16); }
+.o-goal-bar i { display: block; height: 100%; background: var(--banana, #ffd23a); transition: width .35s; }
+.o-goal-full, .o-reward-inventory, .o-reward-history { display: grid; gap: 6px; margin-bottom: 12px; }
+.o-goal-row { display: grid; gap: 4px; width: 100%; min-height: 44px; padding: 7px 10px; text-align: left; overflow-wrap: anywhere; color: var(--cream); background: rgba(26,15,20,.85); border: 2px solid #3a210d; border-left: 4px solid var(--banana, #ffd23a); }
+.o-goal-row b { font-weight: 400; color: var(--banana, #ffd23a); }
+.o-goal-row small { opacity: .7; }
+.o-goal-row:hover:not(:disabled) { border-color: var(--banana, #ffd23a); }
 .o-goal-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.o-goals button, .o-goal-row { color: var(--cream); background: #1a2118; border: 1px solid #78d9a0; }
-.o-goals button:focus-visible, .o-goal-row:focus-visible, .o-award:focus-visible { outline: 2px solid var(--banana); outline-offset: -2px; }
+.o-goals-toggle:focus-visible, .o-goal-item:focus-visible, .o-goal-row:focus-visible, .o-award:focus-visible { outline: 2px solid var(--banana); outline-offset: 2px; }
 .o-reward-line { overflow-wrap: anywhere; margin-top: 5px; }
-html[data-style="pixel"] :is(.o-goals,.o-goal-full,.o-reward-inventory,.o-reward-history) { font-family: 'Pixelify Sans', monospace; font-size: 18px; line-height: 1.2; text-shadow: 1px 1px #000; }
+html[data-style="pixel"] :is(.o-goals,.o-goal-full,.o-reward-inventory,.o-reward-history) { font-family: 'Pixelify Sans', monospace; font-size: 17px; line-height: 1.2; text-shadow: 1px 1px #000; }
+html[data-style="pixel"] .o-goals { font-size: 14px; }
 html[data-style="pixel"] .o-award .o-reward-line { font-family: 'Pixelify Sans', monospace; font-size: 16px; line-height: 1.2; opacity: 1; }
 html[data-style="classic"] :is(.o-goals,.o-goal-full,.o-reward-inventory,.o-reward-history) { font-family: 'Fredoka', sans-serif; font-size: 15px; line-height: 1.3; }
-html[data-style="classic"] :is(.o-goals button,.o-goal-row) { border-color: var(--wood-dark); border-radius: 10px; }
+html[data-style="classic"] .o-goals { font-size: 13px; }
+html[data-style="classic"] :is(.o-goals-toggle, .o-goals-list, .o-goal-row) { border-radius: 10px; }
+html[data-style="classic"] .o-goal-row { border-left-width: 2px; border-color: var(--wood-dark); }
+html[data-style="classic"] :is(.o-goal-bar, .o-goal-bar i) { border-radius: 99px; }
 html[data-style="classic"] .o-award .o-reward-line { font-size: 14px; line-height: 1.3; opacity: 1; }
-@media (max-width: 720px) {
-  .has-goals .o-ticker { display: none; }
-  .o-goals { order: -1; height: auto; min-height: 44px; }
-  .o-goals-desktop { display: none; }
-  .o-goals-phone { display: block; width: 100%; min-height: 44px; border-width: 1px; padding: 1.5px 8px; text-align: left; }
-  html[data-style="pixel"] .o-goals-phone { font-family: 'Pixelify Sans', monospace; font-size: 13px; line-height: 13px; border-radius: 0; }
-  html[data-style="classic"] .o-goals-phone { font-family: 'Fredoka', sans-serif; font-size: 13px; line-height: 13px; }
-  .o-goals-phone .o-goal-line { line-height: inherit; }
-}
 html[data-style="classic"] .o-writer-status { font-family: 'Fredoka', sans-serif; border-radius: 18px; background: #463120; border-color: #231a12; }
 /* Cold Vault block owns its viewport; ordinary shell nodes stay inaccessible. */
 html[data-vault-blocked], html[data-vault-blocked] body { height: 100%; overflow: hidden; }
@@ -1687,27 +1703,33 @@ html[data-vault-blocked] body > :not(.o-vault-gate), html[data-vault-blocked] bo
 html[data-style="classic"] .o-vault-gate { border-radius: 18px; font-family: 'Fredoka', sans-serif; }
 html[data-style="classic"] .o-vault-gate h1 { font: 28px/1.2 'Lilita One', sans-serif; }
 html[data-style="classic"] .o-vault-gate button { border-radius: 10px; }
-
+
 /* UI-01: bounded notices and shared action geometry retain each edition's paint. */
 #opsRoot[data-streak]::before { --heat: rgba(181,140,240,.3); }
 html[data-fx="low"] #opsRoot::before { animation: none !important; transition: none; }
-.o-buff { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; max-width: 100%; padding: 4px 8px; text-align: center; overflow-wrap: anywhere; animation: none; }
+/* Power-up banners are small tags: a name over a thin timer. They hug the left edge instead of spanning the room. */
+.o-buff { display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-width: 76px; max-width: 150px; width: max-content; padding: 3px 8px 4px; text-align: center; overflow-wrap: anywhere; animation: none; font-size: 15px; line-height: 1.1; }
 .o-buff::after { display: none; }
 .o-buff b { font-weight: 400; }
-.o-buff span { font-family: inherit; font-size: 14px; line-height: 1.25; }
-.o-buff-meter { display: block; width: 100%; height: 5px; background: rgba(26,15,20,.25); }
+.o-buff span { font-family: inherit; font-size: 12px; line-height: 1.25; }
+.o-buff-meter { display: block; width: 100%; height: 3px; background: rgba(26,15,20,.28); }
 .o-buff-meter i { display: block; height: 100%; background: #3a210d; transform-origin: left; }
-#o-floor > .o-buffbar { position: absolute; top: 48px; left: 0; z-index: 7; padding: 0 8px; max-height: 45%; overflow: auto; pointer-events: none; }
-#o-floor > .o-buffbar .o-buff { flex: 1 1 120px; }
-.o-wrap > .o-buffbar .o-buff { flex: 1 1 120px; padding: 4px 8px; }
-.o-wrap > .o-buffbar .o-buff.chal { justify-content: center; }
-html[data-style="classic"] .o-buff { border-radius: 12px; }
+.o-buffbar { gap: 4px; justify-content: flex-start; }
+#o-floor > .o-buffbar { position: absolute; top: 48px; left: 0; z-index: 7; width: auto; max-width: 45%; flex-direction: column; align-items: flex-start; padding: 0 8px; max-height: 45%; overflow: hidden; pointer-events: none; }
+.o-wrap > .o-buffbar { justify-content: center; }
+.o-wrap > .o-buffbar .o-buff.chal { justify-content: center; max-width: 220px; }
+html[data-style="pixel"] .o-buff { font-size: 8px; line-height: 1.2; }
+html[data-style="pixel"] .o-buff span { font-size: 10px; }
+html[data-style="classic"] .o-buff { font-size: 13px; }
+html[data-style="classic"] .o-buff { border-radius: 10px; }
 html[data-style="pixel"] .o-buff { border-radius: 0; }
-.o-milestone-notice { position: absolute; z-index: 20; top: 45%; left: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100% - 16px)); max-height: 42%; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; text-align: center; overflow-wrap: anywhere; background: #1a0f14; color: #fff6d6; border: 3px solid #ffd23a; }
+.o-milestone-notice { position: absolute; z-index: 20; top: 30%; left: 50%; transform: translateX(-50%); width: max-content; max-width: min(260px, calc(100% - 16px)); max-height: 20%; overflow: hidden; padding: 4px 12px; display: flex; flex-direction: column; gap: 2px; text-align: center; overflow-wrap: anywhere; background: #1a0f14; color: #fff6d6; border: 2px solid #ffd23a; font-size: 14px; pointer-events: none; }
+.o-milestone-notice > span { display: none; }
 .o-milestone-notice[hidden], #opsRoot:not([data-tab="floor"]) > .o-milestone-notice { display: none; }
 .o-milestone-notice b { color: #ffd23a; }
 .o-milestone-notice details > span, .o-milestone-notice details > b { display: block; margin-block: 8px; }
-.o-milestone-notice summary { min-height: 40px; cursor: pointer; }
+.o-milestone-notice summary { min-height: 0; cursor: pointer; font-size: 12px; }
+.o-milestone-notice details > span { display: none; }
 html[data-style="pixel"] .o-milestone-notice { font-family: var(--font-px); font-size: 10px; line-height: 1.5; }
 html[data-style="pixel"] .o-milestone-notice span { font-family: 'VT323', monospace; font-size: 20px; line-height: 1.1; }
 html[data-style="classic"] .o-milestone-notice { border-radius: 12px; font-family: var(--font-display); font-size: 18px; }
@@ -1743,9 +1765,11 @@ html[data-style="pixel"] #o-folio .folio select { border-radius: 0; font: inheri
 html[data-style="classic"] #o-folio .folio select { border-radius: 12px; font: inherit; }
 
 /* The one-item Vault uses the existing pane's internal scroll area. */
-.lg02d-lamp { font-size:15px; line-height:1.5; overflow-wrap:anywhere; }
+.lg02d-lamp { overflow-wrap:anywhere; }
+.lg02d-lamp > p { margin-top:10px; }
+.lg02d-lamp > details > summary.o-btn { display:inline-block; width:auto; padding-inline:16px; }
 .lg02d-lamp .o-btn, .lg02d-lamp summary, .lg02d-lamp-setting .set-btn { min-height:44px; white-space:normal; }
-.lg02d-lamp .o-btn { display:block; width:100%; margin:8px 0; }
+.lg02d-lamp .o-btn { display:block; width:100%; margin:8px 0 0; }
 .lg02d-lamp-review { padding:10px; overflow-y:auto; }
 .lg02d-lamp details { margin:12px 0; }
 .lg02d-lamp summary { cursor:pointer; padding:10px 0; }

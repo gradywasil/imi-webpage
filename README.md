@@ -4,7 +4,7 @@
 
 A monkey-themed incremental browser game. Work the typewriter, hire a crew, bank words, and assemble them into titles you can sell for bananas and royalties. The factory grows from one bamboo desk into automated departments, media divisions, and a new printing with lasting progress.
 
-**[Play the demo](https://imi.arrangedgodly.com/) · [Read the Library](https://imi.arrangedgodly.com/library.html) · [First shift](#your-first-shift) · [Departments](#learn-the-departments) · [Run locally](#run-locally)**
+**[Play the demo](https://imi.arrangedgodly.com/) · [First shift](#your-first-shift) · [Departments](#learn-the-departments) · [Run locally](#run-locally)**
 
 ![Infinite Monkey Industries pixel-art title screen with Play and Library](docs/images/imi-menu-desktop.jpg)
 

@@ -1,0 +1,693 @@
+{
+  "coverage": "simulated UI bridge; actual Ops/Rewards/Economy adapter",
+  "hashes": {
+    "/tools/balance.html": "00cf8f5acba386f83ccb93fa92732d531324e98585ef8a8623be2977ec1c9a8c",
+    "/economy.js": "6de21cbe2abf59f89af4662316501a828687f4bafbaa58404296e00565e28178",
+    "/rewards.js": "0ddf2811d1874110b77af6bdf134bcc75b2e1029505cfefeb318deb3d3aaaaf4",
+    "/ops.js": "36b619437510c4471c029dfd11976006f1fb26670eabdf8e186b2217ef9b3bac"
+  },
+  "errors": [],
+  "state": {
+    "meta": {},
+    "rewards": {
+      "claims": {
+        "future:policy": {
+          "status": "opaque",
+          "keep": {
+            "field": true
+          }
+        },
+        "award:s8": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "D",
+            "amount": 2,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 2,
+      "bought": 0,
+      "earnedTotal": 2,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {
+        "award:s8": {
+          "source": "earned",
+          "amount": 2,
+          "origin": "new"
+        }
+      },
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": false,
+      "train": false,
+      "words": false,
+      "shop": false,
+      "hireAt": null
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {},
+    "run": {
+      "earned": 0
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        null
+      ]
+    },
+    "divs": {
+      "songs": 0,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 0
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "m": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hist": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 0,
+    "awards": {
+      "s8": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 0,
+      "playSecs": 0,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {}
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": false,
+    "dbl": false,
+    "contracts": false,
+    "sel": 0,
+    "written": {},
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "wallet": {
+    "economyVersion": 1,
+    "score": 0
+  },
+  "persistedOps": {
+    "meta": {},
+    "rewards": {
+      "claims": {
+        "future:policy": {
+          "status": "opaque",
+          "keep": {
+            "field": true
+          }
+        },
+        "award:s8": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "D",
+            "amount": 2,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 2,
+      "bought": 0,
+      "earnedTotal": 2,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {
+        "award:s8": {
+          "source": "earned",
+          "amount": 2,
+          "origin": "new"
+        }
+      },
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": false,
+      "train": false,
+      "words": false,
+      "shop": false,
+      "hireAt": null
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {},
+    "run": {
+      "earned": 0
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        null
+      ]
+    },
+    "divs": {
+      "songs": 0,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 0
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "m": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hist": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 0,
+    "awards": {
+      "s8": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 0,
+      "playSecs": 0,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {}
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": false,
+    "dbl": false,
+    "contracts": false,
+    "sel": 0,
+    "written": {},
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "writes": [
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":0}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":null,\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"future:policy\":{\"status\":\"opaque\",\"keep\":{\"field\":true}},\"award:s8\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"D\",\"amount\":2,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s8\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"future:policy\":{\"status\":\"opaque\",\"keep\":{\"field\":true}},\"award:s8\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"D\",\"amount\":2,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":2,\"bought\":0,\"earnedTotal\":2,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{\"award:s8\":{\"source\":\"earned\",\"amount\":2,\"origin\":\"new\"}},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s8\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": true
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"future:policy\":{\"status\":\"opaque\",\"keep\":{\"field\":true}},\"award:s8\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"D\",\"amount\":2,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":2,\"bought\":0,\"earnedTotal\":2,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{\"award:s8\":{\"source\":\"earned\",\"amount\":2,\"origin\":\"new\"}},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s8\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    }
+  ],
+  "running": true,
+  "status": "Progress not saved. Reward waiting to save. Injected committed storage failureRetry"
+}

@@ -171,7 +171,7 @@ window.Archive = (() => {
       c.morph(pane,html);
     } catch(error){c.morph(pane,`<section class="o-card layers"><h3>Archive unavailable</h3><p>${escape(error.message)}</p></section>`);}
   }
-  if(enabled)(window.__OPS_EXTENSIONS??=[]).push(['archive',{tab:['archive','','Archive','Restore earlier editions','Archive',true],visible:c=>Estate.current(c.state()).count>0,init:(_reason,c)=>{api=c;},render,actions:{
+  if(enabled)(window.__OPS_EXTENSIONS??=[]).push(['archive',{tab:['archive','i-archive','Archive','Restore earlier editions','Archive',true],visible:c=>Estate.current(c.state()).count>0,init:(_reason,c)=>{api=c;},render,actions:{
     buy:()=>act('buy'),back:()=>{if(current(api.state()).working!==null&&!act('return').ok)return;api.setTab('estate');},return:()=>act('return'),
     endow:el=>{const s=api.state(),a=current(s),b=books[el.dataset.title];confirm('endow',{title:b.id,slot:+el.dataset.slot},`Permanently consume one earlier ${b.title} copy. ${copies(s,a,b.id)-1} copies remain. Withdraw future sales until retirement. Frozen basis ${b.pay} bananas, stage 0 rate ${(b.pay/3600).toFixed(6)} per productive game second. No refund on retirement.`);},
     work:el=>act('work',{key:+el.dataset.key}),move:el=>act('move',{key:+el.dataset.key,slot:+el.dataset.slot}),

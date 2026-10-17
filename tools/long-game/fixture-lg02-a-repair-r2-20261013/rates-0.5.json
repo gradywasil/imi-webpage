@@ -1,0 +1,1680 @@
+{
+  "coverage": "simulated UI bridge; actual Ops/Rewards/Economy adapter",
+  "hashes": {
+    "/tools/balance.html": "00cf8f5acba386f83ccb93fa92732d531324e98585ef8a8623be2977ec1c9a8c",
+    "/economy.js": "6de21cbe2abf59f89af4662316501a828687f4bafbaa58404296e00565e28178",
+    "/rewards.js": "0ddf2811d1874110b77af6bdf134bcc75b2e1029505cfefeb318deb3d3aaaaf4",
+    "/ops.js": "c26a6032e7bb1451ce7bd7b999b51021214235eded8d094823d2ffb769184bfc"
+  },
+  "errors": [],
+  "state": {
+    "meta": {},
+    "rewards": {
+      "claims": {
+        "award:l100": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:l10k": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:w1k": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 96,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 10,
+            "floor": 50,
+            "cap": 100000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:mu1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 19700,
+            "rate": 65.625,
+            "minutes": 5,
+            "floor": 6250,
+            "cap": 250000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 0,
+          "sequence": 1,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:s1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 250000,
+            "rate": 1575000065.625,
+            "minutes": 5,
+            "floor": 6250,
+            "cap": 250000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 1,
+          "sequence": 2,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:b1m": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 25000000,
+            "rate": 1575000065.625,
+            "minutes": 10,
+            "floor": 6250,
+            "cap": 25000000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 2,
+          "sequence": 3,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:b1b": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 2500000000,
+            "rate": 1575000065.625,
+            "minutes": 30,
+            "floor": 6250,
+            "cap": 2500000000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 3,
+          "sequence": 4,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:c10": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 5000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:c100": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 20000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:gar500": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 20000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 0,
+      "bought": 0,
+      "earnedTotal": 0,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {},
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": false,
+      "train": false,
+      "words": false,
+      "shop": false,
+      "hireAt": null
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {
+      "v13": 1
+    },
+    "run": {
+      "earned": 2525269700
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        null
+      ]
+    },
+    "divs": {
+      "songs": 1,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 1000000000
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "m": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hist": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 0,
+    "awards": {
+      "l100": true,
+      "l10k": true,
+      "w1k": true,
+      "mu1": true,
+      "s1": true,
+      "b1m": true,
+      "b1b": true,
+      "c10": true,
+      "c100": true,
+      "gar500": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 0,
+      "playSecs": 0,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {}
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": true,
+    "dbl": true,
+    "contracts": false,
+    "sel": 0,
+    "written": {},
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": true,
+        "paws": 1000000,
+        "crew": [
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          }
+        ],
+        "mk": 0,
+        "letters": {
+          "A": 1741,
+          "B": 1741,
+          "C": 1741,
+          "D": 1741,
+          "E": 1741,
+          "F": 1741,
+          "G": 1739,
+          "H": 1739,
+          "I": 1738,
+          "J": 1738,
+          "K": 1738,
+          "L": 1738,
+          "M": 1738,
+          "N": 1738,
+          "O": 1738,
+          "P": 1738,
+          "Q": 1738,
+          "R": 1738,
+          "S": 1737,
+          "T": 1737,
+          "U": 1737,
+          "V": 1737,
+          "W": 1737,
+          "X": 1737,
+          "Y": 1735,
+          "Z": 1735
+        },
+        "tray": [],
+        "up": {
+          "fing": 2,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "wallet": {
+    "economyVersion": 1,
+    "score": 2525269700,
+    "rewardMarker": {
+      "sequence": 4,
+      "id": "award:b1b",
+      "amount": 2500000000
+    }
+  },
+  "persistedOps": {
+    "meta": {},
+    "rewards": {
+      "claims": {
+        "award:l100": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:l10k": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:w1k": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 96,
+            "desk": 1,
+            "rate": 0.16147635524798157,
+            "minutes": 10,
+            "floor": 50,
+            "cap": 100000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:mu1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 19700,
+            "rate": 65.625,
+            "minutes": 5,
+            "floor": 6250,
+            "cap": 250000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 0,
+          "sequence": 1,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:s1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 250000,
+            "rate": 1575000065.625,
+            "minutes": 5,
+            "floor": 6250,
+            "cap": 250000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 1,
+          "sequence": 2,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:b1m": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 25000000,
+            "rate": 1575000065.625,
+            "minutes": 10,
+            "floor": 6250,
+            "cap": 25000000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 2,
+          "sequence": 3,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:b1b": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "C",
+            "amount": 2500000000,
+            "rate": 1575000065.625,
+            "minutes": 30,
+            "floor": 6250,
+            "cap": 2500000000,
+            "speed": 0.5,
+            "origin": "new"
+          },
+          "previous": 3,
+          "sequence": 4,
+          "printing": 0,
+          "deltaApplied": true
+        },
+        "award:c10": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 5000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:c100": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 20000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        },
+        "award:gar500": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 20000,
+            "desk": 1,
+            "rate": 3229530.3344867374,
+            "minutes": 5,
+            "floor": 50,
+            "cap": 20000,
+            "speed": 0.5,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 0,
+      "bought": 0,
+      "earnedTotal": 0,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {},
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": false,
+      "train": false,
+      "words": false,
+      "shop": false,
+      "hireAt": null
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {
+      "v13": 1
+    },
+    "run": {
+      "earned": 2525269700
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        null
+      ]
+    },
+    "divs": {
+      "songs": 1,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 1000000000
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "m": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hist": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 0,
+    "awards": {
+      "l100": true,
+      "l10k": true,
+      "w1k": true,
+      "mu1": true,
+      "s1": true,
+      "b1m": true,
+      "b1b": true,
+      "c10": true,
+      "c100": true,
+      "gar500": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 0,
+      "playSecs": 0,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {}
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": true,
+    "dbl": true,
+    "contracts": false,
+    "sel": 0,
+    "written": {},
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": true,
+        "paws": 1000000,
+        "crew": [
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          },
+          {
+            "name": "Fig",
+            "look": "unknown",
+            "trait": "lucky",
+            "talent": 100000000,
+            "coach": 0,
+            "rerolls": 0,
+            "xp": 0,
+            "lv": 1,
+            "hat": 0,
+            "shiny": false
+          }
+        ],
+        "mk": 0,
+        "letters": {
+          "A": 1741,
+          "B": 1741,
+          "C": 1741,
+          "D": 1741,
+          "E": 1741,
+          "F": 1741,
+          "G": 1739,
+          "H": 1739,
+          "I": 1738,
+          "J": 1738,
+          "K": 1738,
+          "L": 1738,
+          "M": 1738,
+          "N": 1738,
+          "O": 1738,
+          "P": 1738,
+          "Q": 1738,
+          "R": 1738,
+          "S": 1737,
+          "T": 1737,
+          "U": 1737,
+          "V": 1737,
+          "W": 1737,
+          "X": 1737,
+          "Y": 1735,
+          "Z": 1735
+        },
+        "tray": [],
+        "up": {
+          "fing": 2,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "writes": [
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":0}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":null,\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":2,\"B\":2,\"C\":2,\"D\":2,\"E\":2,\"F\":2,\"G\":2,\"H\":2,\"I\":2,\"J\":2,\"K\":2,\"L\":2,\"M\":2,\"N\":2,\"O\":2,\"P\":2,\"Q\":2,\"R\":2,\"S\":2,\"T\":2,\"U\":2,\"V\":2,\"W\":2,\"X\":2,\"Y\":1,\"Z\":1},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":2,\"B\":2,\"C\":2,\"D\":2,\"E\":2,\"F\":2,\"G\":2,\"H\":2,\"I\":2,\"J\":2,\"K\":2,\"L\":2,\"M\":2,\"N\":2,\"O\":2,\"P\":2,\"Q\":2,\"R\":2,\"S\":2,\"T\":2,\"U\":2,\"V\":2,\"W\":2,\"X\":2,\"Y\":1,\"Z\":1},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":4,\"B\":4,\"C\":4,\"D\":4,\"E\":4,\"F\":4,\"G\":4,\"H\":4,\"I\":4,\"J\":4,\"K\":4,\"L\":4,\"M\":4,\"N\":4,\"O\":4,\"P\":4,\"Q\":4,\"R\":4,\"S\":4,\"T\":4,\"U\":4,\"V\":4,\"W\":4,\"X\":4,\"Y\":2,\"Z\":2},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":4,\"B\":4,\"C\":4,\"D\":4,\"E\":4,\"F\":4,\"G\":4,\"H\":4,\"I\":4,\"J\":4,\"K\":4,\"L\":4,\"M\":4,\"N\":4,\"O\":4,\"P\":4,\"Q\":4,\"R\":4,\"S\":4,\"T\":4,\"U\":4,\"V\":4,\"W\":4,\"X\":4,\"Y\":2,\"Z\":2},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":0}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":19700,\"rewardMarker\":{\"sequence\":1,\"id\":\"award:mu1\",\"amount\":19700}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":19700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":19700,\"rewardMarker\":{\"sequence\":1,\"id\":\"award:mu1\",\"amount\":19700}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":19700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":269700,\"rewardMarker\":{\"sequence\":2,\"id\":\"award:s1\",\"amount\":250000}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":269700,\"rewardMarker\":{\"sequence\":2,\"id\":\"award:s1\",\"amount\":250000}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":25269700,\"rewardMarker\":{\"sequence\":3,\"id\":\"award:b1m\",\"amount\":25000000}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":25269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":25269700,\"rewardMarker\":{\"sequence\":3,\"id\":\"award:b1m\",\"amount\":25000000}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":25269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":2525269700,\"rewardMarker\":{\"sequence\":4,\"id\":\"award:b1b\",\"amount\":2500000000}}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":0,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":8,\"B\":8,\"C\":8,\"D\":8,\"E\":8,\"F\":8,\"G\":8,\"H\":8,\"I\":8,\"J\":8,\"K\":8,\"L\":8,\"M\":8,\"N\":8,\"O\":8,\"P\":8,\"Q\":8,\"R\":8,\"S\":7,\"T\":7,\"U\":7,\"V\":7,\"W\":7,\"X\":7,\"Y\":5,\"Z\":5},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":201,\"B\":201,\"C\":201,\"D\":201,\"E\":201,\"F\":201,\"G\":201,\"H\":201,\"I\":200,\"J\":200,\"K\":200,\"L\":200,\"M\":200,\"N\":200,\"O\":200,\"P\":200,\"Q\":200,\"R\":200,\"S\":199,\"T\":199,\"U\":199,\"V\":199,\"W\":199,\"X\":199,\"Y\":197,\"Z\":197},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:c100\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true,\"c100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":201,\"B\":201,\"C\":201,\"D\":201,\"E\":201,\"F\":201,\"G\":201,\"H\":201,\"I\":200,\"J\":200,\"K\":200,\"L\":200,\"M\":200,\"N\":200,\"O\":200,\"P\":200,\"Q\":200,\"R\":200,\"S\":199,\"T\":199,\"U\":199,\"V\":199,\"W\":199,\"X\":199,\"Y\":197,\"Z\":197},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:c100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true,\"c100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":971,\"B\":971,\"C\":971,\"D\":971,\"E\":971,\"F\":971,\"G\":970,\"H\":970,\"I\":969,\"J\":969,\"K\":969,\"L\":969,\"M\":969,\"N\":969,\"O\":969,\"P\":969,\"Q\":969,\"R\":969,\"S\":968,\"T\":968,\"U\":968,\"V\":968,\"W\":968,\"X\":968,\"Y\":966,\"Z\":966},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:c100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:gar500\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true,\"c100\":true,\"gar500\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":971,\"B\":971,\"C\":971,\"D\":971,\"E\":971,\"F\":971,\"G\":970,\"H\":970,\"I\":969,\"J\":969,\"K\":969,\"L\":969,\"M\":969,\"N\":969,\"O\":969,\"P\":969,\"Q\":969,\"R\":969,\"S\":968,\"T\":968,\"U\":968,\"V\":968,\"W\":968,\"X\":968,\"Y\":966,\"Z\":966},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"claims\":{\"award:l100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:l10k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:w1k\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":96,\"desk\":1,\"rate\":0.16147635524798157,\"minutes\":10,\"floor\":50,\"cap\":100000,\"speed\":0.5,\"origin\":\"new\"}},\"award:mu1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":19700,\"rate\":65.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":0,\"sequence\":1,\"printing\":0,\"deltaApplied\":true},\"award:s1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":250000,\"rate\":1575000065.625,\"minutes\":5,\"floor\":6250,\"cap\":250000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":1,\"sequence\":2,\"printing\":0,\"deltaApplied\":true},\"award:b1m\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":25000000,\"rate\":1575000065.625,\"minutes\":10,\"floor\":6250,\"cap\":25000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":2,\"sequence\":3,\"printing\":0,\"deltaApplied\":true},\"award:b1b\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"C\",\"amount\":2500000000,\"rate\":1575000065.625,\"minutes\":30,\"floor\":6250,\"cap\":2500000000,\"speed\":0.5,\"origin\":\"new\"},\"previous\":3,\"sequence\":4,\"printing\":0,\"deltaApplied\":true},\"award:c10\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":5000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":0.5,\"origin\":\"new\"}},\"award:c100\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}},\"award:gar500\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":20000,\"desk\":1,\"rate\":3229530.3344867374,\"minutes\":5,\"floor\":50,\"cap\":20000,\"speed\":0.5,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":false,\"train\":false,\"words\":false,\"shop\":false,\"hireAt\":null},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{\"v13\":1},\"run\":{\"earned\":2525269700},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":1,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":1000000000},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[1,1,1,1,1,1],\"m\":[0,0,0,0,0,0],\"hist\":[[1],[1],[1],[1],[1],[1]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"l100\":true,\"l10k\":true,\"w1k\":true,\"mu1\":true,\"s1\":true,\"b1m\":true,\"b1b\":true,\"c10\":true,\"c100\":true,\"gar500\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":0,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":true,\"dbl\":true,\"contracts\":false,\"sel\":0,\"written\":{},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":true,\"paws\":1000000,\"crew\":[{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false},{\"name\":\"Fig\",\"look\":\"unknown\",\"trait\":\"lucky\",\"talent\":100000000,\"coach\":0,\"rerolls\":0,\"xp\":0,\"lv\":1,\"hat\":0,\"shiny\":false}],\"mk\":0,\"letters\":{\"A\":1741,\"B\":1741,\"C\":1741,\"D\":1741,\"E\":1741,\"F\":1741,\"G\":1739,\"H\":1739,\"I\":1738,\"J\":1738,\"K\":1738,\"L\":1738,\"M\":1738,\"N\":1738,\"O\":1738,\"P\":1738,\"Q\":1738,\"R\":1738,\"S\":1737,\"T\":1737,\"U\":1737,\"V\":1737,\"W\":1737,\"X\":1737,\"Y\":1735,\"Z\":1735},\"tray\":[],\"up\":{\"fing\":2,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    }
+  ],
+  "running": true
+}

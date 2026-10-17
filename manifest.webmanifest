@@ -16,7 +16,6 @@
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Play", "url": "./index.html#play", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Library", "url": "./library.html", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Play", "url": "./index.html#play", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

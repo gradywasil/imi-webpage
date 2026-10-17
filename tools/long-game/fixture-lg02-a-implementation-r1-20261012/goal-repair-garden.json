@@ -1,0 +1,1126 @@
+{
+  "coverage": "simulated UI bridge; actual Ops/Rewards/Economy adapter",
+  "hashes": {
+    "/tools/balance.html": "71c56b810ef3dda056597ae4a97afa65c738fcc25c1ae6a0ef4e54491926a3ca",
+    "/economy.js": "6de21cbe2abf59f89af4662316501a828687f4bafbaa58404296e00565e28178",
+    "/rewards.js": "0ddf2811d1874110b77af6bdf134bcc75b2e1029505cfefeb318deb3d3aaaaf4",
+    "/ops.js": "36b619437510c4471c029dfd11976006f1fb26670eabdf8e186b2217ef9b3bac"
+  },
+  "errors": [],
+  "state": {
+    "meta": {},
+    "rewards": {
+      "goals": {
+        "version": 1,
+        "revealed": true,
+        "ids": [
+          "w10",
+          "s4",
+          "d1"
+        ],
+        "unknown": "keep"
+      },
+      "claims": {
+        "award:l100": {
+          "status": "waived",
+          "origin": "historical",
+          "policy": "db-only"
+        },
+        "award:s1": {
+          "status": "waived",
+          "origin": "historical",
+          "policy": "db-only"
+        },
+        "award:gar1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 0,
+            "rate": 0,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 1,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [
+          "s1",
+          "l100"
+        ],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 0,
+      "bought": 0,
+      "earnedTotal": 0,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {},
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": true,
+      "train": true,
+      "words": true,
+      "shop": true,
+      "hireAt": 0
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {},
+    "run": {
+      "earned": 0
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        {
+          "ch": "E",
+          "desk": 0,
+          "ready": 1700001030400,
+          "told": true
+        }
+      ]
+    },
+    "divs": {
+      "songs": 0,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 0
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        0.9678520204185402,
+        0.7079988882268993,
+        0.9503638986904019,
+        1.286233415431865,
+        0.9883828241122395,
+        1.1234129534468882
+      ],
+      "m": [
+        -0.012045378035573852,
+        -0.041709913101482705,
+        0.017431517853672213,
+        0.07880567155962297,
+        -0.05805963654357046,
+        0.06684705215776743
+      ],
+      "hist": [
+        [
+          1,
+          0.966,
+          1,
+          1.081,
+          1.104,
+          1.15,
+          1.121,
+          1.096,
+          1.075,
+          1.014,
+          1.013,
+          0.998,
+          0.933,
+          0.868,
+          0.823,
+          0.841,
+          0.874,
+          0.899,
+          0.988,
+          0.989,
+          0.936,
+          0.968
+        ],
+        [
+          1,
+          1.046,
+          1.036,
+          0.968,
+          0.881,
+          0.798,
+          0.787,
+          0.768,
+          0.78,
+          0.736,
+          0.694,
+          0.739,
+          0.841,
+          0.865,
+          0.903,
+          0.9,
+          0.851,
+          0.802,
+          0.739,
+          0.704,
+          0.716,
+          0.708
+        ],
+        [
+          1,
+          1.048,
+          1.116,
+          1.11,
+          1.117,
+          1.147,
+          1.17,
+          1.163,
+          1.106,
+          1.142,
+          1.181,
+          1.247,
+          1.203,
+          1.196,
+          1.147,
+          1.067,
+          1.02,
+          0.999,
+          0.92,
+          0.954,
+          0.924,
+          0.95
+        ],
+        [
+          1,
+          1.06,
+          1.069,
+          1.145,
+          1.188,
+          1.184,
+          1.194,
+          1.226,
+          1.299,
+          1.308,
+          1.299,
+          1.282,
+          1.269,
+          1.294,
+          1.353,
+          1.331,
+          1.296,
+          1.281,
+          1.215,
+          1.237,
+          1.236,
+          1.286
+        ],
+        [
+          1,
+          0.991,
+          0.946,
+          0.905,
+          0.955,
+          1.006,
+          1.009,
+          0.962,
+          0.99,
+          1.013,
+          0.996,
+          0.951,
+          0.901,
+          0.82,
+          0.757,
+          0.755,
+          0.784,
+          0.819,
+          0.898,
+          0.995,
+          1.012,
+          0.988
+        ],
+        [
+          1,
+          0.995,
+          0.926,
+          0.894,
+          0.852,
+          0.817,
+          0.818,
+          0.857,
+          0.836,
+          0.842,
+          0.8,
+          0.847,
+          0.813,
+          0.852,
+          0.912,
+          1.011,
+          1.118,
+          1.106,
+          1.085,
+          1.042,
+          1.064,
+          1.123
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 1700001031800,
+    "awards": {
+      "s1": true,
+      "l100": true,
+      "gar1": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 131.79540000009456,
+      "playSecs": 31.800000000000317,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {},
+      "harvested": 6
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": false,
+    "dbl": false,
+    "contracts": false,
+    "sel": 0,
+    "written": {
+      "ape-in-the-cape": true
+    },
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {
+          "E": 8,
+          "A": 2,
+          "B": 2,
+          "C": 2,
+          "D": 2,
+          "F": 2,
+          "G": 2,
+          "H": 2,
+          "I": 2,
+          "J": 2,
+          "K": 2,
+          "L": 2,
+          "M": 2,
+          "N": 2,
+          "O": 2,
+          "P": 2,
+          "Q": 2,
+          "R": 2,
+          "S": 2,
+          "T": 2,
+          "U": 2,
+          "V": 2,
+          "W": 2,
+          "X": 2,
+          "Y": 1,
+          "Z": 1
+        },
+        "tray": [
+          "E",
+          "E",
+          "E",
+          "E",
+          "E",
+          "E"
+        ],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "wallet": {
+    "economyVersion": 1,
+    "score": 0
+  },
+  "persistedOps": {
+    "meta": {},
+    "rewards": {
+      "goals": {
+        "version": 1,
+        "revealed": true,
+        "ids": [
+          "w10",
+          "s4",
+          "d1"
+        ],
+        "unknown": "keep"
+      },
+      "claims": {
+        "award:l100": {
+          "status": "waived",
+          "origin": "historical",
+          "policy": "db-only"
+        },
+        "award:s1": {
+          "status": "waived",
+          "origin": "historical",
+          "policy": "db-only"
+        },
+        "award:gar1": {
+          "status": "committed",
+          "origin": "new",
+          "descriptor": {
+            "version": 1,
+            "kind": "L",
+            "amount": 50,
+            "desk": 0,
+            "rate": 0,
+            "minutes": 3,
+            "floor": 50,
+            "cap": 5000,
+            "speed": 1,
+            "origin": "new"
+          }
+        }
+      },
+      "storedGold": {
+        "tokens": {}
+      },
+      "version": 1,
+      "catalogueVersion": 1,
+      "migration": {
+        "version": 1,
+        "policy": "db-only",
+        "oldAwardIds": [
+          "s1",
+          "l100"
+        ],
+        "oldChallengeIds": [],
+        "oldPrinting": 0
+      }
+    },
+    "prem": {
+      "earned": 0,
+      "bought": 0,
+      "earnedTotal": 0,
+      "boughtTotal": 0,
+      "spentEarned": 0,
+      "spentBought": 0,
+      "credits": {},
+      "version": 1
+    },
+    "economyVersion": 1,
+    "intro": {
+      "version": 1,
+      "done": true,
+      "train": true,
+      "words": true,
+      "shop": true,
+      "hireAt": 0
+    },
+    "focus": "green-eggs-and-hamster",
+    "autoFocus": true,
+    "printing": 0,
+    "legacy": {
+      "stars": 0,
+      "total": 0,
+      "ups": {}
+    },
+    "editions": {},
+    "looks": {},
+    "run": {
+      "earned": 0
+    },
+    "challenge": null,
+    "chDone": {},
+    "muses": {
+      "owned": {},
+      "seated": [
+        null,
+        null,
+        null
+      ]
+    },
+    "garden": {
+      "beds": [
+        null,
+        {
+          "ch": "E",
+          "desk": 0,
+          "ready": 1700001030400,
+          "told": true
+        }
+      ]
+    },
+    "divs": {
+      "songs": 0,
+      "tv": 0,
+      "radio": 0,
+      "sketch": 0,
+      "film": 0
+    },
+    "divTotal": 0,
+    "pitches": [],
+    "offers": [],
+    "market": {
+      "v": [
+        0.9678520204185402,
+        0.7079988882268993,
+        0.9503638986904019,
+        1.286233415431865,
+        0.9883828241122395,
+        1.1234129534468882
+      ],
+      "m": [
+        -0.012045378035573852,
+        -0.041709913101482705,
+        0.017431517853672213,
+        0.07880567155962297,
+        -0.05805963654357046,
+        0.06684705215776743
+      ],
+      "hist": [
+        [
+          1,
+          0.966,
+          1,
+          1.081,
+          1.104,
+          1.15,
+          1.121,
+          1.096,
+          1.075,
+          1.014,
+          1.013,
+          0.998,
+          0.933,
+          0.868,
+          0.823,
+          0.841,
+          0.874,
+          0.899,
+          0.988,
+          0.989,
+          0.936,
+          0.968
+        ],
+        [
+          1,
+          1.046,
+          1.036,
+          0.968,
+          0.881,
+          0.798,
+          0.787,
+          0.768,
+          0.78,
+          0.736,
+          0.694,
+          0.739,
+          0.841,
+          0.865,
+          0.903,
+          0.9,
+          0.851,
+          0.802,
+          0.739,
+          0.704,
+          0.716,
+          0.708
+        ],
+        [
+          1,
+          1.048,
+          1.116,
+          1.11,
+          1.117,
+          1.147,
+          1.17,
+          1.163,
+          1.106,
+          1.142,
+          1.181,
+          1.247,
+          1.203,
+          1.196,
+          1.147,
+          1.067,
+          1.02,
+          0.999,
+          0.92,
+          0.954,
+          0.924,
+          0.95
+        ],
+        [
+          1,
+          1.06,
+          1.069,
+          1.145,
+          1.188,
+          1.184,
+          1.194,
+          1.226,
+          1.299,
+          1.308,
+          1.299,
+          1.282,
+          1.269,
+          1.294,
+          1.353,
+          1.331,
+          1.296,
+          1.281,
+          1.215,
+          1.237,
+          1.236,
+          1.286
+        ],
+        [
+          1,
+          0.991,
+          0.946,
+          0.905,
+          0.955,
+          1.006,
+          1.009,
+          0.962,
+          0.99,
+          1.013,
+          0.996,
+          0.951,
+          0.901,
+          0.82,
+          0.757,
+          0.755,
+          0.784,
+          0.819,
+          0.898,
+          0.995,
+          1.012,
+          0.988
+        ],
+        [
+          1,
+          0.995,
+          0.926,
+          0.894,
+          0.852,
+          0.817,
+          0.818,
+          0.857,
+          0.836,
+          0.842,
+          0.8,
+          0.847,
+          0.813,
+          0.852,
+          0.912,
+          1.011,
+          1.118,
+          1.106,
+          1.085,
+          1.042,
+          1.064,
+          1.123
+        ]
+      ]
+    },
+    "agent": false,
+    "analyst": false,
+    "baro": 0,
+    "pub": {
+      "tier": 0,
+      "on": true,
+      "rule": "any"
+    },
+    "lamp": 0,
+    "lastSeen": 1700001031800,
+    "awards": {
+      "s1": true,
+      "l100": true,
+      "gar1": true
+    },
+    "stats": {
+      "pitched": 0,
+      "pitchSold": 0,
+      "awayMax": 0,
+      "letters": 0,
+      "manual": 0,
+      "words": 0,
+      "lump": 0,
+      "rotten": 0,
+      "secs": 131.79540000009456,
+      "playSecs": 31.800000000000317,
+      "pickups": 0,
+      "pickupEarned": 0,
+      "storm": 0,
+      "night": 0,
+      "byLetter": {},
+      "harvested": 6
+    },
+    "deals": {},
+    "royTotal": 0,
+    "gold": 0,
+    "best": 0,
+    "hold": false,
+    "metro": false,
+    "dbl": false,
+    "contracts": false,
+    "sel": 0,
+    "written": {
+      "ape-in-the-cape": true
+    },
+    "bank": {},
+    "log": [],
+    "desks": [
+      {
+        "owned": true,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {
+          "E": 8,
+          "A": 2,
+          "B": 2,
+          "C": 2,
+          "D": 2,
+          "F": 2,
+          "G": 2,
+          "H": 2,
+          "I": 2,
+          "J": 2,
+          "K": 2,
+          "L": 2,
+          "M": 2,
+          "N": 2,
+          "O": 2,
+          "P": 2,
+          "Q": 2,
+          "R": 2,
+          "S": 2,
+          "T": 2,
+          "U": 2,
+          "V": 2,
+          "W": 2,
+          "X": 2,
+          "Y": 1,
+          "Z": 1
+        },
+        "tray": [
+          "E",
+          "E",
+          "E",
+          "E",
+          "E",
+          "E"
+        ],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": true,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      },
+      {
+        "owned": false,
+        "paws": 0,
+        "crew": [],
+        "mk": 0,
+        "letters": {},
+        "tray": [],
+        "up": {
+          "fing": 0,
+          "rapid": 0,
+          "vowel": 0,
+          "ink": 0,
+          "practice": 0,
+          "stock": 0,
+          "ribbon": 0
+        },
+        "keeper": {
+          "owned": false,
+          "on": true,
+          "def": 0,
+          "targets": {},
+          "lv": 0
+        }
+      }
+    ]
+  },
+  "writes": [
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"}},\"prem\":{},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":99.9954000000953,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-score",
+      "value": "{\"economyVersion\":1,\"score\":0}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":99.9954000000953,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":99.9954000000953,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":0,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":99.9954000000953,\"playSecs\":0,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},null]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001000400,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":100.39540000009528,\"playSecs\":0.39999999999999997,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001000400,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":100.39540000009528,\"playSecs\":0.39999999999999997,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8735132247654552,0.850559335725209,1.0202904541766356,1.2963337870920504,0.7842972924792356,1.1176386788165802],\"m\":[0.013800339374713201,-0.061165902204879614,-0.03891341823867725,-0.018637655057092393,-0.00023079803332515247,0.10798503715798549],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001005050,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":105.04540000009501,\"playSecs\":5.04999999999999,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.8988101312067929,0.8017496580438283,0.998905050914176,1.2811610374715117,0.818818890407703,1.1061640309748304],\"m\":[-0.025881506586807816,-0.06674255739435572,-0.01895054876126321,0.020387304830507505,-0.027362726974024427,0.002641993616239832],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001010100,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":110.09540000009473,\"playSecs\":10.100000000000009,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.987712260396731,0.7392591775718718,0.920391979846951,1.2145833679551634,0.8975225645049416,1.0845959468885582],\"m\":[0.04075934493475327,-0.08628052150669704,-0.07864446495752393,-0.03283834501976685,0.020961940946163014,-0.008828400369292366],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001015150,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":115.14540000009444,\"playSecs\":15.15000000000008,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9888010898400945,0.7041164542786222,0.9535156546248946,1.2372030988903577,0.9948331626559913,1.0415251507831484],\"m\":[-0.036385699309028754,-0.06643162198462493,0.023570712359577695,0.048369735089814125,0.049013305891642676,-0.032919282478782765],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001020200,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":120.19540000009415,\"playSecs\":20.200000000000152,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9362470436978568,0.7155781833277068,0.9237867964053746,1.235713345309366,1.0118664325634206,1.0642794332830918],\"m\":[-0.08989791536142644,-0.02404429643748079,-0.035306979664532695,0.026974618285851185,-0.019586750573851827,0.027737300593921273],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001025250,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":125.24540000009387,\"playSecs\":25.250000000000224,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400},{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9678520204185402,0.7079988882268993,0.9503638986904019,1.286233415431865,0.9883828241122395,1.1234129534468882],\"m\":[-0.012045378035573852,-0.041709913101482705,0.017431517853672213,0.07880567155962297,-0.05805963654357046,0.06684705215776743],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936,0.968],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716,0.708],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924,0.95],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236,1.286],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012,0.988],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064,1.123]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001030300,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":130.29540000009422,\"playSecs\":30.300000000000296,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{}},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400,\"told\":true}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9678520204185402,0.7079988882268993,0.9503638986904019,1.286233415431865,0.9883828241122395,1.1234129534468882],\"m\":[-0.012045378035573852,-0.041709913101482705,0.017431517853672213,0.07880567155962297,-0.05805963654357046,0.06684705215776743],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936,0.968],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716,0.708],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924,0.95],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236,1.286],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012,0.988],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064,1.123]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001031800,\"awards\":{\"s1\":true,\"l100\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":131.79540000009456,\"playSecs\":31.800000000000317,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{},\"harvested\":6},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{\"E\":6},\"tray\":[\"E\",\"E\",\"E\",\"E\",\"E\",\"E\"],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:gar1\":{\"status\":\"prepared\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":0,\"rate\":0,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":1,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400,\"told\":true}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9678520204185402,0.7079988882268993,0.9503638986904019,1.286233415431865,0.9883828241122395,1.1234129534468882],\"m\":[-0.012045378035573852,-0.041709913101482705,0.017431517853672213,0.07880567155962297,-0.05805963654357046,0.06684705215776743],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936,0.968],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716,0.708],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924,0.95],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236,1.286],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012,0.988],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064,1.123]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001031800,\"awards\":{\"s1\":true,\"l100\":true,\"gar1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":131.79540000009456,\"playSecs\":31.800000000000317,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{},\"harvested\":6},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{\"E\":6},\"tray\":[\"E\",\"E\",\"E\",\"E\",\"E\",\"E\"],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"gar1\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:gar1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":0,\"rate\":0,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":1,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400,\"told\":true}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9678520204185402,0.7079988882268993,0.9503638986904019,1.286233415431865,0.9883828241122395,1.1234129534468882],\"m\":[-0.012045378035573852,-0.041709913101482705,0.017431517853672213,0.07880567155962297,-0.05805963654357046,0.06684705215776743],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936,0.968],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716,0.708],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924,0.95],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236,1.286],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012,0.988],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064,1.123]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001031800,\"awards\":{\"s1\":true,\"l100\":true,\"gar1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":131.79540000009456,\"playSecs\":31.800000000000317,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{},\"harvested\":6},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{\"E\":8,\"A\":2,\"B\":2,\"C\":2,\"D\":2,\"F\":2,\"G\":2,\"H\":2,\"I\":2,\"J\":2,\"K\":2,\"L\":2,\"M\":2,\"N\":2,\"O\":2,\"P\":2,\"Q\":2,\"R\":2,\"S\":2,\"T\":2,\"U\":2,\"V\":2,\"W\":2,\"X\":2,\"Y\":1,\"Z\":1},\"tray\":[\"E\",\"E\",\"E\",\"E\",\"E\",\"E\"],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    },
+    {
+      "key": "imi-ops-v1",
+      "value": "{\"meta\":{},\"rewards\":{\"goals\":{\"version\":1,\"revealed\":true,\"ids\":[\"w10\",\"s4\",\"d1\"],\"unknown\":\"keep\"},\"claims\":{\"award:l100\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:s1\":{\"status\":\"waived\",\"origin\":\"historical\",\"policy\":\"db-only\"},\"award:gar1\":{\"status\":\"committed\",\"origin\":\"new\",\"descriptor\":{\"version\":1,\"kind\":\"L\",\"amount\":50,\"desk\":0,\"rate\":0,\"minutes\":3,\"floor\":50,\"cap\":5000,\"speed\":1,\"origin\":\"new\"}}},\"storedGold\":{\"tokens\":{}},\"version\":1,\"catalogueVersion\":1,\"migration\":{\"version\":1,\"policy\":\"db-only\",\"oldAwardIds\":[\"s1\",\"l100\"],\"oldChallengeIds\":[],\"oldPrinting\":0}},\"prem\":{\"earned\":0,\"bought\":0,\"earnedTotal\":0,\"boughtTotal\":0,\"spentEarned\":0,\"spentBought\":0,\"credits\":{},\"version\":1},\"economyVersion\":1,\"intro\":{\"version\":1,\"done\":true,\"train\":true,\"words\":true,\"shop\":true,\"hireAt\":0},\"focus\":\"green-eggs-and-hamster\",\"autoFocus\":true,\"printing\":0,\"legacy\":{\"stars\":0,\"total\":0,\"ups\":{}},\"editions\":{},\"looks\":{},\"run\":{\"earned\":0},\"challenge\":null,\"chDone\":{},\"muses\":{\"owned\":{},\"seated\":[null,null,null]},\"garden\":{\"beds\":[null,{\"ch\":\"E\",\"desk\":0,\"ready\":1700001030400,\"told\":true}]},\"divs\":{\"songs\":0,\"tv\":0,\"radio\":0,\"sketch\":0,\"film\":0},\"divTotal\":0,\"pitches\":[],\"offers\":[],\"market\":{\"v\":[0.9678520204185402,0.7079988882268993,0.9503638986904019,1.286233415431865,0.9883828241122395,1.1234129534468882],\"m\":[-0.012045378035573852,-0.041709913101482705,0.017431517853672213,0.07880567155962297,-0.05805963654357046,0.06684705215776743],\"hist\":[[1,0.966,1,1.081,1.104,1.15,1.121,1.096,1.075,1.014,1.013,0.998,0.933,0.868,0.823,0.841,0.874,0.899,0.988,0.989,0.936,0.968],[1,1.046,1.036,0.968,0.881,0.798,0.787,0.768,0.78,0.736,0.694,0.739,0.841,0.865,0.903,0.9,0.851,0.802,0.739,0.704,0.716,0.708],[1,1.048,1.116,1.11,1.117,1.147,1.17,1.163,1.106,1.142,1.181,1.247,1.203,1.196,1.147,1.067,1.02,0.999,0.92,0.954,0.924,0.95],[1,1.06,1.069,1.145,1.188,1.184,1.194,1.226,1.299,1.308,1.299,1.282,1.269,1.294,1.353,1.331,1.296,1.281,1.215,1.237,1.236,1.286],[1,0.991,0.946,0.905,0.955,1.006,1.009,0.962,0.99,1.013,0.996,0.951,0.901,0.82,0.757,0.755,0.784,0.819,0.898,0.995,1.012,0.988],[1,0.995,0.926,0.894,0.852,0.817,0.818,0.857,0.836,0.842,0.8,0.847,0.813,0.852,0.912,1.011,1.118,1.106,1.085,1.042,1.064,1.123]]},\"agent\":false,\"analyst\":false,\"baro\":0,\"pub\":{\"tier\":0,\"on\":true,\"rule\":\"any\"},\"lamp\":0,\"lastSeen\":1700001031800,\"awards\":{\"s1\":true,\"l100\":true,\"gar1\":true},\"stats\":{\"pitched\":0,\"pitchSold\":0,\"awayMax\":0,\"letters\":0,\"manual\":0,\"words\":0,\"lump\":0,\"rotten\":0,\"secs\":131.79540000009456,\"playSecs\":31.800000000000317,\"pickups\":0,\"pickupEarned\":0,\"storm\":0,\"night\":0,\"byLetter\":{},\"harvested\":6},\"deals\":{},\"royTotal\":0,\"gold\":0,\"best\":0,\"hold\":false,\"metro\":false,\"dbl\":false,\"contracts\":false,\"sel\":0,\"written\":{\"ape-in-the-cape\":true},\"bank\":{},\"log\":[],\"desks\":[{\"owned\":true,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{\"E\":8,\"A\":2,\"B\":2,\"C\":2,\"D\":2,\"F\":2,\"G\":2,\"H\":2,\"I\":2,\"J\":2,\"K\":2,\"L\":2,\"M\":2,\"N\":2,\"O\":2,\"P\":2,\"Q\":2,\"R\":2,\"S\":2,\"T\":2,\"U\":2,\"V\":2,\"W\":2,\"X\":2,\"Y\":1,\"Z\":1},\"tray\":[\"E\",\"E\",\"E\",\"E\",\"E\",\"E\"],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":true,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}},{\"owned\":false,\"paws\":0,\"crew\":[],\"mk\":0,\"letters\":{},\"tray\":[],\"up\":{\"fing\":0,\"rapid\":0,\"vowel\":0,\"ink\":0,\"practice\":0,\"stock\":0,\"ribbon\":0},\"keeper\":{\"owned\":false,\"on\":true,\"def\":0,\"targets\":{},\"lv\":0}}]}",
+      "rejected": false
+    }
+  ],
+  "running": true
+}

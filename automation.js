@@ -652,7 +652,7 @@
       challenge:[api.challengeEnabled(),AutoChallenge.earned(api.state()),'Estate 3, Small Crew clear, manual Gold and purchased Veteran Crew.']
     }[id];
     if (locked && !locked[0]) return '';
-    if (locked && !locked[1] && saved()?.[id] === undefined) return `<section class="o-card"><h3>${names[id]}</h3><p>Unlock: ${locked[2]}${api.state().intro.done ? '' : ' Complete the introduction first.'}</p></section>`;
+    if (locked && !locked[1] && saved()?.[id] === undefined) return '';
     const builders = {garden:gardenCard,pitch:pitchCard,media:mediaCard,muse:museCard,print:printCard,challenge:challengeCard};
     return builders[id]?.(safe) || '';
   }
@@ -667,15 +667,16 @@
       if (id === 'helpers') {
         const conditions = ['Printing 2','No Hands clear','Printing 3','Printing 5 and Haiku','Printing 6 and Deadline','Imprint 1 and manual crop cycle','Imprint 2 and manual pitch sale','Imprint 3 and manual release','Imprint 5 and two manual Muses','Estate 1 and manual Printing','Estate 3, Small Crew, manual Gold and Veteran Crew'];
         const purposes = ['Hire typists with a letter reserve.','Coach eligible crew.','Buy room upgrades in priority order.','Restore typewriters with a wallet margin.','Select new falling bananas.','Plant and harvest matching crops.','Commission and sell pitches.','Release the next media work.','Improve seated Muses.','Print when your saved rule is met.','Complete one Small Crew run.'];
-        html = '<p>Base helpers cost 1 Legacy star each. Buying keeps them Off. Complete each unlock and the introduction.</p>' + bases.map((id,i) => {
+        const shown = bases.filter(id => owned(id) || baseGate(id));
+        html = shown.length ? '<p>Helpers cost 1 Legacy star each and start Off. Switch them on where they appear.</p>' + bases.map((id,i) => {
+          if (!shown.includes(id)) return '';
           const q = api.quoteAutomationBase(id), have = owned(id);
-          return `<section class="o-card"><div class="o-row"><h3>${names[id]}</h3><span class="o-lvl">${have ? helpers.includes(id) ? level(id) + '/3' : 'Owned' : 'Unowned'}</span></div><p>${purposes[i]}</p>${have ? '' : `<p>Unlock: ${conditions[i]}.</p><p>Base: 1 Legacy star. ${escape(q.error)}</p>`}${have ? helpers.includes(id) ? tierCard(id,safe) : '' : `<button type="button" class="o-btn gold" data-act="automation:buy" data-helper="${id}" ${!q.ok || pending || admission ? 'disabled' : ''}>Buy ${names[id]} (1 star)</button>`}<button type="button" class="o-btn sm" data-act="automation:settings" data-helper="${id}">Settings</button></section>`;
-        }).join('');
+          return `<section class="o-card"><div class="o-row"><h3>${names[id]}</h3><span class="o-lvl">${have ? helpers.includes(id) ? level(id) + '/3' : 'Owned' : 'Unowned'}</span></div><p>${purposes[i]}</p>${have ? '' : q.ok ? '' : `<p>${escape(q.error)}</p>`}${have ? helpers.includes(id) ? tierCard(id,safe) : '' : `<button type="button" class="o-btn gold" data-act="automation:buy" data-helper="${id}" ${!q.ok || pending || admission ? 'disabled' : ''}>Buy ${names[id]} (1 star)</button>`}<button type="button" class="o-btn sm" data-act="automation:settings" data-helper="${id}">Settings</button></section>`;
+        }).join('') : '';
       } else {
-        html = inlineCard(id,safe,slot);
-        if (html && !owned(id)) html = `<p>Buy this helper in Legacy &gt; Upgrades for 1 Legacy star.</p><button type="button" class="o-btn sm" data-act="automation:purchases">Legacy upgrades</button>` + html.replace(/<button([^>]*aria-pressed="false"[^>]*)>/g,'<button$1 disabled>');
+        html = owned(id) ? inlineCard(id,safe,slot) : '';
       }
-      if (html && !recoveryShown) {
+      if ((html || pending) && !recoveryShown) {
         html = `${api.masteryActive() ? '<p role="status">Helpers paused during manual Small Crew mastery.</p>' : ''}${!safe ? '<p role="status">Unsupported settings preserved. Helpers disabled.</p>' : ''}${pending ? `<p role="status">${escape(notice)}</p><button data-act="automation:retry">Retry save</button>` : ''}` + html;
         recoveryShown = true;
       }

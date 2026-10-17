@@ -37,8 +37,8 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
    const go=async tab=>{await page.evaluate(tab=>IMI.ops.extensions.setTab(tab),tab);await new Promise(r=>setTimeout(r,400));if(tab==='legacy'){await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,400));}};
    await go('legacy');
-   assert.equal(await page.$$eval('[data-act="automation:settings"]',els=>els.length),11);
-   assert.equal(await page.$eval('[data-act="automation:buy"][data-helper="shop"]',el=>el.disabled),true);
+   assert.equal(await page.$$eval('[data-act="automation:settings"]',els=>els.length),2);
+   assert.equal(await page.$('[data-act="automation:buy"][data-helper="shop"]'),null);
    await page.click('[data-act="automation:buy"][data-helper="hire"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.hire);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),9);

@@ -117,7 +117,7 @@ window.Folio = (() => {
   function render(c, pane) {
     api = c; const s = c.state(); let f;
     try { f = current(s); } catch(e) { c.morph(pane, `<div class="o-card folio"><h3>Folio unavailable</h3><p>${escape(e.message)}</p>${button('back','Return to production')}</div>`); return; }
-    let html = `<div class="o-card folio"><h3>Folio</h3><p>Bind two leaves. One reward per series each Printing.</p>${button('back','Return to production')}`;
+    let html = `<div class="o-card folio"><h3>Folio</h3><p>Turn banked words into a one-off reward. Pick a series, choose two of its stories, and bind them: the words they need are used up, and you take bananas or a pile of letters. Each series pays once per Printing.</p><details class="o-updetail"><summary class="o-btn sm">How the Folio works</summary><ol><li>Pick a series (they get bigger and pay more).</li><li>Choose two of its three stories. Their order only decides how the pair is shown in your gallery.</li><li>Choose a reward: bananas, or letters of one kind on a typewriter you own.</li><li>The preview lists the exact banked words that will be used. Press Work on series and your keepers bank the missing ones (the Publisher pauses meanwhile), then Bind series.</li></ol></details>${button('back','Return to production')}`;
     if (window.Layers?.enabled) html += button('shelf','Genre shelf');
     if (!unlocked(s)) html += '<p>Finish the introduction and reach Printing 4. Saving must be ready.</p>';
     else if (!f.selection) html += series.map(r => button('series',r.name,`data-id="${r.id}"`)).join('');
@@ -142,7 +142,7 @@ window.Folio = (() => {
     c.morph(pane,html);
   }
   if (enabled) (window.__OPS_EXTENSIONS ??= []).push(['folio', {
-    tab:['folio','', 'Folio','Series workstation','Folio',true], visible:c => c.state().intro.done,
+    tab:['folio','i-folio', 'Folio','Bind series for one-off rewards','Folio',true], visible:c => c.state().intro.done && (unlocked(c.state()) || c.state().meta.folio !== undefined),
     init:(_reason,c) => { api = c; }, render,
     actions:{
       shelf:() => window.Layers.openShelf(),

@@ -114,8 +114,13 @@
   const PAW_DESK_STEP = TUNE.PAW_DESK_STEP != null ? TUNE.PAW_DESK_STEP : 0.35;   // later machines charge this much more per desk index for every typist hire
   const KEEPER_PERIOD = TUNE.KEEPER_PERIOD || [0.6, 1.2, 2, 3, 4, 5];     // seconds per banked word per desk, free keepers
   const KEEPER_UP_STEP = TUNE.KEEPER_UP_STEP || 0.9;                      // each keeper level multiplies that period by this (Shop > Keepers, bananas)
-  const KEEPER_UP_MAX = TUNE.KEEPER_UP_MAX || 6;
+  const KEEPER_UP_MAX = TUNE.KEEPER_UP_MAX || 6;                          // levels on the original curve; Shop > Keepers goes on past this with gentler steps and never maxes out
   const KEEPER_UP_GROW = TUNE.KEEPER_UP_GROW || 1.8;                      // each level costs this much more than the last
+  const KEEPER_LATE_STEP = TUNE.KEEPER_LATE_STEP || 0.95;                 // past the original levels each keeper level multiplies the period by this instead
+  const KEEPER_LATE_GROW = TUNE.KEEPER_LATE_GROW || 1.45;                 // ...and costs this much more than the last
+  const KEEPER_MIN_PERIOD = TUNE.KEEPER_MIN_PERIOD || 0.05;               // a keeper never banks faster than one word every 50ms (the tick banks four at most)
+  const FING_SOFT = 10, FING_LATE = TUNE.FING_LATE || 0.93;               // Quick fingers: 15% faster for ten levels, then 7% per level without end
+  const SUB_SLOW = TUNE.SUB_SLOW || 2;                                    // the pitch assistants bank one word per this many keeper periods
   const KEEPER_UP_BASE = (TUNE.KEEPER_UP_BASE || [100, 600, 3000, 30000, 4e5, 5e6]).map(cash);   // bananas for level 1, by desk
   const COACH_MAX = TUNE.COACH_MAX || 10;                                // Train > crew cards: coaching levels per monkey
   const COACH_STEP = TUNE.COACH_STEP || 2;                               // each coaching level is +this % typing speed on top of the monkey's talent
@@ -131,7 +136,7 @@
   const KID_PAY = TUNE.KID_PAY || 0.1;                                          // runtime multiplier on the baked-in pay of kids' titles
   const TITLE_SCALE = TUNE.TITLE_SCALE || [1, 1.3, 1.7, 2.2, 3, 4];     // pitched titles get bigger with the band
   const PITCH_PAY = TUNE.PITCH_PAY || [40, 504, 5000, 39120, 4.885e5, 6.12e6];   // rights for a standard pitched title, by band
-  const SHOP = Object.fromEntries(Object.entries({ hold: 500, metro: 3000, dbl: 2000, contracts: 10000, agent: 40000, analyst: 150000, ...(TUNE.SHOP || {}) }).map(([key, value]) => [key, cash(value)]));
+  const SHOP = Object.fromEntries(Object.entries({ hold: 500, metro: 3000, dbl: 2000, contracts: 10000, agent: 40000, analyst: 150000, pitchteam: 250000, carbon: 1500000, ...(TUNE.SHOP || {}) }).map(([key, value]) => [key, cash(value)]));
   const FREQ = { E: 12, T: 9, A: 8, O: 8, I: 7, N: 7, S: 6, H: 6, R: 6, D: 4, L: 4, C: 3, U: 3, M: 3, W: 2, F: 2, G: 2, Y: 2, P: 2, B: 1.5, V: 1, K: 1, J: .3, X: .3, Q: .2, Z: .2 };
   const POP_COLORS = ['#ff5d73', '#ffd23a', '#7be05a', '#4cc9f0', '#c39bff', '#ff9ec0'];
   const EXTRA_WORDS = `up if me we be no so or as at by my ox an am us
@@ -228,7 +233,7 @@
     up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0 },
     keeper: { owned: i === 0, on: true, def: 0, targets: {}, lv: 0 }
   });
-  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null], owner: [0, 0], farmers: [0, 0, 0, 0, 0, 0] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, pitchteam: false, carbon: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
   let hallHistory = {};
   let S = (() => {
     try {
@@ -477,12 +482,13 @@
   const royRate = () => royBase() * passive();
   const fmtRate = IMI.fmtRate;
   const buffOn = k => productiveMono() < buffs[k];
-  const pawSecs = d => PAW_BASE[S.desks.indexOf(d)] * Math.pow(0.85, d.up.fing) * (toolOn('metro') ? 0.5 : 1) * (stormy() ? 2 : 1) * (buffOn('frenzy') ? 0.5 : 1) * (buffOn('snack') ? 1 / 1.5 : 1) * (buffOn('sluggish') ? 1.7 : 1);
+  const fingMult = level => Math.pow(.85, Math.min(level, FING_SOFT)) * Math.pow(FING_LATE, Math.max(0, level - FING_SOFT));
+  const pawSecs = d => PAW_BASE[S.desks.indexOf(d)] * fingMult(d.up.fing) * (toolOn('metro') ? 0.5 : 1) * (stormy() ? 2 : 1) * (buffOn('frenzy') ? 0.5 : 1) * (buffOn('snack') ? 1 / 1.5 : 1) * (buffOn('sluggish') ? 1.7 : 1);
   const holdRate = d => ((TUNE.HOLD_BASE || 4) + (TUNE.RAPID_STEP || 2) * d.up.rapid) * (toolOn('dbl') ? (TUNE.DBL || 2) : 1);
   const autoRate = d => (d.paws ? d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) / pawSecs(d) : 0);
   const rewardBasis = () => {
     const multiplier = speed(), letters = S.desks.map((d, i) => !d.owned || !d.paws ? 0 :
-      multiplier * deskMk(d) / (PAW_BASE[i] * .85 ** d.up.fing * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) *
+      multiplier * deskMk(d) / (PAW_BASE[i] * fingMult(d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) *
       d.crew.reduce((n, t) => n + typistSpeed(t) * (t.trait === 'lucky' ? 1 + .05 * trMul(t) : 1), 0));
     return { speed:multiplier, desk:S.desks.reduce((n, d, i) => d.owned ? i : n, 0), letters, bananas:(royBase() + divBase()) * multiplier };
   };
@@ -523,8 +529,9 @@
     for (const id of ['automation','minigames']) extensions.get(id)?.reset?.({kind:'imprint'}, extensionAPI);
     buildStage(); mark();
   }
+  const freeWords = () => !!S.carbon;                  // Shop > Room-wide upgrades > Carbon paper: banking a word copies it instead of using up its letters
   const canMake = (d, w) => { const c = lcount(w); for (const k in c) if ((d.letters[k] || 0) < c[k]) return false; return true; };
-  const makeCopies = (d, w) => { const c = lcount(w); let n = Infinity; for (const k in c) n = Math.min(n, Math.floor((d.letters[k] || 0) / c[k])); return n; };
+  const makeCopies = (d, w) => { const c = lcount(w); let n = Infinity; if (freeWords()) return canMake(d, w) ? Infinity : 0; for (const k in c) n = Math.min(n, Math.floor((d.letters[k] || 0) / c[k])); return n; };
   const pick = map => {
     let t = 0; for (const k in map) t += map[k];
     if (t <= 0) return null;
@@ -709,9 +716,8 @@
       milestoneNotice.setAttribute('role', 'status'); root.appendChild(milestoneNotice);
     }
     if (!noticeItems.some(x => x.n === m.n) && noticeItems.length < MILES.length + HIGH_MILES.length) noticeItems.push(m);
-    const visible = noticeItems.slice(0, 2), rest = noticeItems.slice(2);
-    milestoneNotice.innerHTML = visible.map(x => `<b>${esc(x.name)}!</b><span>${esc(x.desc)}</span>`).join('') +
-      (rest.length ? `<details><summary>${rest.length} more streak milestones</summary>${rest.map(x => `<b>${esc(x.name)}!</b><span>${esc(x.desc)}</span>`).join('')}</details>` : '');
+    /* just the names, newest last; what each one does is on its power-up tag and in the tap-streak list */
+    milestoneNotice.innerHTML = noticeItems.slice(-2).map(x => `<b title="${esc(x.desc)}">${esc(x.name)}!</b>`).join('');
     milestoneNotice.hidden = false;
     clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { milestoneNotice.hidden = true; noticeItems = []; }, 3000);
   }
@@ -1187,7 +1193,7 @@
     loadArchive();
     const want = buyWant(), total = totalReleased(), pool = archive ? archive.filter(a => a.shelf !== 'stories').length : 3000;
     const cards = DIVS.map(D => {
-      if (!divUnlocked(D)) return `<div class="o-card locked"><h3>${D.name}</h3><p class="o-dim">Locked: sell ${D.need} titles (you have ${soldCount()}).</p><p class="o-dim">${D.quirk}</p></div>`;
+      if (!divUnlocked(D)) return '';
       const n = divCount(D), plan = divPlan(D, want), unit = divUnit(D), ord = divOrder[D.id], full = n >= divCap(D);
       const recent = ord ? ord.slice(Math.max(0, Math.min(n, ord.length) - 3), Math.min(n, ord.length)).reverse().map(x => `<span class="o-chip">${esc(x.title)}</span>`).join('') : '';
       return `<div class="o-card o-div${n ? ' live' : ''}"><div class="o-row"><h3><i class="o-emb e-${D.id}" aria-hidden="true"><b></b><b></b><b></b><b></b></i>${D.name}</h3><span class="o-lvl">${n}/${divCap(D)}</span></div>
@@ -1305,7 +1311,7 @@
     const slots = museSlots(), M = S.muses, have = bananas.get();
     const seatedCards = [0, 1, 2].map(k => {
       const id = M.seated[k], mu = MUSES.find(x => x.id === id);
-      if (k >= slots) return `<div class="o-card locked"><h3>Slot ${k + 1}</h3><p class="o-dim">Locked: sell ${[3, 8, 13][k]} titles (you have ${soldCount()}).</p></div>`;
+      if (k >= slots) return '';
       return mu ? `<div class="o-card o-pcard o-seat on">${portrait(mu.id, true)}<div class="o-row"><h3>${mu.name}</h3><span class="o-lvl">SLOT ${k + 1}</span></div><p>${mu.desc}</p><button type="button" class="o-btn sm" data-act="museout" data-slot="${k}" ${challengeSeatsLocked() ? 'disabled' : ''}>Send home</button></div>`
         : `<div class="o-card o-seat"><h3>Slot ${k + 1}</h3><p class="o-dim">Empty. Seat a patron below.</p></div>`;
     }).join('');
@@ -1313,26 +1319,59 @@
       const owned = !!M.owned[mu.id], seated = M.seated.includes(mu.id);
       const seatBtns = owned && !seated ? [0, 1, 2].filter(k => k < slots).map(k => `<button type="button" class="o-btn sm" data-act="museseat" data-id="${mu.id}" data-slot="${k}" ${challengeSeatsLocked() ? 'disabled' : ''}>${M.seated[k] ? 'Swap into' : 'Seat in'} slot ${k + 1}</button>`).join('') : '';
       return `<div class="o-card o-pcard o-muse">${portrait(mu.id, owned)}<div class="o-row"><h3>${mu.name}</h3>${owned ? `<span class="o-lvl">${seated ? 'SEATED' : 'INVITED'}</span>` : price(mu.cost)}</div><p>${mu.desc}</p>
-        ${owned ? (seatBtns || (seated ? '' : '<p class="o-dim">Unlock a slot by selling more titles.</p>')) : `<button type="button" class="o-btn gold" data-act="museinvite" data-id="${mu.id}" ${have < mu.cost ? 'disabled' : ''}>Invite</button>`}</div>`;
+        ${owned ? (seatBtns || '') : `<button type="button" class="o-btn gold" data-act="museinvite" data-id="${mu.id}" ${have < mu.cost ? 'disabled' : ''}>Invite</button>`}</div>`;
     }).join('');
     morph($('#o-muses'), `
       <p class="o-lede">Invite Muses, then seat them for bonuses. Sell titles to open up to three seats.</p>
       ${chal('fixedcast') ? `<p role="status">${chProgress()}</p>` : ''}
-      <div class="lg03-inline" data-own data-automation="muse"></div><h3 class="o-h">Seated (${M.seated.slice(0, slots).filter(Boolean).length}/${slots})</h3><div class="o-grid">${seatedCards}</div>
+      <div class="lg03-inline" data-own data-automation="muse"></div>${slots ? `<h3 class="o-h">Seated (${M.seated.slice(0, slots).filter(Boolean).length}/${slots})</h3><div class="o-grid">${seatedCards}</div>` : ''}
       <h3 class="o-h">The guest list</h3><div class="o-grid">${cards}</div>`);
     hydrate($('#o-muses'));
   }
 
   /* ================= letter garden: grow the exact letters you need ================= */
-  const GARDEN_COSTS = [1500, 6000, 25000, 100000].map(cash);                 // plots 3 to 6
+  /* Every typewriter has its own field. Harvesting earns that field experience; levels grow its crops faster and bigger.
+     Skill (experience) is kept through every Printing. Plots and farmers are part of the room, so they are bought again each Printing. */
+  const GARDEN_COSTS = [750, 2000, 8000].map(cash);                 // the 2nd, 3rd and 4th plot in a field (times PLOT_SCALE for the machine)
+  const PLOT_SCALE = [1, 4, 15, 60, 250, 1000], PLOT_MAX = 4;
+  const FARMER_BASE = [3000, 20000, 120000, 800000, 5e6, 4e7].map(cash), FARMER_TIER = [1, 6, 36], FARMER_LEVEL = [1, 5, 12], FARMER_PERIOD = [12, 6, 3];   // bananas for tier 1, tier multipliers, field level each tier needs, seconds per action
+  const FARMER_NAMES = ['Farmhand', 'Seasoned farmer', 'Master farmer'];
   const GARDEN_SLOW = [1, 2, 5, 12, 30, 80];                        // higher desks grow slower, like their typists
-  const gardenTime = (ch, desk) => Math.round((30 + (12 - FREQ[ch]) * 8) * GARDEN_SLOW[desk == null ? S.sel : desk]);   // seconds: rare letters take longer
+  const GARDEN_DESK_YIELD = [1, 1.3, 1.8, 2.6, 4, 6];              // ...but a harvest on a slower machine is worth more letters
+  const FARM_XP = 40, HEAD_XP = 120;                                 // field level = sqrt(xp / 40); head gardener level = sqrt(all xp / 120)
+  const farmXp = (s = S) => DESKS.map((_, i) => s.meta?.farm?.xp?.[i] || 0);
+  const deskLvl = (i, s = S) => Math.floor(Math.sqrt(farmXp(s)[i] / FARM_XP));
+  const headLvl = (s = S) => Math.floor(Math.sqrt(farmXp(s).reduce((a, b) => a + b, 0) / HEAD_XP));
+  const farmYield = (i, s = S) => (1 + .12 * deskLvl(i, s)) * (1 + .03 * headLvl(s)) * GARDEN_DESK_YIELD[i];
+  const farmSpeed = (i, s = S) => (1 + .06 * deskLvl(i, s)) * (1 + .02 * headLvl(s));
+  const gardenTime = (ch, desk) => { const i = desk == null ? S.sel : desk; return Math.max(5, Math.round((30 + (12 - FREQ[ch]) * 8) * GARDEN_SLOW[i] / farmSpeed(i))); };   // seconds: rare letters take longer
   const fmtSecs = n => (n >= 3600 ? `${Math.floor(n / 3600)}h ${Math.round(n % 3600 / 60)}m` : n >= 120 ? `${Math.round(n / 60)}m` : `${n}s`);
-  const gardenYield = ch => Math.round(6 + (12 - FREQ[ch]) * 1.2);  // ...and give more
+  const gardenBase = ch => Math.round(6 + (12 - FREQ[ch]) * 1.2);   // ...and give more
+  const gardenYield = (ch, desk, s = S) => Math.max(1, Math.round(gardenBase(ch) * farmYield(desk == null ? S.sel : desk, s)));
+  const fieldBeds = i => S.garden.beds.map((b, k) => k).filter(k => S.garden.owner[k] === i);
+  const plotCost = i => { const n = fieldBeds(i).length; return n >= PLOT_MAX ? 0 : roundMoney(GARDEN_COSTS[n - 1] * PLOT_SCALE[i]); };
+  const farmerTier = i => S.garden.farmers?.[i] || 0;
+  const farmerCost = i => roundMoney(FARMER_BASE[i] * FARMER_TIER[farmerTier(i)]);
+  const farmerOffer = i => S.desks[i]?.owned && farmerTier(i) < 3 && deskLvl(i) >= FARMER_LEVEL[farmerTier(i)];
+  /* older saves have one shared field: every plot becomes Bamboo's (or the machine its crop was planted for) and each owned machine gets a plot */
+  function ensureGarden() {
+    const g = S.garden; if (!Array.isArray(g.owner)) g.owner = [];
+    while (g.owner.length < g.beds.length) { const b = g.beds[g.owner.length]; g.owner.push(b && Number.isInteger(b.desk) ? b.desk : 0); }
+    g.owner.length = g.beds.length;
+    if (!Array.isArray(g.farmers)) g.farmers = DESKS.map(() => 0);
+    S.desks.forEach((d, i) => { if (d.owned && !g.owner.includes(i)) { g.beds.push(null); g.owner.push(i); } });
+  }
+  /* what a farmer plants: the letter the machine's goal is missing most, else the one it holds least of */
+  function farmerLetter(i) {
+    const d = S.desks[i], missing = focusNeeds(d, i).missing, keys = Object.keys(missing);
+    if (keys.length) return keys.sort((a, b) => missing[b] - missing[a])[0];
+    return [...'ETAOINSHRDLU'].sort((a, b) => (d.letters[a] || 0) - (d.letters[b] || 0))[0];
+  }
   const gardenPrototype = () => (window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1') && !!layers?.enabled;
   const cropFor = (ch, desk) => ({ ch, desk, ready:savedWallNow() + gardenTime(ch, desk) * 1000 });
   function grantCrop(state, i) {
-    const b = state.garden.beds[i], d = state.desks[b.desk] || state.desks[state.sel], y = gardenYield(b.ch);
+    const b = state.garden.beds[i], di = state.desks[b.desk] ? b.desk : state.sel, d = state.desks[di], y = gardenYield(b.ch, di, state);
+    const xp = farmXp(state); xp[di] += Math.round(gardenBase(b.ch) * (1 + .6 * di)); state.meta = state.meta || {}; state.meta.farm = { version: 1, xp };
     d.letters[b.ch] = (d.letters[b.ch] || 0) + y; for (let k = 0; k < Math.min(y, 8); k++) d.tray.push(b.ch); if (d.tray.length > 80) d.tray.splice(0, d.tray.length - 80);
     state.stats.harvested = (state.stats.harvested || 0) + y; state.garden.beds[i] = null; return y;
   }
@@ -1342,23 +1381,30 @@
       identities:indices.map(i => { const b = S.garden.beds[i]; return b ? [b.ch,b.desk,b.gardenToken ?? null] : null; }),
       config:origin === 'auto' ? JSON.stringify(S.meta.automation.garden) : null};
   }
+  const farmLevels = () => [...DESKS.map((_, i) => deskLvl(i)), headLvl()];
+  function farmCheer(before) {
+    const now = farmLevels(); let msg = '';
+    DESKS.forEach((D, i) => { if (now[i] > before[i]) msg = `${D.name.split(' ')[0]} field reached level ${now[i]}.`; });
+    if (now[DESKS.length] > before[DESKS.length]) msg = `Head gardener reached level ${now[DESKS.length]}: every field grows better.`;
+    if (msg && !document.hidden) { IMI.sfx.ding(); newsPush(msg); IMI.say(msg); }
+  }
   function commitGarden(p) {
     const helper = extensions.get('automation');
     const refuse = error => { layerChoices.delete('garden'); return {ok:false, retryable:false, error}; };
-    if (chal('handplanted') && p.origin === 'auto' || !gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed()) return refuse('Garden save owner unavailable');
-    if (!helper?.validConfig(S.meta.automation) || !['manual','auto'].includes(p.origin) ||
+    if (chal('handplanted') && p.origin !== 'manual' || !gardenPrototype() || !writer?.owns() || !extensionAPI.automationAllowed()) return refuse('Garden save owner unavailable');
+    if (!helper?.validConfig(S.meta.automation) || !['manual','auto','farmer'].includes(p.origin) ||
         !['plant','harvest'].includes(p.action) || p.state !== S || !layers.epochMatches(S,p) || p.printing !== S.printing || p.imprint !== layers.identity(S)) return refuse('Garden action changed');
     try { layers.current(S); } catch { return refuse('Unsupported Imprint save'); }
     if (p.origin === 'auto' && !helper.gardenReady(p)) return refuse('Auto-garden is paused or locked');
     if (!p.indices.length || new Set(p.indices).size !== p.indices.length || p.indices.some((i,n) =>
         !Number.isInteger(i) || i < 0 || i >= S.garden.beds.length || S.garden.beds[i] !== p.crops[n] || JSON.stringify(p.identities[n]) !== JSON.stringify(S.garden.beds[i] ? [S.garden.beds[i].ch,S.garden.beds[i].desk,S.garden.beds[i].gardenToken ?? null] : null))) return refuse('Crop changed. Choose the action again.');
-    if (p.action === 'plant' && (p.indices.length !== 1 || p.crops[0] || !FREQ[p.ch] || !Number.isInteger(p.desk) || !S.desks[p.desk]?.owned || !Number.isFinite(gardenTime(p.ch,p.desk)))) return refuse('Planting target unavailable');
+    if (p.action === 'plant' && (p.indices.length !== 1 || p.crops[0] || !FREQ[p.ch] || !Number.isInteger(p.desk) || !S.desks[p.desk]?.owned || S.garden.owner?.[p.indices[0]] !== p.desk || !Number.isFinite(gardenTime(p.ch,p.desk)))) return refuse('Planting target unavailable');
     if (p.action === 'harvest' && p.crops.some(b => !b || !FREQ[b.ch] || !S.desks[b.desk]?.owned || !Number.isFinite(b.ready) || savedWallNow() < b.ready)) return refuse('Crop is absent, unripe or its desk is unavailable');
     const affected = new Set(p.action === 'harvest' ? p.crops.map(b => b.desk) : []);
     const candidate = {...S, garden:{...S.garden, beds:S.garden.beds.slice()}, stats:{...S.stats},
       desks:S.desks.map((d,i) => affected.has(i) ? {...d, letters:{...d.letters}, tray:d.tray.slice()} : d), meta:{...S.meta},
       lastSeen:S.rewards.awayCheckpoint ? S.lastSeen : Date.now()};
-    let amount = 0;
+    let amount = 0; const levels = farmLevels();
     if (p.action === 'plant') {
       const crop = cropFor(p.ch,p.desk);
       if (p.origin === 'manual') crop.gardenToken = crypto.randomUUID();
@@ -1371,38 +1417,48 @@
       S.garden = candidate.garden; S.stats = candidate.stats; S.meta = candidate.meta; S.lastSeen = candidate.lastSeen;
       for (const i of affected) { S.desks[i].letters = candidate.desks[i].letters; S.desks[i].tray = candidate.desks[i].tray; }
       if (p.action === 'plant' && p.origin === 'manual') IMI.sfx.tick();
+      farmCheer(levels);
       mark();
     }
     return {...result, amount:result.ok ? amount : 0};
   }
   function plant(i, ch, desk = S.sel, origin = 'manual') {
-    if (chal('handplanted') && origin === 'auto') return {ok:false,retryable:false,error:'Garden by hand during Hand-planted.'};
+    if (chal('handplanted') && origin !== 'manual') return {ok:false,retryable:false,error:'Garden by hand during Hand-planted.'};
+    if (S.garden.owner?.[i] != null) desk = S.garden.owner[i];
     if (gardenPrototype()) return extensions.get('automation')?.gardenAction(gardenRequest('plant',[i],ch,desk,origin));
     const g = S.garden; if (g.beds[i] || !FREQ[ch]) return;
     if (writer?.localDisposition()) return;
-    g.beds[i] = cropFor(ch, S.sel); IMI.sfx.tick(); mark(); save();
+    g.beds[i] = cropFor(ch, desk); IMI.sfx.tick(); mark(); save();
   }
   function harvest(i, origin = 'manual') {
-    if (chal('handplanted') && origin === 'auto') return 0;
+    if (chal('handplanted') && origin !== 'manual') return 0;
     if (gardenPrototype()) return extensions.get('automation')?.gardenAction(gardenRequest('harvest',[i],null,null,origin)).amount || 0;
     const g = S.garden, b = g.beds[i]; if (writer?.localDisposition() || !b || savedWallNow() < b.ready) return 0;
     return grantCrop(S,i);
   }
   function gardenHTML() {
-    const g = S.garden, D = DESKS[S.sel], need = focusNeeds(cur(), S.sel).missing, now = savedWallNow();
+    const g = S.garden, need = focusNeeds(cur(), S.sel).missing, now = savedWallNow(), xp = farmXp(), head = headLvl();
     const seeds = Object.keys(FREQ).sort().map(ch => `<button type="button" class="o-seed${ui.seed === ch ? ' on' : ''}${need[ch] ? ' need' : ''}" data-act="seed" data-ch="${ch}" aria-label="Seed ${ch}">${ch}</button>`).join('');
-    const plots = g.beds.map((b, i) => {
-      if (!b) return `<button type="button" class="o-plot empty" data-act="plant" data-i="${i}"><span class="o-pl-ch">+</span><small>Plant ${ui.seed}</small></button>`;
-      const left = Math.max(0, Math.ceil((b.ready - now) / 1000)), total = gardenTime(b.ch, b.desk), pct = Math.min(100, Math.round(100 * (1 - (b.ready - now) / (total * 1000))));
-      if (left <= 0) return `<button type="button" class="o-plot ripe" data-act="harvest" data-i="${i}"><span class="o-pl-ch">${b.ch}</span><small>Harvest +${gardenYield(b.ch)}</small></button>`;
-      return `<div class="o-plot grow"><span class="o-pl-ch">${b.ch}</span><span class="o-prog" role="img" aria-label="${pct}% grown"><i style="width:${pct}%"></i></span><small>${fmtSecs(left)} · for ${DESKS[b.desk] ? DESKS[b.desk].name.split(' ')[0] : ''}</small></div>`;
-    }).join('');
     const ripe = g.beds.filter(b => b && now >= b.ready).length;
-    return `<div class="o-card o-garden"><div class="o-row"><h3>Letter garden</h3><span class="o-dim">${g.beds.length} plots · harvests go to ${D.name}</span></div>
-      <p class="o-dim">Pick a letter, then tap an empty plot. Rare letters take longer but yield more. Gold keys are needed by the title ${D.name.split(' ')[0]} is focused on.</p>
+    const field = (D, i) => {
+      const lv = deskLvl(i), floor = FARM_XP * lv * lv, next = FARM_XP * (lv + 1) * (lv + 1), pct = Math.min(100, Math.round(100 * (xp[i] - floor) / (next - floor))), tier = farmerTier(i);
+      const plots = fieldBeds(i).map(k => {
+        const b = g.beds[k];
+        if (!b) return `<button type="button" class="o-plot empty" data-act="plant" data-i="${k}"><span class="o-pl-ch">+</span><small>Plant ${ui.seed}</small></button>`;
+        const left = Math.max(0, Math.ceil((b.ready - now) / 1000)), total = gardenTime(b.ch, b.desk), done = Math.min(100, Math.round(100 * (1 - (b.ready - now) / (total * 1000))));
+        if (left <= 0) return `<button type="button" class="o-plot ripe" data-act="harvest" data-i="${k}"><span class="o-pl-ch">${b.ch}</span><small>Harvest +${gardenYield(b.ch, b.desk)}</small></button>`;
+        return `<div class="o-plot grow"><span class="o-pl-ch">${b.ch}</span><span class="o-prog" role="img" aria-label="${done}% grown"><i style="width:${done}%"></i></span><small>${fmtSecs(left)}</small></div>`;
+      }).join('');
+      return `<div class="o-field" style="--c:${D.color}"><div class="o-row"><h4>${D.name.split(' ')[0]} field <span class="o-lvl">Lv ${lv}</span></h4><span class="o-dim">${tier ? `${FARMER_NAMES[tier - 1]} at work` : 'by hand'}</span></div>
+        <span class="o-prog o-xpbar" role="img" aria-label="${pct}% to level ${lv + 1}"><i style="width:${pct}%"></i></span>
+        <p class="o-dim">+${Math.round((farmYield(i) / GARDEN_DESK_YIELD[i] - 1) * 100)}% letters · ${Math.round((farmSpeed(i) - 1) * 100)}% faster · ${fmt(xp[i])}/${fmt(next)} xp</p>
+        <div class="o-plots">${plots}</div></div>`;
+    };
+    return `<div class="o-card o-garden"><div class="o-row"><h3>Letter garden</h3><span class="o-dim">Head gardener Lv ${head}${head ? ` · every field +${head * 3}% letters, +${head * 2}% speed` : ''}</span></div>
+      <p class="o-dim">Pick a letter, then tap an empty plot. Each typewriter has its own field and its harvests go to that machine. Harvesting earns the field experience: higher levels grow faster and bigger. Gold keys are needed by the title ${DESKS[S.sel].name.split(' ')[0]} is focused on.</p>
       <div class="o-seeds">${seeds}</div>
-      <p class="o-dim">${ui.seed}: grows in ${fmtSecs(gardenTime(ui.seed))}, yields ${gardenYield(ui.seed)} letters.</p>
-      <div class="o-plots">${plots}</div>
+      <p class="o-dim">${ui.seed} on ${DESKS[S.sel].name.split(' ')[0]}: grows in ${fmtSecs(gardenTime(ui.seed))}, yields ${gardenYield(ui.seed)} letters.</p>
+      ${S.desks.map((d, i) => d.owned ? field(DESKS[i], i) : '').join('')}
       <div class="o-row o-left"><button type="button" class="o-btn sm gold" data-act="harvestall" ${ripe ? '' : 'disabled'}>Harvest all ripe${ripe ? ' (' + ripe + ')' : ''}</button></div></div>`;
   }
 
@@ -2219,14 +2275,14 @@
   const mkCost = i => roundMoney(MK_BASE[i] * (S.desks[i].mk ? 12 : 1) * (chPerk('haiku') ? .8 : 1));
   /* ---- keepers: each desk's keeper can be tuned up (faster banking) with bananas ---- */
   const keeperLv = i => S.desks[i].keeper.lv || 0;
-  const keeperPeriod = i => KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, keeperLv(i)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
-  const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, keeperLv(i)));
+  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0)));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
+  const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_GROW, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)));
   function keeperCard(i, have) {
-    const D = DESKS[i], lv = keeperLv(i), max = lv >= KEEPER_UP_MAX, cost = keeperUpCost(i), now = keeperPeriod(i);
-    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart('s-keeper')}${D.name.split(' ')[0]} keeper</h3>${max ? '<span class="o-lvl">MAXED</span>' : price(cost)}</div>
-      ${pips(lv, KEEPER_UP_MAX)}<p class="o-upcurrent">One word every ${now.toFixed(2)}s</p><p>When enough letters are held.${museOn('hemi') ? ' Hemingwape doubles banking speed.' : ''}</p>
-      ${max ? '' : `<p class="o-upnext">Next: one word every ${(now * KEEPER_UP_STEP).toFixed(2)}s</p>`}
-      ${max ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="keeper" data-i="${i}" ${have < cost ? 'disabled' : ''}>Tune up</button>`}</div>`;
+    const D = DESKS[i], lv = keeperLv(i), cost = keeperUpCost(i), now = keeperPeriod(i), nextPeriod = Math.max(KEEPER_MIN_PERIOD, now * (lv >= KEEPER_UP_MAX ? KEEPER_LATE_STEP : KEEPER_UP_STEP)), atFloor = now <= KEEPER_MIN_PERIOD;
+    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart('s-keeper')}${D.name.split(' ')[0]} keeper</h3>${atFloor ? '<span class="o-lvl">TOP SPEED</span>' : price(cost)}</div>
+      ${pips(Math.min(lv, KEEPER_UP_MAX), KEEPER_UP_MAX)}<p class="o-upcurrent">Level ${lv} · one word every ${now.toFixed(2)}s</p><p>When enough letters are held.${museOn('hemi') ? ' Hemingwape doubles banking speed.' : ''}${lv >= KEEPER_UP_MAX ? ' Every extra level keeps adding speed.' : ''}</p>
+      ${atFloor ? '' : `<p class="o-upnext">Next: one word every ${nextPeriod.toFixed(2)}s</p>`}
+      ${atFloor ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="keeper" data-i="${i}" ${have < cost ? 'disabled' : ''}>Tune up</button>`}</div>`;
   }
   function baroCard(have) {
     const t = S.baro, descs = ['Names what the sky does next, two changes ahead, when you tap the weather or day/night gauge, and lists them on the Market page.', 'Four changes ahead, and the Market page says which titles each change will lift.'];
@@ -2270,6 +2326,36 @@
     return wx === 3 || (wx >= 2 && night) ? .45 : 0;          // gothic epics sell in heavy night weather
   }
   const marketNext = b => { const M = S.market; return M.v[b] + (1 + marketBias(b) - M.v[b]) * .12 + M.m[b] * .55; };
+  let farmT = [];
+  function farmerTick(dt) {
+    const g = S.garden; if (!g.farmers?.some(Boolean) || document.hidden || IMI.screen() !== 'game' || chal('handplanted')) return;
+    g.farmers.forEach((tier, i) => {
+      if (!tier || !S.desks[i].owned) return;
+      farmT[i] = (farmT[i] || 0) + dt; if (farmT[i] < FARMER_PERIOD[tier - 1]) return;
+      farmT[i] = 0; farmerAct(i);
+    });
+  }
+  /* one action: bring in a ripe crop, else plant an empty plot */
+  function farmerAct(i) {
+    const now = savedWallNow(), beds = fieldBeds(i), ripe = beds.find(k => S.garden.beds[k] && now >= S.garden.beds[k].ready), empty = beds.find(k => !S.garden.beds[k]);
+    if (ripe === undefined && empty === undefined) return;
+    if (!gardenPrototype()) {
+      if (ripe !== undefined) { const y = harvest(ripe, 'farmer'); if (y) { mark(); save(); } } else { plant(empty, farmerLetter(i), i, 'farmer'); }
+      return;
+    }
+    const p = ripe !== undefined ? gardenRequest('harvest', [ripe], null, null, 'farmer') : gardenRequest('plant', [empty], farmerLetter(i), i, 'farmer');
+    commitGarden(p);
+  }
+  /* away: each farmer finishes whole crop cycles in the time you were gone, with the same yield and experience as at the keyboard */
+  function farmBulk(d, i, gameSecs) {
+    const g = S.garden, tier = g.farmers?.[i]; if (!tier || chal('handplanted')) return;
+    const plots = fieldBeds(i).length; if (!plots) return;
+    const ch = farmerLetter(i), per = gardenTime(ch, i) + 2 * FARMER_PERIOD[tier - 1];
+    const acc = g.acc || (g.acc = []); acc[i] = (acc[i] || 0) + gameSecs * plots / per;
+    const n = Math.floor(acc[i]); if (n < 1) return; acc[i] -= n;
+    const y = gardenYield(ch, i) * n; d.letters[ch] = (d.letters[ch] || 0) + y; S.stats.harvested = (S.stats.harvested || 0) + y;
+    const xp = farmXp(); xp[i] += Math.round(gardenBase(ch) * (1 + .6 * i)) * n; S.meta.farm = { version: 1, xp };
+  }
   function gardenTick() {
     const g = S.garden; if (!g.beds.some(Boolean)) return;
     const now = savedWallNow(); g.beds.forEach((b, i) => { if (b && now >= b.ready && !b.told) { b.told = true; if (!document.hidden) { IMI.sfx.tick(); newsPush(`A plot of ${b.ch} is ripe in the letter garden.`); } } });
@@ -2642,12 +2728,23 @@
     for (const [m, p] of mix) { let t = 0; for (const ch in m) t += m[ch]; for (const ch in m) out[ch] = (out[ch] || 0) + p * m[ch] / t; }
     return out;
   }
+  function subBulk(d, i, lim) {
+    if (worksActive() || !keepersReady()) return;
+    const r = pitchGoal(); if (!r) return;
+    let left = lim;
+    for (const w of BAND_WORDS[i]) {
+      if (!r.need[w] || left <= 0) continue;
+      const c = Math.min(makeCopies(d, w), r.need[w] - stock(w), left); if (!(c > 0)) continue;
+      if (!freeWords()) { const cn = lcount(w); for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; } }
+      S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; left -= c;
+    }
+  }
   function keeperBulk(d, i, lim, work) {
     if (worksActive() || !keepersReady()) return 0;
     let banked = 0; const words = BAND_WORDS[i], r = focusRecipe(d);
     const bankN = (w, c) => {
       const cn = lcount(w);
-      for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; }
+      if (!freeWords()) for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; }
       S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; banked += c;
     };
     if (r) for (const w of words) {
@@ -2656,7 +2753,7 @@
       if (banked >= lim) return banked;
     }
     if (folioGoal() || pg?.active(pgContext)) return banked;
-    const reserved = r ? focusNeeds(d, i).oneCopy : {};
+    const reserved = r && !freeWords() ? focusNeeds(d, i).oneCopy : {};
     for (let pass = work ? work.pass : 0; pass < 12 && banked < lim; pass++) {
       let any = work ? work.any : false;
       for (let wi = work ? work.word : 0; wi < words.length; wi++) {
@@ -2727,7 +2824,7 @@
       if (!cp || cp.phase === 'work') S.desks.forEach((d, i) => {
         if (!d.owned || !d.paws) return;
         const speedSum = d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) || d.paws;
-        const raw = speedSum / (PAW_BASE[i] * Math.pow(.85, d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) * stepDt * eff;
+        const raw = speedSum / (PAW_BASE[i] * fingMult(d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) * stepDt * eff;
         let n = Math.round(raw), budget = timed ? budgets[i] : null;
         if (timed) {
           if (!budget) {
@@ -2759,7 +2856,7 @@
           if (timed) {
             const capacity = batchEnd ? Math.max(2, Math.ceil(budget.keeperRaw)) : Math.floor(budget.keeperRaw * fraction);
             budget.banked += keeperBulk(d, i, Math.max(0, capacity - budget.banked), budget);
-          } else keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i))));
+          } else { farmBulk(d, i, stepDt * eff); keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i)))); if (S.pitchteam) subBulk(d, i, Math.max(1, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / (keeperPeriod(i) * SUB_SLOW)))); }
         }
       });
       if (!cp || cp.phase === 'work') worksAdvance();
@@ -3135,7 +3232,8 @@
     writer.onPagehide(() => { paused = true; holding = false; if (!writer.localDisposition()) saveAcknowledged(); extensions.get('automation')?.netDispose(); IMI.pickups?.clear(true); goldObject?.dispose(); lampLifetime=null; ticker.anim?.cancel(); boundaryJob = null; boundaryProposal = null; });
   }
   const extensionAPI = {
-    state: () => S, save, mark, morph, setTab,
+    state: () => S, save, mark, morph, setTab, hydrate,
+    shop: { price: n => price(n), cart: n => cart(n) },
     hallHistory:() => hallHistory,
     hallCommit(candidate, source) {
       if (!writer?.owns() || !writer.transacting() || writer.localDisposition() || JSON.stringify(S) !== source) return {ok:false,error:'Hall source changed. Save preserved.'};
@@ -3380,7 +3478,7 @@
         if (writer.guard(candidate) && Economy.saveStateAcknowledged(candidate).ok) { S.meta = candidate.meta; mark(); }
       },
       gardenAttempt(cfg) {
-        const desk = DESKS.findIndex(d => d.id === cfg.desk), i = cfg.bed, b = S.garden.beds[i];
+        const desk = DESKS.findIndex(d => d.id === cfg.desk), i = S.garden.owner?.[cfg.bed] === desk ? cfg.bed : fieldBeds(desk)[0] ?? cfg.bed, b = S.garden.beds[i];
         if (!Number.isInteger(i) || i < 0 || i >= S.garden.beds.length || !S.desks[desk]?.owned) return {ok:false, error:'Configured bed or desk is unavailable'};
         if (!b) return plant(i,cfg.letter,desk,'auto');
         if (b.ch !== cfg.letter || b.desk !== desk || savedWallNow() < b.ready) return {ok:false, error:'Waiting for a matching ripe crop'};
@@ -3581,7 +3679,7 @@
         TAB_GATES[tab[0]] = () => !hooks.visible || hooks.visible(extensionAPI);
         RENDER[tab[0]] = () => hooks.render(extensionAPI, $('#o-' + tab[0]));
         $('.o-panel').insertAdjacentHTML('beforeend', `<section class="o-pane" id="o-${esc(tab[0])}" role="tabpanel" hidden></section>`);
-        document.getElementById('oTabs').insertAdjacentHTML('beforeend', tabBtn(tab));
+        document.getElementById('oTabs').insertAdjacentHTML('beforeend', tabBtn(tab)); hydrate(document.getElementById('oTabs'));
       }
       hooks.init?.('load', extensionAPI); mark(); return true;
     }
@@ -3589,17 +3687,17 @@
   IMI.ops.extensions = extensionAPI; IMI.ops.clock = extensionAPI.clock;
   /* Balance harness hook (tools/balance.html): lets a bot drive the real game logic. Not used by the site itself. */
   Object.defineProperty(IMI.ops, 'dev', { configurable: true, get: () => ({
-    S: () => S, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
+    S: () => S, registerPitch, pitchGoal, subStep, bankWord, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
     ...(layers?.enabled ? {layerFrequency:freqNow, layerOfflineDist:offlineDist} : {}),
     GARDEN_COSTS, MILES, focusNeeds, focusRecipe, stock, totalLetters, soldCount, kidsSold, kidsListed, KIDS, libSold, LIBS, touchBank: () => { bankV++; mark(); }, sky, marketBias, BARO_COST, typistSpeed, autoRate, coachTypist, rerollTypist, unrollTypist, coachCost, rerollCost, COACH_MAX, COACH_STEP, upCap, pubSell, pubStatus, PUB_COST, PUB_PERIOD, PUB_RULES, keeperPeriod, keeperUpCost, keeperLv, KEEPER_UP_MAX, royBase, divBase, salePay, marketMult, checkAwards, starsNow, museSlots, registerPitch, pitchActive, PITCH_MAX, buffs, makeCopies,
-    plant, harvest, gardenTime, gardenYield, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
+    plant, harvest, gardenTime, gardenYield, ensureGarden, fieldBeds, farmerTick, farmerAct, farmBulk, deskLvl, headLvl, farmXp, farmerLetter, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
    }) });
 
   /* ================= banking & writing ================= */
   function bankWord(d, w) {
     const c = lcount(w);
     for (const k in c) if ((d.letters[k] || 0) < c[k]) return false;
-    for (const k in c) for (let n = 0; n < c[k]; n++) takeLetter(d, k);
+    if (!freeWords()) for (const k in c) for (let n = 0; n < c[k]; n++) takeLetter(d, k);
     S.stats.words++; S.bank[w] = stock(w) + 1; bankV++; ui.lastBanked = w; ui.bankedAt = performance.now(); mark(); IMI.emit('bank', { word: w }); return true;
   }
   function keeperStep(d, i) {
@@ -3608,7 +3706,7 @@
     const r = focusRecipe(d), words = BAND_WORDS[i];
     if (r) for (const w of words) if (r.need[w] && stock(w) < r.need[w] && canMake(d, w)) { bankWord(d, w); keeperFloat(i, w); return; }
     if (folioGoal() || pg?.active(pgContext)) return;
-    const reserved = r ? focusNeeds(d, i).oneCopy : {};
+    const reserved = r && !freeWords() ? focusNeeds(d, i).oneCopy : {};
     let best = null, bestStock = Infinity;
     for (const w of words) {
       const t = target(d, w), s = stock(w);
@@ -3619,6 +3717,30 @@
     }
     if (best) { bankWord(d, best); keeperFloat(i, best); }
   }
+  /* Shop > Pitch assistants: while the main keepers work on the goal, this sub team banks words for the best commissioned pitch that is not the goal. */
+  function pitchGoal() {
+    if (!S.pitchteam || folioGoal() || challengeActive()) return null;
+    let best = null, bm = Infinity;
+    for (const r of RECIPES) {
+      if (!r.gen || S.written[r.id] || r.id === S.focus || !titleAvailable(r) || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
+      const miss = autoEffort(r) / r.pay;
+      if (miss < bm) { best = r; bm = miss; }
+    }
+    return best;
+  }
+  function subStep(d, i) {
+    if (worksActive() || !keepersReady()) return;
+    const k = d.keeper; if (!k.owned || !k.on) return;
+    const r = pitchGoal(); if (!r) return;
+    const main = focusRecipe(), reserved = main && !freeWords() ? focusNeeds(d, i).oneCopy : {};
+    for (const w of BAND_WORDS[i]) {
+      if (!r.need[w] || stock(w) >= r.need[w] || !canMake(d, w)) continue;
+      const c = lcount(w); let safe = true;
+      for (const ch in c) { const have = d.letters[ch] || 0; if (have - c[ch] < Math.min(have, reserved[ch] || 0)) { safe = false; break; } }
+      if (safe) { bankWord(d, w); return; }
+    }
+  }
+  const pitchTeamLine = () => { if (!S.pitchteam) return ''; const r = pitchGoal(); return `<p class="o-dim o-teamline">Pitch assistants: ${r ? `working on <b>${esc(r.title)}</b> (${progress(r)}/${r.total})` : 'waiting for a commissioned pitch'}.</p>`; };
   function keeperFloat(i, w) {
     if (i !== S.sel || ui.tab !== 'floor') return;
     const t = $('#oTray'); if (!t) return; const b = t.getBoundingClientRect();
@@ -3697,8 +3819,8 @@
   const UPV = { practice: [.65, .75, .85, .95, .97, .98], stock: [0, .2, .4, .6, .72, .8], ink: [0, .25, .45, .65, .78, .88], vowel: [0, .45, .65, .8, .88, .92], ribbon: [0, .1, .2, .3, .38, .45] };
   const UPS = [
     { k: 'paw',      ico: 'monkey', name: 'Hire a typist', base: 25, max: 12, desc: 'Another junior monkey swings in and types letters on its own.' },
-    { k: 'fing',     name: 'Quick fingers', base: 40, grow: 1.6, max: 10, desc: "Typing speed from this upgrade. Crew, weather and boosts apply separately." },
-    { k: 'rapid',    name: 'Rapid touch', base: 75, grow: 1.7, max: 8, desc: 'Held typing on this desk. Double touch applies to the displayed rate.', needs: 'hold' },
+    { k: 'fing',     name: 'Quick fingers', base: 40, grow: 1.6, max: Infinity, soft: 10, late: 1.4, desc: "Typing speed from this upgrade. 15% faster per level for ten levels, then 7% per level with no limit. Crew, weather and boosts apply separately." },
+    { k: 'rapid',    name: 'Rapid touch', base: 75, grow: 1.7, max: Infinity, soft: 8, late: 1.4, desc: 'Held typing on this desk, with no limit. Double touch applies to the displayed rate.', needs: 'hold' },
     { k: 'vowel',    name: 'Vowel rhythm', base: 30, tier: 1, desc: 'Vowel bias after a consonant, when earlier letter biases do not apply. Traits and Muses may raise it; the vowel challenge disables it.' },
     { k: 'ink',      name: 'Fresh ink', base: 40, tier: 1, desc: 'Finishing-letter bias for words never banked, when earlier letter biases do not apply.' },
     { k: 'practice', name: 'Recipe practice', base: 100, tier: 1, desc: 'Automatic presses favor missing title ingredients. Wordsmith adds 15 points, capped at 98%.' },
@@ -3728,7 +3850,8 @@
   const upLevel = (u, d, i) => (u.k === 'paw' ? Math.max(0, d.paws - (i ? 1 : 0)) : d.up[u.k]);
   const upMax = u => (u.k === 'paw' ? u.max : u.tier ? 5 : u.max);
   const upCap = (u, d) => (u.k === 'paw' && chal('smallcrew') ? 2 : u.tier ? (d.mk >= 2 ? 5 : d.mk >= 1 ? 4 : 3) : upMax(u));      // levels 4 and 5 of the tiered upgrades need the machine restored (Shop > Restorations)
-  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base; return Math.round((trainingPool && trainingPool.mode() !== 'local' ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l))); };
+  const upGrowth = (u, l) => { const g = u.k === 'paw' ? PAW_GROW : u.grow || 1.7; return u.soft && l > u.soft ? Math.pow(g, u.soft) * Math.pow(u.late, l - u.soft) : Math.pow(g, l); };
+  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base; return Math.round((trainingPool && trainingPool.mode() !== 'local' ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l))); };
   const upLock = (u, d) => {
     if (u.k === 'paw' && chal('smallcrew') && d.paws >= 2) return 'Small Crew allows 2 typists per desk';
     if (u.needs === 'hold' && !toolOn('hold')) return 'Needs Hold to type (in the Shop)';
@@ -3740,7 +3863,8 @@
     const required = S.desks.map(() => ({})), r = focusRecipe();
     for (const [w, count] of Object.entries(r?.need || {})) {
       const missing = Math.max(0, count - stock(w)), band = bandOf(w.length);
-      for (const ch of w) required[band][ch] = (required[band][ch] || 0) + missing;
+      if (freeWords()) { if (missing) for (const [ch, n] of Object.entries(lcount(w))) required[band][ch] = Math.max(required[band][ch] || 0, n); }
+      else for (const ch of w) required[band][ch] = (required[band][ch] || 0) + missing;
     }
     return required;
   }
@@ -3766,7 +3890,7 @@
     const max = upCap(u, d), pooled = trainingPool && trainingPool.mode() !== 'local', facts = pooled ? trainingPoolFacts(0) : null, have = pooled ? facts.spendable || 0 : worksActive() ? localTrainingHave(d,i) : totalLetters(d); let lv = u.k === 'paw' ? d.paws : d.up[u.k], n = 0, cost = 0;
     while (n < want && lv + n < max) {
       const l = u.k === 'paw' ? Math.max(0, lv + n - (i ? 1 : 0)) : lv + n;
-      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base, c = Math.round((pooled ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * Math.pow((u.k === 'paw' ? PAW_GROW : u.grow || 1.7), l)));
+      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base, c = Math.round((pooled ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l)));
       if (want === Infinity && (pooled || n > 0) && cost + c > have) break;
       cost += c; n++;
     }
@@ -3775,7 +3899,7 @@
   const buyWant = () => (ui.buyN === 'max' ? Infinity : +ui.buyN || 1);
   function upEffect(u, d, level) {
     if (u.k === 'paw') return `${level} automatic typist${level === 1 ? '' : 's'}`;
-    if (u.k === 'fing') return `x${(1 / Math.pow(.85, level)).toFixed(2)} typing speed`;
+    if (u.k === 'fing') return `x${(1 / fingMult(level)).toFixed(2)} typing speed`;
     if (u.k === 'rapid') return `${holdRate({ ...d, up: { ...d.up, rapid: level } })}/s held typing`;
     return `${Math.round(UPV[u.k][level] * 100)}% ${u.k === 'ribbon' ? 'swap chance' : 'configured bias'}`;
   }
@@ -3808,6 +3932,8 @@
     const constraint = challengeShopLock(what); if (constraint) return constraint;
     if (what === 'dbl' && !S.hold) return 'Needs Hold to type';
     if ((what === 'agent' || what === 'analyst') && soldCount() < 2) return 'Needs 2 sold titles';
+    if (what === 'pitchteam' && soldCount() < 3) return 'Needs 3 sold titles';
+    if (what === 'carbon' && !S.desks[3].owned) return 'Unlocks with Honeycomb Ledger';
     if ((what === 'metro' || what === 'dbl' || what === 'contracts') && !S.desks[2].owned) return 'Unlocks with Lagoon Sprint';
     return '';
   }
@@ -3819,11 +3945,14 @@
       const d = S.desks[i], p = DESKS[i].price;
       if ((chal('haiku') || masteryActive()) && i >= 2) return;
       if (d.owned || !S.desks[i - 1]?.owned || !bananas.spend(p)) return;
-      d.owned = true; d.keeper.owned = true; d.paws = 1; ensureCrew(d); pickAutoFocus(); S.sel = i; ui.dropIn = true; cheer(2000, 'NEW!'); newsPush(`${DESKS[i].name} installed. The monkeys argue over who touches it first.`); IMI.banner(PX ? 'NEW TYPEWRITER!' : 'New Typewriter!'); buildStage(); IMI.emit('desk', { i });
+      d.owned = true; d.keeper.owned = true; d.paws = 1; ensureCrew(d); ensureGarden(); pickAutoFocus(); S.sel = i; ui.dropIn = true; cheer(2000, 'NEW!'); newsPush(`${DESKS[i].name} installed. The monkeys argue over who touches it first.`); IMI.banner(PX ? 'NEW TYPEWRITER!' : 'New Typewriter!'); buildStage(); IMI.emit('desk', { i });
       logIt(`${DESKS[i].name} installed on the canopy. It types ${DESKS[i].lo}–${DESKS[i].hi} letter words.`);
     } else if (what === 'plot') {
-      const nx = GARDEN_COSTS[S.garden.beds.length - 2]; if (!nx || !bananas.spend(nx)) return;
-      S.garden.beds.push(null); logIt('Cleared another plot in the letter garden.');
+      const nx = S.desks[i]?.owned ? plotCost(i) : 0; if (!nx || !bananas.spend(nx)) return;
+      S.garden.beds.push(null); S.garden.owner.push(i); logIt(`Cleared another plot in the ${DESKS[i].name.split(' ')[0]} field.`);
+    } else if (what === 'farmer') {
+      if (!farmerOffer(i) || !bananas.spend(farmerCost(i))) return;
+      S.garden.farmers[i] = farmerTier(i) + 1; farmT[i] = 0; logIt(`${FARMER_NAMES[S.garden.farmers[i] - 1]} hired for the ${DESKS[i].name.split(' ')[0]} field.`);
     } else if (what === 'mk') {
       const d = S.desks[i]; if (!d || !d.owned || d.mk >= 2 || !bananas.spend(mkCost(i))) return;
       d.mk++; logIt(`${DESKS[i].name} restored to ${MK_NAMES[d.mk]}. It gleams.`);
@@ -3835,7 +3964,7 @@
       S.pub.tier = t + 1; if (t === 0) S.pub.on = true;
       logIt(['Hired a publisher’s assistant: finished titles now sell themselves.', 'Fast presses installed: the assistant sells twice as often.', 'The assistant now works the night shift: titles sell while you are away.'][t]);
     } else if (what === 'keeper') {
-      const d = S.desks[i]; if (!d || !d.owned || keeperLv(i) >= KEEPER_UP_MAX || !bananas.spend(keeperUpCost(i))) return;
+      const d = S.desks[i]; if (!d || !d.owned || keeperPeriod(i) <= KEEPER_MIN_PERIOD || !bananas.spend(keeperUpCost(i))) return;
       d.keeper.lv = keeperLv(i) + 1; logIt(`${DESKS[i].name} keeper tuned up to level ${d.keeper.lv}: a word every ${keeperPeriod(i).toFixed(2)}s.`);
     } else if (what === 'lamp') {
       const nx = LAMP[S.lamp]; if (!nx || !bananas.spend(nx.cost)) return;
@@ -3858,6 +3987,8 @@
     /* card art on the department pages; the pixel edition draws these as sprites of the same name in pixel.js */
     'i-monkey': '🐵', 'u-fing': '👆', 'u-rapid': '⚡', 'u-vowel': '🅰️', 'u-ink': '🖋️', 'u-practice': '📖', 'u-stock': '📦', 'u-ribbon': '🎀',
     'd-reprints': '📚', 'd-tour': '🚌', 'd-translations': '🌍', 'd-clubs': '☕', 'd-option': '🎬',
+    'i-game': '🎮', 'i-folio': '📕', 'i-imprint': '🏷️', 'i-estate': '🏡', 'i-archive': '🗄️', 'i-works': '📚', 'i-palm': '🌴', 'i-coconut': '🥥', 'i-type': '⌨️', 'i-log': '🪵', 'i-reel': '🎬',
+    's-team': '🧑‍🤝‍🧑', 's-carbon': '📄',
     's-hold': '👇', 's-metro': '🎵', 's-dbl': '✌️', 's-contracts': '📜', 's-lamp': '💡', 's-agent': '💼', 's-analyst': '📈', 's-baro': '🌡️', 's-pub': '🖨️', 's-garden': '🌱', 's-keeper': '🗂️' };
   /* the classic edition's machines: a little vector typewriter in the desk colour; restorations add brass, then a gold bell */
   function twSvg(c, mk) {
@@ -4253,11 +4384,10 @@
 
   /* the look book: every look, grouped by rarity; the ones you have not found yet are silhouettes with only their rarity and trait showing */
   function lookBook() {
-    if (window.Hall?.enabled) return Hall.render(S,LOOKS,RARITY,lookArt,esc,progressing() && writer.guard(S));
-    const seen = S.looks || {}, onCrew = {};
+    const seen = window.Hall?.enabled ? { ...(S.looks || {}), ...Hall.observe(S) } : S.looks || {}, onCrew = {};
     S.desks.forEach(d => d.owned && d.crew.forEach(t => { onCrew[t.look] = (onCrew[t.look] || 0) + 1; }));
     const tiers = ['l', 'e', 'r', 'c'];
-    return `<p class="o-lede">Every hire and re-roll draws a look, and the look decides the monkey's trait. Rarer looks are harder to find and their trait works harder: Rare x1.5, Epic x2, Legendary x3. Odds per roll: ${tiers.map(k => `${RARITY[k].name} ${Math.round(RARITY[k].odds * 100)}%`).join(' · ')}.</p>
+    return `${window.Hall?.enabled ? Hall.render(S, LOOKS, esc, progressing() && writer.guard(S)) : ''}<p class="o-lede">Every hire and re-roll draws a look, and the look decides the monkey's trait. Rarer looks are harder to find and their trait works harder: Rare x1.5, Epic x2, Legendary x3. Odds per roll: ${tiers.map(k => `${RARITY[k].name} ${Math.round(RARITY[k].odds * 100)}%`).join(' · ')}.</p>
       ${tiers.map(k => { const ls = LOOKS.filter(l => l.r === k), n = ls.filter(l => seen[l.id]).length;
         return `<h3 class="o-h o-rarh r-${k}">${RARITY[k].name} <span class="o-dim">${n}/${ls.length}</span></h3><div class="o-looks">${ls.map(l => seen[l.id]
           ? `<div class="o-card o-lookcard" data-r="${k}">${lookArt(l.id)}<b>${l.name}</b><span class="o-chip trait">${TRAITS[l.trait].name}</span><span class="o-dim">${FX_TEXT[l.fx.k] || ''}${onCrew[l.id] ? ` · ${onCrew[l.id]} on your crew` : ''}</span></div>`
@@ -4266,16 +4396,16 @@
   function renderTraining() {
     const d = cur(), i = S.sel, have = totalLetters(d), want = buyWant();
     const tsub = ui.sub.training || 'crew';
-    morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', window.Hall?.enabled ? 'Hall of Monkeys' : `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
-      ${trainingPool ? trainingPool.controls(esc, fmt) : ''}
+    morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
+      ${trainingPool && S.desks.filter(x => x.owned).length > 1 ? trainingPool.controls(esc, fmt) : ''}
       <p class="o-lede">Hire and train monkeys on <b>${esc(DESKS[i].name)}</b>. Training costs <b>${trainingPool && trainingPool.mode() !== 'local' ? 'protected shared surplus' : 'letters from this desk'}</b> (${trainingPool && trainingPool.mode() !== 'local' ? 'the biggest removable piles' : 'the biggest piles'} go first). You hold ${fmt(have)}.</p>
       ${keepersReady() ? `<div class="o-row o-left"><span class="o-dim">Keeper</span>${keeperSeg(i)}</div>` : '<p class="o-dim">Letters stay here until your keeper is introduced.</p>'}
       <div class="o-row o-left"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
-      <div class="o-grid">${UPS.map(u => {
-        const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), lock = upLock(u, d), done = lvl >= max, plan = trainingQuote(u, d, i, want);
+      <div class="o-grid">${UPS.filter(u => !(u.needs === 'hold' && !toolOn('hold'))).map(u => {
+        const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), soft = u.soft || max, lock = upLock(u, d), done = lvl >= max, plan = trainingQuote(u, d, i, want);
         const first = u.k === 'paw' && i === 0 && d.paws === 0 && plan.n === 1;
-        return `<div class="o-card"><div class="o-row"><h3>${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${lvl}/${max}</span></div>
-          ${pips(lvl, max)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p><details class="o-updetail"><summary>How it works</summary><p>${u.desc}</p></details>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+        return `<div class="o-card"><div class="o-row"><h3>${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${max === Infinity ? 'Lv ' + lvl : lvl + '/' + max}</span></div>
+          ${pips(Math.min(lvl, soft), soft)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p><details class="o-updetail"><summary>How it works</summary><p>${u.desc}</p></details>${lock ? `<p class="o-warn">${lock}</p>` : ''}
           ${done ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${upEffect(u, d, lvl + (lock ? 1 : plan.n))}</p>`}
           <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button>${u.k === 'paw' ? `<div class="lg03-inline" data-own data-automation="hire" data-desk="${DESKS[i].id}"></div>` : ''}</div>`;
       }).join('')}</div>
@@ -4373,7 +4503,7 @@
       if (!(f === 'all' || (f === 'written' ? done : f === 'ready' ? canWrite(r) : f === 'pitched' ? r.gen && !done : !done))) continue;
       byBand[r.band]++; pre.push(r);
     }
-    const browsing = ui.libcap !== 'all' || ui.libshow || f === 'written' || f === 'all';   // picking a word max, or Show locked, reveals titles that need a machine you have not bought
+    const browsing = f === 'written';   // picking a word max, or Show locked, reveals titles that need a machine you have not bought
     const rows = []; let hidden = 0;
     for (const r of pre) {
       if (ui.libcap !== 'all' && r.band !== +ui.libcap) continue;
@@ -4385,14 +4515,14 @@
     rows.sort((a, b) => a.tier - b.tier || cmp(a, b) || b.r.pay - a.r.pay || (a.r.id < b.r.id ? -1 : 1));
     const shown = rows.slice(0, ui.libLimit);
     const seg = (items, act, cur, attr) => `<span class="o-seg">${items.map(([k, n, extra]) => `<button type="button" data-act="${act}" data-${attr}="${k}" aria-pressed="${String(cur) === String(k)}"${extra ? ` class="${extra}"` : ''}>${n}</button>`).join('')}</span>`;
-    const caps = [['all', 'All'], ...DESKS.map((D, i) => [String(i), `${D.hi}<i class="o-capn">${byBand[i]}</i>`, S.desks[i].owned ? '' : 'o-cap-locked']).filter(([k]) => byBand[+k] > 0 || ui.libcap === k)];
+    const caps = [['all', 'All'], ...DESKS.map((D, i) => [String(i), `${D.hi}<i class="o-capn">${byBand[i]}</i>`, S.desks[i].owned ? '' : 'o-cap-locked']).filter(([k]) => S.desks[+k].owned && byBand[+k] > 0 || ui.libcap === k)];
     return `<div class="o-row o-left o-lsearch"><input class="o-search" id="oLibQ" placeholder="Search titles…" value="${esc(ui.libq)}" autocomplete="off" aria-label="Search titles">
         <select class="o-search o-lsort" data-in="libsort" aria-label="Sort titles">${SORTS.map(([k, n]) => `<option value="${k}"${ui.libsort === k ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
       <div class="o-filters o-lfilters">
         <div class="o-row o-left">${seg([['open', 'Open'], ['ready', 'Ready'], ['pitched', 'Pitch'], ['written', 'Sold'], ['all', 'All']], 'libf', f, 'f')}</div>
         <div class="o-row o-left"><span class="o-dim o-flab" title="The longest word in the title: which typewriter it needs">Word max</span>${seg(caps, 'libcap', ui.libcap, 'c')}</div>
       </div>
-      <div class="o-row o-left o-lcount"><span class="o-dim">${rows.length.toLocaleString('en-US')} title${rows.length === 1 ? '' : 's'}${hidden && !ui.libshow ? ` · ${hidden.toLocaleString('en-US')} locked` : ''}</span>${hidden || ui.libshow ? `<button type="button" class="o-btn sm" data-act="liblock" aria-pressed="${ui.libshow}">${ui.libshow ? 'Hide locked' : 'Show locked'}</button>` : ''}</div>
+      <div class="o-row o-left o-lcount"><span class="o-dim">${rows.length.toLocaleString('en-US')} title${rows.length === 1 ? '' : 's'}</span></div>
       <div class="o-grid">${shown.map(x => bookCard(x.r)).join('') || '<p class="o-dim">No titles match.</p>'}</div>
       ${rows.length > shown.length ? `<div class="o-row"><button type="button" class="o-btn sm" data-act="libmore">Show more (${(rows.length - shown.length).toLocaleString('en-US')})</button></div>` : ''}`;
   }
@@ -4407,15 +4537,15 @@
   function renderPress(force) {
     const pane = $('#o-press'); if (!force && pane.contains(document.activeElement) && document.activeElement.matches('input')) return;
     const sold = soldCount(), ready = readyList().length;
-    const tabs = [['titles', 'Titles', ready || ''], ...((sold >= 1 || boardEnabled() && CommissionBoard.access(S) || seasonsEnabled() && Seasons.access(S)) ? [['shelf', 'Shelf', ui.shelfNew || '']] : []), ...(sold >= 1 ? [ ['pitches', 'Pitches', firstPitch() ? '!' : ''], ['market', 'Market']] : []), ...(sold >= 3 ? [['archive', 'Archive']] : [])];
+    const tabs = [['titles', 'Titles', ready || ''], ...((sold >= 1 || boardEnabled() && CommissionBoard.access(S) || seasonsEnabled() && Seasons.access(S)) ? [['shelf', 'Shelf', ui.shelfNew || '']] : []), ...(sold >= 1 ? [ ['pitches', 'Pitches', firstPitch() ? '!' : ''], ['market', 'Market']] : [])];
     if (!tabs.some(t => t[0] === ui.sub.press)) ui.sub.press = 'titles';
     const sub = ui.sub.press;
     let body = '';
     if (sub === 'titles') {
       const fr = focusRecipe();
-      body = `${pg ? pg.controls(pgContext, esc) : `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle">Now writing: <b>${esc(fr.title)}</b></span><span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span>Pick a title below</span>'}</div><div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) : '<span class="o-dim">Auto picks the best title</span>'}<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span></div></div>`}
+      body = `${pg && (sold >= 3 || pg.active(pgContext) || S.meta.productionGoal !== undefined) ? pg.controls(pgContext, esc) : `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle">Now writing: <b>${esc(fr.title)}</b></span><span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span>Pick a title below</span>'}</div><div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) : '<span class="o-dim">Auto picks the best title</span>'}<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span></div></div>`}
 
-        ${pubBar()}
+        ${pitchTeamLine()}${pubBar()}
         <div id="oTitleList">${pressList()}</div>${KIDS.length ? `<p class="o-dim o-kidsline">Kids' reading list: ${kidsSold()} of ${KIDS.length} written${LIBS.length ? ` · Library stories: ${libSold()} of ${LIBS.length} written` : ''}</p>` : ''}`;
     } else if (sub === 'shelf') {
       ui.shelfNew = 0;
@@ -4450,7 +4580,7 @@
   function renderArchive() {
     const note = $('#oArchNote'), res = $('#oArchRes'); if (!note || !res) return;
     if (!archive) { loadArchive(); return; }
-    morph(note, `${archive.length.toLocaleString()} complete manuscripts are catalogued. Their full-length recipes need longer machines, punctuation rules and a bigger vocabulary, so they stay locked for now. <a href="library.html">Read them in the Library</a>.`);
+    morph(note, `${archive.length.toLocaleString()} complete manuscripts are catalogued. Their full-length recipes need longer machines, punctuation rules and a bigger vocabulary, so they stay locked for now.`);
     morph($('#oArchF'), `<span class="o-seg">${SHELVES.map(([k, n]) => `<button type="button" data-act="archf" data-f="${k}" aria-pressed="${ui.archf === k}">${n}</button>`).join('')}</span>`);
     const q = ui.archq.trim().toLowerCase();
     const hits = archive.filter(a => (ui.archf === 'all' || a.shelf === ui.archf) && (!q || (a.title + ' ' + a.sub).toLowerCase().includes(q)));
@@ -4459,10 +4589,16 @@
   }
 
   function gardenCard(have) {
-    const n = S.garden.beds.length, nx = GARDEN_COSTS[n - 2];
-    return `<div class="o-card"><div class="o-row"><h3>${cart('s-garden')}Garden plots</h3><span class="o-lvl">${n}/6</span></div>${pips(n - 2, 4)}
-      <p>More plots in the letter garden (on the Words page), so you can grow more letters at once.</p>
-      ${nx ? `<button type="button" class="o-btn gold" data-act="buy" data-what="plot" ${have < nx ? 'disabled' : ''}>Add a plot · ${price(nx)}</button>` : '<span class="o-lvl">MAXED</span>'}</div>`;
+    const cards = S.desks.map((d, i) => {
+      if (!d.owned) return '';
+      const D = DESKS[i], plots = fieldBeds(i).length, pc = plotCost(i), tier = farmerTier(i), offer = farmerOffer(i), fc = farmerCost(i);
+      if (!pc && !offer && !tier) return '';
+      return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart('s-garden')}${D.name.split(' ')[0]} field</h3><span class="o-lvl">${plots}/${PLOT_MAX} plots</span></div>${pips(plots, PLOT_MAX)}
+        <p>Level ${deskLvl(i)}. ${tier ? `${FARMER_NAMES[tier - 1]} tends the plots every ${FARMER_PERIOD[tier - 1]}s.` : 'You tend this field by hand.'}</p>
+        ${pc ? `<button type="button" class="o-btn gold" data-act="buy" data-what="plot" data-i="${i}" ${have < pc ? 'disabled' : ''}>Add a plot · ${price(pc)}</button>` : ''}
+        ${offer ? `<button type="button" class="o-btn gold" data-act="buy" data-what="farmer" data-i="${i}" ${have < fc ? 'disabled' : ''}>${tier ? 'Promote to' : 'Hire a'} ${FARMER_NAMES[tier].toLowerCase()} · ${price(fc)}</button>` : ''}</div>`;
+    }).filter(Boolean);
+    return cards.length ? cards.join('') : '';
   }
   function lampCard(have) {
     const nx = LAMP[S.lamp], capH = awayCap() / 3600, eff = Math.round(awayEff() * 100);
@@ -4471,32 +4607,44 @@
       ${nx ? `<button type="button" class="o-btn gold" data-act="buy" data-what="lamp" ${have < nx.cost ? 'disabled' : ''}>Upgrade · ${price(nx.cost)}</button>` : '<span class="o-lvl">MAXED</span>'}</div>`;
   }
   function renderShop() {
-    const blue = S.desks[2].owned, have = bananas.get();
-    const item = (name, desc, cost, owned, lock, act, i) => { lock = challengeShopLock(act) || lock; return `<div class="o-card"><div class="o-row"><h3>${name}</h3>${owned ? '<span class="o-lvl">OWNED</span>' : price(cost)}</div><p>${desc}</p>${lock && !owned ? `<p class="o-warn">${lock}</p>` : ''}
-      ${owned ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="${act}" ${i != null ? `data-i="${i}"` : ''} ${lock || have < cost ? 'disabled' : ''}>Buy</button>`}</div>`; };
+    const blue = S.desks[2].owned, have = bananas.get(), bought = [];
+    /* only what you can act on is drawn: items still behind a sold-title, machine or tool gate are not shown, and one-off things you own collapse into a single line */
+    const item = (name, desc, cost, owned, lock, act, i, show = true) => {
+      if (!show) return '';
+      if (owned) { bought.push(name.replace(/<[^>]+>/g, '')); return ''; }
+      lock = challengeShopLock(act) || lock;
+      return `<div class="o-card"><div class="o-row"><h3>${name}</h3>${price(cost)}</div><p>${desc}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+      <button type="button" class="o-btn gold" data-act="buy" data-what="${act}" ${i != null ? `data-i="${i}"` : ''} ${lock || have < cost ? 'disabled' : ''}>Buy</button></div>`;
+    };
+    const grid = cards => { const html = cards.filter(Boolean).join(''); return html ? `<div class="o-grid">${html}</div>` : ''; };
+    const section = (title, body, always = '') => body || always ? `<h3 class="o-h">${title}</h3>${always}${body}` : '';
+    const haiku = i => (chal('haiku') || masteryActive()) && i >= 2 ? masteryActive() ? 'Small Crew mastery allows only Bamboo and Hibiscus' : 'Blocked by the Haiku Run' : '';
+    const nextDesk = S.desks.findIndex((d, i) => i > 0 && !d.owned);
+    const machines = grid(DESKS.slice(1).map((D, n) => { const i = n + 1; return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, S.desks[i].owned, haiku(i), 'desk', i, i === nextDesk || S.desks[i].owned); }));
+    const deals = grid(DEALS.map(x => item(cart('d-' + x.id) + x.name, x.desc, x.cost, !!S.deals[x.id], '', 'deal', x.id, !!S.deals[x.id] || soldCount() >= x.need)));
+    const market = grid([soldCount() >= 2 || S.baro ? baroCard(have) : '', soldCount() >= 3 || S.pub.tier ? pubCard(have) : '',
+      item(cart('s-agent') + 'Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, '', 'agent', null, soldCount() >= 2 || S.agent),
+      item(cart('s-analyst') + 'Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, '', 'analyst', null, soldCount() >= 2 || S.analyst)]);
+    const room = grid([
+      item(cart('s-hold') + 'Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold'),
+      item(cart('s-metro') + 'Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, '', 'metro', null, blue),
+      item(cart('s-dbl') + 'Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, '', 'dbl', null, blue && S.hold),
+      item(cart('s-contracts') + 'Writing contracts', 'Adds 25% to future title rights income.', SHOP.contracts, S.contracts, '', 'contracts', null, blue),
+      item(cart('s-team') + 'Pitch assistants', 'A sub team of keepers works on your commissioned pitches while the main keepers write titles, at half their pace. Commission pitches in Titles; sell them there or with the Publisher.', SHOP.pitchteam, S.pitchteam, '', 'pitchteam', null, soldCount() >= 3 || S.pitchteam),
+      item(cart('s-carbon') + 'Carbon paper', 'Banking a word no longer uses up its letters. They stay in the drawers for training, so you can put everything into typing and keeper speed.', SHOP.carbon, S.carbon, '', 'carbon', null, S.desks[3].owned),
+      lampCard(have)]);
     morph($('#o-shop'), `
-      <p class="o-lede">The Shop spends the bananas your titles earn. Typewriters and room-wide upgrades are bought here.</p>
-      <h3 class="o-h">Typewriters</h3><div class="o-grid">${DESKS.slice(1).map((D, n) => {
-        const i = n + 1, d = S.desks[i];
-        return item(cart(`tw-${D.id}-0`) + D.name, `Specialises in ${D.lo}–${D.hi} letter words (${D.style} lettering). Starts with one typist.`, D.price, d.owned, (chal('haiku') || masteryActive()) && i >= 2 ? masteryActive() ? 'Small Crew mastery allows only Bamboo and Hibiscus' : 'Blocked by the Haiku Run' : !S.desks[i - 1].owned ? 'Buy ' + DESKS[i - 1].name + ' first' : '', 'desk', i);
-      }).join('')}</div>
-      <h3 class="o-h">Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span></h3><div class="o-grid">${DEALS.map(x => item(cart('d-' + x.id) + x.name, x.desc, x.cost, !!S.deals[x.id], soldCount() < x.need ? `Needs ${x.need} sold title${x.need > 1 ? 's' : ''}` : '', 'deal', x.id)).join('')}</div>
-      <h3 class="o-h">Restorations</h3><div class="lg03-inline" data-own data-automation="restore"></div><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>
-      <h3 class="o-h">Keepers</h3><div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? keeperCard(i, have) : '').join('')}</div>
-      <h3 class="o-h">Garden</h3><div class="o-grid">${gardenCard(have)}</div>
-      <h3 class="o-h">Market tools</h3><div class="o-grid">
-        ${baroCard(have)}
-        ${pubCard(have)}
-        ${item(cart('s-agent') + 'Literary agent', 'Haggles: the market can never push your sale prices below x0.85.', SHOP.agent, S.agent, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'agent')}
-        ${item(cart('s-analyst') + 'Market analyst', 'Shows which way each band is heading next.', SHOP.analyst, S.analyst, soldCount() < 2 ? 'Needs 2 sold titles' : '', 'analyst')}
-      </div>
-      <h3 class="o-h">Room-wide upgrades</h3><div class="lg03-inline" data-own data-automation="shop"></div><div class="o-grid">
-        ${item(cart('s-hold') + 'Hold to type', 'Hold a finger, cursor or Space to type on every current and future machine.', SHOP.hold, S.hold, '', 'hold')}
-        ${item(cart('s-metro') + 'Paw metronome', 'Doubles every typist’s speed across the room.', SHOP.metro, S.metro, blue ? '' : 'Unlocks with Lagoon Sprint', 'metro')}
-        ${item(cart('s-dbl') + 'Double touch', 'Doubles held typing speed across the room.', SHOP.dbl, S.dbl, !blue ? 'Unlocks with Lagoon Sprint' : !S.hold ? 'Needs Hold to type' : '', 'dbl')}
-        ${item(cart('s-contracts') + 'Writing contracts', 'Adds 25% to future title rights income.', SHOP.contracts, S.contracts, blue ? '' : 'Unlocks with Lagoon Sprint', 'contracts')}
-        ${lampCard(have)}
-      </div>
+      <p class="o-lede">Spend the bananas your titles earn.</p>
+      ${section('Typewriters', machines)}
+      ${section(`Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span>`, deals)}
+      ${section('Restorations', `<div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>`, '<div class="lg03-inline" data-own data-automation="restore"></div>')}
+      ${section('Keepers', `<div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? keeperCard(i, have) : '').join('')}</div>`)}
+      ${section('Garden', (S.stats.harvested || 0) > 0 && gardenCard(have) ? `<div class="o-grid">${gardenCard(have)}</div>` : '')}
+      ${section('Market tools', market)}
+      ${section('Room-wide upgrades', room, '<div class="lg03-inline" data-own data-automation="shop"></div>')}
+      ${bought.length ? `<p class="o-dim o-ownedline">Bought: ${bought.join(' · ')}.</p>` : ''}
+      ${S.intro.done && extensions.has('minigames') ? '<h3 class="o-h">Break Room games <span class="o-dim">(play for Inspiration)</span></h3><div data-own data-minigame-shop></div>' : ''}
+      ${window.VaultPlay?.enabled() && S.intro.done && (S.prem.earned > 0 || S.prem.vault) ? '<h3 class="o-h">Diamond Bananas <span class="o-dim">(earned from awards)</span></h3><div data-own data-vault-slot></div>' : ''}
       `);
     hydrate($('#o-shop'));
   }
@@ -4521,12 +4669,13 @@
       const next = S.desks.findIndex(x => !x.owned);
       const can = (next > 0 && S.desks[next - 1].owned && have >= DESKS[next].price) ||
         (!S.hold && have >= SHOP.hold) || (blue && !S.metro && have >= SHOP.metro) || (blue && S.hold && !S.dbl && have >= SHOP.dbl) || (blue && !S.contracts && have >= SHOP.contracts);
-      const plots = GARDEN_COSTS[S.garden.beds.length - 2] && have >= GARDEN_COSTS[S.garden.beds.length - 2];
+      const plots = (S.stats.harvested || 0) > 0 && S.desks.some((d, i) => d.owned && (plotCost(i) && have >= plotCost(i) || farmerOffer(i) && have >= farmerCost(i)));
       const mks = plots || S.desks.some((d, i) => d.owned && d.mk < 2 && have >= mkCost(i));
-      const keepers = mks || S.desks.some((d, i) => d.owned && keeperLv(i) < KEEPER_UP_MAX && have >= keeperUpCost(i));
+      const keepers = mks || S.desks.some((d, i) => d.owned && keeperPeriod(i) > KEEPER_MIN_PERIOD && have >= keeperUpCost(i));
       const pubOk = S.pub.tier < 3 && (S.pub.tier > 0 || soldCount() >= 3) && have >= PUB_COST[S.pub.tier];
       const baroOk = S.baro < 2 && soldCount() >= 2 && have >= BARO_COST[S.baro];
-      const tools = keepers || pubOk || baroOk || (!S.agent && soldCount() >= 2 && have >= SHOP.agent) || (!S.analyst && soldCount() >= 2 && have >= SHOP.analyst);
+      const upgrades = (!S.pitchteam && soldCount() >= 3 && have >= SHOP.pitchteam) || (!S.carbon && S.desks[3].owned && have >= SHOP.carbon);
+      const tools = upgrades || keepers || pubOk || baroOk || (!S.agent && soldCount() >= 2 && have >= SHOP.agent) || (!S.analyst && soldCount() >= 2 && have >= SHOP.analyst);
       const deal = tools || DEALS.some(x => !S.deals[x.id] && soldCount() >= x.need && have >= x.cost);
       return can || deal || (LAMP[S.lamp] && have >= LAMP[S.lamp].cost) ? '!' : '';
     }
@@ -4819,7 +4968,7 @@
   bananas.watch((b, event) => { if (b !== lastBananas) { if (b > lastBananas && !event?.reward) S.run.earned = (S.run.earned || 0) + (b - lastBananas); lastBananas = b; mark(); } });
 
   /* ================= main loop ================= */
-  let coinClock = 0, chalClock = 0, gardenClock = 0, marketClock = 0, awardClock = 0, royAcc = 0, royClock = 0, royFloat = 2.4, goldIn = 25 + rand() * 25, buffWas = false, last = performance.now(), keeperT = [], focusClock = 0, saveT = 0, renderT = 0, renderGap = .25;
+  let coinClock = 0, chalClock = 0, gardenClock = 0, marketClock = 0, awardClock = 0, royAcc = 0, royClock = 0, royFloat = 2.4, goldIn = 25 + rand() * 25, buffWas = false, last = performance.now(), keeperT = [], subT = [], focusClock = 0, saveT = 0, renderT = 0, renderGap = .25;
   function tick(frame = null) {
     if (!frame && extensions.get('automation')?.admissionPending()) {
       extensions.get('automation').admit();
@@ -4834,6 +4983,7 @@
     if (!document.hidden) { const extra = (dt - realDt) * 1000; productionExtra += extra; advanceDeadlines(extra); }
     S.desks.forEach(ensureCrew);
     gardenClock += dt; if (gardenClock >= 1) { gardenClock = 0; gardenTick(); }
+    farmerTick(dt);
     if (frame) frame.phase = 1;
     }
     if (document.hidden) return;                                   // hidden time is paid out as offline progress when you come back
@@ -4873,7 +5023,10 @@
     if (!frame || frame.phase === 3) {
     focusClock += dt; if (focusClock >= 1) { focusClock = 0; if (!S.focus && S.autoFocus) pickAutoFocus(); }
     worksAdvance();
-    S.desks.forEach((d, i) => { if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; while (keeperT[i] >= keeperPeriod(i) && g++ < 4) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); } if (g >= 4) keeperT[i] = 0; });
+    S.desks.forEach((d, i) => {
+      if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; while (keeperT[i] >= keeperPeriod(i) && g++ < 4) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); } if (g >= 4) keeperT[i] = 0;
+      if (S.pitchteam) { subT[i] = (subT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); const per = keeperPeriod(i) * SUB_SLOW; let h = 0; while (subT[i] >= per && h++ < 2) { subT[i] -= per; subStep(d, i); } if (h >= 2) subT[i] = 0; }
+    });
     if (frame) frame.phase=4;
     }
     if (!frame || frame.phase === 4) {
@@ -4967,7 +5120,7 @@
   if (writer && !started && window.VaultPlay?.enabled() && !writer.lampStartup()) return false;
   if (started || !progressing()) return false;
   started = true;
-  introProgress(); pickAutoFocus(); S.desks.forEach(ensureCrew); if (totalReleased() > 0) loadArchive();
+  introProgress(); pickAutoFocus(); S.desks.forEach(ensureCrew); ensureGarden(); if (totalReleased() > 0) loadArchive();
   if (writer && S.rewards.awayCheckpoint) simulateAway(0);
   if (!progressing()) { started = false; return false; }
   checkAwards(true);

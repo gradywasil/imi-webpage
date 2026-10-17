@@ -50,7 +50,7 @@ test('Legacy helper purchases and compact acknowledged goals in both editions',a
    await page.select('#pg01-range','1');await new Promise(r=>setTimeout(r,350));await page.click('.pg01-controls summary');await page.select('[data-in="pgcollection"]','authored');await new Promise(r=>setTimeout(r,350));await page.click('[data-act="pgadvance"]');
    await new Promise(r=>setTimeout(r,350));await page.click('.pg01-controls summary');
    await go('legacy','upgrades');
-   assert.equal(await page.$$eval('[data-automation="helpers"] .o-card',els=>els.length),11);
+   assert.equal(await page.$$eval('[data-automation="helpers"] .o-card',els=>els.length),5);
    const styles=await page.evaluate(()=>{const ordinary=document.querySelector('[data-act="legbuy"]'),helper=document.querySelector('[data-act="automation:buy"]');const read=el=>{const b=getComputedStyle(el),c=getComputedStyle(el.closest('.o-card'));return {font:b.fontFamily,background:b.background,color:b.color,padding:c.padding,border:c.borderWidth,radius:c.borderRadius};};return [read(ordinary),read(helper)];});assert.deepEqual(styles[0],styles[1]);
    await page.click('[data-act="automation:buy"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.hire);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),19);
    await page.waitForSelector('[data-act="automation:upgrade"][data-helper="hire"]');await page.click('[data-act="automation:upgrade"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.tiers.hire===1);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),18);

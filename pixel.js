@@ -337,6 +337,49 @@
     px.shape(cap(5.5, 10.5, 2, 14.5, .8), R.ink, 2);
   }));
 
+  /* ---------- tab icons for the later-game departments: Break Room, Folio, Imprints, Estate, Archive, Works ---------- */
+  reg('i-game', make(16, 16, px => {
+    px.shape(or(box(3, 5, 10, 7), ell(3.5, 8.5, 2.6, 3.5), ell(12.5, 8.5, 2.6, 3.5)), R.blue, 1);
+    px.shape(or(box(3.5, 7.5, 3, 1), box(4.5, 6.5, 1, 3)), R.white, 2);
+    px.shape(or(ell(10.4, 7.6, .9, .9), ell(11.9, 9.3, .9, .9)), R.banY, 3);
+    px.shape(box(6.5, 6.4, 3, .8), R.ink, 4);
+  }));
+  reg('i-folio', make(16, 16, px => {
+    px.shape(box(3, 2, 10, 12), R.red, 1); px.shape(box(3, 2, 2, 12), R.woodD, 2);
+    px.shape(box(6, 4, 5, 3), R.paper, 3); px.shape(or(box(7, 5, 3, .6), box(7, 6, 2, .6)), R.ink, 4);
+    px.shape(box(10, 11, 2, 4.5), R.banY, 3);
+  }));
+  reg('i-imprint', make(16, 16, px => {
+    px.shape(or(ell(8, 3.5, 2.4, 2.4), box(7, 5, 2, 4)), R.wood, 1);
+    px.shape(box(3, 9, 10, 3), R.woodL, 2); px.shape(box(2, 12.5, 12, 2), R.red, 3);
+    px.shape(box(5, 10, 6, .8), R.woodD, 4);
+  }));
+  reg('i-estate', make(16, 16, px => {
+    px.shape(box(3, 8, 10, 6.5), R.woodL, 1); px.shape(poly([[1.5, 8.4], [8, 2], [14.5, 8.4]]), R.red, 2);
+    px.shape(box(10, 2.5, 2, 3.4), R.gray, 3); px.shape(box(7, 10.5, 2.4, 4), R.woodD, 3); px.shape(box(4, 9.5, 2, 2), R.sky, 4);
+  }));
+  reg('i-archive', make(16, 16, px => {
+    px.shape(box(3, 2, 10, 13), R.metal, 1); px.shape(or(box(4, 3.5, 8, 4.5), box(4, 9, 8, 4.5)), R.gray, 2);
+    px.shape(or(box(6.5, 5, 3, 1), box(6.5, 10.5, 3, 1)), R.banY, 3); px.shape(or(box(5, 4, 6, .6), box(5, 9.6, 6, .6)), R.paper, 4);
+  }));
+  reg('i-works', make(16, 16, px => {
+    px.shape(box(2, 2.5, 12, 3.2), R.red, 1); px.shape(box(3, 6.4, 11, 3.2), R.blue, 1); px.shape(box(2, 10.3, 12, 3.2), R.leaf, 1);
+    px.shape(or(box(10, 3.4, 3, .8), box(10.5, 7.3, 2.5, .8), box(10, 11.2, 3, .8)), R.paper, 2);
+  }));
+
+  reg('s-team', make(16, 16, px => {
+    [[5, 7, 1], [11, 7, 1], [8, 9, 2]].forEach(([x, y, z]) => {
+      px.shape(or(ell(x - 3, y, 1.4, 1.4), ell(x + 3, y, 1.4, 1.4)), R.fur, z); px.shape(ell(x, y, 3.2, 3.2), R.fur, z + 1);
+      px.shape(or(ell(x - 1, y + .4, 1.2, 1.2), ell(x + 1, y + .4, 1.2, 1.2), ell(x, y + 1.8, 1.6, 1.1)), R.skin, z + 2);
+      px.shape(or(ell(x - 1, y - .2, .5, .5), ell(x + 1, y - .2, .5, .5)), R.ink, z + 3);
+    });
+    px.shape(box(2, 13, 12, 2), R.paper, 5); px.shape(or(box(3, 13.6, 4, .6), box(9, 13.6, 4, .6)), R.ink, 6);
+  }));
+  reg('s-carbon', make(16, 16, px => {
+    px.shape(box(4, 2, 9, 11), R.paper, 1); px.shape(box(3, 4, 9, 11), R.ink, 2); px.shape(box(2, 5, 9, 10), R.paper, 3);
+    px.shape(or(box(3.5, 7, 6, .8), box(3.5, 9, 6, .8), box(3.5, 11, 4, .8)), R.ink, 4);
+  }));
+
   /* ---------- card art for the department pages (ops.js ICO_PX): upgrades, deals, shop tools, and every machine at each restoration ---------- */
   const keycap = (px, x, y, w = 8, h = 7) => { px.shape(box(x, y + 1, w, h - 1), R.gray, 1); px.shape(box(x, y, w, h - 2), R.paper, 2); };
   reg('u-fing', make(16, 16, px => {

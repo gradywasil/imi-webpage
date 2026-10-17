@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const q = new URLSearchParams(location.search), game = q.get('game'), session = Number(q.get('session'));
-  if (parent === window || q.get('hosted') !== 'mg01' || !['barrel', 'shuffle'].includes(game) || !Number.isSafeInteger(session) || session < 1) return;
+  if (parent === window || q.get('hosted') !== 'mg01' || !/^[a-z]{3,10}$/.test(game || '') || !Number.isSafeInteger(session) || session < 1) return;
   let shell, phase = 'title', mode, input = false, elapsed = 0, sent = 0, sequence = 0, ready;
   const send = (type, extra = {}) => parent.postMessage({ bridge:'mg01', game, session, sequence:++sequence, type, mode, elapsed, ...extra }, location.origin);
   window.MGHosted = {
@@ -27,6 +27,8 @@
     if (d.type === 'quit-request') send('quit', { reason:'quit' });
     if (d.type === 'bank-request') send('bank', { reason:'bank' });
   });
+  /* any real pointer or key action during play counts as input, so every game is hosted without changes of its own */
+  for (const type of ['pointerdown', 'pointermove', 'keydown', 'touchstart']) addEventListener(type, e => { if (e.isTrusted !== false && !e.target?.closest?.('.mg-over,.mg-nav')) window.MGHosted.input(); }, true);
   document.addEventListener('click', e => {
     if (!e.target.closest('.mg-nav a')) return;
     e.preventDefault(); send('quit', { reason:'back' });
