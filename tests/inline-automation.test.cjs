@@ -23,7 +23,7 @@ test('inline settings, acknowledged recovery and Legacy tiers in both editions',
    await page.goto(`http://127.0.0.1:${server.address().port}/${edition}.html#play`);
    await page.waitForFunction(()=>window.IMI?.ops?.extensions);
    await page.evaluate(()=>{
-    const api=IMI.ops.extensions,s=api.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.intro.done=true;s.printing=5;s.chDone.hands=s.chDone.haiku=s.chDone.timed=true;s.legacy.stars=20;s.legacy.total=20;
+    const api=IMI.ops.extensions,s=api.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.intro.done=true;s.printing=5;s.chDone.hands=s.chDone.haiku=s.chDone.timed=true;s.legacy.stars=200;s.legacy.total=200;
     IMI.ops.dev.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen).slice(0,8).forEach(r=>s.written[r.id]=true);s.desks[1].owned=true;s.stats.words=10;s.divTotal=1;s.muses.owned.seuss=true;IMI.bananas.add(10000);s.stats.letters=1000;s.daily={last:new Date().toDateString(),streak:1};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));
    });
    await page.reload(); await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
@@ -60,7 +60,7 @@ test('inline settings, acknowledged recovery and Legacy tiers in both editions',
    await go('legacy');await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,350));
    await page.click('[data-act="automation:upgrade"][data-helper="hire"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.tiers.hire===1);
-   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),19);
+   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),180);
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);
    assert.equal(await page.evaluate(id=>IMI.ops.extensions.state().meta.automation.desks[id].reservePercent,desk),40);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.shop.priority[0]),'contracts');

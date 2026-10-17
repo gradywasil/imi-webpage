@@ -27,6 +27,7 @@
     drop: ['#3a8ec8', '#7ec8f0', '#d6f0ff'], star: ['#c8b84a', '#fff7b0', '#ffffff'],
     sky: ['#4a98c8', '#7ed0f4', '#c8ecff'], blue: ['#1c2c78', '#2e44a8', '#5470d8'], storm: ['#252b45', '#454f6e', '#6a7796'],
     /* the six machines (ops.js DESKS colours) */
+    ice: ['#1d5fb0', '#52d0ff', '#ddf8ff'], gem: ['#4a2aa0', '#a86cff', '#ecd8ff'],
     dmint: ['#2f8a5a', '#78d9a0', '#c4f4d4'], drose: ['#a8456a', '#f08aa4', '#ffd0dc'], dblue: ['#2c62a8', '#5fa8f0', '#bfe0ff'],
     damber: ['#a8681a', '#f2b23a', '#ffe28a'], dorchid: ['#6a48a8', '#b58cf0', '#e4d4ff'], dmoon: ['#7a80a0', '#dfe3f2', '#ffffff'],
   };
@@ -367,6 +368,26 @@
     px.shape(or(box(10, 3.4, 3, .8), box(10.5, 7.3, 2.5, .8), box(10, 11.2, 3, .8)), R.paper, 2);
   }));
 
+  /* ---------- currency icons: the diamond banana, the Legacy star and the Inspiration bulb (animated by gems.css) ---------- */
+  reg('dbanana', make(20, 20, px => {
+    const body = crescent(9.5, 10.5, 7.6, 3.6, -3.4, 7.2);
+    px.shape(body, R.ice, 1);
+    px.shape(and(body, (x, y) => x < 5 && y < 9), R.gem, 2);
+    px.shape(and(body, (x, y) => x > 14 && y > 11), R.gem, 2);
+    px.shape(or(cap(5.4, 10.6, 5.6, 12.4, .45), cap(7.6, 14.2, 9.4, 15.2, .45), cap(11, 15.6, 12.6, 15, .45)), R.moon, 3);
+    px.shape(or(cap(7.8, 11.6, 8.8, 12.6, .4), cap(6.2, 7.4, 6.2, 8.6, .4)), R.moon, 3);
+  }));
+  reg('i-star', make(16, 16, px => {
+    px.shape(poly([[8, 1], [10, 6], [15, 6.4], [11, 9.8], [12.6, 15], [8, 12], [3.4, 15], [5, 9.8], [1, 6.4], [6, 6]]), R.banY, 1);
+    px.shape(poly([[8, 3], [9, 6.6], [7, 6.6]]), R.sun, 2);
+  }));
+  reg('i-insp', make(16, 16, px => {
+    px.shape(ell(8, 6.8, 5, 5.2), R.sun, 1);
+    px.shape(ell(6.4, 5, 1.4, 1.8), R.star, 2);
+    px.shape(box(6, 11, 4, 2.4), R.metal, 2);
+    px.shape(box(6.6, 13.6, 2.8, 1.4), R.gray, 3);
+  }));
+
   reg('s-team', make(16, 16, px => {
     [[5, 7, 1], [11, 7, 1], [8, 9, 2]].forEach(([x, y, z]) => {
       px.shape(or(ell(x - 3, y, 1.4, 1.4), ell(x + 3, y, 1.4, 1.4)), R.fur, z); px.shape(ell(x, y, 3.2, 3.2), R.fur, z + 1);
@@ -609,6 +630,7 @@
       set('starsA', starField(w, h, 3, Math.floor(w * h / 260))); set('starsB', starField(w, h, 9, Math.floor(w * h / 300)));
     },
     install() {
+      ['dbanana', 'i-star', 'i-insp', 'banana'].forEach(n => this.css('g-' + n, spr[n].url));
       this.css('plank', url(plankTile())); this.css('vine-v', url(vineTile(16, 48, false))); this.css('vine-thin', url(vineTile(8, 24, false)));
       this.css('vine-h', url(vineTile(16, 48, true)));
       this.css('frame-wood', url(frames.wood)); this.css('frame-dark', url(frames.dark)); this.css('frame-leaf', url(frames.leaf));

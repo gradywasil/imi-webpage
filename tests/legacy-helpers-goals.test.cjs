@@ -24,7 +24,7 @@ test('Legacy helper purchases and compact acknowledged goals in both editions',a
    await page.evaluateOnNewDocument(()=>{localStorage.setItem('imi-tour','done');localStorage.setItem('imi-sound','off');localStorage.setItem('imi-fx','low');});
    await page.goto(`${origin}/${edition}.html#play`);await page.waitForFunction(()=>window.IMI?.ops?.extensions?.state().meta.automation?.ownership);
    await page.evaluate(()=>{
-    const s=IMI.ops.extensions.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.printing=5;s.chDone={hands:true,haiku:true,timed:true};s.legacy.stars=s.legacy.total=20;s.rewards={};s.prem={};s.daily={last:new Date().toDateString(),streak:1};
+    const s=IMI.ops.extensions.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.printing=5;s.chDone={hands:true,haiku:true,timed:true};s.legacy.stars=s.legacy.total=200;s.rewards={};s.prem={};s.daily={last:new Date().toDateString(),streak:1};
     IMI.ops.dev.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen).slice(0,8).forEach(r=>s.written[r.id]=true);s.desks[1].owned=true;s.stats.words=10;s.stats.letters=1000;
     s.meta.automation={version:1,ownership:{version:1,owned:{shop:true,restore:true}}};
     const manual=IMI.ops.dev.RECIPES.find(r=>r.band===1&&!s.written[r.id]&&!r.kid&&!r.lib&&!r.gen);if(!manual)throw Error('Missing manual fixture');
@@ -52,11 +52,11 @@ test('Legacy helper purchases and compact acknowledged goals in both editions',a
    await go('legacy','upgrades');
    assert.equal(await page.$$eval('[data-automation="helpers"] .o-card',els=>els.length),5);
    const styles=await page.evaluate(()=>{const ordinary=document.querySelector('[data-act="legbuy"]'),helper=document.querySelector('[data-act="automation:buy"]');const read=el=>{const b=getComputedStyle(el),c=getComputedStyle(el.closest('.o-card'));return {font:b.fontFamily,background:b.background,color:b.color,padding:c.padding,border:c.borderWidth,radius:c.borderRadius};};return [read(ordinary),read(helper)];});assert.deepEqual(styles[0],styles[1]);
-   await page.click('[data-act="automation:buy"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.hire);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),19);
-   await page.waitForSelector('[data-act="automation:upgrade"][data-helper="hire"]');await page.click('[data-act="automation:upgrade"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.tiers.hire===1);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),18);
+   await page.click('[data-act="automation:buy"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.hire);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),190);
+   await page.waitForSelector('[data-act="automation:upgrade"][data-helper="hire"]');await page.click('[data-act="automation:upgrade"][data-helper="hire"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.tiers.hire===1);assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),170);
    await page.click('[data-act="automation:settings"][data-helper="hire"]');await page.waitForSelector('#o-training:not([hidden]) [data-lg03-reserve]');
    await go('shop');assert.equal(await page.$$eval('#o-shop [data-act="automation:buy"],#o-shop [data-act="automation:upgrade"]',els=>els.length),0);assert(await page.$('#o-shop [data-act="automation:shop-toggle"]'));assert(await page.$('#o-shop [data-act="automation:restore-toggle"]'));
-   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return [s.legacy.stars,s.meta.automation.ownership.owned.hire,s.meta.automation.tiers.hire];}),[18,true,1]);
+   await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return [s.legacy.stars,s.meta.automation.ownership.owned.hire,s.meta.automation.tiers.hire];}),[170,true,1]);
    for(const [width,height] of [[360,560],[1280,800]]){
     await page.setViewport({width,height,isMobile:width<900,hasTouch:width<900});
     for(const scene of ['legacy','titles']){

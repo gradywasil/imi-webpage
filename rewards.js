@@ -1345,7 +1345,19 @@ window.Rewards = (() => {
     return (d.kind === 'L' || d.kind === 'C' ? 'Reward now: ' + amountText(d) + '. Scales with your production. Amount set when earned; saved on commit.' :
       'Reward: ' + amountText(d) + '.') + ' +1% income.';
   }
-  const rewardLine = id => '<small class="o-reward-line">' + escape(rewardText(id)) + '</small>';
+  /* a reward is shown as a picture and a number; the full sentence stays in the tooltip and for screen readers */
+  const rewardChip = d => d.kind === 'D' ? (window.Gems?.amount('dbn', d.amount) || d.amount) : d.kind === 'C' ? (window.Gems?.amount('ban', window.Economy.fmt(d.amount)) || escape(amountText(d))) :
+    d.kind === 'L' ? '<span class="gem-amt"><b>' + escape(exact(d.amount)) + ' letters</b></span>' : '<span class="gem-amt"><b>x7 Rush</b></span>';
+  const rewardLine = id => {
+    const claim = state().rewards.claims['award:' + id], tip = escape(rewardText(id));
+    let body;
+    if (claim?.status === 'waived' || !claim && state().awards[id]) body = '+1%';
+    else if (claim?.status === 'committed') body = '✓ ' + rewardChip(claim.descriptor) + ' · +1%';
+    else if (claim?.status === 'prepared') body = '⏳ ' + rewardChip(claim.descriptor) + ' · +1%';
+    else body = rewardChip(descriptor('award:' + id, 'new')) + ' · +1%';
+    return '<small class="o-reward-line" title="' + tip + '" aria-label="' + tip + '">' + body + '</small>';
+  };
+  const gemify = html => html.replace(/(\d[\d,]*) Diamond Bananas/g, (m, n) => window.Gems?.amount('dbn', n) || m);
   const expandedDestination = id => ({'lg10-folio-trio':'press','lg10-room-quartet':'legacy','lg10-two-stamps':'imprints','lg10-mixed-shelf':'imprints','lg10-imprint-quartet':'legacy','lg10-manual-pair':'lab','lg10-manual-quartet':'muses','lg10-estate-two':'estate','lg10-archive-pair':'archive','lg10-works-ten':'works-play','lg02e-stamps-four':'imprints','lg02e-stamps-six':'imprints','lg02e-estate-three':'estate','lg02e-archive-three':'archive','lg02e-manual-gold':'legacy','lg02e-works-quarter':'works-play','lg02e-works-half':'works-play'})[id];
   const fundingChains = [['lg10-two-stamps','lg02e-stamps-four','lg02e-stamps-six'],['lg10-works-ten','lg02e-works-quarter','lg02e-works-half']];
   const awardChain = id => funding()?.enabled && fundingChains.find(ids => ids.includes(id))?.[0] || (id.startsWith('lg10-manual-') ? 'expanded-manual' : id);
@@ -1405,7 +1417,7 @@ window.Rewards = (() => {
     const receipts = Object.values(state().rewards.claims).filter(c => c.origin === 'historical');
     const diamonds = receipts.reduce((n,c) => n + (c.status === 'committed' && c.descriptor?.kind === 'D' ? c.descriptor.amount : 0),0);
     const waived = receipts.filter(c => c.status === 'waived').length;
-    return receipts.length ? 'Earlier progress: ' + diamonds + ' Diamond Bananas saved; ' + waived + ' earlier rewards waived. Your awards keep +1% income each.' : '';
+    return receipts.length ? 'Earlier progress: ' + diamonds + ' Diamond Bananas saved · ' + waived + ' waived · awards keep +1% each' : '';
   }
   function awardsHeader() {
     const goals = selectedGoals(), complete = api.rewardAwards().every(a => state().awards[a.id]);
@@ -1414,12 +1426,12 @@ window.Rewards = (() => {
     const history = !r.summaryAcknowledged && state().intro.done && !document.querySelector('.o-modal, .o-celebrate') ? historicalSummary() : '';
     const diamonds = state().prem.earned + state().prem.bought;
     return '<section class="o-goal-full" aria-label="Award goals">' + (complete ? '<p>All ' + api.rewardAwards().length + ' awards earned</p>' : goals.map(g =>
-      '<button type="button" class="o-goal-row" data-act="rewards:goal" data-id="' + g.id + '"><b>' + escape(g.name) + '</b><span>' + escape(g.desc + (g.printing ? ' · this Printing' : '') + ' ' + progressText(g)) + '</span><span class="o-goal-bar"><i style="width:' + (g.progress === null || !(g.target > 0) ? 0 : Math.max(0, Math.min(100, 100 * g.progress / g.target))).toFixed(1) + '%"></i></span><small>' + escape(rewardText(g.id)) + '</small></button>').join('') +
+      '<button type="button" class="o-goal-row" data-act="rewards:goal" data-id="' + g.id + '"><b>' + escape(g.name) + '</b><span>' + escape(g.desc + (g.printing ? ' · this Printing' : '') + ' ' + progressText(g)) + '</span><span class="o-goal-bar"><i style="width:' + (g.progress === null || !(g.target > 0) ? 0 : Math.max(0, Math.min(100, 100 * g.progress / g.target))).toFixed(1) + '%"></i></span>' + rewardLine(g.id) + '</button>').join('') +
       (goals.length < 3 ? '<p>More goals as your room grows</p>' : '')) + '</section>' +
-      '<section class="o-reward-inventory" aria-label="Stored rewards">' + (diamonds >= 1 ? '<p>Diamond Bananas: ' + diamonds + ' (' + state().prem.earned + ' earned, ' + state().prem.bought + ' bought)</p>' : '') +
-      (count || active ? '<button type="button" class="o-goal-row" data-act="rewards:activate" ' + (unavailable ? 'disabled' : '') + '>Royalty Rush · ' + count + ' stored · x7 royalties and division income for 15 game seconds' +
+      '<section class="o-reward-inventory" aria-label="Stored rewards">' + (diamonds >= 1 ? '<p class="o-reward-wallet" aria-label="' + diamonds + ' Diamond Bananas">' + (window.Gems?.amount('dbn', diamonds, 'big') || diamonds + ' Diamond Bananas') + '</p>' : '') +
+      (count || active ? '<button type="button" class="o-goal-row" data-act="rewards:activate" ' + (unavailable ? 'disabled' : '') + '>Royalty Rush · ' + count + ' stored · x7 · 15s' +
       (active ? ' · Active' : api.nativeRush() ? ' · Native rush active' : !count ? ' · No stored tokens' : !canDisplayAct() ? ' · Waiting to save' : ' · Activate one') + '</button>' : '') + '</section>' +
-      (history ? '<div class="o-reward-history"><p>' + escape(history) + '</p><button type="button" class="o-goal-row" data-act="rewards:acknowledge">Dismiss summary</button></div>' : '');
+      (history ? '<div class="o-reward-history"><p>' + gemify(escape(history)) + '</p><button type="button" class="o-goal-row" data-act="rewards:acknowledge">Dismiss summary</button></div>' : '');
   }
   function afterRender() {
     refreshGoals();

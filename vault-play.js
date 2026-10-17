@@ -121,39 +121,45 @@ window.VaultPlay = (() => {
     function close() {quote=null;inert(false);api.mark();}
     function cancelReview() {close();const slot=document.querySelector('[data-vault-slot]');if(slot)render(api,slot);document.querySelector('[data-act="vault:review"]')?.focus();}
     function command(c) {close(); const r=Rewards.lampAction(c); if(r?.error)notice=r.error;api.mark();return r;}
+    const dbn = (n, cls = '') => window.Gems?.amount('dbn', n, cls) || String(n);
+    const ITEMS = {[speedItem]:{ico:'u-rapid',name:'Game Speed',fx:'×1.25',unit:'game speed',cost:150,act:'review-speed'},[item]:{ico:'s-lamp',name:'Night Lamp+',fx:'24h',unit:'offline cap',cost:100,act:'review'}};
     function render(a,host) {
-      const s=a.state(),p=s.prem,v=p.vault,id=pending(s),r=v?.purchases[id],held=Rewards.held();
-      let body=`<p class="o-lede">${p.earned+p.bought} Diamond Bananas (${p.earned} earned, ${p.bought} bought). Game speed x${speed(s)} · offline cap ${a.vaultContext().cap/3600}h · offline efficiency ${Math.round(a.vaultContext().eff*100)}%.</p>`;
-      if (notice) body+=`<p role="status">${esc(notice)}</p>`;
+      const s=a.state(),p=s.prem,v=p.vault,id=pending(s),r=v?.purchases[id],held=Rewards.held(),total=p.earned+p.bought;
+      let body=`<div class="vp-wallet">${dbn(total,'big')}</div>`;
+      if (notice) body+=`<p role="status" class="o-warn">${esc(notice)}</p>`;
       if (quote) {
-        body+=`<section class="lg02d-lamp-review" role="dialog" aria-modal="true" aria-labelledby="lampReviewTitle" tabindex="0"><h3 id="lampReviewTitle">${name(quote.itemId)}</h3><p>${quote.itemId === speedItem ? 'Permanent x1.25 productive game time online and offline. The offline cap counts real hours; efficiency and world, calendar and minigame clocks stay unchanged.' : `Offline cap: 24 real hours. Offline efficiency stays ${Math.round(a.vaultContext().eff*100)}%. Requires ordinary Night Lamp tier 3 for this first purchase.`}</p><p>Uses ${quote.cost} earned and 0 bought Diamond Bananas. After purchase: ${quote.remaining} total.</p><p>Saved items can be undone here for 10 real seconds. Reloading or leaving ends Undo. This is game currency, not a money payment.</p>${button('cancel','Cancel')}${button('confirm',`Spend ${quote.cost} Diamond Bananas`)}</section>`;
+        const q=ITEMS[quote.itemId];
+        body+=`<section class="lg02d-lamp-review o-card" role="dialog" aria-modal="true" aria-labelledby="lampReviewTitle" tabindex="0"><div class="o-row"><h3 id="lampReviewTitle">${a.shop.cart(q.ico)}${q.name}</h3>${dbn(quote.cost)}</div><p class="vp-fx"><b>${q.fx}</b> ${q.unit}</p><p class="o-dim">${total} › ${quote.remaining} · Undo for 10s</p><div class="mg01-actions">${button('cancel','Cancel')}${button('confirm','Buy')}</div></section>`;
       } else {
-        if(r)body+=`<section class="o-card"><p>Saved. ${name(r.itemId)} starts after Undo closes.</p><p>Undo is local to this page. Leaving or reloading ends it.</p>${button('undo',`Undo ${name(r.itemId)}`,held||!Rewards.lampUndoable(id)?'disabled':'')}${button('keep','Keep purchase',held?'disabled':'')}</section>`;
-        if(cap(s))body+='<p>Night Lamp+ tier 1 owned and active. Permanent 24-hour real offline cap.</p>';
-        if(speed(s) === 1.25)body+='<p>Game Speed tier 1 owned and active. Permanent x1.25 productive game time online and offline.</p>';
+        if(r)body+=`<section class="o-card"><div class="o-row"><h3>${a.shop.cart(ITEMS[r.itemId].ico)}${ITEMS[r.itemId].name}</h3><span class="o-lvl">✓</span></div><p class="o-dim">Undo for 10s</p><div class="mg01-actions">${button('undo','Undo',held||!Rewards.lampUndoable(id)?'disabled':'')}${button('keep','Keep',held?'disabled':'')}</div></section>`;
+        const have=[];
+        if(cap(s))have.push(item);
+        if(speed(s)===1.25)have.push(speedItem);
         const cards=[];
-        if(speedEnabled()&&!v?.settings.hideStore&&!v?.owned[speedItem])cards.push(`<div class="o-card"><div class="o-row"><h3>Game Speed tier 1</h3><span class="o-lvl">150 Diamond Bananas</span></div><p>Permanent x1.25 productive game time, online and offline. Offline cap and efficiency stay unchanged.</p>${p.earned<150?'<p class="o-warn">Need '+(150-p.earned)+' more earned Diamond Bananas.</p>':''}${button('review-speed','Review Game Speed',id||held||!speedReady()?'disabled':'')}</div>`);
-        if(!v?.settings.hideStore&&!v?.owned[item]&&s.lamp>=3)cards.push(`<div class="o-card"><div class="o-row"><h3>Night Lamp+ tier 1</h3><span class="o-lvl">100 Diamond Bananas</span></div><p>Permanent 24-hour real offline cap. Lamp and Woolf efficiency stay unchanged; no online speed change. Needs ordinary Night Lamp tier 3 first.</p>${p.earned<100?'<p class="o-warn">Need '+(100-p.earned)+' more earned Diamond Bananas.</p>':''}${button('review','Review Night Lamp+',id||held?'disabled':'')}</div>`);
+        const card=(key,gate,off)=>{const q=ITEMS[key],short=p.earned<q.cost;return `<div class="o-card"><div class="o-row"><h3>${a.shop.cart(q.ico)}${q.name}</h3>${dbn(q.cost,short?'short':'')}</div><p class="vp-fx"><b>${q.fx}</b> ${q.unit}</p><span class="o-prog" role="img" aria-label="${Math.min(p.earned,q.cost)} of ${q.cost}"><i style="width:${Math.min(100,100*p.earned/q.cost)}%"></i></span><button type="button" class="o-btn gold" data-act="vault:${q.act}" aria-label="Review ${q.name}" ${off?'disabled':''}>Buy</button></div>`;};
+        if(speedEnabled()&&!v?.settings.hideStore&&!v?.owned[speedItem])cards.push(card(speedItem,0,id||held||!speedReady()||p.earned<150));
+        if(!v?.settings.hideStore&&!v?.owned[item]&&s.lamp>=3)cards.push(card(item,0,id||held||p.earned<100));
+        if(have.length)body+=`<p class="vp-have">${have.map(k=>`<span class="vp-chip" title="${ITEMS[k].name}">${a.shop.ico(ITEMS[k].ico,24)}<b>${ITEMS[k].fx}</b></span>`).join('')}</p>`;
         if(cards.length)body+=`<div class="o-grid">${cards.join('')}</div>`;
         const history=Object.entries(v?.purchases||{}).reverse(),slice=history.slice(page*20,page*20+20);
-        if(history.length)body+=`<details><summary>Local Diamond Banana history (${history.length})</summary>${slice.map(([key,h])=>`<p>${esc(key)}. ${esc(new Date(h.createdWallMs).toLocaleString())}. ${name(h.itemId)}. ${h.cost} DB, ${h.debitEarned} earned / ${h.debitBought} bought. ${h.status==='undoable'?'Waiting to activate':h.status==='active'?'Active':'Undone'}.</p>`).join('')}${page?button('previous','Previous'):''}${history.length>(page+1)*20?button('next','Next'):''}</details>`;
+        if(history.length)body+=`<details class="vp-history"><summary>History ${history.length}</summary>${slice.map(([key,h])=>`<p>${esc(new Date(h.createdWallMs).toLocaleDateString())} · ${ITEMS[h.itemId]?.name||''} · ${dbn(h.cost)} · ${h.status==='undoable'?'⏳':h.status==='active'?'✓':'↩'}</p>`).join('')}${page?button('previous','‹'):''}${history.length>(page+1)*20?button('next','›'):''}</details>`;
       }
-      body+='<p>Items stay through Second Printing. Clearing browser data can lose your save.</p><details class="o-updetail"><summary class="o-btn">About Diamond Bananas</summary><p>No ads. Every layer, challenge and automation is reachable by playing. Diamond Bananas buy the upgrades shown here. No random prizes or timed offers.</p></details>';
       a.morph(host,`<div class="lg02d-lamp">${body}</div>`);
+      a.hydrate(host);
     }
     function openReview(itemId) {try{quote=Rewards.lampReview(itemId);inert(true);api.mark();queueMicrotask(()=>{const slot=document.querySelector('[data-vault-slot]');if(slot)render(api,slot);const c=document.querySelector('[data-act="vault:cancel"]');c?.focus();document.querySelector('.lg02d-lamp-review')?.scrollIntoView({block:'center'});});}catch(e){notice=e.message;api.mark();}}
     api.register('vault',{speed:a=>speed(a.state()),
       actions:{review:()=>openReview(item),'review-speed':()=>openReview(speedItem),cancel:cancelReview,confirm:()=>{const q=quote;command({kind:'reserve',quote:q});},undo:()=>command({kind:'refund',purchaseId:pending(api.state())}),keep:()=>command({kind:'activate',purchaseId:pending(api.state())}),previous:()=>{page=Math.max(0,page-1);api.mark();},next:()=>{page++;api.mark();}},
       afterRender:({pane})=>{if(Rewards.held()&&quote)close();const slot=pane?.querySelector('[data-vault-slot]');if(slot)render(api,slot);},
       lampRefused:message=>{notice=message;api.mark();},
-      lampSaved:event=>{const r=api.state().prem.vault?.purchases[event.purchaseId || pending(api.state())];notice=event.kind==='settings'?'Store preference saved.':event.kind==='reserve'?`Saved. ${name(r.itemId)} starts after Undo closes.`:event.kind==='refund'?`Undone. ${r.debitEarned} Diamond Bananas returned.`:`${name(r.itemId)} active.`;api.mark();}
+      lampSaved:event=>{const r=api.state().prem.vault?.purchases[event.purchaseId || pending(api.state())];notice='';api.mark();}
     });
     document.addEventListener('keydown',e=>{
       if(!quote)return;
       if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();cancelReview();}
       if(e.key==='Tab'){const controls=[...document.querySelectorAll('.lg02d-lamp-review button')],first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
     },true);
-    window.IMI.settings.registerVault({render:()=>!(api.state().prem.earned>0||api.state().prem.vault)?'':`<div class="set-row lg02d-lamp-setting"><span>Hide the Diamond store</span><button type="button" class="set-btn" data-set="lamp-hide" aria-pressed="${!!api.state().prem.vault?.settings.hideStore}">${api.state().prem.vault?.settings.hideStore?'On':'Off'}</button><p>Hide item prices and spending buttons. Your earned Diamond Bananas and owned items still work.</p><button type="button" class="set-btn" data-set="lamp-open">Diamond Bananas, history and pending purchase</button></div>`,action:act=>act==='lamp-hide'?command({kind:'settings',hideStore:!api.state().prem.vault?.settings.hideStore}):api.setTab('shop')});
+    window.IMI.settings.registerVault({render:()=>{const st=api.state(),p=st.prem,total=p.earned+p.bought;if(!(total>0||p.vault))return '';const shown=!p.vault?.settings.hideStore;return `<div class="set-row" title="Diamond Bananas: show or hide the store"><span class="set-lab">${window.Gems?.html('dbn')||'Diamond'} <b>${total}</b></span><button type="button" class="set-btn" data-set="lamp-hide" aria-label="Diamond store" aria-pressed="${shown}">${shown?'On':'Off'}</button></div>`;},action:act=>act==='lamp-hide'?command({kind:'settings',hideStore:!api.state().prem.vault?.settings.hideStore}):api.setTab('shop')});
   }
   return Object.freeze({available,enabled,isolated,speedEnabled,speedReady,supported,savedSupported,rawCheck,startupCheck,pending,cap,speed,review,project,empty,install});
 })();

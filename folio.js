@@ -117,7 +117,7 @@ window.Folio = (() => {
   function render(c, pane) {
     api = c; const s = c.state(); let f;
     try { f = current(s); } catch(e) { c.morph(pane, `<div class="o-card folio"><h3>Folio unavailable</h3><p>${escape(e.message)}</p>${button('back','Return to production')}</div>`); return; }
-    let html = `<div class="o-card folio"><h3>Folio</h3><p>Turn banked words into a one-off reward. Pick a series, choose two of its stories, and bind them: the words they need are used up, and you take bananas or a pile of letters. Each series pays once per Printing.</p><details class="o-updetail"><summary class="o-btn sm">How the Folio works</summary><ol><li>Pick a series (they get bigger and pay more).</li><li>Choose two of its three stories. Their order only decides how the pair is shown in your gallery.</li><li>Choose a reward: bananas, or letters of one kind on a typewriter you own.</li><li>The preview lists the exact banked words that will be used. Press Work on series and your keepers bank the missing ones (the Publisher pauses meanwhile), then Bind series.</li></ol></details>${button('back','Return to production')}`;
+    let html = `<div class="o-card folio"><h3>Folio</h3><p class="o-dim">Two stories · banked words · one reward</p>${button('back','Return to production')}`;
     if (window.Layers?.enabled) html += button('shelf','Genre shelf');
     if (!unlocked(s)) html += '<p>Finish the introduction and reach Printing 4. Saving must be ready.</p>';
     else if (!f.selection) html += series.map(r => button('series',r.name,`data-id="${r.id}"`)).join('');
@@ -125,15 +125,15 @@ window.Folio = (() => {
       const x = f.selection, row = entry(x.id), completed = !!f.completed[x.id];
       html += button('list','Back to series') + `<h3>${row.name}</h3><p>Reading order: ${x.leaves.map(i => escape(row.leaves[i])).join(' Then ')}</p>`;
       html += row.leaves.map((leaf,i) => button('leaf',`${x.leaves.includes(i) ? (x.leaves.indexOf(i)+1) + '. ' : ''}${escape(leaf)}`,`data-leaf="${i}" aria-pressed="${x.leaves.includes(i)}"`)).join('') + button('swap','Reverse reading order');
-      if (completed) html += '<p>Bound this Printing. Read or reorder free; bind again next Printing.</p>';
+      if (completed) html += '<p class="o-dim">Bound ✓</p>';
       else {
         html += `<h3>Choose your binding reward</h3>${button('cash',row.cash.toLocaleString('en-US') + ' bananas',`aria-pressed="${x.reward.kind === 'cash'}"`)}${button('letters',row.letters + ' chosen letters',`aria-pressed="${x.reward.kind === 'letters'}"`)}`;
         if (x.reward.kind === 'letters') html += `<label>Desk<select data-folio="desk">${s.desks.map((d,i) => d.owned ? `<option value="${i}" ${x.reward.desk === i ? 'selected' : ''}>${escape(c.folioDesks[i])}</option>` : '').join('')}</select></label><label>Letter<select data-folio="letter">${[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(ch => `<option ${ch === x.reward.letter ? 'selected' : ''}>${ch}</option>`).join('')}</select></label>`;
         try {
           const q = quote(s,x), ready = Object.entries(q.need).every(([w,n]) => (s.bank[w] || 0) >= n);
-          html += '<h3>Binding preview</h3><ul>' + Object.entries(q.need).map(([w,n]) => `<li>${w} × ${n}, banked ${s.bank[w] || 0}</li>`).join('') + `</ul><p>Consumes these words. Receive exactly <b>${rewardText(q)}</b>.</p>`;
+          html += '<h3>Binding preview</h3><ul>' + Object.entries(q.need).map(([w,n]) => `<li>${w} × ${n}, banked ${s.bank[w] || 0}</li>`).join('') + `</ul><p>› <b>${rewardText(q)}</b></p>`;
           html += button('work',f.working ? 'Working on series' : 'Work on series', f.working ? 'disabled' : '') + button('bind','Bind series',ready ? '' : 'disabled');
-          if (f.working) html += '<p>Working on missing words. Publisher paused, including away. Paused keepers stay paused.</p>';
+          if (f.working) html += '<p class="o-dim">Keepers are banking the missing words…</p>';
         } catch(e) { html += `<p>${escape(e.message)}</p>`; }
       }
     }

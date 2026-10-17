@@ -1,0 +1,79 @@
+/* Diamond Bananas, Legacy stars and Inspiration as pictures (gems.js). Pixel sprites come from pixel.js as --g-*, classic art as --gc-*. */
+.gem { --s: 1.5em; position: relative; display: inline-block; flex: none; width: var(--s); height: var(--s); vertical-align: -.38em; pointer-events: none; }
+.gem.big { --s: 30px; }
+.gem-art, .gem::after { position: absolute; inset: 0; background: var(--gi) center / contain no-repeat; }
+.gem-art { image-rendering: pixelated; filter: drop-shadow(0 0 3px var(--gg)); }
+.gem.dbn { --gg: #52d0ff; --gi: var(--g-dbanana); }
+.gem.star { --gg: #ffd23a; --gi: var(--g-i-star); }
+.gem.insp { --gg: #ffe28a; --gi: var(--g-i-insp); }
+.gem.ban { --gg: #ffd23a; --gi: var(--g-banana); }
+html[data-style="classic"] .gem.dbn { --gi: var(--gc-dbn); }
+html[data-style="classic"] .gem.star { --gi: var(--gc-star); }
+html[data-style="classic"] .gem.insp { --gi: var(--gc-insp); }
+html[data-style="classic"] .gem.ban { --gi: var(--gc-ban); }
+html[data-style="classic"] .gem-art { image-rendering: auto; }
+
+/* the diamond banana: it bobs, a glint sweeps across its shape and sparkles pop around it */
+.gem.dbn .gem-art { animation: gem-float 2.6s ease-in-out infinite; }
+.gem.dbn::after { content: ''; -webkit-mask: var(--gi) center / contain no-repeat; mask: var(--gi) center / contain no-repeat; image-rendering: pixelated;
+  background: linear-gradient(112deg, transparent 38%, rgba(255,255,255,.95) 50%, transparent 62%) 160% 0 / 260% 100% no-repeat; animation: gem-shine 3s ease-in-out infinite; }
+.gem-sp { position: absolute; width: 36%; height: 36%; background: #fff; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); opacity: 0; animation: gem-twinkle 2.4s ease-in-out infinite; filter: drop-shadow(0 0 2px #52d0ff); }
+.gem-sp:nth-of-type(1) { left: -16%; top: 2%; animation-delay: 0s; }
+.gem-sp:nth-of-type(2) { right: -14%; top: 30%; width: 28%; height: 28%; animation-delay: .8s; }
+.gem-sp:nth-of-type(3) { left: 22%; bottom: -14%; width: 30%; height: 30%; animation-delay: 1.6s; }
+@keyframes gem-float { 0%, 100% { transform: translateY(6%) rotate(-5deg); } 50% { transform: translateY(-8%) rotate(5deg); } }
+@keyframes gem-shine { 0%, 30% { background-position: 160% 0; } 62%, 100% { background-position: -80% 0; } }
+@keyframes gem-twinkle { 0%, 100% { opacity: 0; transform: scale(.15) rotate(0); } 40% { opacity: 1; transform: scale(1) rotate(45deg); } 70% { opacity: 0; transform: scale(.3) rotate(90deg); } }
+html[data-style="pixel"] .gem.dbn .gem-art { animation-timing-function: steps(6); }
+html[data-style="pixel"] .gem-sp { animation-timing-function: steps(5); }
+html[data-fx="low"] .gem *, html[data-fx="low"] .gem::after { animation: none !important; }
+html[data-fx="low"] .gem.dbn::after { display: none; }
+@media (prefers-reduced-motion: reduce) { .gem *, .gem::after { animation: none !important; } .gem.dbn::after { display: none; } }
+
+/* picture + number inline (prices, card corners) */
+.gem-amt { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
+.gem-amt .gem { --s: 1.4em; }
+.gem-amt.ban { color: #ffd23a; } .gem-amt.dbn { color: #9fe6ff; } .gem-amt.star { color: #ffd23a; } .gem-amt.insp { color: #ffe28a; }
+.gem-amt.short { opacity: .55; }
+
+/* the wallet row under the banana counter */
+.hud-gems { flex: none; display: flex; flex-direction: column; gap: 4px; }
+.hud-gems[hidden], .hud-gem[hidden] { display: none; }
+.hud-gem { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 2px 4px; min-width: 0; background: rgba(0,0,0,.34); border: 2px solid rgba(255,255,255,.14); }
+.hud-gem b { max-width: 100%; white-space: nowrap; font-weight: 400; }
+.hud-gem.dbn { color: #aeeaff; border-color: #2f6fa8; background: linear-gradient(180deg, rgba(40,110,190,.32), rgba(0,0,0,.4)); }
+.hud-gem.star { color: #ffd23a; } .hud-gem.insp { color: #ffe28a; }
+.hud-gem.pop .gem { animation: gem-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
+html[data-style="pixel"] .hud-gem.pop .gem { animation-timing-function: steps(5); }
+@keyframes gem-pop { 0% { transform: scale(1); } 35% { transform: scale(1.55) rotate(-10deg); } 100% { transform: scale(1); } }
+html[data-style="pixel"] .hud-gem { font-family: var(--font-px); font-size: 8px; }
+html[data-style="classic"] .hud-gem { font-family: var(--font-display); font-size: 15px; border-radius: 14px; }
+.rail:is(.open, .docked) .hud-gem { flex-direction: row; justify-content: flex-start; gap: 8px; padding: 3px 8px; }
+html[data-style="pixel"] .rail:is(.open, .docked) .hud-gem { font-size: 11px; }
+html[data-style="classic"] .rail:is(.open, .docked) .hud-gem { font-size: 20px; }
+.rail:is(.open, .docked) .hud-gem .gem.big { --s: 28px; }
+.rail:not(.open, .docked) .hud-gem .gem.big { --s: 26px; }
+
+/* the Diamond store in the Shop */
+.vp-wallet { display: flex; justify-content: center; padding: 4px 0 10px; }
+.vp-wallet .gem-amt { font-size: 1.8em; text-shadow: 0 0 12px rgba(82,208,255,.45); }
+.vp-wallet .gem-amt .gem { --s: 1.3em; }
+.vp-fx { font-size: 1.15em; }
+.vp-fx b { font-weight: 700; color: #9fe6ff; }
+.vp-have { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 8px; }
+.vp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border: 2px solid #2f6fa8; background: rgba(40,110,190,.25); color: #aeeaff; }
+.vp-chip b { font-weight: 700; }
+.vp-history { margin-top: 10px; opacity: .85; }
+.vp-history p { margin: 4px 0; }
+.lg02d-lamp .gem-amt.dbn { color: #9fe6ff; }
+.lg02d-lamp .o-btn.gold { color: #2a1a08; }
+.set-lab .gem { --s: 1.6em; margin-right: 4px; vertical-align: -.45em; }
+.set-lab b { font-weight: 700; color: #aeeaff; }
+
+/* award rewards */
+.o-reward-line { display: inline-flex; align-items: center; gap: 6px; opacity: 1; }
+.o-reward-line .gem-amt { font-size: 1.15em; }
+.o-reward-line .gem-amt .gem { --s: 1.5em; }
+.o-goal-row small.o-reward-line { opacity: .95; }
+.o-reward-wallet { display: flex; margin: 6px 0; }
+.o-reward-wallet .gem-amt { font-size: 1.3em; }

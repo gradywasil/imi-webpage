@@ -201,3 +201,21 @@ Untested by the bot; reasoned from the formulas.
 | Experience | XP = base yield x (1 + 0.6 x machine index); field level = floor(sqrt(xp / 40)); head gardener level = floor(sqrt(total xp / 120)). Stored in `meta.farm`, kept through every Printing | Skill is the meta progression; plots and farmers are room items and are bought again each Printing |
 | Level effect | letters x (1 + 0.12 per field level) x (1 + 0.03 per head level); growth time / ((1 + 0.06 per field level) x (1 + 0.02 per head level)); `GARDEN_DESK_YIELD` `[1, 1.3, 1.8, 2.6, 4, 6]` | Level 10 on Bamboo is about 2.2x letters in 0.6x the time |
 | Farmers | tier 1/2/3 act every 12/6/3 s (harvest a ripe plot, else plant an empty one); need field level 1/5/12; cost `FARMER_BASE` per machine x `[1, 6, 36]`. Plant the letter the goal is missing most, else the one the machine holds least of | One worker per field. They also finish whole crop cycles while you are away |
+
+## Legacy stars, x10 scale (Oct 2026)
+
+Stars are counted in tenths of the old unit (`Economy.starScale = 10`). Saves written before this convert once on load (`legacy.k`): stars, total, the Imprint baseline and the Estate baseline are multiplied by 10.
+
+| Thing | Value |
+|---|---|
+| Stars for a press | `floor(10 × sqrt(run earned / 12.5M))`, first press needs 12.5M bananas (10 stars) |
+| Income per star | +0.2% (was +2% per old star, same total) |
+| Imprint / Estate thresholds | 600 and 3,600 awarded stars (were 60 and 360) |
+| Seed Money | 10 / 30 / 80 |
+| Veteran Crew | 30 |
+| Printing Press (typing +10%/lv) | 10 levels, 20 × 1.42^lv |
+| Quick Keepers (keepers +10%/lv) | 8 levels, 25 × 1.5^lv (new) |
+| Prestige Imprint (income +10%/lv) | 10 levels, 30 × 1.45^lv |
+| Golden Touch (+25%/lv) | 5 levels, 20 × 1.6^lv |
+| Helper unlock (works, slowly) | hire 10, coach 15, shop 20, restore 25, net 30, garden 20, pitch 30, media 40, muse 45, print 60, challenge 80 |
+| Helper speed levels 1-3 | 20 / 50 / 120 (every tiered helper, including garden, pitch, media and muse: 60s → 45 → 30 → 15) |

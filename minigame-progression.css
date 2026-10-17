@@ -1,35 +1,64 @@
-.mg01-choices { display:grid; gap:12px; padding:16px; max-width:620px; margin:auto; }
-.mg01-choices h2,.mg01-dialog h2 { margin:0; font-size:18px; }
+/* The Break Room: games play inside the main panel (the side menu stays live), Inspiration is shown as a picture and a number. */
+.mg01-choices { display:grid; gap:12px; padding:4px 0; max-width:none; }
+.mg01-choices h2, .mg01-dialog h2 { margin:0; font-size:18px; }
 .mg01-choices p { margin:0; }
 .mg01-actions { display:flex; gap:8px; flex-wrap:wrap; }
-.mg01-actions > .o-btn { flex:1 1 120px; }
-.mg01-choices { max-width:none; padding:0; }
-.mg02-tree { display:grid; gap:12px; border-top:2px solid #dca453; padding-top:16px; }
-.mg02-tree h3,.mg02-tree h4 { margin:0; }
-.mg02-node { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; padding:12px; }
-.mg02-node p { margin-top:6px; }
-.mg02-node button { max-width:180px; }
-.mg02-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-html[data-style="pixel"] .mg02-node { border:2px solid #b57d3e; background:#173f2b; }
-html[data-style="pixel"] .mg02-tree h3 { font-family:var(--font-px); font-size:12px; line-height:1.5; }
-html[data-style="classic"] .mg02-node { border:2px solid #dca453; background:#123b2c; border-radius:14px; }
-@media(max-width:480px) { .mg02-node { grid-template-columns:1fr; } .mg02-node button { max-width:none; width:100%; } }
-.mg01-choices button,.mg01-dialog button { min-height:44px; min-width:44px; padding:8px 12px; font:inherit; cursor:pointer; color:inherit; }
-.mg01-overlay { position:fixed; inset:0; z-index:1800; display:block; background:#0a2a1c; padding:0; }
-.mg01-dialog { width:100%; height:100%; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:0; padding:0; box-sizing:border-box; overflow:hidden; color:var(--cream,#fff6d6); }
-.mg01-bar { display:flex; align-items:center; gap:10px; padding:4px 8px; flex-wrap:wrap; min-height:44px; }
-.mg01-bar .mg01-info { flex:1; min-width:140px; display:flex; flex-wrap:wrap; column-gap:12px; font-size:14px; line-height:1.25; }
-.mg01-bar [data-mg01="bank"], .mg01-bar [data-mg01="retry"] { margin-left:auto; } .mg01-bar [data-mg01="bank"] + [data-mg01="retry"] { margin-left:0; }
-.mg01-status { min-width:0; }
+.mg01-actions > .o-btn { flex:1 1 90px; }
+.mg01-dialog button { min-height:44px; min-width:44px; padding:8px 12px; font:inherit; cursor:pointer; color:inherit; }
+.mg01-dialog button:disabled { opacity:.55; cursor:default; }
+.mg01-dialog button:focus-visible { outline:3px solid #fff6d6; outline-offset:2px; }
+
+/* wallet + rewarded breaks */
+.mg-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:6px 4px; }
+.mg-wallet .gem-amt { font-size:1.9em; }
+.mg-wallet .gem-amt .gem { --s:1.25em; }
+.mg-breaks { display:flex; align-items:center; gap:8px; }
+.mg-breaks small { opacity:.75; white-space:nowrap; }
+.mg-tk-row { display:inline-flex; gap:4px; }
+.mg-tk { display:inline-block; opacity:.28; filter:grayscale(1); }
+.mg-tk.on { opacity:1; filter:drop-shadow(0 0 4px rgba(255,210,58,.8)); }
+
+/* game cards */
+.mg01-choices .o-grid { align-items:stretch; }
+.mg-game { justify-content:space-between; }
+.mg-game .o-row { align-items:center; gap:8px; }
+.mg-game h3 { min-width:0; }
+.mg-game .gem-amt, .mg-bonus { color:#ffe28a; }
+.mg-bonus { display:inline-flex; align-items:center; gap:6px; }
+.mg-bonus b { font-weight:700; }
+.mg-meter { flex:none; width:100%; }
+.mg-resume { border-color:#ffd23a; }
+
+/* the Inspiration ideas */
+.mg02-tree { display:grid; gap:10px; border-top:2px solid rgba(255,255,255,.12); padding-top:12px; }
+.mg02-tree h3 { margin:0; display:flex; align-items:center; gap:8px; }
+.mg02-tree h4 { margin:0; display:flex; align-items:center; gap:10px; min-width:0; }
+.mg02-fx { font-size:1.15em; }
+.mg02-fx b { font-weight:700; color:#7be05a; }
+.mg02-node.owned { border-color:#7be05a; }
+.mg02-node.locked { opacity:.55; }
+.mg02-node .o-lvl { color:#7be05a; }
+
+/* the game itself: fills the main panel, right of the side menu */
+.mg01-overlay { position:absolute; inset:0; z-index:30; display:block; background:#0a2a1c; padding:0; }
+.mg01-dialog { width:100%; height:100%; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); padding:0; box-sizing:border-box; overflow:hidden; color:var(--cream,#fff6d6); }
+.mg01-bar { display:flex; align-items:center; gap:10px; padding:4px 8px; min-height:48px; background:rgba(0,0,0,.45); border-bottom:2px solid rgba(255,255,255,.14); }
+.mg01-bar h2 { flex:none; max-width:30%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mg01-back { flex:none; font-size:26px; line-height:1; padding:0 12px; }
+.mg01-live { flex:none; display:inline-flex; align-items:center; gap:6px; color:#ffe28a; font-weight:700; }
+.mg01-live .gem { --s:1.4em; }
+.mg01-live[hidden], .mg01-meter[hidden] { display:none; }
+.mg01-meter { flex:1 1 60px; min-width:40px; max-width:240px; }
+.mg01-status { flex:1; min-width:0; font-size:13px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mg01-bar [data-mg01="bank"], .mg01-bar [data-mg01="retry"] { margin-left:auto; flex:none; }
+.mg01-bar [data-mg01="bank"][hidden], .mg01-bar [data-mg01="retry"][hidden] { display:none; }
 .mg01-frame { width:100%; height:100%; min-height:0; border:0; background:#0a2a1c; }
-.mg01-progress { min-width:0; }
 html[data-style="pixel"] .mg01-dialog { background:#173f2b; }
-html[data-style="pixel"] .mg01-choices button,html[data-style="pixel"] .mg01-dialog button { background:#2b5b35; border:2px solid #e8b878; border-radius:0; }
-html[data-style="pixel"] .mg01-choices h2,html[data-style="pixel"] .mg01-dialog h2 { font-family:var(--font-px); font-size:14px; line-height:1.5; }
+html[data-style="pixel"] .mg01-dialog button { background:#2b5b35; border:2px solid #e8b878; border-radius:0; }
+html[data-style="pixel"] .mg01-choices h2, html[data-style="pixel"] .mg01-dialog h2 { font-family:var(--font-px); font-size:12px; line-height:1.5; }
 html[data-style="classic"] .mg01-dialog { background:#123b2c; }
-html[data-style="classic"] .mg01-choices button,html[data-style="classic"] .mg01-dialog button { background:#285f3f; border:2px solid #dca453; border-radius:14px; }
-.mg01-choices button:disabled,.mg01-dialog button:disabled { opacity:.55; cursor:default; }
-.mg01-choices button:focus-visible,.mg01-dialog button:focus-visible { outline:3px solid #fff6d6; outline-offset:2px; }
-@media(max-height:600px) { .mg01-bar { min-height:0; padding:2px 6px; gap:6px; } .mg01-bar .mg01-info { font-size:12px; } .mg01-dialog button { min-height:36px; } }
+html[data-style="classic"] .mg01-dialog button { background:#285f3f; border:2px solid #dca453; border-radius:14px; }
+@media(max-height:600px) { .mg01-bar { min-height:0; padding:2px 6px; gap:6px; } .mg01-dialog button { min-height:36px; } }
+@media(max-width:560px) { .mg01-bar h2 { display:none; } }
 @media(prefers-reduced-motion:reduce) { .mg01-overlay * { animation:none!important; transition:none!important; } }
 html[data-fx="low"] .mg01-overlay * { animation:none!important; transition:none!important; }

@@ -99,7 +99,7 @@ window.Economy = (() => {
     else write('imi-ops-v1', state);
     return state;
   }
-  return Object.freeze({ version, scale, cash, round, floor, fmt, rate, exact, loadScore, saveScore, loadState,
+  return Object.freeze({ version, scale, starScale: 10, cash, round, floor, fmt, rate, exact, loadScore, saveScore, loadState,
     creditReward, saveScoreAcknowledged, saveStateAcknowledged: state => acknowledged('imi-ops-v1', state),
     walletAcknowledgement: () => walletMetadata.rewardMarker === undefined ? null : JSON.parse(JSON.stringify(walletMetadata.rewardMarker)) });
 })();

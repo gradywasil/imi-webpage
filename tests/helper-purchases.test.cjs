@@ -31,17 +31,17 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    await page.goto(`${origin}/${edition}.html#play`);
    await page.waitForFunction(()=>window.IMI?.ops?.extensions?.state().meta.automation?.ownership);
    await page.evaluate(()=>{
-    const s=IMI.ops.extensions.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.intro.done=true;s.printing=1;s.legacy.stars=10;s.legacy.total=10;s.chDone={hands:true};s.rewards={};s.prem={};
+    const s=IMI.ops.extensions.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.intro.done=true;s.printing=1;s.legacy.stars=100;s.legacy.total=100;s.chDone={hands:true};s.rewards={};s.prem={};
     s.meta.automation={version:1,ownership:{version:1,owned:{}}};s.daily={last:new Date().toDateString(),streak:1};localStorage.setItem('imi-ops-v1',JSON.stringify(s));
    });
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
    const go=async tab=>{await page.evaluate(tab=>IMI.ops.extensions.setTab(tab),tab);await new Promise(r=>setTimeout(r,400));if(tab==='legacy'){await page.click('[data-dept="legacy"][data-sub="upgrades"]');await new Promise(r=>setTimeout(r,400));}};
    await go('legacy');
-   assert.equal(await page.$$eval('[data-act="automation:settings"]',els=>els.length),2);
+   assert.equal(await page.$$eval('[data-act="automation:settings"]',els=>els.length),0);
    assert.equal(await page.$('[data-act="automation:buy"][data-helper="shop"]'),null);
    await page.click('[data-act="automation:buy"][data-helper="hire"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.hire);
-   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),9);
+   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),90);
    assert.equal(await page.evaluate(()=>Object.values(IMI.ops.extensions.state().meta.automation.desks||{}).some(d=>d.enabled)),false);
    const duplicate=await page.evaluate(()=>{const api=IMI.ops.extensions,q=api.quoteAutomationBase('hire');return api.buyAutomationBase('hire',q.expected);});assert.equal(duplicate.ok,false);
    await go('legacy');
@@ -54,7 +54,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    await page.click('[data-act="automation:toggle"]');
    await page.waitForFunction(()=>Object.values(IMI.ops.extensions.state().meta.automation.desks||{}).some(d=>d.enabled));
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
-   assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return {stars:s.legacy.stars,owned:s.meta.automation.ownership.owned.hire,on:Object.values(s.meta.automation.desks).some(d=>d.enabled)};}),{stars:9,owned:true,on:true});
+   assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return {stars:s.legacy.stars,owned:s.meta.automation.ownership.owned.hire,on:Object.values(s.meta.automation.desks).some(d=>d.enabled)};}),{stars:90,owned:true,on:true});
    record(edition+' actual Buy/settings/enable/save/reload and duplicate refusal');
    if(edition==='index')fs.writeFileSync(path.join(evidence,'projection-fixture.json'),JSON.stringify(await page.evaluate(()=>IMI.ops.extensions.state()),null,2));
    await go('legacy');
@@ -64,10 +64,10 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    await new Promise(r=>setTimeout(r,400));
    record(edition+' failed-buy state',await page.evaluate(()=>({m:IMI.ops.extensions.state().meta.automation,text:document.querySelector('[data-automation="helpers"]').textContent})));
    await page.waitForSelector('[data-act="automation:retry"]');
-   assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return [s.legacy.stars,!!s.meta.automation.ownership.owned.coach];}),[9,false]);
+   assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return [s.legacy.stars,!!s.meta.automation.ownership.owned.coach];}),[90,false]);
    await page.evaluate(()=>{Storage.prototype.setItem=window.helperSetItem;});await page.click('[data-act="automation:retry"]');
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.coach);
-   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),8);record(edition+' failed detached save and exact Retry debits once');
+   assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),75);record(edition+' failed detached save and exact Retry debits once');
    await page.evaluate(()=>{const api=IMI.ops.extensions;api.state().printing=2;api.mark();});
    const stale=await page.evaluate(()=>{const api=IMI.ops.extensions,q=api.quoteAutomationBase('shop'),s=api.state(),before=s.legacy.stars;
     const next=JSON.parse(JSON.stringify(s.meta.automation));next.desks[Object.keys(next.desks)[0]].reservePercent=40;
@@ -89,7 +89,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
     assert.equal(layout.pageScroll,false);assert.equal(layout.fit,true);assert(layout.minHeight>=40);assert.equal(layout.low,'low');assert.equal(layout.reduced,true);
     results.layouts.push({edition,width,height,...layout});await page.screenshot({path:path.join(evidence,`${edition}-${width}-shop.png`)});
    }
-   await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.printing=1;s.chDone={};s.legacy.stars=10;s.meta.automation={version:1,tiers:{version:1,hire:1},garden:{version:1,enabled:false,bed:0,letter:'E',desk:'mint',manual:{complete:false}},pitch:{version:1,enabled:false},print:{version:1,manual:{complete:true}},future:{keep:'unknown'}};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));sessionStorage.setItem('ui03cFailAdmission','1');});
+   await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.printing=1;s.chDone={};s.legacy.stars=200;s.meta.automation={version:1,tiers:{version:1,hire:1},garden:{version:1,enabled:false,bed:0,letter:'E',desk:'mint',manual:{complete:false}},pitch:{version:1,enabled:false},print:{version:1,manual:{complete:true}},future:{keep:'unknown'}};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));sessionStorage.setItem('ui03cFailAdmission','1');});
    await page.evaluateOnNewDocument(()=>{if(sessionStorage.getItem('ui03cFailAdmission')){window.helperSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'&&JSON.parse(v).meta.automation?.ownership)throw Error('UI03C controlled failed admission');return window.helperSetItem.call(this,k,v);};}});
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());await go('legacy');await page.waitForSelector('[data-act="automation:retry"]');
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership),undefined);
@@ -104,7 +104,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    assert.deepEqual(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership.owned),{hire:true,pitch:true});record(edition+' old save admission frozen across failed save, future gates and reload; incomplete proof not earned');
    const grants=await page.evaluate(()=>{const hook=window.__OPS_EXTENSIONS.find(([id])=>id==='automation')[1],s=IMI.ops.extensions.state(),next=hook.firstClearFloor('quietshop',s.meta.automation);return {tier:next.tiers.shop,owned:!!next.ownership.owned.shop};});assert.deepEqual(grants,{tier:1,owned:false});record(edition+' future first-clear preserves tier without granting base');
    const tiers=await page.evaluate(()=>{const api=IMI.ops.extensions,s=api.state(),out=[];for(const level of [1,2]){const q=api.quoteAutomationTier('hire'),r=api.buyAutomationTier('hire',level,JSON.stringify(s.meta.automation));out.push({price:q.price,ok:r.ok,stars:s.legacy.stars,level:s.meta.automation.tiers.hire});}return out;});
-   assert.deepEqual(tiers,[{price:2,ok:true,stars:8,level:2},{price:4,ok:true,stars:4,level:3}]);record(edition+' grandfathered existing tier keeps paid 2/4-star upgrade path',tiers);
+   assert.deepEqual(tiers,[{price:50,ok:true,stars:150,level:2},{price:120,ok:true,stars:30,level:3}]);record(edition+' grandfathered existing tier keeps the paid upgrade path',tiers);
    await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.meta.automation.ownership={version:99,owned:{hire:true},future:['keep']};localStorage.setItem('imi-ops-v1',JSON.stringify(s));});
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);await go('legacy');
    assert.deepEqual(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership),{version:99,owned:{hire:true},future:['keep']});
@@ -127,14 +127,14 @@ test('actual detached successor projections retain ownership; A11 selection requ
  const ctx=vm.createContext({window:null,location:{search:''},URLSearchParams,GameFeatures:{enabled:()=>true},Rewards:{enabled:true,owns:()=>true},IMI:{ops:{extensions:{identitySettled:()=>true,layerSettled:()=>true}}}});ctx.window=ctx;
  for(const file of ['layers.js','estate.js','auto-challenge.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
  const s=JSON.parse(fs.readFileSync(path.join(evidence,'projection-fixture.json'),'utf8'));
- s.printing=7;s.legacy.total=400;s.legacy.stars=10;
+ s.printing=7;s.legacy.total=4000;s.legacy.stars=100;
  s.meta.layers={version:1,count:5,baseline:0,seals:0,highestPrinting:8,purchases:{},genre:null,stamps:{}};
  s.meta.estate={version:1,count:3,localImprints:5,resetEpoch:0,starBaseline:0,charters:0};
  delete s.meta.folio;
  const marker=JSON.stringify(s.meta.automation.ownership), fresh=JSON.parse(JSON.stringify(s));
  const imprint=ctx.Layers.project(s,fresh),estate=ctx.Estate.project(s,fresh,true);
  const source=fs.readFileSync(path.join(root,'ops.js'),'utf8');
- ctx.layers=ctx.Layers;ctx.fresh=()=>JSON.parse(JSON.stringify(fresh));ctx.printingQuote=()=>({printing:7,stars:10,total:400,gain:1});ctx.worksPlay=null;ctx.pg=null;ctx.pitchCopy=x=>JSON.parse(JSON.stringify(x));
+ ctx.layers=ctx.Layers;ctx.fresh=()=>JSON.parse(JSON.stringify(fresh));ctx.printingQuote=()=>({printing:7,stars:100,total:4000,gain:10});ctx.worksPlay=null;ctx.pg=null;ctx.pitchCopy=x=>JSON.parse(JSON.stringify(x));
  vm.runInContext(source.slice(source.indexOf('  function printingRoom('),source.indexOf('  function printingPending()')),ctx);
  const printing=ctx.printingRoom(s,[],123,'manual',null);
  for(const next of [imprint,estate,printing])assert.equal(JSON.stringify(next.meta.automation.ownership),marker);

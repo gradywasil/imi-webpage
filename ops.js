@@ -233,7 +233,7 @@
     up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0 },
     keeper: { owned: i === 0, on: true, def: 0, targets: {}, lv: 0 }
   });
-  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {} }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null], owner: [0, 0], farmers: [0, 0, 0, 0, 0, 0] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, pitchteam: false, carbon: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {}, k: Economy.starScale }, editions: {}, looks: {}, run: { earned: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null], owner: [0, 0], farmers: [0, 0, 0, 0, 0, 0] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, pitchteam: false, carbon: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
   let hallHistory = {};
   let S = (() => {
     try {
@@ -250,6 +250,12 @@
       const old = (saved.desks || []).map(x => x && x.keeper && x.keeper.focus).find(id => id && !(saved.written || {})[id]);   // pre-shared-goal saves: per-desk focus
       if (saved.focus === undefined) { f.focus = old || null; f.autoFocus = !old; }
       f.desks.forEach(d => { if (d.owned) d.keeper.owned = true; delete d.keeper.focus; });
+      if (f.legacy && !f.legacy.k) {
+        const k = Economy.starScale;
+        f.legacy = { ...f.legacy, stars: f.legacy.stars * k, total: f.legacy.total * k, ups: { ...f.legacy.ups }, k };
+        if (f.meta?.layers) f.meta = { ...f.meta, layers: { ...f.meta.layers, baseline: f.meta.layers.baseline * k } };
+        if (f.meta?.estate?.starBaseline) f.meta = { ...f.meta, estate: { ...f.meta.estate, starBaseline: f.meta.estate.starBaseline * k } };
+      }
       return f;
     } catch (error) { if (writer) throw error; return fresh(); }
   })();
@@ -1465,12 +1471,17 @@
   /* ================= second printing (prestige) + oulipo challenges =================
      Retire the room, keep the shelf as earlier editions, and print again. Legacy stars make every printing stronger.
      Before printing you may pick an Oulipo constraint for the new run; finishing it pays stars and a permanent perk. */
+  const gem = (kind, cls = '') => window.Gems?.html(kind, cls) || '';
+  const gemAmt = (kind, n, cls = '') => window.Gems?.amount(kind, n, cls) || String(n);
+  /* Legacy upgrades: every one has tiers, and each tier costs more stars than the last */
+  const costRamp = (n, base, grow) => Array.from({ length: n }, (_, i) => Math.round(base * Math.pow(grow, i)));
   const LEG = [
-    { id: 'seed', name: 'Seed Money', max: 3, costs: [1, 3, 8], desc: `Start each printing with ${[1000, 10000, 100000].map(n => fmt(cash(n))).join(' / ')} bananas.` },
-    { id: 'crew', name: 'Veteran Crew', max: 1, costs: [2], desc: 'Start each printing with Hold to type and two typists on Bamboo.' },
-    { id: 'speed', name: 'Printing Press', max: 5, costs: [2, 4, 6, 8, 10], desc: 'All typists work 10% faster per level.' },
-    { id: 'sales', name: 'Prestige Imprint', max: 5, costs: [3, 5, 7, 9, 11], desc: 'All banana income (sales, royalties, divisions) +10% per level.' },
-    { id: 'golden', name: 'Golden Touch', max: 3, costs: [2, 4, 6], desc: 'Golden bananas show up 25% more often per level.' }
+    { id: 'seed', name: 'Seed Money', ico: 'banana', max: 3, costs: [10, 30, 80], now: lv => lv ? fmt(cash([0, 1000, 10000, 100000][lv])) : '0', unit: 'starting bananas' },
+    { id: 'crew', name: 'Veteran Crew', ico: 'i-monkey', max: 1, costs: [30], now: lv => lv ? '2 + Hold' : '0', unit: 'starting typists' },
+    { id: 'speed', name: 'Printing Press', ico: 'u-rapid', max: 10, costs: costRamp(10, 20, 1.42), now: lv => `+${10 * lv}%`, unit: 'typing speed' },
+    { id: 'keeper', name: 'Quick Keepers', ico: 's-keeper', max: 8, costs: costRamp(8, 25, 1.5), now: lv => `+${10 * lv}%`, unit: 'keeper speed' },
+    { id: 'sales', name: 'Prestige Imprint', ico: 'd-reprints', max: 10, costs: costRamp(10, 30, 1.45), now: lv => `+${10 * lv}%`, unit: 'banana income' },
+    { id: 'golden', name: 'Golden Touch', ico: 'i-star', max: 5, costs: costRamp(5, 20, 1.6), now: lv => `+${25 * lv}%`, unit: 'golden bananas' }
   ];
   const CHALLENGES = [
     { id: 'vowel', name: 'Vowel Drought', stars: 3, goalN: 6, desc: 'Vowels are 65% rarer and vowel boosts are off. Sell 6 titles.', perk: 'Typists work 5% faster, forever.' },
@@ -1487,7 +1498,9 @@
     { id: 'fixedcast', name: 'Fixed cast', stars: 0, goalN: 8, helper: 'muse', imprint: true, desc: 'Sell 3 progression titles, then seat an invited Muse before sale 4. That sale locks every seat through sale 8, including newly opened seats. Invitations keep their ordinary cost.', perk: 'Muse director attempts every 45 active game seconds after its usual unlock.' }
   ];
   const legLvl = id => S.legacy.ups[id] || 0;
-  const legacyMult = () => (1 + .02 * S.legacy.total) * (1 + .1 * legLvl('sales'));
+  /* helper prices in Legacy stars: an unlock (it works, slowly) and then three speed-ups */
+  const HELPER_COST = { hire: 10, coach: 15, shop: 20, restore: 25, net: 30, garden: 20, pitch: 30, media: 40, muse: 45, print: 60, challenge: 80 }, TIER_COST = [20, 50, 120];
+  const legacyMult = () => (1 + .02 * S.legacy.total / Economy.starScale) * (1 + .1 * legLvl('sales'));
   const editionMult = () => 1 + .35 * S.printing;
   const chal = id => !!S.challenge && S.challenge.id === id;
   const chDef = id => CHALLENGES.find(c => c.id === id);
@@ -1535,14 +1548,17 @@
   const challengeSettled = () => !layerChoices.size && !commissionPending && !musePending && !extensions.get('automation')?.pendingGarden() &&
     !extensions.get('automation')?.pendingChoice() && !S.meta.automation?.pitch?.sale && !S.meta.automation?.media?.pending &&
     !S.rewards.awayCheckpoint && !Object.values(S.rewards.claims || {}).some(c => c.status === 'prepared') && (!writer || writer.owns() && !writer.held() && !writer.localDisposition() && writer.guard(S));
-  const challengeReward = c => c.imprint ? `${c.perk} First clear also gives a balanced Letters bundle on your highest owned desk: three minutes of productive output, at least 50 and at most 5,000 letters. Replays pay nothing.` : c.helper ? `${c.perk} First clear also gives Letters on the highest owned desk: floor(max(50, min(5000, 180 × productive letters/second))). No new stars or Diamond Bananas. Replays pay nothing.` : `+${c.stars} stars and a perk: ${c.perk}`;
+  const challengeReward = c => c.imprint || c.helper ? `${c.perk} First clear also pays a one-off letters bundle.` : `+${c.stars * Economy.starScale} stars and a perk: ${c.perk}`;
   const toolOn = key => !!S[key] && !chal('quietshop');
   const challengeShopLock = what => chal('quietshop') && ['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(what) ? 'Blocked by Quiet Shop' :
     (chal('patientpress') || masteryActive()) && what === 'pub' ? masteryActive() ? 'Blocked by manual Small Crew mastery' : 'Blocked by Patient Press' : chal('baremetal') && what === 'mk' ? 'Blocked by Bare Metal' : '';
   const chPerk = id => !!S.chDone[id];
   const speedPerks = () => (1 + .1 * legLvl('speed')) * (chPerk('vowel') ? 1.05 : 1) * (chPerk('hands') ? 1.1 : 1);
-  const starsNow = () => Math.floor(Math.sqrt((S.run.earned || 0) / cash(5e5)));
-  const nextStarAt = () => Math.pow(starsNow() + 1, 2) * cash(5e5);
+  /* stars come in tenths of the old count: the first press is worth 10 and every later one scales with the square root of the run, in steps of one */
+  const STAR_K = Economy.starScale, STAR_BASE = cash(5e5);
+  const starsFor = earned => earned >= STAR_BASE ? Math.floor(STAR_K * Math.sqrt(earned / STAR_BASE)) : 0;
+  const starsNow = () => starsFor(S.run.earned || 0);
+  const nextStarAt = () => Math.pow((Math.max(STAR_K, starsNow()) + 1) / STAR_K, 2) * STAR_BASE;
   let freqCache = null;
   const freqNow = () => {
     const base = !chal('vowel') ? FREQ : freqCache || (freqCache = Object.fromEntries(Object.entries(FREQ).map(([k, v]) => [k, VOWELS.includes(k) ? v * .35 : v])));
@@ -1577,9 +1593,9 @@
     S.challenge = null;
     if (kind === 'done') {
       const first = !S.chDone[C.id]; S.chDone = {...S.chDone,[C.id]:true};
-      if (first && C.stars) { S.legacy.stars += C.stars; S.legacy.total += C.stars; }
+      if (first && C.stars) { S.legacy.stars += C.stars * STAR_K; S.legacy.total += C.stars * STAR_K; }
       IMI.sfx.ding(); IMI.banner(PX ? 'OULIPO COMPLETE!' : 'Oulipo Complete!');
-      logIt(`Oulipo challenge complete: ${C.name}.${first ? C.helper ? ` ${challengeReward(C)}` : ` +${C.stars} Legacy stars and a permanent perk.` : ''}`);
+      logIt(`Oulipo challenge complete: ${C.name}.${first ? C.helper ? ` ${challengeReward(C)}` : ` +${C.stars * STAR_K} Legacy stars and a permanent perk.` : ''}`);
       newsPush(`${C.name} conquered. Constraint-loving monkeys are smug about it.`);
     } else if (kind === 'fail') { logIt(`The ${C.name} challenge ran out of time. The constraint is lifted.`); newsPush(`${C.name} failed. The monkeys promise they were just warming up.`); }
     else logIt(`Abandoned the ${C.name} challenge.`);
@@ -1998,7 +2014,7 @@
       const el = document.createElement('div'); el.className = 'o-modal';
       el.innerHTML = `<div class="o-modal-card o-vault-gate"><h3>Start ${esc(medal)} Small Crew?</h3><div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Trial reset losses and books"><p>This Printing grants ${quote.gain} pending Legacy stars, then resets bananas, machines, typists, bank, run tools, deals, divisions, Muses and garden. Ordinary Printing history and permanent benefits remain. Only Bamboo/Hibiscus and two typists each. All helpers and Publisher pause until qualification or saved abandon. No medal or replay reward.</p><p>Manually produce and sell all ${selection.target} books:</p><ul>${selection.required.map(id => `<li>${esc(RBY[id].title)}</li>`).join('')}</ul></div><div class="o-row"><button class="o-btn" data-cancel>Cancel</button><button class="o-btn gold" data-start>Start trial</button></div></div>`;
       document.body.append(el); el.querySelector('[data-cancel]').onclick = () => el.remove();
-      el.querySelector('[data-start]').onclick = () => {el.remove(); const r = writer.printingAction({origin:'mastery',quote}); if (!r.ok) newsPush(r.error);};
+      el.querySelector('[data-start]').onclick = () => {el.remove(); try { const r = writer.printingAction({origin:'mastery',quote:printingReview('mastery',medal)}); if (!r.ok) newsPush(r.error); } catch(error) { newsPush(error.message); }};
       el.querySelector('[data-cancel]').focus();
     } catch(error) {newsPush(error.message);}
   }
@@ -2022,7 +2038,7 @@
         source.meta.productionGoal !== undefined && !window.ProductionGoal?.valid(source.meta.productionGoal) ||
         source.meta.trainingPool !== undefined && !window.TrainingPool?.valid(source.meta.trainingPool) ||
         source.meta.minigames !== undefined && source.meta.minigames?.version !== 1) throw Error('Unsupported retained progression. Save preserved.');
-    const gain = Math.floor(Math.sqrt(source.run.earned / cash(5e5))), epoch = layers.estateIdentity(source)?.resetEpoch;
+    const gain = starsFor(source.run.earned), epoch = layers.estateIdentity(source)?.resetEpoch;
     if (source.challenge || ![source.run.earned,source.printing,source.printing + 1,source.legacy.stars,source.legacy.total,gain,source.legacy.stars + gain,source.legacy.total + gain].every(printInteger) ||
         gain < 1 || source.legacy.stars > source.legacy.total || epoch !== undefined && !printInteger(epoch + 1) ||
         !printInteger(source.legacy.ups.seed ?? 0) || (source.legacy.ups.seed ?? 0) > 3 || ![0,1].includes(source.legacy.ups.crew ?? 0) ||
@@ -2156,7 +2172,7 @@
         newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
         shownN['cel-st'] = 0;
         celebrate(PX ? `PRINTING ${S.printing + 1}` : `Printing ${S.printing + 1}`, PX ? 'THE PRESSES ROLL AGAIN' : 'The presses roll again',
-          `<p class="o-cel-stars">+${cnt('cel-st',p.quote.gain)} Legacy star${p.quote.gain > 1 ? 's' : ''}</p><p class="o-cel-sub">Every title can be sold again. Income x${(legacyMult() * editionMult()).toFixed(2)}.</p>`);
+          `<p class="o-cel-stars">${gem('star', 'big')} +${cnt('cel-st',p.quote.gain)}</p><p class="o-cel-sub">Income x${(legacyMult() * editionMult()).toFixed(2)}</p>`);
       }
       mark();
       return {ok:true,status:p ? 'acknowledged' : 'prepared',id:p?.id ?? S.meta.automation.print.pending.id};
@@ -2210,7 +2226,7 @@
     newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
     shownN['cel-st'] = 0;
     celebrate(PX ? `PRINTING ${S.printing + 1}` : `Printing ${S.printing + 1}`, PX ? 'THE PRESSES ROLL AGAIN' : 'The presses roll again',
-      `<p class="o-cel-stars">+${cnt('cel-st', gain)} Legacy star${gain > 1 ? 's' : ''}</p><p class="o-cel-sub">Every title can be sold again. Income x${(legacyMult() * editionMult()).toFixed(2)}.</p>`);
+      `<p class="o-cel-stars">${gem('star', 'big')} +${cnt('cel-st', gain)}</p><p class="o-cel-sub">Income x${(legacyMult() * editionMult()).toFixed(2)}</p>`);
     buildStage(); render(); save();
   }
   function askPrint() {
@@ -2224,15 +2240,16 @@
     const el = document.createElement('div'); el.className = 'o-modal'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'oPrT');
     const C = ui.nextCh && chDef(ui.nextCh);
     el.innerHTML = `<div class="o-modal-card${C?.helper ? ' o-vault-gate' : ''}"><h3 id="oPrT">Go to press?</h3>
+      <div class="o-print-gain on">${gem('star', 'big')}<b>+${gain}</b></div>
       ${C?.helper ? '<div class="o-vault-gate-content" tabindex="0" role="region" aria-label="Printing and challenge details">' : ''}
-      <p>You will earn <b>${gain}</b> Legacy star${gain > 1 ? 's' : ''} and start printing ${S.printing + 2}.${C ? ` The <b>${C.name}</b> constraint will apply.` : ''}</p>
-      ${C ? `<p>${C.desc} First-clear benefit: ${challengeReward(C)}</p>` : ''}
-      <p class="o-dim">You keep awards, stats, pitched titles, Legacy and your bookshelf (as earlier editions). You lose bananas, machines, typists, upgrades, deals, divisions, Muses, the garden and the word bank.</p>
+      ${C ? `<p><b>${C.name}</b>: ${C.desc} First-clear benefit: ${challengeReward(C)}</p>` : ''}
+      <p class="o-dim">Restarts bananas, machines, typists, upgrades, deals, garden and word bank. Awards, stats, shelf and Legacy stay.</p>
       ${C?.helper ? '</div>' : ''}<div class="o-row"><button type="button" class="o-btn" data-cancel>Not yet</button><button type="button" class="o-btn gold" data-ok>Print it</button></div></div>`;
     document.body.appendChild(el);
     const close = () => el.remove();
     el.querySelector('[data-cancel]').addEventListener('click', close);
-    el.querySelector('[data-ok]').addEventListener('click', () => { close(); if (printQuote) { const r = writer.printingAction({origin:'manual',quote:printQuote}); if (!r.ok) newsPush(r.error); } else doPrint(ui.nextCh); });
+    /* the room keeps typing while this dialog is open, so the quote taken when it opened is stale by the time you confirm: review again on the spot */
+    el.querySelector('[data-ok]').addEventListener('click', () => { close(); if (printQuote) { try { const r = writer.printingAction({origin:'manual',quote:printingReview()}); if (!r.ok) newsPush(r.error); } catch(error) { newsPush(error.message); } } else doPrint(ui.nextCh); });
     el.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
     el.querySelector('[data-cancel]').focus();
   }
@@ -2244,28 +2261,33 @@
     const active = S.challenge ? `<div class="o-card o-seat on"><div class="o-row"><h3>Oulipo: ${chDef(S.challenge.id).name}</h3><span class="o-lvl">${chProgress()}</span></div><p>${chDef(S.challenge.id).desc}</p><button type="button" class="o-btn sm" data-act="chabandon">Abandon (no reward)</button></div>` : '';
     const legCards = LEG.map(u => {
       const lv = legLvl(u.id), cost = u.costs[lv];
-      return `<div class="o-card"><div class="o-row"><h3>${u.name}</h3><span class="o-lvl">${lv}/${u.max}</span></div>${pips(lv, u.max)}<p>${u.desc}</p>
-        ${lv >= u.max ? '<span class="o-lvl">MAXED</span>' : `<button type="button" class="o-btn gold" data-act="legbuy" data-id="${u.id}" ${L.stars < cost ? 'disabled' : ''}>${cost} star${cost > 1 ? 's' : ''}</button>`}</div>`;
+      return `<div class="o-card o-leg${cost !== undefined && L.stars >= cost ? ' can' : ''}"><div class="o-row"><h3>${cart(u.ico)}${u.name}</h3><span class="o-lvl">${lv}/${u.max}</span></div>${pips(lv, u.max)}
+        <p class="o-leg-fx"><b>${u.now(lv)}</b> ${u.unit}${lv < u.max ? ` <span class="o-leg-next">› ${u.now(lv + 1)}</span>` : ''}</p>
+        ${lv >= u.max ? '<span class="o-lvl">MAX</span>' : `<button type="button" class="o-btn gold o-starbtn" data-act="legbuy" data-id="${u.id}" ${L.stars < cost ? 'disabled' : ''}>${gemAmt('star', cost)}</button>`}</div>`;
     }).join('');
-    const tabs = [['press', 'Press'], ['challenges', 'Challenges'], ['upgrades', 'Upgrades', L.stars ? L.stars : 0]];
+    const tabs = [['press', 'Press']];
+    if (S.printing >= 1 || L.total > 0 || S.chDone && Object.keys(S.chDone).length) tabs.push(['challenges', 'Challenges']);
+    if (L.total > 0) tabs.push(['upgrades', 'Upgrades', L.stars || 0]);
     if (!tabs.some(t => t[0] === ui.sub.legacy)) ui.sub.legacy = 'press';
     const sub = ui.sub.legacy, done = challengeCatalog().filter(c => S.chDone[c.id]);
+    const floor = gain >= STAR_K ? Math.pow(gain / STAR_K, 2) * STAR_BASE : 0, ceil = gain >= STAR_K ? nextStarAt() : STAR_BASE;
+    const pct = Math.max(0, Math.min(100, Math.round(100 * (earned - floor) / (ceil - floor))));
+    const incomeNow = legacyMult() * editionMult(), incomeNext = (1 + .02 * (L.total + gain) / STAR_K) * (1 + .1 * legLvl('sales')) * (1 + .35 * (S.printing + 1));
     let body;
-    if (sub === 'press') body = `<div class="o-card o-print"><div class="o-row"><h3>Second Printing</h3><span class="o-lvl">Printing ${S.printing + 1}</span></div>
-        <p>Keep your shelf as earlier editions: every title sells again for <b>+${35 * (S.printing + 1)}%</b> more (now +${35 * S.printing}%).</p>
-        <p>Each Legacy star adds <b>2%</b> to all banana income.</p>
-        <p>You restart machines, typists and bananas.</p>
-        <p>This run has earned <b>${fmtBig(earned)}</b> bananas: <b>${gain}</b> Legacy star${gain === 1 ? '' : 's'} if you print now.${gain >= 1 ? '' : ` (The first star needs ${fmtBig(cash(500000))}.)`} The next star arrives at ${fmtBig(nextStarAt())}.</p>
-        <p class="o-dim">Legacy: <b>${L.stars}</b> unspent of ${L.total} earned (+${2 * L.total}% income).</p>
+    if (sub === 'press') body = `<div class="o-card o-print"><div class="o-row"><h3>${cart('trophy-2')}Printing ${S.printing + 1}</h3>${gemAmt('star', L.stars)}</div>
+        <div class="o-print-gain${gain >= 1 ? ' on' : ''}" aria-label="${gain} Legacy stars if you print now">${gem('star', 'big')}<b>+${gain}</b></div>
+        <span class="o-prog o-print-bar" role="img" aria-label="${pct}% to the next star"><i style="width:${pct}%"></i></span>
+        <p class="o-dim o-print-next">${gain >= 1 ? 'Next ' : 'First '}${gem('star')} at ${fmtBig(gain >= 1 ? nextStarAt() : STAR_BASE)} · run ${fmtBig(earned)}</p>
+        <div class="o-print-stats"><span title="Income multiplier">${ico('banana', 22)}<b>×${incomeNow.toFixed(2)}</b><i>›</i><b class="up">×${incomeNext.toFixed(2)}</b></span></div>
         <button type="button" class="o-btn gold" data-act="printask" ${gain >= 1 ? '' : 'disabled'}>Go to press</button></div><div class="lg03-inline" data-own data-automation="print"></div>`;
-    else if (sub === 'challenges') body = `<h3 class="o-h">Challenge for the next printing (optional)</h3>
+    else if (sub === 'challenges') body = `<h3 class="o-h">Challenge for the next printing</h3>
         <div class="o-filters"><span class="o-seg">${chips}</span></div>
-        ${picked ? `<p>${picked.desc} First-clear benefit: ${challengeReward(picked)}${S.chDone[picked.id] ? ' <span class="o-dim">(already earned; replaying pays nothing)</span>' : ''}</p>` : `<p class="o-dim">${challengePrototype ? 'More constraints unlock at Printing 5 after the introduction, with reward saving enabled. The four Imprint challenges also require a founded Imprint. First clears pay the listed benefit once.' : 'Constraints make a run harder in a literary way. Each is worth stars and a permanent perk the first time you finish it.'}</p>`}
+        ${picked ? `<p>${picked.desc} First-clear benefit: ${challengeReward(picked)}${S.chDone[picked.id] ? ' <span class="o-dim">(already earned; replaying pays nothing)</span>' : ''}</p>` : ''}
         ${masteryHTML()}<div class="lg03-inline" data-own data-automation="challenge"></div>
         ${masteryActive() ? '' : active}
         ${done.length ? `<h3 class="o-h">Completed perks</h3><div class="o-grid">${done.map(c => `<div class="o-card"><h3>${c.name} ✓</h3><p>${c.perk}</p></div>`).join('')}</div>` : ''}`;
-    else body = `<p class="o-dim">Legacy stars unspent: <b>${L.stars}</b></p><div class="o-grid">${legCards}<div class="lg03-purchases" data-own data-automation="helpers"></div></div>`;
-    morph($('#o-legacy'), subTabs('legacy', tabs) + body + (layers?.enabled && (S.printing >= 7 || layers.identity(S)) ? '<div class="o-card layers"><h3>Imprints</h3><p>A new room with retained Legacy and permanent Press Seal purchases.</p><button class="o-btn" data-act="layers:open">Review Imprints</button></div>' : ''));
+    else body = `<div class="o-leg-wallet">${gemAmt('star', L.stars, 'big')}</div><div class="o-grid">${legCards}<div class="lg03-purchases" data-own data-automation="helpers"></div></div>`;
+    morph($('#o-legacy'), subTabs('legacy', tabs) + body + (layers?.enabled && (S.printing >= 7 || layers.identity(S)) ? '<div class="o-card layers"><h3>Imprints</h3><button class="o-btn" data-act="layers:open">Review Imprints</button></div>' : ''));
     hydrate($('#o-legacy'));
   }
 
@@ -2275,7 +2297,7 @@
   const mkCost = i => roundMoney(MK_BASE[i] * (S.desks[i].mk ? 12 : 1) * (chPerk('haiku') ? .8 : 1));
   /* ---- keepers: each desk's keeper can be tuned up (faster banking) with bananas ---- */
   const keeperLv = i => S.desks[i].keeper.lv || 0;
-  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0)));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
+  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0) + .1 * legLvl('keeper')));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
   const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_GROW, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)));
   function keeperCard(i, have) {
     const D = DESKS[i], lv = keeperLv(i), cost = keeperUpCost(i), now = keeperPeriod(i), nextPeriod = Math.max(KEEPER_MIN_PERIOD, now * (lv >= KEEPER_UP_MAX ? KEEPER_LATE_STEP : KEEPER_UP_STEP)), atFloor = now <= KEEPER_MIN_PERIOD;
@@ -3233,7 +3255,7 @@
   }
   const extensionAPI = {
     state: () => S, save, mark, morph, setTab, hydrate,
-    shop: { price: n => price(n), cart: n => cart(n) },
+    shop: { price: n => price(n), cart: n => cart(n), ico: (n, sz) => ico(n, sz) },
     hallHistory:() => hallHistory,
     hallCommit(candidate, source) {
       if (!writer?.owns() || !writer.transacting() || writer.localDisposition() || JSON.stringify(S) !== source) return {ok:false,error:'Hall source changed. Save preserved.'};
@@ -3508,17 +3530,18 @@
         if (result.ok) { S.meta.automation = automation; S.lastSeen = lastSeen; mark(); }
         return result;
       },
+      HELPER_COST, TIER_COST,
       quoteAutomationBase(id) {
         const helper = extensions.get('automation'), current = S.meta.automation;
         const error = !helper.validConfig(current) || !Object.hasOwn({hire:1,coach:1,shop:1,restore:1,net:1,garden:1,pitch:1,media:1,muse:1,print:1,challenge:1},id) ? 'Unsupported helper' :
           !current?.ownership ? 'Waiting for saved helper admission' : helper.owned(id) ? 'Owned' : !helper.baseGate(id) ? 'Helper is locked' :
-          !extensionAPI.automationAllowed() ? 'Save owner is unavailable' : !Number.isSafeInteger(S.legacy.stars) || S.legacy.stars < 1 ? 'Not enough Legacy stars' : '';
-        return {ok:!error,error,price:1,expected:current === undefined ? null : JSON.stringify(current)};
+          !extensionAPI.automationAllowed() ? 'Save owner is unavailable' : !Number.isSafeInteger(S.legacy.stars) || S.legacy.stars < HELPER_COST[id] ? 'Not enough Legacy stars' : '';
+        return {ok:!error,error,price:HELPER_COST[id],expected:current === undefined ? null : JSON.stringify(current)};
       },
       buyAutomationBase(id, expected) {
         const helper = extensions.get('automation'), q = extensionAPI.quoteAutomationBase(id);
         if (!q.ok || q.expected !== expected || !helper.baseRequestAllowed(id,expected)) return {ok:false,retryable:false,error:q.error || 'Helper quote changed. Choose Buy again.'};
-        const automation = pitchCopy(S.meta.automation), legacy = {...S.legacy,stars:S.legacy.stars - 1}, lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
+        const automation = pitchCopy(S.meta.automation), legacy = {...S.legacy,stars:S.legacy.stars - q.price}, lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
         automation.ownership.owned[id] = true;
         if (id === 'hire') { for (const d of Object.values(automation.desks ?? {})) d.enabled = false; }
         else if (automation[id]) automation[id].enabled = false;
@@ -3528,9 +3551,9 @@
       },
       quoteAutomationTier(id) {
         const current = S.meta.automation, valid = extensions.get('automation').validConfig(current);
-        const level = current?.tiers?.[id] ?? 0, price = [1, 2, 4][level];
+        const level = current?.tiers?.[id] ?? 0, price = TIER_COST[level];
         const gate = { hire:S.printing >= 1, shop:S.printing >= 2, coach:!!S.chDone.hands,
-          restore:S.printing >= 4 && !!S.chDone.haiku, net:S.printing >= 5 && !!S.chDone.timed };
+          restore:S.printing >= 4 && !!S.chDone.haiku, net:S.printing >= 5 && !!S.chDone.timed, garden:true, pitch:true, media:true, muse:true };
         const error = !Object.hasOwn(gate, id) || !valid ? 'Unsupported automation tier' :
           !extensions.get('automation').owned(id) ? 'Buy the base helper first' : !S.intro.done || !gate[id] ? 'Helper is locked' : level === 3 ? 'Max level' :
           !extensionAPI.automationAllowed() ? 'Save owner is unavailable' :
@@ -3988,7 +4011,7 @@
     'i-monkey': '🐵', 'u-fing': '👆', 'u-rapid': '⚡', 'u-vowel': '🅰️', 'u-ink': '🖋️', 'u-practice': '📖', 'u-stock': '📦', 'u-ribbon': '🎀',
     'd-reprints': '📚', 'd-tour': '🚌', 'd-translations': '🌍', 'd-clubs': '☕', 'd-option': '🎬',
     'i-game': '🎮', 'i-folio': '📕', 'i-imprint': '🏷️', 'i-estate': '🏡', 'i-archive': '🗄️', 'i-works': '📚', 'i-palm': '🌴', 'i-coconut': '🥥', 'i-type': '⌨️', 'i-log': '🪵', 'i-reel': '🎬',
-    's-team': '🧑‍🤝‍🧑', 's-carbon': '📄',
+    's-team': '🧑‍🤝‍🧑', 's-carbon': '📄', 'i-star': '⭐', 'i-insp': '💡',
     's-hold': '👇', 's-metro': '🎵', 's-dbl': '✌️', 's-contracts': '📜', 's-lamp': '💡', 's-agent': '💼', 's-analyst': '📈', 's-baro': '🌡️', 's-pub': '🖨️', 's-garden': '🌱', 's-keeper': '🗂️' };
   /* the classic edition's machines: a little vector typewriter in the desk colour; restorations add brass, then a gold bell */
   function twSvg(c, mk) {
@@ -4643,8 +4666,8 @@
       ${section('Market tools', market)}
       ${section('Room-wide upgrades', room, '<div class="lg03-inline" data-own data-automation="shop"></div>')}
       ${bought.length ? `<p class="o-dim o-ownedline">Bought: ${bought.join(' · ')}.</p>` : ''}
-      ${S.intro.done && extensions.has('minigames') ? '<h3 class="o-h">Break Room games <span class="o-dim">(play for Inspiration)</span></h3><div data-own data-minigame-shop></div>' : ''}
-      ${window.VaultPlay?.enabled() && S.intro.done && (S.prem.earned > 0 || S.prem.vault) ? '<h3 class="o-h">Diamond Bananas <span class="o-dim">(earned from awards)</span></h3><div data-own data-vault-slot></div>' : ''}
+      ${S.intro.done && extensions.has('minigames') ? `<h3 class="o-h" aria-label="Break Room games">${ico('i-game', 26)}${gem('insp')}</h3><div data-own data-minigame-shop></div>` : ''}
+      ${window.VaultPlay?.enabled() && S.intro.done && (S.prem.earned > 0 || S.prem.vault) ? `<h3 class="o-h" aria-label="Diamond Bananas">${gem('dbn')}</h3><div data-own data-vault-slot></div>` : ''}
       `);
     hydrate($('#o-shop'));
   }
@@ -4838,7 +4861,7 @@
     else if (r === 'r') { IMI.banner(fresh ? (PX ? 'NEW RARE LOOK!' : 'New rare look!') : (PX ? 'RARE LOOK!' : 'Rare look!')); shock(at[0], at[1], '#5fc8ff'); }
     else if (fresh) IMI.banner(PX ? 'NEW LOOK!' : 'New look!');
   }
-  const resetExplanation = 'Reset progress is unavailable while this save has Diamond Bananas, reward history or Vault items. Second Printing remains available when no purchase or save recovery is pending.';
+  const resetExplanation = 'Reset is locked on saves with Diamond Bananas or reward history. Second Printing still works.';
   const resetBlocked = () => !!(S.prem.earned || S.prem.bought || S.prem.earnedTotal || S.prem.boughtTotal || S.prem.vault || Object.keys(S.prem.credits || {}).length || Object.keys(S.rewards.claims || {}).length || Object.keys(S.rewards.storedGold?.tokens || {}).length || S.rewards.walletHead || S.rewards.awayCheckpoint);
   const ACTIONS = {
     keyhelp: () => {

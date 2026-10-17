@@ -75,14 +75,18 @@
     if (family === 'keeper') return (owned(m, 'fresh-eyes') ? .03 : 0) + (owned(m, 'quick-keepers') ? .04 : 0);
     return (owned(m, 'good-stories') ? .03 : 0) + (owned(m, 'bestsellers') ? .04 : 0);
   }
+  const amt = (n, cls = '') => window.Gems?.amount('insp', n, cls) || String(n);
+  const gem = (cls = '') => window.Gems?.html('insp', cls) || '';
+  const NODE_ICO = { 'warm-up':'u-fing', 'nimble-paws':'u-rapid', 'fresh-eyes':'s-keeper', 'good-stories':'d-reprints', 'room-for-play':'i-game', 'steady-hands':'u-rapid', 'quick-keepers':'s-keeper', 'bestsellers':'d-reprints', 'big-break':'i-insp' };
   function tree(m) {
-    const supported = valid(m);
-    const count = supported ? gamesOf(m).length : 0;
-    return `<section class="mg02-tree" aria-labelledby="mg02-title"><h3 class="o-h" id="mg02-title">Permanent ideas</h3><p class="o-lede">Spend Inspiration on permanent factory boosts. Owning more games opens the bigger ideas.</p><div class="o-grid">${Object.entries(NODES).map(([id, n]) => {
-      const has = supported && owned(m, id), locked = id !== 'warm-up' && !owned(m, 'warm-up'), short = count < (n.games || 0);
-      const state = has ? 'Owned' : short ? `Needs ${n.games} games` : locked ? 'Requires Warm-up' : supported && m.wallet >= n.cost ? 'Buy' : 'Need more Inspiration';
-      return `<div class="o-card mg02-node${has ? ' owned' : ''}"><div class="o-row"><h4>${n.name}</h4>${has ? '<span class="o-lvl">OWNED</span>' : `<span class="o-lvl">${n.cost} Inspiration</span>`}</div><p>${n.effect}</p><button type="button" class="o-btn gold" data-mg01="purchase" data-node="${id}" ${!supported || has || locked || short || m.wallet < n.cost || m.active || overlay || pending ? 'disabled' : ''}>${state}<span class="mg02-label">: ${n.name}</span></button></div>`;
-    }).join('')}</div><p class="o-dim">Owned effects: typing +${Math.round(contribution('typing') * 100)}%, keeper +${Math.round(contribution('keeper') * 100)}%, title sales +${Math.round(contribution('sale') * 100)}%. Attempts refill one per 2 real hours.${m?.active ? ' Bank your saved break before buying.' : ''}</p></section>`;
+    const supported = valid(m), count = supported ? gamesOf(m).length : 0;
+    /* only ideas whose games you already own are drawn; the rest appear as you buy more */
+    const cards = Object.entries(NODES).filter(([, n]) => count >= (n.games || 0)).map(([id, n]) => {
+      const has = supported && owned(m, id), locked = id !== 'warm-up' && !owned(m, 'warm-up'), short = !has && !locked && m.wallet < n.cost;
+      const off = !supported || has || locked || m.wallet < n.cost || m.active || overlay || pending;
+      return `<div class="o-card mg02-node${has ? ' owned' : ''}${locked && !has ? ' locked' : ''}"><div class="o-row"><h4>${api.shop.cart(NODE_ICO[id] || 'i-insp')}${n.name}</h4>${has ? '<span class="o-lvl">✓</span>' : amt(n.cost, short ? 'short' : '')}</div><p class="mg02-fx"><b>${n.effect.split(' ')[0]}</b> ${n.effect.split(' ').slice(1).join(' ')}</p>${has ? '' : `<button type="button" class="o-btn gold o-starbtn" data-mg01="purchase" data-node="${id}" aria-label="Buy ${n.name}" ${off ? 'disabled' : ''}>${locked ? '🔒' : 'Buy'}</button>`}</div>`;
+    }).join('');
+    return `<section class="mg02-tree" aria-label="Permanent ideas"><h3 class="o-h">${gem()}Ideas</h3><div class="o-grid">${cards}</div></section>`;
   }
   function commit(next, done = () => {}) {
     if (pending || !valid(next)) return false;
@@ -109,13 +113,17 @@
   }
   function summary() {
     const m = saved(); if (!valid(m)) return notice || 'Buy a game in the Shop to begin.';
-    const minutes = Math.ceil(Math.max(0, m.refillAt + REFILL - api.clock.wallNow()) / 60000);
-    return `${m.wallet} Inspiration · ${m.attempts}/${capacity(m)} attempts${m.attempts < capacity(m) ? ` · next in ${minutes} min` : ''}`;
+    return `${m.wallet} Inspiration · ${m.attempts}/${capacity(m)} breaks`;
   }
+  const attemptPips = m => `<span class="mg-tk-row" role="img" aria-label="${m.attempts} of ${capacity(m)} rewarded breaks">${Array.from({ length:capacity(m) }, (_, k) => `<span class="mg-tk${k < m.attempts ? ' on' : ''}">${api.shop.ico('i-game', 26)}</span>`).join('')}</span>`;
   function render(_, pane) {
-    const m = saved(), active = valid(m) && m.active;
-    const mine = valid(m) ? gamesOf(m) : [], rate = valid(m) ? yieldPer(m) : BASE_YIELD;
-    api.morph(pane, `<div class="mg01-choices"><p class="o-lede">${summary()}</p><p>Play your games for Inspiration while the factory keeps working. A full first minute of a rewarded break earns <b>${Number(rate.toFixed(2))}</b> Inspiration, and every game you own adds one more. New games are bought in the Shop.</p><details class="o-updetail"><summary class="o-btn sm">Break rules</summary><p>Inspiration is earned over the first minute of each rewarded break, across free retries. Rewarded breaks last 3 active minutes. Free practice never earns.</p></details>${active ? `<div class="o-card"><p>Saved break: ${GAMES[active.game].name}, ${active.played.toFixed(1)}s played.</p><div class="mg01-actions"><button type="button" class="o-btn gold" data-mg01="resume">Resume saved break</button><button type="button" class="o-btn" data-mg01="saved-bank">Bank saved credit</button></div></div>` : `<h3 class="o-h">Your games <span class="o-dim">${mine.length}/${ORDER.length}</span></h3><div class="o-grid">${mine.map(id => `<div class="o-card"><div class="o-row"><h3>${api.shop.cart(GAMES[id].ico)}${GAMES[id].name}</h3></div><p>${GAMES[id].blurb}</p><div class="mg01-actions"><button type="button" class="o-btn gold" data-mg01="rewarded" data-game="${id}">Rewarded</button><button type="button" class="o-btn" data-mg01="practice" data-game="${id}">Free practice</button></div></div>`).join('')}</div>`}${tree(m)}<p role="status">${notice}</p>${pending ? '<button type="button" class="o-btn gold" data-mg01="retry">Retry save</button>' : ''}</div>`);
+    const m = saved(), ok = valid(m), active = ok && m.active, mine = ok ? gamesOf(m) : [], rate = ok ? yieldPer(m) : BASE_YIELD, rate1 = Number(rate.toFixed(2));
+    const wait = ok && m.attempts < capacity(m) ? Math.ceil(Math.max(0, m.refillAt + REFILL - api.clock.wallNow()) / 60000) : 0;
+    const head = ok ? `<div class="mg-head"><div class="mg-wallet">${amt(m.wallet, 'big')}</div><div class="mg-breaks" title="Rewarded breaks. One comes back every 2 hours.">${attemptPips(m)}${wait ? `<small>${wait >= 60 ? Math.floor(wait / 60) + 'h ' + (wait % 60) + 'm' : wait + 'm'}</small>` : ''}</div></div>` : '';
+    const noBreaks = ok && !m.attempts;
+    const resume = active ? `<div class="o-card mg-game mg-resume"><div class="o-row"><h3>${api.shop.cart(GAMES[active.game].ico)}${GAMES[active.game].name}</h3>${amt('+' + Number(((m.fraction + Math.min(60, active.played) * rate / 60)).toFixed(1)))}</div><span class="o-prog mg-meter" role="img" aria-label="${Math.min(60, Math.round(active.played))} of 60 seconds"><i style="width:${Math.min(100, active.played / .6)}%"></i></span><div class="mg01-actions"><button type="button" class="o-btn gold" data-mg01="resume">Resume</button><button type="button" class="o-btn" data-mg01="saved-bank">Bank</button></div></div>` : '';
+    const cards = active ? '' : mine.map(id => `<div class="o-card mg-game"><div class="o-row"><h3>${api.shop.cart(GAMES[id].ico)}${GAMES[id].name}</h3>${amt('+' + rate1)}</div><div class="mg01-actions"><button type="button" class="o-btn gold" data-mg01="rewarded" data-game="${id}" ${noBreaks ? 'disabled' : ''}>Play</button><button type="button" class="o-btn" data-mg01="practice" data-game="${id}">Practice</button></div></div>`).join('');
+    api.morph(pane, `<div class="mg01-choices">${head}${resume}<div class="o-grid">${cards}</div>${tree(m)}${notice ? `<p role="status" class="o-warn">${notice}</p>` : ''}${pending ? '<button type="button" class="o-btn gold" data-mg01="retry">Retry save</button>' : ''}</div>`);
     api.hydrate(pane);
   }
   /* the Shop's Break Room games: one at a time, each after the one before it */
@@ -124,9 +132,9 @@
     const card = id => {
       const g = GAMES[id], cost = Economy.cash(g.cost), prev = ORDER[ORDER.indexOf(id) - 1];
       const lock = !ok ? 'Finish the introduction first' : m.active ? 'Bank your saved break first' : overlay ? 'Close the game first' : id !== next ? `Buy ${GAMES[prev].name} first` : '';
-      return `<div class="o-card"><div class="o-row"><h3>${api.shop.cart(g.ico)}${g.name}</h3>${api.shop.price(cost)}</div><p>${g.blurb}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}<button type="button" class="o-btn gold" data-mg01="buygame" data-game="${id}" ${lock || have < cost || pending ? 'disabled' : ''}>Buy</button></div>`;
+      return `<div class="o-card"><div class="o-row"><h3>${api.shop.cart(g.ico)}${g.name}</h3>${api.shop.price(cost)}</div><p>${g.blurb}</p><div class="o-row"><span class="mg-bonus">${gem()}<b>+${mine.length ? 1 : BASE_YIELD}</b> per break</span><span class="o-lvl">${mine.length}/${ORDER.length}</span></div>${lock ? `<p class="o-warn">${lock}</p>` : ''}<button type="button" class="o-btn gold" data-mg01="buygame" data-game="${id}" ${lock || have < cost || pending ? 'disabled' : ''}>Buy</button></div>`;
     };
-    api.morph(slot, `<p class="o-lede">${mine.length ? `You own ${mine.length} of ${ORDER.length} games. Play them in the Break Room tab to earn Inspiration; each game you own makes every break pay one more.` : 'Each game lets you take a break from the typewriters, and breaks earn Inspiration: a second currency for permanent factory boosts. Buy your first game to open the Break Room.'}</p>${notice && !overlay ? `<p role="status" class="o-warn">${notice}</p>` : ''}<div class="o-grid">${next ? card(next) : '<p class="o-dim">Every game is yours.</p>'}</div>${pending ? '<button type="button" class="o-btn gold" data-mg01="retry">Retry save</button>' : ''}`);
+    api.morph(slot, `${notice && !overlay ? `<p role="status" class="o-warn">${notice}</p>` : ''}${next ? `<div class="o-grid">${card(next)}</div>` : ''}${pending ? '<button type="button" class="o-btn gold" data-mg01="retry">Retry save</button>' : ''}`);
     api.hydrate(slot);
   }
   function buyGame(id) {
@@ -141,21 +149,20 @@
     if (overlay || pending || !ensure() || !GAMES[game]) return;
     const m = saved();
     if (!gamesOf(m).includes(game)) { notice = 'Buy this game in the Shop first.'; api.mark(); return; }
-    if (rewarded && !resume && (m.active || !m.attempts)) { notice = m.active ? 'Resume or bank your saved break first.' : 'No rewarded attempts yet. Free practice is always available.'; api.mark(); return; }
+    if (rewarded && !resume && (m.active || !m.attempts)) { notice = m.active ? 'Resume or bank your saved break first.' : 'No rewarded breaks left. Practice is always free.'; api.mark(); return; }
     const id = resume ? m.active.id : rewarded ? m.nextSession : Math.max(m.nextSession, ++practiceID);
     host = { game, id, rewarded, charged:resume, played:resume ? m.active.played : 0, phase:'title', input:false, elapsed:0, receipt:playNow(), sequence:0, checkpoint:0 };
     returnFocus = document.activeElement;
     overlay = document.createElement('div'); overlay.className = 'mg01-overlay';
-    overlay.innerHTML = `<section class="mg01-dialog" role="dialog" aria-modal="true" aria-labelledby="mg01-title"><div class="mg01-bar"><button data-mg01="close" aria-label="Bank credit and return to factory">Return</button><h2 id="mg01-title">${GAMES[game].name}</h2><div class="mg01-info"><span class="mg01-status" role="status"></span><span class="mg01-progress"></span></div><button data-mg01="bank">Bank & practise</button><button data-mg01="retry" hidden>Retry save</button></div><iframe class="mg01-frame" title="${GAMES[game].name} game" allow="fullscreen"></iframe></section>`;
-    inert = [...document.body.children].map(el => [el, el.inert]); inert.forEach(([el]) => { el.inert = true; });
-    document.body.appendChild(overlay); frame = overlay.querySelector('iframe');
+    overlay.innerHTML = `<section class="mg01-dialog" role="group" aria-labelledby="mg01-title"><div class="mg01-bar"><button data-mg01="close" class="mg01-back" aria-label="Bank credit and return to the Break Room">‹</button><h2 id="mg01-title">${GAMES[game].name}</h2><span class="mg01-live" aria-live="off">${gem()}<b>0</b></span><span class="o-prog mg01-meter" role="img" aria-label="Inspiration progress"><i></i></span><span class="mg01-status" role="status"></span><button data-mg01="bank" aria-label="Bank credit and keep practising">Bank</button><button data-mg01="retry" hidden>Retry save</button></div><iframe class="mg01-frame" title="${GAMES[game].name} game" allow="fullscreen"></iframe></section>`;
+    const stage = document.getElementById('opsRoot') || document.body, wrap = stage.querySelector('.o-wrap');
+    inert = wrap ? [[wrap, wrap.inert]] : []; inert.forEach(([el]) => { el.inert = true; });
+    stage.appendChild(overlay); frame = overlay.querySelector('iframe');
     frame.src = `minigames/${GAMES[game].page}.html?hosted=mg01&game=${game}&session=${id}&low=${IMI.fx?.low ? 1 : 0}&reduce=${IMI.reduceMotion ? 1 : 0}`;
-    overlay.querySelector('button').focus(); update();
-    overlay.requestFullscreen?.({ navigationUI:'hide' }).catch(() => { /* the overlay already covers the page */ });
+    update(); frame.focus();
   }
   function close() {
     if (!overlay || pending) return;
-    if (document.fullscreenElement === overlay) document.exitFullscreen?.().catch(() => {});
     overlay.remove(); overlay = frame = host = null;
     inert.forEach(([el, was]) => { el.inert = was; }); inert = [];
     if (returnFocus?.isConnected) returnFocus.focus(); api.mark();
@@ -179,9 +186,14 @@
   }
   function update() {
     if (!overlay) return;
-    overlay.querySelector('.mg01-status').textContent = `${summary()} · ${notice || (host.rewarded ? 'Rewarded break · retries are free' : 'Free practice · no reward')}`;
-    overlay.querySelector('.mg01-progress').textContent = `${host.played.toFixed(1)} / 180s · ${(Math.min(60, host.played) * yieldPer(saved()) / 60).toFixed(1)} Inspiration earned`;
+    const m = saved(), r = yieldPer(m), earned = (m.fraction || 0) + Math.min(60, host.played) * r / 60;
+    const live = overlay.querySelector('.mg01-live'), meter = overlay.querySelector('.mg01-meter i');
+    live.hidden = !host.rewarded; overlay.querySelector('.mg01-meter').hidden = !host.rewarded;
+    live.querySelector('b').textContent = '+' + (Math.floor(earned * 10) / 10).toFixed(1);
+    meter.style.width = Math.min(100, host.played / .6) + '%';
+    overlay.querySelector('.mg01-status').textContent = notice || (host.rewarded ? '' : 'Practice');
     overlay.querySelector('[data-mg01="bank"]').disabled = !!pending || !host.charged || !host.rewarded;
+    overlay.querySelector('[data-mg01="bank"]').hidden = !host.rewarded;
     overlay.querySelector('[data-mg01="close"]').disabled = !!pending;
     overlay.querySelector('[data-mg01="retry"]').hidden = !pending;
   }
@@ -233,20 +245,14 @@
   });
   addEventListener('keydown', e => {
     if (!overlay) return;
-    if (e.key === 'Escape') { e.preventDefault(); requestBank(true); }
-    if (e.key === 'Tab') {
-      const targets = [...overlay.querySelectorAll('button:not(:disabled):not([hidden]),iframe')], first = targets[0], last = targets[targets.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    }
-    e.stopImmediatePropagation();
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); requestBank(true); }
   }, true);
   addEventListener('message', receive);
   document.addEventListener('visibilitychange', () => { if (host) { host.receipt = playNow(); host.input = false; } });
   const hooks = {
     automaticTypingBonus:() => contribution('typing'), keeperWorkBonus:() => contribution('keeper'), titleSaleBonus:() => contribution('sale'),
-    tab:['breakroom', 'i-game', 'Break Room', 'Play your games for Inspiration', 'Break', true], visible:a => !!a.state().intro.done && gamesOf(a.state().meta.minigames).length > 0,
-    init(_, a) { api = a; }, render,
+    tab:['breakroom', 'i-game', 'Break Room', 'Play for Inspiration', 'Break', true], visible:a => !!a.state().intro.done && gamesOf(a.state().meta.minigames).length > 0,
+    init(_, a) { const first = !api; api = a; if (first) { IMI.on('tab', ({ tab }) => { if (overlay && tab !== 'breakroom') requestBank(true); }); IMI.onScreen(() => { if (overlay && IMI.screen() !== 'game') requestBank(true); }); } }, render,
     reset() { pending = null; notice = ''; close(); },
     afterRender({ pane } = {}) {
       if (api.state().intro.done && saved() === undefined && !pending) ensure();

@@ -57,3 +57,4 @@ html[data-style="classic"] .lg08l-challenge { border-radius: 12px; }
 .lg03-purchases { display: contents; }
 .lg03-purchases > p { grid-column: 1 / -1; }
 .lg03-purchases .o-card p { overflow-wrap: anywhere; }
+.lg03-helpers { display: contents; }

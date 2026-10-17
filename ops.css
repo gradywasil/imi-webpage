@@ -1779,3 +1779,43 @@ html[data-style="pixel"] .lg02d-lamp-review { border:3px solid var(--ink,#593e2e
 html[data-style="classic"] .lg02d-lamp-review { border:2px solid var(--ink,#593e2e); border-radius:12px; }
 #opsRoot:has(#o-vault:not([hidden])) .o-desks { display:none; }
 .o-gold[data-lamp-held], .o-pickup[data-lamp-held] { visibility:hidden; pointer-events:none; }
+
+/* ---------- Legacy: pictures instead of paragraphs ---------- */
+.lg03-helpers { display: contents; }
+.o-leg-fx { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 1.35em; line-height: 1.1; }
+.o-leg-fx b { font-weight: 400; color: var(--tw, #ffd23a); }
+.o-leg-next { opacity: .6; font-size: .72em; }
+.o-card.o-leg.off { opacity: .8; }
+.o-card .o-row .o-gear { min-width: 34px; min-height: 30px; padding: 0 8px; line-height: 1; }
+.o-starbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 96px; }
+.o-starbtn .gem-amt { color: inherit; }
+.o-leg-wallet { display: flex; justify-content: center; padding: 6px 0 10px; }
+.o-leg-wallet .gem-amt { font-size: 1.7em; }
+.o-leg-wallet .gem-amt .gem { --s: 1.2em; }
+.o-print-gain { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 2.6em; line-height: 1; padding: 8px 0 4px; opacity: .45; filter: grayscale(.7); }
+.o-print-gain.on { opacity: 1; filter: none; color: #ffd23a; text-shadow: 0 3px 0 rgba(0,0,0,.45); }
+.o-print-gain .gem.big { --s: 1.1em; }
+.o-print-gain b { font-weight: 400; }
+.o-print-bar { flex: none; width: 100%; }
+.o-print-next { text-align: center; }
+.o-print-next .gem { --s: 1.2em; }
+.o-print-stats { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 1.25em; }
+.o-print-stats span { display: inline-flex; align-items: center; gap: 8px; }
+.o-print-stats b { font-weight: 400; }
+.o-print-stats b.up { color: #7be05a; }
+.o-print-stats i { opacity: .6; font-style: normal; }
+.o-modal-card .o-print-gain { padding-top: 2px; }
+.o-cel-stars { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.o-cel-stars .gem { --s: 1.3em; }
+html[data-style="pixel"] .o-leg-fx { font-size: 1.1em; }
+html[data-style="pixel"] .o-print-gain { font-size: 2em; }
+.o-starbtn, .o-starbtn .gem-amt { color: #2a1a08; text-shadow: none; }
+.o-starbtn .gem-amt .gem { --s: 1.3em; }
+.o-starbtn:disabled .gem-amt { opacity: .6; }
+.o-leg-fx { font-size: 1.1em; }
+html[data-style="pixel"] .o-leg-fx { font-size: .95em; line-height: 1.25; }
+html[data-style="pixel"] .o-leg-wallet .gem-amt { font-size: 1.4em; }
+.o-starbtn .gem-amt.star, .o-starbtn .gem-amt.star b { color: #2a1a08; }
+.o-starbtn .gem-art { filter: drop-shadow(1px 0 0 #6a4408) drop-shadow(-1px 0 0 #6a4408) drop-shadow(0 1px 0 #6a4408) drop-shadow(0 -1px 0 #6a4408); }
+.o-card .o-row .o-gear { min-width: 40px; min-height: 40px; }
+.o-h .gem { --s: 28px; }
