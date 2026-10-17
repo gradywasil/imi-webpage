@@ -17,6 +17,7 @@
   const rand = Math.random;
   const VOWELS = 'AEIOU';
   const bananas = IMI.bananas;
+  const Juice = window.Juice || { chain: () => 0, fly() {}, stamp() {}, shower() {}, confetti() {}, pop() {} };    // the dopamine layer (juice.js); a page without it just stays quiet
   const writer = window.Rewards?.enabled ? window.Rewards : null;
   const expanded = window.AwardsCatalogue?.enabled ? window.AwardsCatalogue : null;
   const funding = expanded?.funding.enabled ? expanded.funding : null;
@@ -402,9 +403,11 @@
   let skyOv = null, skyC = null, skyT = 0;
   const sky = () => { if (skyOv) return skyOv; const t = Date.now(); if (!skyC || t - skyT > 400) { skyC = World.at(t); skyT = t; } return skyC; };
   const isNight = () => sky().night;
+  const inspired = new WeakMap();                                  // typist -> until (runtime only: a good idea is not worth a save)
   function typistSpeed(t) {
     if (!t) return 1;
     let m = 1 + .04 * (levelOf(t.xp) - 1);
+    if ((inspired.get(t) || 0) > performance.now()) m *= 2.5;
     if (t.trait === 'speedy') m *= 1 + .25 * trMul(t);
     if (t.trait === 'owl') m *= isNight() ? 1 + .4 * trMul(t) : .9;
     if (museOn('poe') && isNight()) m *= 1.25;
@@ -631,7 +634,7 @@
     }
     cntWake = live;
   }
-  const bar = (have, total) => `<span class="o-prog" role="img" aria-label="${have} of ${total} words"><i style="width:${Math.round(100 * have / total)}%"></i></span>`;
+  const bar = (have, total) => `<span class="o-prog${have >= total ? ' full' : have / total >= .9 ? ' near' : ''}" role="img" aria-label="${have} of ${total} words"><i style="width:${Math.round(100 * have / total)}%"></i></span>`;
   /* floating text that rises from a point (page coordinates, so it survives re-renders) */
   function floatText(text, x, y, color, big) {
     if (IMI.reduceMotion) return;
@@ -679,6 +682,15 @@
     }
     return ch;
   }
+  /* a lucky tap now and then types five letters instead of one, with a snap and a pop on the keyboard */
+  const CRIT_P = .03; let critAt = 0;
+  function critTap(d, i) {
+    for (let k = 0; k < 4; k++) generatedLetter(d, i, roll(d, i, false));
+    S.stats.crits = (S.stats.crits || 0) + 1;
+    const now = performance.now(); if (now - critAt < 450 || !fx) return; critAt = now;
+    const b = fx.stage.getBoundingClientRect(), x = b.left + b.width * (.3 + rand() * .4), y = b.top + b.height * .32;
+    floatText('CRIT! x5', x, y, '#ff5d73', true); shock(x, y, '#ff5d73', false, true); IMI.burst(x, y, ['spark', 'star'], 6); IMI.sfx.crit && IMI.sfx.crit(); vib(10);
+  }
   function press(i, auto, p) {
     if (!progressing()) return;
     const d = S.desks[i]; if (!d.owned) return;
@@ -687,6 +699,7 @@
     if (!auto && i === S.sel) comboHit();
     const ch = roll(d, i, auto, ty);
     generatedLetter(d, i, ch);
+    if (!auto && !chal('hands') && rand() < CRIT_P) critTap(d, i);
     if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) generatedLetter(d, i, roll(d, i, true, ty)); }
     const st = S.stats; st.letters++; if (!auto) { st.manual++; introProgress(); IMI.emit('tap', { letters: st.letters }); } st.byLetter[ch] = (st.byLetter[ch] || 0) + 1;
     if (stormy()) st.storm++; if (isNight()) st.night++;
@@ -2171,6 +2184,7 @@
         logIt(`Printing ${S.printing + 1} begins. Legacy stars: ${S.legacy.stars}.`);
         newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
         shownN['cel-st'] = 0;
+        setTimeout(() => Juice.fly('star', [innerWidth / 2, innerHeight * .5], Math.min(14, Math.ceil(p.quote.gain / 4))), 1500);
         celebrate(PX ? `PRINTING ${S.printing + 1}` : `Printing ${S.printing + 1}`, PX ? 'THE PRESSES ROLL AGAIN' : 'The presses roll again',
           `<p class="o-cel-stars">${gem('star', 'big')} +${cnt('cel-st',p.quote.gain)}</p><p class="o-cel-sub">Income x${(legacyMult() * editionMult()).toFixed(2)}</p>`);
       }
@@ -2225,6 +2239,7 @@
     logIt(`Printing ${S.printing + 1} begins. Legacy stars: ${S.legacy.stars}.${S.challenge ? ' Challenge: ' + chDef(S.challenge.id).name + '.' : ''}`);
     newsPush(`SECOND PRINTING: the room is reborn with ${S.legacy.total} Legacy stars. Titles can be sold again.`);
     shownN['cel-st'] = 0;
+    setTimeout(() => Juice.fly('star', [innerWidth / 2, innerHeight * .5], Math.min(14, Math.ceil(gain / 4))), 1500);
     celebrate(PX ? `PRINTING ${S.printing + 1}` : `Printing ${S.printing + 1}`, PX ? 'THE PRESSES ROLL AGAIN' : 'The presses roll again',
       `<p class="o-cel-stars">${gem('star', 'big')} +${cnt('cel-st', gain)}</p><p class="o-cel-sub">Income x${(legacyMult() * editionMult()).toFixed(2)}</p>`);
     buildStage(); render(); save();
@@ -2549,7 +2564,12 @@
     hydrate(el); box.appendChild(el);
     while (box.children.length > 3) box.firstElementChild.remove();
     el.addEventListener('click', () => { el.remove(); ui.sub.records = 'awards'; setTab('records'); });
-    const r = el.getBoundingClientRect(); setTimeout(() => { if (!el.isConnected) return; IMI.burst(r.left + 30, r.top + r.height / 2, ['star', 'spark'], 8); }, 380);
+    const r = el.getBoundingClientRect(); setTimeout(() => { if (!el.isConnected) return; IMI.burst(r.left + 30, r.top + r.height / 2, ['star', 'spark'], 8 + a.tier * 6); }, 380);
+    /* the bigger the medal, the bigger the moment: a chime for bronze, confetti for silver, a full-screen burst for gold; the +1% income flies into the counter */
+    IMI.sfx.levelup && IMI.sfx.levelup(); vib(a.tier === 2 ? [30, 40, 30, 40, 90] : a.tier === 1 ? [20, 30, 50] : 15);
+    if (a.tier >= 1) { IMI.sfx.fanfare(); Juice.shower(a.tier); }
+    if (a.tier === 2) { flash('#fff08c'); shake(1); IMI.sfx.triumph && IMI.sfx.triumph(); cheer(2200, 'GOLD!'); vignette('#ffd23a'); }
+    setTimeout(() => Juice.fly('ban', [r.left + 36, r.top + r.height / 2], 2 + a.tier * 2), 520);
     setTimeout(() => { if (IMI.reduceMotion) return el.remove(); el.classList.add('out'); el.addEventListener('animationend', () => el.remove(), { once: true }); }, 4200);
   }
   const allAwards = () => expanded ? [...AWARDS,...expanded.rows,...(funding?.rows || [])] : AWARDS;
@@ -2655,7 +2675,7 @@
     const statsHTML = `
       <div class="o-grid">
         <div class="o-card"><h3>Typing</h3>${row('Letters typed', cnt('r-let', st.letters))}${row('By hand', cnt('r-man', st.manual))}${row('By typists', cnt('r-aut', st.letters - st.manual))}${row('Favourite letter', top ? `${top[0]} (${fmt(top[1])})` : '-')}${row('Best tap streak', 'x' + cnt('r-best', S.best))}${row('Words banked', cnt('r-wds', st.words))}${row('Letters harvested', cnt('r-hv', st.harvested || 0))}</div>
-        <div class="o-card"><h3>Publishing</h3>${row('Titles sold', `${authoredSold()}/${BOOKS}${S.stats.pitchSold ? ' + ' + S.stats.pitchSold + ' pitched' : ''}`)}${row('Rights sales', cnt('r-lump', st.lump, true))}${row('Royalties earned', cnt('r-roy', S.royTotal, true))}${row('Royalties now', fmtRate(royRate()) + '/s')}${row('Deals signed', `${DEALS.filter(x => S.deals[x.id]).length}/${DEALS.length}`)}${row('Division income', fmtRate(divRate()) + '/s')}${row('Manuscripts released', cnt('r-man2', totalReleased()))}${row('Printings completed', S.printing)}${row('Legacy stars', `${S.legacy.stars} (${S.legacy.total} earned)`)}${row('Best sale price', 'x' + (st.bestMult || 1).toFixed(2))}</div>
+        <div class="o-card"><h3>Publishing</h3>${row('Titles sold', `${authoredSold()}/${BOOKS}${S.stats.pitchSold ? ' + ' + S.stats.pitchSold + ' pitched' : ''}`)}${row('Rank', rankOf(S.stats.mag || 0))}${S.stats.lucky ? row('Lucky sales', cnt('r-luck', S.stats.lucky)) : ''}${row('Rights sales', cnt('r-lump', st.lump, true))}${row('Royalties earned', cnt('r-roy', S.royTotal, true))}${row('Royalties now', fmtRate(royRate()) + '/s')}${row('Deals signed', `${DEALS.filter(x => S.deals[x.id]).length}/${DEALS.length}`)}${row('Division income', fmtRate(divRate()) + '/s')}${row('Manuscripts released', cnt('r-man2', totalReleased()))}${row('Printings completed', S.printing)}${row('Legacy stars', `${S.legacy.stars} (${S.legacy.total} earned)`)}${row('Best sale price', 'x' + (st.bestMult || 1).toFixed(2))}</div>
         <div class="o-card"><h3>Luck &amp; time</h3>${row('Golden bananas caught', cnt('r-gold', S.gold))}${row('Rotten bananas touched', cnt('r-rot', st.rotten))}${row('Typed in storms', cnt('r-storm', st.storm))}${row('Typed at night', cnt('r-night', st.night))}${row('Time on the floor', played)}</div>
       </div>`;
     morph($('#o-records'), subTabs('records', tabs) + (sub === 'awards' ? awardsHTML : sub === 'stats' ? statsHTML : logHTML));
@@ -3681,7 +3701,9 @@
             nextCheckpoint.report = checkpoint.report; nextCheckpoint.sold = checkpoint.sold;
             Object.assign(checkpoint, nextCheckpoint); candidate.rewards.awayCheckpoint = checkpoint;
           }
+          const dGain = (candidate.prem.earned + candidate.prem.bought) - (S.prem.earned + S.prem.bought);
           S.rewards = candidate.rewards; S.prem = candidate.prem; S.run = candidate.run;
+          if (dGain > 0) setTimeout(() => Juice.fly('dbn', [innerWidth - 170, 80], Math.min(12, dGain * 2)), 350);
           if (expanded) { S.awards = candidate.awards; if (candidate.meta.expandedAwards !== undefined) S.meta.expandedAwards = candidate.meta.expandedAwards; if (candidate.meta.speedFundingAwards !== undefined) S.meta.speedFundingAwards = candidate.meta.speedFundingAwards; }
           S.desks.forEach((d, i) => { d.letters = candidate.desks[i].letters; });
           mark();
@@ -3713,7 +3735,7 @@
     S: () => S, registerPitch, pitchGoal, subStep, bankWord, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
     ...(layers?.enabled ? {layerFrequency:freqNow, layerOfflineDist:offlineDist} : {}),
     GARDEN_COSTS, MILES, focusNeeds, focusRecipe, stock, totalLetters, soldCount, kidsSold, kidsListed, KIDS, libSold, LIBS, touchBank: () => { bankV++; mark(); }, sky, marketBias, BARO_COST, typistSpeed, autoRate, coachTypist, rerollTypist, unrollTypist, coachCost, rerollCost, COACH_MAX, COACH_STEP, upCap, pubSell, pubStatus, PUB_COST, PUB_PERIOD, PUB_RULES, keeperPeriod, keeperUpCost, keeperLv, KEEPER_UP_MAX, royBase, divBase, salePay, marketMult, checkAwards, starsNow, museSlots, registerPitch, pitchActive, PITCH_MAX, buffs, makeCopies,
-    plant, harvest, gardenTime, gardenYield, ensureGarden, fieldBeds, farmerTick, farmerAct, farmBulk, deskLvl, headLvl, farmXp, farmerLetter, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
+    luckySale, critTap, magnitudeFx, inspireStep, inspired, achieve, plant, harvest, gardenTime, gardenYield, ensureGarden, fieldBeds, farmerTick, farmerAct, farmBulk, deskLvl, headLvl, farmXp, farmerLetter, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
    }) });
 
   /* ================= banking & writing ================= */
@@ -3817,6 +3839,27 @@
     salePublished(r,pay,mk,at,opts);
   }
 
+  /* a sale can come in lucky: a bonus on top of the price, with a stamp that grows with the luck. Selling by hand in a row (inside 30s) raises the odds of a hot sale. */
+  const LUCKY = [{ p: .004, x: 9, tier: 3, text: 'JACKPOT!' }, { p: .026, x: 2, tier: 2, text: 'BESTSELLER!' }, { p: .09, x: .5, tier: 1, text: 'HOT SALE!' }];
+  function luckySale(pay, at, auto, force) {
+    if (masteryActive() || challengeActive()) return;                 // those runs promise no grants
+    const n = auto ? 0 : Juice.chain('sale', 30000), u = force ?? rand(), boost = auto ? 0 : .012 * Math.min(n - 1, 6), [x, y] = at || [innerWidth / 2, 170];
+    if (n >= 2) { floatText(`CHAIN x${n}`, x, y - 70, '#7be05a', true); IMI.sfx.streak && IMI.sfx.streak(n); }
+    let acc = 0, hit = null;
+    for (const L of LUCKY) { acc += L.p + (L === LUCKY[2] ? boost : 0); if (u < acc) { hit = L; break; } }
+    if (!hit) return;
+    const bonus = roundMoney(pay * hit.x); if (!(bonus > 0)) return;
+    S.stats.lucky = (S.stats.lucky || 0) + 1; if (hit.tier === 3) S.stats.jackpots = (S.stats.jackpots || 0) + 1;
+    setTimeout(() => {                                                // let the sale's own pop land first
+      if (!progressing() || bananas.earn(bonus, [x, y]) === false) return;
+      const text = PX ? hit.text : hit.text[0] + hit.text.slice(1).toLowerCase();
+      Juice.stamp(text, { tier: hit.tier, sub: `+${fmtBig(bonus)}` });
+      if (hit.tier === 1) { IMI.sfx.streak && IMI.sfx.streak(7); IMI.burst(x, y, ['banana', 'spark'], 12); cheer(1600, 'NICE!'); }
+      else if (hit.tier === 2) { IMI.sfx.fanfare(); flash('#ffe08a'); shake(2); Juice.shower(1); cheer(2600, 'WOW!'); vib([30, 40, 30, 40, 90]); }
+      else { IMI.sfx.jackpot && IMI.sfx.jackpot(); flash('#fff6d6'); vignette('#ff5d73'); shake(2); Juice.shower(3); cheer(4000, 'JACKPOT!'); vib([30, 40, 30, 40, 30, 40, 160]); newsPush('JACKPOT: a title sold for ten times its price. The monkeys are insufferable.'); }
+      logIt(`${text} +${fmtBig(bonus)} bananas on top of the sale.`); mark();
+    }, 420);
+  }
   function salePublished(r,pay,mk,at,opts) {
     const id = r.id, quiet = !!opts.silent;
     if (at) { IMI.burst(at[0], at[1], ['banana', 'spark', 'leaf'], 14); shock(at[0], at[1], '#ffd23a', true); }
@@ -3824,7 +3867,7 @@
     ui.fresh = id; if (!(ui.tab === 'press' && ui.sub.press === 'shelf')) ui.shelfNew = (ui.shelfNew || 0) + 1;      // the Shelf tab wears a badge until you look
     setTimeout(() => { ui.fresh = null; mark(); }, 2200);
     if (at) { const big = pay >= cash(50000) ? 3 : pay >= cash(5000) ? 2 : 1; for (let k = 1; k < big + 1; k++) setTimeout(() => IMI.burst(at[0] + (k % 2 ? -1 : 1) * k * 40, at[1] - k * 20, ['banana', 'banana', 'spark', 'star'], 14), k * 220); }
-    if (!quiet) { if (!opts.auto) vib([20, 40, 70]); cheer(opts.auto ? 1400 : 3000, 'SOLD!'); IMI.sfx.ding(); }
+    if (!quiet) { if (!opts.auto) vib([20, 40, 70]); cheer(opts.auto ? 1400 : 3000, 'SOLD!'); IMI.sfx.ding(); luckySale(pay, at, !!opts.auto); }
     if (!quiet) logIt(`The Jungle Press bought the rights to “${r.title}”: ${fmtBig(pay)} bananas${mk !== 1 ? ` (market x${mk.toFixed(2)})` : ''}. It will not be reprinted.`);
     if (!quiet) newsPush(`EXTRA: The Jungle Press buys “${r.title}” for ${fmtBig(pay)} bananas${mk >= 1.3 ? ', cashing in on a hot market' : mk <= .8 ? ', in a cold market. Ouch' : ''}.`);
     const n = Object.keys(S.written).length;
@@ -4011,7 +4054,7 @@
     'i-monkey': '🐵', 'u-fing': '👆', 'u-rapid': '⚡', 'u-vowel': '🅰️', 'u-ink': '🖋️', 'u-practice': '📖', 'u-stock': '📦', 'u-ribbon': '🎀',
     'd-reprints': '📚', 'd-tour': '🚌', 'd-translations': '🌍', 'd-clubs': '☕', 'd-option': '🎬',
     'i-game': '🎮', 'i-folio': '📕', 'i-imprint': '🏷️', 'i-estate': '🏡', 'i-archive': '🗄️', 'i-works': '📚', 'i-palm': '🌴', 'i-coconut': '🥥', 'i-type': '⌨️', 'i-log': '🪵', 'i-reel': '🎬',
-    's-team': '🧑‍🤝‍🧑', 's-carbon': '📄', 'i-star': '⭐', 'i-insp': '💡',
+    's-team': '🧑‍🤝‍🧑', 's-carbon': '📄', 'i-star': '⭐', 'i-insp': '💡', 'a-hire': '🐵', 'a-coach': '📣', 'a-shop': '👛', 'a-restore': '🔧', 'a-net': '🥅', 'a-garden': '🌱', 'a-pitch': '✉️', 'a-media': '🎬', 'a-muse': '🎼', 'a-print': '🖨️', 'a-challenge': '🏁',
     's-hold': '👇', 's-metro': '🎵', 's-dbl': '✌️', 's-contracts': '📜', 's-lamp': '💡', 's-agent': '💼', 's-analyst': '📈', 's-baro': '🌡️', 's-pub': '🖨️', 's-garden': '🌱', 's-keeper': '🗂️' };
   /* the classic edition's machines: a little vector typewriter in the desk colour; restorations add brass, then a gold bell */
   function twSvg(c, mk) {
@@ -4231,11 +4274,36 @@
     if (!strong && rand() < .012) say(t);
   }
   function jump(t) { if (t && !t.hop) hopTo(t, t.at, { inPlace: true, big: true }); }
+  /* now and then a typist has a flash of inspiration: two and a half times as fast for 14 seconds, glowing, and everyone hears about it */
+  let inspireAt = performance.now() + 50000 + rand() * 60000;
+  function inspireStep(now) {
+    if (now < inspireAt) return;
+    inspireAt = now + 70000 + rand() * 110000;
+    if (!progressing() || document.hidden || IMI.screen() !== 'game' || introActive() || challengeActive()) return;
+    const here = cur().crew.slice(0, cur().paws), all = S.desks.flatMap(d => d.owned ? d.crew.slice(0, d.paws) : []);
+    const pool = here.length && rand() < .75 ? here : all; if (!pool.length) return;
+    const t = pool[Math.floor(rand() * pool.length)]; if (!t) return;
+    inspired.set(t, now + 14000); S.stats.inspired = (S.stats.inspired || 0) + 1;
+    newsPush(`${t.name} has an idea and is typing like mad.`);
+    const k = here.indexOf(t), ty = k >= 0 && ui.tab === 'floor' ? typists.find(x => x.ci === k) : null;
+    if (ty) { say(ty, 'INSPIRED!'); jump(ty); IMI.sfx.levelup && IMI.sfx.levelup(); const x = stageXY[0] + ty.x, y = stageXY[1] + ty.y - keyW; IMI.burst(x, y, ['star', 'spark'], 10); shock(x, y, '#ffd23a', true); floatText('x2.5', x, y - 30, '#ffd23a', true); }
+  }
+  /* rarely, a Golden Hour: twenty seconds of Frenzy and Golden Keys with no streak needed, out of the blue */
+  let hourAt = performance.now() + 150000 + rand() * 150000;
+  function goldenHourStep(now) {
+    if (now < hourAt) return;
+    hourAt = now + 300000 + rand() * 300000;
+    if (!progressing() || document.hidden || IMI.screen() !== 'game' || introActive() || challengeActive()) return;
+    buffs.frenzy = Math.max(buffs.frenzy, now + 20000); buffs.golden = Math.max(buffs.golden, now + 20000);
+    S.stats.hours = (S.stats.hours || 0) + 1;
+    Juice.stamp(PX ? 'GOLDEN HOUR!' : 'Golden hour!', { tier: 2, sub: '20s of frenzy' }); IMI.sfx.fanfare(); flash('#ffe08a'); Juice.shower(1); cheer(3000, 'GOLDEN!'); vib([30, 40, 30, 40, 90]);
+    newsPush('GOLDEN HOUR: the room hums, the keys glow and nobody knows why.'); mark();
+  }
   function stepTypists(now, draw = true) {                          // movement runs every frame; the DOM/canvas writes only when `draw` (every other frame)
     const crew = cur().crew, scared = typeof Mood !== 'undefined' && Mood.scared, wild = buffOn('frenzy'), still = IMI.reduceMotion;
     if (!keyPos.G || now - measuredAt > 2500) measureKeys();
     for (const t of typists) {
-      const c = crew[t.ci] || {};
+      const c = crew[t.ci] || {}, ins = (inspired.get(c) || 0) > now; if (t.ins !== ins) { t.ins = ins; t.el.classList.toggle('inspired', ins); }
       if (c.look !== t.look || (c.hat || 0) !== t.hat) { paintLook(t); t.poof = true; }
       if (c.name && t.nmEl.textContent !== c.name) t.nmEl.textContent = c.name;
       if (t.poof) { t.poof = false; if (!still) jump(t); }
@@ -4844,6 +4912,12 @@
 
   /* a purchase lands: the card squashes, the picture jumps and the newly filled pips pop (Web Animations, so the 4x/s morph() cannot cut them short) */
   function boughtFx(el) {
+    const run = Juice.chain('buy', 3200);                          // buying again inside ~3s keeps a chain going: the chime climbs a note each time
+    if (run >= 2) {
+      IMI.sfx.streak && IMI.sfx.streak(run);
+      const [x, y] = IMI.centerOf(el); if (run >= 3) floatText(`x${run}`, x, y - 36, run >= 8 ? '#ff5d73' : '#7be05a', true);
+      if (run === 5 || run === 10 || run === 20) Juice.stamp(PX ? `BUYING SPREE x${run}` : `Buying spree x${run}`, { tier: run >= 20 ? 3 : run >= 10 ? 2 : 1 });
+    }
     const card = el.closest('.o-card'); if (!card || IMI.reduceMotion) return;
     const had = card.querySelectorAll('.o-pips i.on').length, ease = PX ? 'steps(5)' : 'cubic-bezier(.3,1.5,.5,1)';
     render();
@@ -4988,6 +5062,18 @@
   tk.addEventListener('click', () => startNews());
   tk.addEventListener('pointerenter', () => { try { ticker.anim && ticker.anim.pause(); } catch { /* ignore */ } });
   tk.addEventListener('pointerleave', () => { try { ticker.anim && ticker.anim.play(); } catch { /* ignore */ } });
+  /* the first time you hold a new power of ten in bananas (1K, 10K, 100K ...) the counter celebrates; it only ever fires for a new personal best */
+  const magOf = b => b >= 1000 ? Math.floor(Math.log10(b)) : 0;      // the counter shows the raw number, so a power of ten here is what the player sees
+  const RANKS = { 3: 'Banana Intern', 4: 'Typing Cadet', 5: 'Junior Editor', 6: 'Senior Scribe', 7: 'Head Typist', 8: 'Chief Ape', 9: 'Banana Baron', 10: 'Prose Tycoon', 11: 'Literary Lion', 12: 'Publishing Magnate', 13: 'Monkey Mogul', 14: 'Banana Emperor', 15: 'Infinite Monkey' };
+  const rankOf = k => k < 3 ? 'Monkey Trainee' : RANKS[Math.min(15, k)];
+  function magnitudeFx(k) {
+    if (!progressing() || IMI.screen() !== 'game' || document.hidden || IMI.reduceMotion) return;
+    const hud = document.getElementById('hud'), [x, y] = hud ? IMI.centerOf(hud) : [60, 30];
+    IMI.sfx.levelup && IMI.sfx.levelup(); IMI.burst(x + 20, y, ['banana', 'star', 'spark'], 10 + k); shock(x, y, '#ffd23a', true);
+    if (!document.querySelector('.o-celebrate, .o-modal')) Juice.stamp(`${fmt(Math.pow(10, k))}!`, { tier: k >= 12 ? 3 : k >= 6 ? 2 : 1, sub: `Rank: ${rankOf(k)}` });
+    if (k >= 6) { flash('#fff6d6'); Juice.shower(k >= 12 ? 3 : 1); }
+  }
+  bananas.watch(b => { const k = magOf(b); if (S.stats.mag === undefined) S.stats.mag = k; else if (k > S.stats.mag) { S.stats.mag = k; magnitudeFx(k); } });
   bananas.watch((b, event) => { if (b !== lastBananas) { if (b > lastBananas && !event?.reward) S.run.earned = (S.run.earned || 0) + (b - lastBananas); lastBananas = b; mark(); } });
 
   /* ================= main loop ================= */
@@ -4998,6 +5084,7 @@
       if (extensions.get('automation').admissionPending()) { render(); return; }
     }
     if (!progressing()) return;
+    inspireStep(performance.now()); goldenHourStep(performance.now());
     if (!frame && printingEnabled()) printingHelper()?.sampleUpdate();
     const now = frame?.now ?? performance.now(), realDt = frame?.realDt ?? Math.min(0.25, (now - last) / 1000), multiplier = frame?.multiplier ?? speed(), dt = realDt * multiplier;
     if (!frame || frame.phase === 0) {

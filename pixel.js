@@ -388,6 +388,62 @@
     px.shape(box(6.6, 13.6, 2.8, 1.4), R.gray, 3);
   }));
 
+  /* ---------- helper icons: one picture per automation (a-*), shared by the Legacy cards and the inline controls ---------- */
+  reg('a-hire', make(16, 16, px => {                                   // a monkey with a plus badge
+    px.shape(or(ell(4.2, 5.2, 1.6, 1.6), ell(11.8, 5.2, 1.6, 1.6)), R.fur, 1); px.shape(ell(8, 7.6, 4.6, 4.4), R.fur, 2);
+    px.shape(or(ell(6.6, 8.2, 1.7, 1.5), ell(9.4, 8.2, 1.7, 1.5), ell(8, 9.8, 2.2, 1.3)), R.skin, 3);
+    px.shape(or(ell(6.6, 6.8, .6, .6), ell(9.4, 6.8, .6, .6)), R.ink, 4);
+    px.shape(ell(12.6, 12.4, 3, 3), R.leaf, 5); px.shape(or(box(11.4, 12, 2.4, .8), box(12.2, 11.2, .8, 2.4)), R.white, 6);
+  }));
+  reg('a-coach', make(16, 16, px => {                                  // a whistle
+    px.shape(box(2, 6, 7, 4.4), R.metal, 1); px.shape(ell(10.6, 8.6, 3.4, 3.4), R.metal, 2); px.shape(ell(10.6, 8.6, 1.2, 1.2), R.ink, 3);
+    px.shape(box(2, 5, 3, 1.4), R.metal, 3); px.shape(cap(10.6, 5.4, 13.6, 2.8, .8), R.red, 4);
+  }));
+  reg('a-shop', make(16, 16, px => {                                   // a coin bag
+    px.shape(poly([[5, 4], [11, 4], [13.4, 11], [12, 14.4], [4, 14.4], [2.6, 11]]), R.woodL, 1);
+    px.shape(box(5.4, 3, 5.2, 2), R.wood, 2); px.shape(cap(5, 4, 11, 4, .6), R.red, 3);
+    px.shape(ell(8, 10, 2.4, 2.4), R.banY, 4); px.shape(box(7.5, 8.8, 1, 2.4), R.sun, 5);
+  }));
+  reg('a-restore', make(16, 16, px => {                                // a wrench
+    px.shape(cap(5, 11, 11.4, 4.6, 1.3), R.metal, 1);
+    px.shape(sub(ell(12.6, 3.4, 3.2, 3.2), box(12.6, .6, 4, 3.2)), R.metal, 2);
+    px.shape(ell(4.2, 12, 2.4, 2.4), R.metal, 2); px.shape(ell(3.6, 12.6, 1.1, 1.1), R.ink, 3);
+  }));
+  reg('a-net', make(16, 16, px => {                                    // a butterfly net holding a banana
+    px.shape(sub(ell(7, 6, 5, 5), box(0, 0, 16, 5.2)), R.cloud, 1); px.shape(or(cap(2, 6, 12, 6, .5), cap(2, 6, 2, 6.4, .5)), R.metal, 2);
+    px.shape(cap(11, 9.4, 14.4, 14, .8), R.wood, 3);
+    px.shape(crescent(6.6, 5.4, 3, 1.4, -1.2, 2.4), R.banY, 4);
+  }));
+  reg('a-garden', make(16, 16, px => {                                 // a sprout in a pot
+    px.shape(poly([[3.4, 9.4], [12.6, 9.4], [11.4, 14.6], [4.6, 14.6]]), R.wood, 1); px.shape(box(2.8, 8.4, 10.4, 1.8), R.woodL, 2);
+    px.shape(cap(8, 8.4, 8, 4.4, .55), R.leaf, 3); px.shape(poly([[8, 5.6], [3, 4.4], [3.6, 7.6]]), R.leaf, 4); px.shape(poly([[8, 4.4], [13.2, 2.4], [12.4, 6.2]]), R.leafD, 4);
+  }));
+  reg('a-pitch', make(16, 16, px => {                                  // a sealed envelope
+    px.shape(box(2, 4, 12, 9, ), R.paper, 1); px.shape(poly([[2, 4], [8, 9], [14, 4]]), R.gray, 2);
+    px.shape(ell(8, 9.4, 1.8, 1.8), R.red, 3);
+  }));
+  reg('a-media', make(16, 16, px => {                                  // a clapperboard
+    px.shape(box(2, 6, 12, 8), R.ink, 1); px.shape(box(2.6, 7.4, 10.8, 5.8), R.storm, 2);
+    px.shape(poly([[2, 2.6], [14, 1], [14.4, 4.6], [2.4, 6]]), R.paper, 3);
+    px.shape(or(poly([[4.4, 2.4], [6.6, 2.1], [5.4, 5.4], [3.2, 5.7]]), poly([[8.8, 1.9], [11, 1.6], [9.8, 4.9], [7.6, 5.2]])), R.ink, 4);
+    px.shape(or(ell(6, 10, .8, .8), ell(8.4, 10, .8, .8), ell(10.8, 10, .8, .8)), R.paper, 5);
+  }));
+  reg('a-muse', make(16, 16, px => {                                   // a lyre
+    px.shape(or(cap(4, 3, 4, 10, .9), cap(12, 3, 12, 10, .9)), R.banY, 1); px.shape(sub(ell(8, 9, 4.6, 5), box(0, 0, 16, 8)), R.banY, 1);
+    px.shape(or(cap(6, 3, 6, 11, .35), cap(8, 3, 8, 12, .35), cap(10, 3, 10, 11, .35)), R.paper, 2);
+    px.shape(box(5, 13.4, 6, 1.6), R.woodL, 3);
+  }));
+  reg('a-print', make(16, 16, px => {                                  // a printing press: platen, stack and a fresh sheet
+    px.shape(box(2, 9, 12, 5), R.metal, 1); px.shape(box(2, 7.4, 12, 2), R.gray, 2);
+    px.shape(box(4, 2, 8, 6.6), R.paper, 3); px.shape(or(box(5.4, 3.6, 5, .7), box(5.4, 5, 5, .7), box(5.4, 6.4, 3, .7)), R.ink, 4);
+    px.shape(or(ell(12, 11.5, .9, .9)), R.red, 5);
+  }));
+  reg('a-challenge', make(16, 16, px => {                              // a checkered flag
+    px.shape(box(2.4, 1.4, 1.6, 13.6), R.wood, 1);
+    px.shape(box(4, 2, 9.4, 7), R.white, 2);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 5; c++) if ((r + c) % 2 === 0) px.shape(box(4 + c * 1.88, 2 + r * 1.75, 1.88, 1.75), R.ink, 3);
+  }));
+
   reg('s-team', make(16, 16, px => {
     [[5, 7, 1], [11, 7, 1], [8, 9, 2]].forEach(([x, y, z]) => {
       px.shape(or(ell(x - 3, y, 1.4, 1.4), ell(x + 3, y, 1.4, 1.4)), R.fur, z); px.shape(ell(x, y, 3.2, 3.2), R.fur, z + 1);

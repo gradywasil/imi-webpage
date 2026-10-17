@@ -175,6 +175,7 @@
     const earned = next.fraction + Math.min(60, played) * yieldPer(m) / 60, whole = Math.floor(earned + 1e-9);
     next.wallet += whole; next.fraction = Math.max(0, earned - whole); next.settled = a.id; next.active = null;
     commit(next, () => {
+      if (whole) { const live = overlay?.querySelector('.mg01-live'); window.Juice?.fly('insp', live ? IMI.centerOf(live) : [innerWidth / 2, 60], Math.min(12, whole)); }
       if (host) { host.rewarded = false; notice = 'Reward banked. You can keep practising for free.'; }
       if (returning) close();
     });

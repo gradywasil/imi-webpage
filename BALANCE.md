@@ -219,3 +219,20 @@ Stars are counted in tenths of the old unit (`Economy.starScale = 10`). Saves wr
 | Golden Touch (+25%/lv) | 5 levels, 20 × 1.6^lv |
 | Helper unlock (works, slowly) | hire 10, coach 15, shop 20, restore 25, net 30, garden 20, pitch 30, media 40, muse 45, print 60, challenge 80 |
 | Helper speed levels 1-3 | 20 / 50 / 120 (every tiered helper, including garden, pitch, media and muse: 60s → 45 → 30 → 15) |
+
+## The dopamine layer (Oct 2026)
+
+Variable rewards and ceremonies on top of the existing juice. Only the first four change income; all are small.
+
+| Thing | Rule | Effect on income |
+|---|---|---|
+| Lucky sale | Each sale that is not an away-sale rolls: Jackpot 0.4% (+900% of the sale), Bestseller 2.6% (+200%), Hot sale 9% (+50%). Selling by hand within 30s of the last sale adds 1.2% per chain step (max 6) to the hot-sale odds. Skipped during Small Crew mastery and A11. | about +13% of title-sale income |
+| Crit tap | 3% of manual taps type 5 letters instead of 1 (not in No Hands) | about +12% of manual typing |
+| Inspired typist | One random typist every 70-180s (first after 50-110s): 2.5x speed for 14s, glowing and announced | about +1% of typist output |
+| Golden Hour | Every 5-10 minutes: 20s of Frenzy and Golden Keys with no streak | small, active play only |
+| Magnitude ceremony | First time the counter reaches 1K, 10K, 100K ... a stamp and a rank (Banana Intern ... Infinite Monkey). Stored as `stats.mag`, so it only fires for a new best | none |
+| Buy chain | A purchase within 3.2s of the last one climbs the chime a note; stamps at x5, x10, x20 | none |
+| Sale chain | CHAIN x(n) pops on hand-sales in a row | none (odds only) |
+| Awards | Bronze chime, silver confetti + fanfare, gold full-screen burst; +1% income flies into the counter. Diamond Bananas from awards fly into their chip | none |
+| Press, Break Room | Stars and Inspiration fly into their chips | none |
+| Near-complete | Bars and the Goals tag throb at 90% | none |

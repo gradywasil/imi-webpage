@@ -1443,9 +1443,9 @@ window.Rewards = (() => {
     const disabled = !canDisplayAct() ? ' disabled' : '';
     /* A small Goals tag over the room: three pips show how close each goal is, and a tap drops the list down. */
     const frac = g => g.progress === null || !(g.target > 0) ? 0 : Math.max(0, Math.min(1, g.progress / g.target));
-    const line = g => '<span class="o-goal-line"><span>' + escape(actionText(g)) + '</span><span>' + escape(progressText(g)) + '</span></span><span class="o-goal-bar"><i style="width:' + (frac(g) * 100).toFixed(1) + '%"></i></span>';
+    const line = g => '<span class="o-goal-line"><span>' + escape(actionText(g)) + '</span><span>' + escape(progressText(g)) + '</span></span><span class="o-goal-bar' + (frac(g) >= .9 && frac(g) < 1 ? ' near' : '') + '"><i style="width:' + (frac(g) * 100).toFixed(1) + '%"></i></span>';
     const open = goalHost.classList.contains('open');
-    api.morph(goalHost, '<button type="button" class="o-goals-toggle" data-act="rewards:goals" aria-expanded="' + open + '" aria-label="Goals" aria-description="' + escape(goals.map(summary).join(' ')) + '"><b>Goals</b><span class="o-goal-pips" aria-hidden="true">' +
+    api.morph(goalHost, '<button type="button" class="o-goals-toggle' + (goals.some(g => frac(g) >= .9 && frac(g) < 1) ? ' near' : '') + '" data-act="rewards:goals" aria-expanded="' + open + '" aria-label="Goals" aria-description="' + escape(goals.map(summary).join(' ')) + '"><b>Goals</b><span class="o-goal-pips" aria-hidden="true">' +
       goals.map(g => '<i class="' + (frac(g) >= 1 ? 'full' : '') + '" style="--f:' + frac(g).toFixed(3) + '"></i>').join('') + '</span><span class="o-goal-caret" aria-hidden="true"></span></button><div class="o-goals-list"' + (open ? '' : ' hidden') + '>' +
       goals.map(g => '<button type="button" class="o-goal-item" data-act="rewards:goal" data-id="' + g.id + '" aria-description="' + escape(summary(g)) + '"' + disabled + '>' + line(g) + '</button>').join('') +
       (goals.length < 3 ? '<span class="o-goal-more">More goals as your room grows</span>' : '') + '</div>');

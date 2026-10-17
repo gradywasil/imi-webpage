@@ -68,6 +68,14 @@ window.Core = (() => {
       triumph() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, .3, { type: lead, delay: i * .09, vol: .06 })); [262, 392, 523].forEach(f => tone(f, 1.2, { type: 'triangle', delay: .55, vol: .07 })); },
       ding()    { tone(1568, .32, { type: 'triangle', vol: .07 }); },
       fanfare() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, { type: 'square', delay: i * .1, vol: .07 })); },
+      /* the dopamine set: every one climbs, snaps or sparkles so a win never sounds like the last one */
+      levelup() { [659, 784, 988, 1319].forEach((f, i) => tone(f, .11, { type: lead, delay: i * .055, vol: .05 })); },
+      gem(k = 0) { const sc = [0, 2, 4, 7, 9], f = 880 * Math.pow(2, (sc[k % 5] + 12 * Math.min(2, Math.floor(k / 5))) / 12); tone(f, .1, { type: lead, vol: .04 }); tone(f * 2, .12, { delay: .03, vol: .02 }); },
+      streak(n = 2) { const f = 523.25 * Math.pow(2, Math.min(n, 15) / 12); tone(f, .09, { type: lead, vol: .06 }); tone(f * 1.5, .16, { type: lead, delay: .06, vol: .05 }); },
+      crit()    { tone(1568, .06, { type: 'square', f1: 3136, vol: .05 }); noise(.05, { freq: 5200, vol: .1 }); tone(2093, .14, { type: lead, delay: .05, vol: .04 }); },
+      whoosh()  { noise(.28, { freq: 1300, vol: .09 }); tone(220, .28, { f1: 1100, vol: .035 }); },
+      stamp()   { noise(.1, { freq: 300, vol: .4 }); tone(110, .22, { type: 'square', f1: 45, vol: .22 }); },
+      jackpot() { [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => tone(f, .28, { type: lead, delay: i * .07, vol: .065 })); [262, 392, 523, 659].forEach(f => tone(f, 1.6, { type: 'triangle', delay: .5, vol: .06 })); noise(.5, { freq: 6000, vol: .12, delay: .45 }); for (let i = 0; i < 8; i++) tone(1760 + Math.random() * 900, .06, { delay: .9 + i * .07, vol: .03 }); },
     };
   }
 

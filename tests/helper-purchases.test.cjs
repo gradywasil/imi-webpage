@@ -65,7 +65,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    record(edition+' failed-buy state',await page.evaluate(()=>({m:IMI.ops.extensions.state().meta.automation,text:document.querySelector('[data-automation="helpers"]').textContent})));
    await page.waitForSelector('[data-act="automation:retry"]');
    assert.deepEqual(await page.evaluate(()=>{const s=IMI.ops.extensions.state();return [s.legacy.stars,!!s.meta.automation.ownership.owned.coach];}),[90,false]);
-   await page.evaluate(()=>{Storage.prototype.setItem=window.helperSetItem;});await page.click('[data-act="automation:retry"]');
+   await page.evaluate(()=>{Storage.prototype.setItem=window.helperSetItem;});await page.$eval('[data-act="automation:retry"]',el=>el.click());
    await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership.owned.coach);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().legacy.stars),75);record(edition+' failed detached save and exact Retry debits once');
    await page.evaluate(()=>{const api=IMI.ops.extensions;api.state().printing=2;api.mark();});
@@ -97,7 +97,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
    await new Promise(r=>setTimeout(r,150));
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().stats.playSecs),stoppedAt);
    await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.printing=5;Storage.prototype.setItem=window.helperSetItem;sessionStorage.removeItem('ui03cFailAdmission');});
-   await page.click('[data-act="automation:retry"]');await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership);
+   await page.$eval('[data-act="automation:retry"]',el=>el.click());await page.waitForFunction(()=>IMI.ops.extensions.state().meta.automation.ownership);
    assert.deepEqual(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.ownership.owned),{hire:true,pitch:true});
    assert.deepEqual(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.future),{keep:'unknown'});
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());

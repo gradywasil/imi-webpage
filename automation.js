@@ -138,10 +138,26 @@
   function gardenCard(safe) {
     if (!api.gardenEnabled()) return '';
     const cfg = safe ? gardenSetting() : {}, disabled = !safe || !!pending, on = cfg.enabled && !suspended.has('garden');
-    const text = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
-    const progress = cfg.manual?.complete ? 'Manual cycle complete.' : pendingCrop(api.state()) ? 'Manual planting saved. Harvest that same ripe crop by hand.' : 'Plant a new crop, then harvest it ripe by hand. Older crops and statistics do not count.';
-    return `<section class="o-card lg06a-garden"><h3>Auto-garden</h3><p>${progress}</p><label>Bed<select data-lg06a="bed" ${disabled ? 'disabled' : ''}>${api.state().garden.beds.map((_,i) => `<option value="${i}" ${cfg.bed === i ? 'selected' : ''}>Bed ${i+1}</option>`).join('')}</select></label><label>Letter<select data-lg06a="letter" ${disabled ? 'disabled' : ''}>${Array.from({length:26},(_,i) => String.fromCharCode(65+i)).map(ch => `<option ${cfg.letter === ch ? 'selected' : ''}>${ch}</option>`).join('')}</select></label><label>Desk<select data-lg06a="desk" ${disabled ? 'disabled' : ''}>${api.automationDesks().filter(d => d.owned).map(d => `<option value="${d.id}" ${cfg.desk === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select></label><button data-act="automation:garden-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !gardenUnlocked()) ? 'disabled' : ''}>Auto-garden: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'handplanted' ? 'Paused by the current challenge.' : !safe ? 'Unsupported garden data preserved. Actions disabled.' : suspended.has('garden') ? 'Off locally. Retry to save Off.' : text(gardenNotice) || (on ? `Waiting for the next ${earnedInterval('garden')}-second attempt.` : 'Off')}</p>${gardenPending ? '<button data-act="automation:garden-retry">Retry garden action</button>' : ''}</section>`;
+    const proof = cfg.manual?.complete ? '' : pendingCrop(api.state()) ? 'Harvest the crop you planted' : 'Plant and harvest once';
+    const fields = `<div class="o-auto-fields">${field('Bed', `<select data-lg06a="bed" ${disabled ? 'disabled' : ''}>${api.state().garden.beds.map((_,i) => `<option value="${i}" ${cfg.bed === i ? 'selected' : ''}>${i+1}</option>`).join('')}</select>`)}${field('Letter', `<select data-lg06a="letter" ${disabled ? 'disabled' : ''}>${Array.from({length:26},(_,i) => String.fromCharCode(65+i)).map(ch => `<option ${cfg.letter === ch ? 'selected' : ''}>${ch}</option>`).join('')}</select>`)}${field('Desk', `<select data-lg06a="desk" ${disabled ? 'disabled' : ''}>${api.automationDesks().filter(d => d.owned).map(d => `<option value="${d.id}" ${cfg.desk === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select>`)}</div>`;
+    const status = api.state().challenge?.id === 'handplanted' ? 'Paused by the challenge' : !safe ? 'Unsupported data' : suspended.has('garden') ? 'Off here · retry the save' : aText(gardenNotice);
+    return autoCard('garden', {cls:'lg06a-garden', on, act:'automation:garden-toggle', disabled:!safe || !on && (pending || !gardenUnlocked()), bar:[gardenElapsed, earnedInterval('garden')], proof, body:fields, status, extra:gardenPending ? retryBtn('automation:garden-retry', 'Retry') : ''});
   }
+  /* every automation card shares one layout: its own picture, a switch, a speed readout, a timer bar to the next action and a one-line status */
+  const AUTO_ICO = {hire:'a-hire',coach:'a-coach',shop:'a-shop',restore:'a-restore',net:'a-net',garden:'a-garden',pitch:'a-pitch',media:'a-media',muse:'a-muse',print:'a-print',challenge:'a-challenge'};
+  const AUTO_COL = {hire:'#f2b23a',coach:'#ff8a5c',shop:'#ffd23a',restore:'#9fb4c8',net:'#5fc8ff',garden:'#74c648',pitch:'#ff9a3a',media:'#ff5d73',muse:'#c9a0ff',print:'#e8e0c8',challenge:'#ffffff'};
+  const autoPips = (n, max) => `<span class="o-pips">${Array.from({length:max},(_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
+  const speedText = (hid, n) => hid === 'net' ? `${[60,70,80,100][Math.min(3,n)]}%` : hid === 'restore' ? `${[2,1.75,1.5,1][Math.min(3,n)]}× buffer` : ['garden','pitch','media','muse'].includes(hid) ? `${[60,45,30,15][Math.min(3,Math.max(n,api.state().chDone[{garden:'handplanted',pitch:'onebrief',media:'paperonly',muse:'fixedcast'}[hid]] ? 1 : 0))]}s` : `${[20,15,10,5][Math.min(3,n)]}s`;
+  const aText = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function autoCard(id, o) {
+    const tiered = helpers.includes(id), n = level(id), on = !!o.on;
+    const sw = `<button type="button" class="o-switch" data-act="${o.act}" ${o.attrs || ''} aria-label="${o.label || names[id]}" aria-pressed="${on}" ${o.disabled ? 'disabled' : ''}><i></i><em>${on ? 'On' : 'Off'}</em></button>`;
+    const bar = o.bar ? `<span class="o-prog o-auto-bar${on ? '' : ' idle'}" role="img" aria-label="Time to the next action"><i style="width:${on ? Math.max(0, Math.min(100, Math.round(100 * o.bar[0] / o.bar[1]))) : 0}%"></i></span>` : '';
+    const speed = tiered ? `<p class="o-auto-speed">${autoPips(n,3)}<b>${speedText(id, n)}</b></p>` : '';
+    return `<section class="o-card o-auto ${o.cls}${on ? ' on' : ''}" style="--c:${AUTO_COL[id]}"><div class="o-row"><h3>${api.shop.cart(AUTO_ICO[id])}${o.title || names[id]}</h3>${sw}</div>${speed}${bar}${o.proof ? `<p class="o-auto-proof"><span aria-hidden="true">✋</span> ${o.proof}</p>` : ''}${o.body || ''}${o.status ? `<p class="o-auto-status" role="status">${o.status}</p>` : ''}${o.extra || ''}</section>`;
+  }
+  const retryBtn = (act, label) => `<button type="button" class="o-btn sm o-auto-retry" data-act="${act}">${label}</button>`;
+  const field = (label, control) => `<label class="o-auto-field"><span>${label}</span>${control}</label>`;
   const pitchSetting = () => ({version:1,enabled:false,...saved()?.pitch});
   let pitchElapsed = 0, pitchLast = null, pitchNotice = '';
   const resetPitchClock = () => { pitchElapsed = 0; pitchLast = null; };
@@ -165,10 +181,10 @@
   }
   function pitchCard(safe) {
     if (!api.pitchEnabled()) return '';
-    const cfg = safe ? pitchSetting() : {}, on = cfg.enabled && !suspended.has('pitch'), status = api.pitchStatus();
-    const text = v => String(v).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const progress = cfg.manual?.complete ? 'Manual commission and sale saved.' : api.trackedPitch() ? 'Commission saved. Bank its words and sell that exact title during visible play.' : 'Commission a new title by hand, then sell it during visible play. Older sales do not count.';
-    return `<section class="o-card lg06b-pitch"><h3>Auto-pitch</h3><p>${progress}</p><button data-act="automation:pitch-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !pitchUnlocked()) ? 'disabled' : ''}>Auto-pitch: ${on ? 'On' : 'Off'}</button><p role="status">${!api.challengeCommissionAllowed() ? 'Paused by the current challenge.' : !safe ? 'Unsupported pitch data preserved. Actions disabled.' : suspended.has('pitch') ? 'Off locally. Retry to save Off.' : text(status.pending ? status.notice : pitchNotice || status.notice || (on ? `Waiting for the next ${earnedInterval('pitch')}-second attempt.` : 'Off'))}</p>${status.pending ? '<button data-act="automation:pitch-retry">Retry commission</button>' : ''}</section>`;
+    const cfg = safe ? pitchSetting() : {}, on = cfg.enabled && !suspended.has('pitch'), st = api.pitchStatus();
+    const proof = cfg.manual?.complete ? '' : api.trackedPitch() ? 'Sell the pitch you commissioned' : 'Commission and sell one pitch';
+    const status = !api.challengeCommissionAllowed() ? 'Paused by the challenge' : !safe ? 'Unsupported data' : suspended.has('pitch') ? 'Off here · retry the save' : aText(st.pending ? st.notice : pitchNotice || st.notice || '');
+    return autoCard('pitch', {cls:'lg06b-pitch', on, act:'automation:pitch-toggle', disabled:!safe || !on && (pending || !pitchUnlocked()), bar:[pitchElapsed, earnedInterval('pitch')], proof, status, extra:st.pending ? retryBtn('automation:pitch-retry', 'Retry') : ''});
   }
   const mediaSetting = () => ({version:1,enabled:false,manual:{complete:false},sequence:0,pending:null,...saved()?.media});
   let mediaElapsed = 0, mediaLast = null, mediaNotice = '';
@@ -194,8 +210,10 @@
   function mediaCard(safe) {
     if (!api.mediaEnabled()) return '';
     const cfg = safe ? mediaSetting() : {}, on = cfg.enabled && !suspended.has('media'), q = safe ? api.mediaNext() : null;
-    const text = v => String(v).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    return `<section class="o-card lg06c-media"><h3>Auto-media</h3><p>${cfg.manual?.complete ? 'Manual release saved.' : 'Release media by hand once.'}</p><p>${q ? `Next: ${text(q.name)}, #${q.index+1}, ${Economy.fmt(q.cost)} bananas.` : 'No loaded, unlocked release within 5% of wallet.'}</p><button data-act="automation:media-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || !mediaUnlocked()) ? 'disabled' : ''}>Auto-media: ${on ? 'On' : 'Off'}</button><p role="status">${api.state().challenge?.id === 'paperonly' ? 'Paused by the current challenge.' : !safe ? 'Unsupported media data preserved. Actions disabled.' : suspended.has('media') ? 'Off locally. Retry to save Off.' : cfg.pending ? 'Release held for exact debit recovery. Retry to finish.' : text(mediaNotice || (on ? `Waiting for the next ${earnedInterval('media')}-second attempt.` : 'Off'))}</p>${cfg.pending ? '<button data-act="automation:media-retry">Retry media release</button>' : ''}</section>`;
+    const proof = cfg.manual?.complete ? '' : 'Release one by hand';
+    const body = q ? `<p class="o-auto-next"><b>${aText(q.name)}</b>${api.shop.price(q.cost)}</p>` : '';
+    const status = api.state().challenge?.id === 'paperonly' ? 'Paused by the challenge' : !safe ? 'Unsupported data' : suspended.has('media') ? 'Off here · retry the save' : cfg.pending ? 'Release waiting to finish' : aText(mediaNotice || (q ? '' : 'Nothing affordable yet'));
+    return autoCard('media', {cls:'lg06c-media', on, act:'automation:media-toggle', disabled:!safe || !on && (pending || !mediaUnlocked()), bar:[mediaElapsed, earnedInterval('media')], proof, body, status, extra:cfg.pending ? retryBtn('automation:media-retry', 'Retry') : ''});
   }
   const museSetting = () => ({version:1,enabled:false,...saved()?.muse});
   let museElapsed = 0, museLast = null, museNotice = '';
@@ -244,8 +262,9 @@
   function museCard(safe) {
     if (!api.museEnabled()) return '';
     const cfg = safe ? museSetting() : {}, on = cfg.enabled && !suspended.has('muse'), waiting = api.museStatus().pending;
-    const progress = cfg.manual?.complete ? 'Two manual Muses saved.' : `Seat two different owned Muses by hand: ${cfg.manual?.ids?.length || 0}/2.`;
-    return `<section class="o-card lg06d-muse"><h3>Muse director</h3><p>${progress}</p><button data-act="automation:muse-toggle" aria-pressed="${!!on}" ${!safe || !on && (pending || waiting || !museUnlocked()) ? 'disabled' : ''}>Muse director: ${on ? 'On' : 'Off'}</button><p role="status">${api.challengeSeatsLocked() ? 'Paused by the current challenge.' : !safe ? 'Unsupported settings preserved. Actions disabled.' : waiting ? 'Seating not saved. Retry the waiting choice.' : suspended.has('muse') ? 'Off locally. Turn On to resume.' : museNotice || (on ? `Waiting for the next ${earnedInterval('muse')}-second attempt. Pauses for Folio.` : 'Off')}</p>${waiting ? '<button data-act="automation:muse-retry">Retry seating</button>' : ''}</section>`;
+    const proof = cfg.manual?.complete ? '' : `Seat two Muses by hand ${cfg.manual?.ids?.length || 0}/2`;
+    const status = api.challengeSeatsLocked() ? 'Paused by the challenge' : !safe ? 'Unsupported data' : waiting ? 'Seating not saved' : suspended.has('muse') ? 'Off here · turn on to resume' : aText(museNotice);
+    return autoCard('muse', {cls:'lg06d-muse', on, act:'automation:muse-toggle', label:'Muse director', disabled:!safe || !on && (pending || waiting || !museUnlocked()), bar:[museElapsed, earnedInterval('muse')], proof, status, extra:waiting ? retryBtn('automation:muse-retry', 'Retry') : ''});
   }
   function validPrint(p) {
     return p === undefined || object(p) && p.version === 1 &&
@@ -352,8 +371,11 @@
   function challengeCard() {
     if (!api.challengeEnabled()) return '';
     const c = challengeSetting(), r = c?.active, esc = x => String(x).replace(/[&<>"]/g,k => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[k]));
-    const on = challengeOn(), requestedOn = challengeEdit?.enabled, reason = challengeNotice || (!AutoChallenge.valid(c) ? 'Unsupported settings preserved.' : !AutoChallenge.earned(api.state()) ? 'Requires Estate 3, introduction, ordinary Small Crew clear, genuine manual Gold and purchased Veteran Crew.' : !AutoChallenge.compatible(api.state()) ? 'Waiting for compatible PG: disabled or band 0/authored/no manual/no advance.' : api.challengeFacts().nextChallenge ? 'Manual next-challenge choice wins. Timer paused.' : !on ? 'Off. No new clerk actions.' : !challengeReady() ? 'Paused by current view, work or waiting save.' : 'Waiting for next fair turn.');
-    return `<section class="o-card lg08l-challenge"><h3>Auto-challenge: one Small Crew run</h3><p>One Small Crew run, six Bamboo readers. No purchases or repeat payout.</p><button data-act="automation:challenge-toggle" aria-pressed="${on}" ${!on && !requestedOn && (!AutoChallenge.earned(api.state()) || c?.active && c.active.phase !== 'completed-awaiting-exit' || challengeEdit) ? 'disabled' : ''}>${requestedOn ? 'Stop requested enable' : r?.phase === 'completed-awaiting-exit' && !on ? 'Resume exit only' : 'Auto-challenge: ' + (on ? 'On' : 'Off')}</button><p>Small Crew: ${r?.sold.length ?? c?.last?.sold.length ?? 0}/6 titles${r?.phase === 'completed-awaiting-exit' ? ' · ready to exit' : ''}.</p><p role="status">${esc(reason)}</p>${challengeEdit ? '<button data-act="automation:challenge-retry">Retry Auto-challenge settings</button>' : ''}${r && r.phase !== 'completed-awaiting-exit' ? '<button data-act="automation:challenge-continue">Continue manually</button><button data-act="automation:challenge-abandon">Review Abandon</button>' : ''}<p>Off preserves the challenge. Durable commands finish once; unsaved Off is lost on reload. Completion exits Off without another reset. A10 is reserved; other helpers pause during clerk control.</p></section>`;
+    const on = challengeOn(), requestedOn = challengeEdit?.enabled, sold = r?.sold.length ?? c?.last?.sold.length ?? 0;
+    const reason = challengeNotice || (!AutoChallenge.valid(c) ? 'Unsupported data' : !AutoChallenge.earned(api.state()) ? 'Locked' : !AutoChallenge.compatible(api.state()) ? 'Production set conflict' : api.challengeFacts().nextChallenge ? 'Your next-challenge pick wins' : !on ? '' : !challengeReady() ? 'Paused while busy' : '');
+    const body = `<p class="o-auto-speed"><span class="o-pips">${Array.from({length:6},(_, k) => `<i class="${k < sold ? 'on' : ''}"></i>`).join('')}</span><b>${sold}/6</b>${r?.phase === 'completed-awaiting-exit' ? ' <span class="o-lvl">EXIT</span>' : ''}</p>`;
+    const extra = (challengeEdit ? retryBtn('automation:challenge-retry', 'Retry') : '') + (r && r.phase !== 'completed-awaiting-exit' ? `<div class="o-auto-fields"><button type="button" class="o-btn sm" data-act="automation:challenge-continue">Take over</button><button type="button" class="o-btn sm" data-act="automation:challenge-abandon">Abandon</button></div>` : '');
+    return autoCard('challenge', {cls:'lg08l-challenge', on, act:'automation:challenge-toggle', title:'Auto-challenge', disabled:!on && !requestedOn && (!AutoChallenge.earned(api.state()) || c?.active && c.active.phase !== 'completed-awaiting-exit' || challengeEdit), body, status:esc(reason), extra});
   }
 
   function printUnlocked(source = api.state(), owner = api) {
@@ -416,8 +438,10 @@
   function printCard(safe) {
     if (!api.printingEnabled()) return '';
     const cfg = safe ? printSetting() : {enabled:false,N:30}, r = printRule(api.state().run.earned,samplePaid,sampleSeconds,cfg.N), on = safe && cfg.enabled && !printOff;
-    const reason = !safe ? 'Unsupported settings preserved.' : printOff && cfg.enabled ? 'Off locally. Retry to save Off.' : printNotice || (!printUnlocked() ? 'Requires Estate 1, introduction and a new saved manual Printing.' : !on ? 'Off' : !printReady() ? 'Paused while other work is active.' : sampleSeconds < 300 ? 'Collecting a full visible production sample.' : !r?.rate ? 'Waiting for income.' : !r.gain ? 'Waiting for a pending Legacy star.' : !r.eligible ? 'Next-star estimate is within your threshold.' : 'Ready for the next attempt.');
-    return `<section class="o-card lg08h-print"><h3>Auto-print</h3><p>Estate 1 and a new manual Printing. Proof: ${cfg.manual?.complete ? 'saved' : 'needed'}.</p><button data-act="automation:print-toggle" aria-pressed="${!!on}" ${!safe || !on && (!printUnlocked() || printEdit || pending) ? 'disabled' : ''}>Auto-print: ${on ? 'On' : 'Off'}</button><label for="lg08h-N">Wait threshold, real minutes</label><input id="lg08h-N" type="number" min="5" max="240" step="1" value="${cfg.N}" ${!safe ? 'disabled' : ''}><button data-act="automation:print-apply" ${!safe ? 'disabled' : ''}>Apply threshold</button><p>Sample: ${sampleActive ? '' : 'Paused, '}${sampleSeconds}/300 visible real seconds. Production: ${r?.rate ? Economy.fmt(r.rate) : '--'} bananas/real second.</p><p>Pending stars: ${r?.gain ?? '--'}. Next star: ${r?.estimate == null ? '--' : r.estimate.toFixed(2) + ' real minutes'}.</p><p role="status">${reason.replace(/[&<>"]/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</p>${printEdit ? '<button data-act="automation:print-retry">Retry Auto-print settings</button>' : ''}<p>On may reset the room and spend its bananas, machines and run progress. Ordinary Printing retention applies. Off prevents the next reset; an already committed Printing finishes once and cannot be cancelled.</p></section>`;
+    const star = n => window.Gems?.amount('star', n) || n;
+    const reason = !safe ? 'Unsupported data' : printOff && cfg.enabled ? 'Off here · retry the save' : printNotice || (!printUnlocked() ? 'Locked' : !on ? '' : !printReady() ? 'Paused while busy' : sampleSeconds < 300 ? 'Measuring income…' : !r?.rate ? 'Waiting for income' : !r.gain ? 'Waiting for a star' : !r.eligible ? 'Next star is close' : 'Ready');
+    const body = `<div class="o-auto-stats"><span title="Stars if you print now">${star(r?.gain ?? 0)}</span><span class="o-auto-next" title="Time to the next star">⏱ <b>${r?.estimate == null ? '–' : Math.round(r.estimate) + 'm'}</b></span></div><span class="o-prog o-auto-bar${sampleActive ? '' : ' idle'}" role="img" aria-label="Income sample"><i style="width:${Math.min(100, Math.round(100 * sampleSeconds / 300))}%"></i></span><div class="o-auto-fields">${field(`If the next ${window.Gems?.html('star') || 'star'} is over (min)`, `<input id="lg08h-N" type="number" min="5" max="240" step="1" value="${cfg.N}" ${!safe ? 'disabled' : ''}>`)}<button type="button" class="o-btn sm" data-act="automation:print-apply" ${!safe ? 'disabled' : ''}>Set</button></div>`;
+    return autoCard('print', {cls:'lg08h-print', on, act:'automation:print-toggle', disabled:!safe || !on && (!printUnlocked() || printEdit || pending), proof:cfg.manual?.complete ? '' : 'Press once by hand', body, status:aText(reason), extra:printEdit ? retryBtn('automation:print-retry', 'Retry') : ''});
   }
   function supported(m, owner = api) {
     return m === undefined || object(m) && m.version === 1 && validOwnership(m.ownership) && validPrint(m.print) && (m.challenge === undefined || !!window.AutoChallenge?.valid(m.challenge)) && (!owner.museEnabled() || validMuse(m.muse)) && (!owner.mediaEnabled() || owner.validMedia(m.media)) && (!owner.gardenEnabled() || validGarden(m.garden,owner)) && (!owner.pitchEnabled() || owner.validPitch(m.pitch)) &&
@@ -550,10 +574,10 @@
     }
   }
   function netStatus() {
-    if (!netUnlocked()) return 'Requires Printing 6, Deadline completion and introduction completion.';
-    if (suspended.has('net')) return 'Off locally. Retry to save Off.';
-    if (pending) return 'Paused until Retry saves. Previous items will not be caught.';
-    return netSetting().enabled ? 'On. Waiting for new visible, unblocked items.' : 'Off';
+    if (!netUnlocked()) return 'Locked';
+    if (suspended.has('net')) return 'Off here · retry the save';
+    if (pending) return 'Paused until the save lands';
+    return '';
   }
   function editRestore() {
     if (pending || !restoreUnlocked() || !supported(saved())) return;
@@ -564,16 +588,16 @@
     write({ expected:current === undefined ? null : JSON.stringify(current), next, restore:true });
   }
   function restoreStatus() {
-    if (!restoreUnlocked()) return 'Requires Printing 5, Haiku completion and introduction completion.';
-    if (suspended.has('restore')) return 'Off locally. Retry to save Off.';
-    if (pending) return 'Paused until Retry saves';
-    if (!restoreSetting().enabled) return 'Off';
+    if (!restoreUnlocked()) return 'Locked';
+    if (suspended.has('restore')) return 'Off here · retry the save';
+    if (pending) return 'Paused until the save lands';
+    if (!restoreSetting().enabled) return '';
     const desks = api.automationDesks();
     for (let n = 0; n < Math.min(6, desks.length); n++) {
       const d = desks[(restoreCursor + n) % desks.length], q = api.quoteAutomationRestore(d.index);
-      if (q.ok) return `Next eligible: ${d.name}, ${Economy.fmt(q.price)} bananas. Waiting for the next 20-second attempt.`;
+      if (q.ok) return `Next: ${d.name} · ${Economy.fmt(q.price)}`;
     }
-    return 'Waiting for an owned desk below Mk III and the current level’s wallet margin.';
+    return 'Saving up';
   }
   function editCoach() {
     if (pending || !coachUnlocked() || !supported(saved())) return;
@@ -588,13 +612,12 @@
       a.level - b.level || a.coach - b.coach || a.index - b.index || a.paw - b.paw)[0];
   }
   function coachStatus() {
-    if (!coachUnlocked()) return 'Complete No Hands to unlock.';
-    if (suspended.has('coach')) return 'Off locally. Retry to save Off.';
-    if (pending) return 'Paused until Retry saves';
-    if (!coachSetting().enabled) return 'Off';
+    if (!coachUnlocked()) return 'Locked';
+    if (suspended.has('coach')) return 'Off here · retry the save';
+    if (pending) return 'Paused until the save lands';
+    if (!coachSetting().enabled) return '';
     const t = coachTarget();
-    return t ? `Next eligible: ${t.name}, ${t.desk}, XP level ${t.level}, coached ${t.coach}. Cost ${Economy.fmt(t.price)} bananas. Waiting for the next ${interval('coach')}-second attempt.` :
-      'Waiting for an owned, uncapped monkey costing at most 5% of your wallet.';
+    return t ? `Next: ${t.name} · ${t.desk}` : 'Saving up';
   }
   function editShop(field, value) {
     if (pending || !shopUnlocked() || !supported(saved())) return;
@@ -620,11 +643,11 @@
   }
   function status(d) {
     const cfg = setting(d.id);
-    if (suspended.has(d.id)) return 'Off locally. Retry to save Off.';
-    if (!cfg.enabled) return 'Off';
-    if (pending) return 'Paused until Retry saves';
+    if (suspended.has(d.id)) return 'Off here · retry the save';
+    if (!cfg.enabled) return '';
+    if (pending) return 'Paused until the save lands';
     const q = api.quoteAutomationHire(d.index, cfg.reservePercent);
-    return q.ok ? `Waiting for next hire, one globally per ${interval('hire')} active game seconds` : q.error;
+    return q.ok ? '' : q.error;
   }
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
   const destinations = {hire:['training','crew'], coach:['training','crew'], shop:['shop'], restore:['shop'], net:['floor'], garden:['lab'], pitch:['press','pitches'], media:['studios'], muse:['muses'], print:['legacy','press'], challenge:['legacy','challenges']};
@@ -637,16 +660,24 @@
       const d = api.automationDesks().find(d => d.id === slot.dataset.desk && d.owned);
       if (!d || !unlocked()) return '';
       const cfg = safe ? setting(d.id) : {enabled:false, reservePercent:25}, off = suspended.has(d.id) || !cfg.enabled;
-      return `<section class="o-card lg03-desk"><h3>Auto-hire</h3><p>One hire every ${safe ? interval('hire') : 20}s across enabled desks.</p><button data-act="automation:toggle" data-desk="${d.id}" aria-label="Auto-hire on ${d.name}" aria-pressed="${!off}" ${!safe || pending ? 'disabled' : ''}>Auto-hire: ${off ? 'Off' : 'On'}</button><label for="lg03-reserve-${d.id}">Letter reserve: ${cfg.reservePercent}%</label><select id="lg03-reserve-${d.id}" data-lg03-reserve="${d.id}" ${!safe || pending ? 'disabled' : ''}>${Array.from({length:21}, (_, i) => i * 5).map(n => `<option value="${n}" ${n === cfg.reservePercent ? 'selected' : ''}>${n}%</option>`).join('')}</select><p>${safe ? status(d) : 'Automatic hiring disabled'}</p></section>`;
-
+      const body = `<div class="o-auto-fields">${field(`Keep <b>${cfg.reservePercent}%</b> letters`, `<select id="lg03-reserve-${d.id}" data-lg03-reserve="${d.id}" aria-label="Letter reserve" ${!safe || pending ? 'disabled' : ''}>${Array.from({length:21}, (_, i) => i * 5).map(n => `<option value="${n}" ${n === cfg.reservePercent ? 'selected' : ''}>${n}%</option>`).join('')}</select>`)}</div>`;
+      return autoCard('hire', {cls:'lg03-desk', on:!off, act:'automation:toggle', attrs:`data-desk="${d.id}"`, label:`Auto-hire on ${d.name}`, disabled:!safe || pending, bar:[elapsed, interval('hire')], body, status:safe ? aText(status(d)) : 'Unsupported data'});
     }
-    if (id === 'net') return netUnlocked() ? `<section class="lg03-net"><button data-act="automation:net-toggle" aria-label="Banana net" aria-pressed="${safe && !suspended.has('net') && netSetting().enabled}" ${!safe || pending ? 'disabled' : ''}>Banana net: ${safe && !suspended.has('net') && netSetting().enabled ? 'On' : 'Off'}</button><p role="status">${safe ? escape(netStatus()) : 'Unsupported settings preserved'}</p></section>` : '';
-    if (id === 'restore') return restoreUnlocked() ? `<section class="o-card lg03-restore"><h3>Auto-restore</h3><p>Every 20s; keep ${safe ? margin() : 2} times the price in bananas.</p><button data-act="automation:restore-toggle" aria-label="Auto-restore" aria-pressed="${!restoreOff}" ${!safe || pending || !restoreUnlocked() ? 'disabled' : ''}>Auto-restore: ${restoreOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(restoreStatus()) : 'Automatic restoration disabled'}</p></section>` : '';
-    if (id === 'coach') return coachUnlocked() ? `<section class="o-card lg03-coach"><h3>Auto-coach</h3><p>Coach for at most 5% of bananas.</p><button data-act="automation:coach-toggle" aria-label="Auto-coach" aria-pressed="${!coachOff}" ${!safe || pending || !coachUnlocked() ? 'disabled' : ''}>Auto-coach: ${coachOff ? 'Off' : 'On'}</button><p role="status">${safe ? escape(coachStatus()) : 'Automatic coaching disabled'}</p></section>` : '';
-    if (id === 'shop') return shopUnlocked() ? `<section class="o-card lg03-shop"><h3>Auto-shop</h3><p>Spend under 10% of bananas, in this order.</p><button data-act="automation:shop-toggle" aria-label="Auto-shop" aria-pressed="${!off}" ${!safe || pending || !shopUnlocked() ? 'disabled' : ''}>Auto-shop: ${off ? 'Off' : 'On'}</button><p role="status">${suspended.has('shop') ? 'Off locally. Retry to save Off.' : pending ? 'Paused until Retry saves' : off ? 'Off' : 'Waiting for next purchase'}</p><ol class="lg03-priority">${shop.priority.map((id, i) => {
-      const name = items.find(([key]) => key === id)[1], q = api.quoteAutomationShop(id), disabled = !safe || pending || !shopUnlocked();
-      return `<li><div><strong>${name}</strong><p>${Economy.fmt(q.price)} bananas · ${q.owned ? 'Owned' : q.error || 'Eligible'}</p></div><div class="lg03-order"><button data-act="automation:shop-move" data-item="${id}" data-direction="-1" aria-label="Move ${name} up" ${disabled || i === 0 ? 'disabled' : ''}>Up</button><button data-act="automation:shop-move" data-item="${id}" data-direction="1" aria-label="Move ${name} down" ${disabled || i === shop.priority.length - 1 ? 'disabled' : ''}>Down</button></div></li>`;
-    }).join('')}</ol></section>` : '';
+    if (id === 'net') {
+      if (!netUnlocked()) return '';
+      const on = safe && !suspended.has('net') && netSetting().enabled;
+      return autoCard('net', {cls:'lg03-net', on, act:'automation:net-toggle', label:'Banana net', disabled:!safe || pending, status:safe ? aText(netStatus()) : 'Unsupported data'});
+    }
+    if (id === 'restore') return restoreUnlocked() ? autoCard('restore', {cls:'lg03-restore', on:!restoreOff, act:'automation:restore-toggle', disabled:!safe || pending || !restoreUnlocked(), bar:[restoreElapsed, 20], status:safe ? aText(restoreStatus()) : 'Unsupported data'}) : '';
+    if (id === 'coach') return coachUnlocked() ? autoCard('coach', {cls:'lg03-coach', on:!coachOff, act:'automation:coach-toggle', disabled:!safe || pending || !coachUnlocked(), bar:[coachElapsed, interval('coach')], status:safe ? aText(coachStatus()) : 'Unsupported data'}) : '';
+    if (id === 'shop') {
+      if (!shopUnlocked()) return '';
+      const list = `<ol class="lg03-priority">${shop.priority.map((pid, i) => {
+        const name = items.find(([key]) => key === pid)[1], q = api.quoteAutomationShop(pid), disabled = !safe || pending || !shopUnlocked();
+        return `<li class="${q.owned ? 'done' : ''}"><div><strong>${name}</strong>${q.owned ? '<span class="o-lvl">✓</span>' : api.shop.price(q.price)}</div><div class="lg03-order"><button type="button" data-act="automation:shop-move" data-item="${pid}" data-direction="-1" aria-label="Move ${name} up" ${disabled || i === 0 ? 'disabled' : ''}>▲</button><button type="button" data-act="automation:shop-move" data-item="${pid}" data-direction="1" aria-label="Move ${name} down" ${disabled || i === shop.priority.length - 1 ? 'disabled' : ''}>▼</button></div></li>`;
+      }).join('')}</ol>`;
+      return autoCard('shop', {cls:'lg03-shop', on:!off, act:'automation:shop-toggle', disabled:!safe || pending || !shopUnlocked(), bar:[shopElapsed, interval('shop')], body:list, status:suspended.has('shop') ? 'Off here · retry the save' : pending ? 'Paused until the save lands' : ''});
+    }
     const locked = {
       garden:[api.gardenEnabled(),gardenUnlocked(),'Imprint 1, then plant and harvest a new crop by hand.'],
       pitch:[api.pitchEnabled(),pitchUnlocked(),'Imprint 2, then commission and sell a new title by hand.'],
@@ -669,17 +700,17 @@
       const id = slot.dataset.automation;
       let html;
       if (id === 'helpers') {
-        const art = {hire:'i-monkey',coach:'u-practice',shop:'s-contracts',restore:'u-ribbon',net:'banana',garden:'s-garden',pitch:'s-team',media:'i-reel',muse:'i-quill',print:'i-imprint',challenge:'trophy-1'};
+        const art = AUTO_ICO;
         const star = n => window.Gems?.amount('star',n) || n;
         const pips = (n,max) => `<span class="o-pips">${Array.from({length:max},(_,k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('')}</span>`;
-        const speed = (hid,n) => hid === 'net' ? `${[60,70,80,100][Math.min(3,n)]}%` : hid === 'restore' ? `${[2,1.75,1.5,1][Math.min(3,n)]}× buffer` : ['garden','pitch','media','muse'].includes(hid) ? `${[60,45,30,15][Math.min(3,Math.max(n,api.state().chDone[{garden:'handplanted',pitch:'onebrief',media:'paperonly',muse:'fixedcast'}[hid]] ? 1 : 0))]}s` : `${[20,15,10,5][Math.min(3,n)]}s`;
+        const speed = speedText;
         const shown = bases.filter(id => owned(id) || baseGate(id));
         html = shown.length ? '<div class="lg03-helpers">' + shown.map(id => {
           const have = owned(id), q = have ? null : api.quoteAutomationBase(id), tiered = helpers.includes(id), n = level(id);
           let action = '', fx = '';
           if (!have) action = `<button type="button" class="o-btn gold o-starbtn" data-act="automation:buy" data-helper="${id}" ${!q.ok || pending || admission ? 'disabled' : ''}>${star(q.price)}</button>`;
           else if (tiered && n < 3) { const t = api.quoteAutomationTier(id); action = `<button type="button" class="o-btn gold o-starbtn" data-act="automation:upgrade" data-helper="${id}" data-level="${n}" ${pending || !t.ok ? 'disabled' : ''}>${star(t.price)}</button>`; }
-          else action = '<span class="o-lvl">MAX</span>';
+          else action = `<span class="o-lvl">${tiered ? 'MAX' : '✓'}</span>`;
           if (tiered) fx = `<p class="o-leg-fx"><b>${speed(id,have ? n : 0)}</b>${have && n < 3 ? ` <span class="o-leg-next">› ${speed(id,n + 1)}</span>` : ''}</p>`;
           return `<section class="o-card o-leg o-helper${have ? '' : ' off'}"><div class="o-row"><h3>${api.shop.cart(art[id])}${names[id]}</h3>${have ? `<button type="button" class="o-btn sm o-gear" data-act="automation:settings" data-helper="${id}" aria-label="${names[id]} settings">⚙</button>` : ''}</div>${tiered ? pips(have ? n : 0,3) : ''}${fx}${!have && q && !q.ok ? `<p class="o-warn">${escape(q.error)}</p>` : ''}${action}</section>`;
         }).join('') + '</div>' : '';
