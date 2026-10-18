@@ -1,0 +1,7 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "saves", "fieldPath": "payload", "indexes": [] },
+    { "collectionGroup": "backups", "fieldPath": "payload", "indexes": [] }
+  ]
+}

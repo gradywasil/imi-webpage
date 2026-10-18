@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Both documents contain the same eight required fields. saveId is immutable
+    // on the head; revision increases by one. Payload is opaque, not trusted money.
+    function owns(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function shortString(value) {
+      return value is string && value.size() > 0 && value.size() <= 100;
+    }
+    function validSnapshot(data) {
+      return data.keys().hasAll(['formatVersion', 'revision', 'saveId', 'operationId', 'deviceId', 'gameBuild', 'payload', 'updatedAt'])
+        && data.keys().hasOnly(['formatVersion', 'revision', 'saveId', 'operationId', 'deviceId', 'gameBuild', 'payload', 'updatedAt'])
+        && data.formatVersion == 1 && data.revision is int && data.revision > 0
+        && shortString(data.saveId) && shortString(data.operationId)
+        && shortString(data.deviceId) && shortString(data.gameBuild)
+        && data.payload is string && data.payload.size() > 0 && data.payload.size() <= 200000
+        && data.updatedAt is timestamp;
+    }
+    match /users/{uid}/saves/main {
+      allow get: if owns(uid);
+      allow create: if owns(uid) && validSnapshot(request.resource.data)
+        && request.resource.data.revision == 1
+        && request.resource.data.updatedAt == request.time;
+      allow update: if owns(uid) && validSnapshot(request.resource.data)
+        && request.resource.data.saveId == resource.data.saveId
+        && request.resource.data.operationId != resource.data.operationId
+        && request.resource.data.revision == resource.data.revision + 1
+        && request.resource.data.updatedAt == request.time
+        && getAfter(/databases/$(database)/documents/users/$(uid)/backups/previous).data == resource.data;
+    }
+    match /users/{uid}/backups/previous {
+      allow get: if owns(uid);
+      allow create, update: if owns(uid) && validSnapshot(request.resource.data)
+        && request.resource.data == get(/databases/$(database)/documents/users/$(uid)/saves/main).data
+        && getAfter(/databases/$(database)/documents/users/$(uid)/saves/main).data.revision == request.resource.data.revision + 1;
+    }
+  }
+}

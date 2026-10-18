@@ -50,7 +50,7 @@ test('Awards metadata holds work without chips and across successive holds; depa
       window.__chips=[...document.querySelector('.o-buffbar').children];IMI.ops.dev.S().stats.letters=1000;
       __rejectUI=1;IMI.ops.dev.checkAwards(true);const inside=document.querySelector('.o-writer-status').contains(document.querySelector('.o-buffbar'));
       dispatchEvent(new Event('pagehide'));const before=[localStorage.getItem('imi-score'),localStorage.getItem('imi-ops-v1')],retry=Rewards.retry(),bar=document.querySelector('.o-buffbar');
-      return {inside,host:bar.parentNode===document.body,sameNodes:__chips.every((n,i)=>bar.children[i]===n),panelChips:document.querySelector('.o-writer-status').querySelectorAll('.o-buff').length,owner:Rewards.owns(),retry,keysSame:JSON.stringify(before)===JSON.stringify([localStorage.getItem('imi-score'),localStorage.getItem('imi-ops-v1')])};
+      return {inside,host:bar.parentNode===document.querySelector('.o-wrap'),sameNodes:__chips.every((n,i)=>bar.children[i]===n),panelChips:document.querySelector('.o-writer-status').querySelectorAll('.o-buff').length,owner:Rewards.owns(),retry,keysSame:JSON.stringify(before)===JSON.stringify([localStorage.getItem('imi-score'),localStorage.getItem('imi-ops-v1')])};
     });
     assert.equal(departed.inside,true);assert.equal(departed.host,true);assert.equal(departed.sameNodes,true);assert.equal(departed.panelChips,0);assert.equal(departed.owner,false);assert.equal(departed.retry,false);assert.equal(departed.keysSame,true);
     await h.capture(f,'held-presentation-departed');assert.deepEqual(f.errors,[]);

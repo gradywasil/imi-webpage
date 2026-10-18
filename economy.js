@@ -16,6 +16,20 @@ window.Economy = (() => {
     for (const [unit, suffix] of units) if (rounded >= unit) return sign + Number((rounded / unit).toPrecision(3)) + suffix;
     return sign + nf.format(fractional ? rounded : n);
   }
+  /* Canonical Printing star quote. Stars are counted in tenths (starScale per old star). The first star needs starBase
+     run bananas and g stars need g^2 * starUnit, an exact integer, so thresholds are compared without float sqrt drift. */
+  const starScale = 10, starBase = cash(5e5), starUnit = starBase / (starScale * starScale);
+  const starAt = stars => stars * stars * starUnit;
+  function starsFor(earned) {
+    if (!(earned >= starBase)) return 0;
+    if (!Number.isFinite(earned)) return earned;
+    let g = Math.floor(Math.sqrt(earned / starUnit));
+    /* the float estimate is off by at most one; bounded so values past safe-integer range cannot spin */
+    for (let i = 0; i < 2 && g > 0 && starAt(g) > earned; i++) g--;
+    for (let i = 0; i < 2 && starAt(g + 1) <= earned; i++) g++;
+    return g;
+  }
+  const nextStarAt = earned => earned >= starBase ? starAt(starsFor(earned) + 1) : starBase;
   const fmt = n => format(n);
   const rate = n => format(n, true);
   const exact = n => nf.format(n);
@@ -99,7 +113,7 @@ window.Economy = (() => {
     else write('imi-ops-v1', state);
     return state;
   }
-  return Object.freeze({ version, scale, starScale: 10, cash, round, floor, fmt, rate, exact, loadScore, saveScore, loadState,
+  return Object.freeze({ version, scale, starScale, starBase, starsFor, starAt, nextStarAt, cash, round, floor, fmt, rate, exact, loadScore, saveScore, loadState,
     creditReward, saveScoreAcknowledged, saveStateAcknowledged: state => acknowledged('imi-ops-v1', state),
     walletAcknowledgement: () => walletMetadata.rewardMarker === undefined ? null : JSON.parse(JSON.stringify(walletMetadata.rewardMarker)) });
 })();

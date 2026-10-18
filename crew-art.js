@@ -2876,14 +2876,12 @@
     drawBackAccessories(buf, ctx, V, P, renderParams);
     drawTail(buf, ctx, V, P, renderParams);
 
-    // 2. Back Leg & Footwear
+    // 2. Legs: both on one layer, behind the torso so the waist hides the hips
     drawLegAndFootwear(buf, ctx, V, P, legL, false, renderParams);
+    drawLegAndFootwear(buf, ctx, V, P, legR, true, renderParams);
 
     // 3. Torso & Costume
     drawTorsoAndOutfit(buf, ctx, V, P, renderParams);
-
-    // 4. Front Leg & Footwear
-    drawLegAndFootwear(buf, ctx, V, P, legR, true, renderParams);
 
     // Impact dust kickup
     if (squatImpact) {
@@ -2892,17 +2890,15 @@
       buf.dot(legL[0] - 6, legL[1] + 5, P.trimBase || '#c0cad4');
     }
 
-    // 5. Back Arm & Hand
+    // 4. Arms & hands: both on one layer, in front of the torso
     drawArmAndWrist(buf, ctx, V, P, armL, false, renderParams);
-
-    // 6. Head, Hat, Eyes & Muzzle
-    drawHeadAndHeadgear(buf, ctx, V, P, renderParams);
-
-    // 7. Front Arm & Hand
     drawArmAndWrist(buf, ctx, V, P, armR, true, renderParams);
 
-    // 8. Handheld Props
+    // 5. Handheld props (under the head, so a raised prop never hides the face)
     drawHandheldProp(buf, ctx, V, P, armR, renderParams);
+
+    // 6. Head, Hat, Eyes & Muzzle: always the top layer of the body
+    drawHeadAndHeadgear(buf, ctx, V, P, renderParams);
 
     // 9. Victory Accessories if requested
     if (prop === 'crown' || prop === 'all') {

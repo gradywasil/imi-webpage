@@ -43,7 +43,7 @@ export async function fixture(browser, { records, speed = 1, fault, frozen = fal
       if (key === 'imi-score' || key === 'imi-ops-v1') window.__writes.push({ key, value, rejected:false });
     };
   }, { records, speed, fault, rngStart });
-  await page.goto((process.env.LG01_URL || 'http://127.0.0.1:8162') + '/tools/balance.html?lg01a=1', { waitUntil:'load' });
+  await page.goto((process.env.LG01_URL || 'http://127.0.0.1:8162') + '/tools/balance.html?featureProfile=legacy&lg01a=1', { waitUntil:'load' });
   await page.waitForFunction(() => !!window.IMI?.ops);
   await Promise.all(reads);
   return { context, page, errors, hashes, close:() => context.close() };
@@ -59,6 +59,6 @@ export async function capture(fixture, name) {
     persistedOps:JSON.parse(localStorage.getItem('imi-ops-v1')), writes:__writes, rng:window.__rngcount, workRng:window.__workRngCount, running:IMI.ops.progression.running(), status:document.querySelector('.o-writer-status')?.textContent }));
   const directory = base + '/fixture-' + (process.env.LG01_RUN || 'r1');
   await mkdir(directory,{recursive:true});
-  await writeFile(directory + '/' + name + '.json',JSON.stringify({ coverage:'simulated UI bridge; actual Ops/Rewards/Economy adapter', hashes:fixture.hashes, errors:fixture.errors, ...value },null,2)+'\n',{flag:'wx'});
+  await writeFile(directory + '/' + name + '.json',JSON.stringify({ coverage:'simulated UI bridge; actual Ops/Rewards/Economy adapter', hashes:fixture.hashes, errors:fixture.errors, ...value },null,2)+'\n',{flag:'w'});
   return value;
 }

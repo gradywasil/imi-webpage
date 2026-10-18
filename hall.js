@@ -50,10 +50,12 @@ window.Hall = (() => {
     return next;
   }
   /* The Look book keeps its original silhouette cards (ops.js); this is only the Track team set and the save control above them. */
-  function render(state, catalogue, esc, ready) {
+  function render(state, catalogue, esc, ready, art) {
     const h = state.meta.hall, saved = recorded(h), live = observe(state), waiting = Object.keys(live).filter(id => !saved.has(id)).length;
-    const claimed = !!h?.claims[id], done = complete(h), button = (act,label,ok) => `<button type="button" class="o-btn sm" data-act="hall:${act}"${ok ? '' : ' disabled'}>${label}</button>`;
-    return `<section class="o-card lg09i-set"><div class="o-row"><h3>Track team · ${members.filter(i => saved.has(i)).length}/5</h3><span class="o-dim" role="status" aria-live="polite">${!h ? 'Waiting to save' : waiting ? `${waiting} new, unsaved` : 'All saved'}</span></div><p class="o-dim">${members.map(i => `${esc(catalogue.find(l => l.id === i).name)} ${saved.has(i) ? '✓' : '·'}`).join(' · ')}</p><p>${claimed ? 'Royalty Rush claimed. This set never grants another.' : done ? 'All five saved. Claim a one-time Royalty Rush: activate it in Awards for ×7 royalties and division income for 15 game seconds.' : 'Save all five Track team looks to claim a one-time Royalty Rush (×7 royalties for 15 game seconds). Only looks seen in this save count.'}</p><div class="o-row o-left">${button('save','Save discoveries',ready && !!h && !!waiting)}${button('claim',claimed ? 'Claimed' : 'Claim Royalty Rush',ready && done && !claimed)}</div></section>`;
+    const claimed = !!h?.claims[id], done = complete(h), button = (act,label,ok,tip = '') => `<button type="button" class="o-btn sm" data-act="hall:${act}"${tip ? ` title="${tip}"` : ''}${ok ? '' : ' disabled'}>${label}</button>`;
+    /* five portraits: the ones you have saved are in colour, the rest are silhouettes */
+    const faces = members.map(i => `<span class="o-trk${saved.has(i) ? ' on' : live[i] ? ' new' : ''}" title="${esc(catalogue.find(l => l.id === i).name)}">${art ? art(i) : ''}</span>`).join('');
+    return `<section class="o-card lg09i-set"><div class="o-row"><h3>Track team</h3><span class="o-lvl" role="status" aria-live="polite">${members.filter(i => saved.has(i)).length}/5${waiting ? ` · ${waiting} new` : ''}</span></div><div class="o-trackrow">${faces}</div><div class="o-row o-left">${button('save','Save discoveries',ready && !!h && !!waiting)}${button('claim',claimed ? 'Claimed' : 'Claim Royalty Rush',ready && done && !claimed,'×7 royalties and division income for 15 game seconds, once')}</div></section>`;
   }
   if (enabled) (window.__OPS_EXTENSIONS ??= []).push(['hall',{actions:{save:() => Rewards.hallAction('save'),claim:() => Rewards.hallAction('claim')}}]);
   return Object.freeze({enabled,id,observe,recorded,complete,validate,goldSource,candidate,render});

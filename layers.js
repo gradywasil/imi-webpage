@@ -17,6 +17,11 @@ window.Layers = (() => {
   const copy = x => JSON.parse(JSON.stringify(x));
   const same = (a,b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   const genre = id => genres.find(g => g.id === id);
+  /* long-game Imprint upgrades, in Press Seals: Rebuild Blueprint, House Style, Editorial Exchange, Touring Staff */
+  const EXTRA = {blueprint:2, style:1, exchange:2, touring:3};
+  const EXTRA_ART = {blueprint:'a-blueprint', style:'f-genre', exchange:'f-batch', touring:'a-foreman'};
+  const EXTRA_NAME = {blueprint:'Rebuild Blueprint', style:'House Style', exchange:'Editorial Exchange', touring:'Touring Staff'};
+  const EXTRA_TEXT = {blueprint:'Every room starts with Keeper Batches I.', style:'A new Imprint keeps the genre you chose.', exchange:'Surplus words of a band become the missing word of the current goal in that band, three for one, a couple of times a spell.', touring:'Pick one machine: it types 1.25x faster. Nothing else changes.'};
   function current(s) {
     estateIdentity(s);
     const l = s.meta.layers;
@@ -102,6 +107,8 @@ window.Layers = (() => {
     // These maps are room inventory; old keys must not survive the merge above.
     for (const key of ['written','bank','deals']) next[key] = {};
     next.desks = fresh.desks.map((d,i) => ({...s.desks[i], ...d, up:{...s.desks[i]?.up, ...d.up}, keeper:{...s.desks[i]?.keeper, ...d.keeper}}));
+    for (const key of ['sb','fmRun','fmSecs','fmBp','xFund','xFundW','xFundL','hxCount','sbBp']) delete next[key];
+    if (window.Campus && next.meta?.campus) next.meta = {...next.meta, campus:window.Campus.afterReset(next.meta.campus)};     // the Annex is rebuilt with the room; its deed and settings stay     // run-scoped state of the long-game package never outlives its room
     next.editions = {...s.editions};
     for (const id of Object.keys(s.written)) next.editions[id] = (next.editions[id] || 0) + 1;
     next.legacy = copy(s.legacy);
@@ -124,7 +131,7 @@ window.Layers = (() => {
     const estate = advanceIdentity(s, true);
     if (estate !== undefined) next.meta.estate = estate;
     next.meta.layers = {...l, count:l.count + 1, baseline:q.total, seals:l.seals + q.seals,
-      highestPrinting:Math.max(l.highestPrinting, s.printing + 1), genre:null};
+      highestPrinting:Math.max(l.highestPrinting, s.printing + 1), genre:window.LegacyB?.enabled() && l.purchases.style ? l.genre : null};
     finishRoom(s,next);
     if (next.meta.folio) next.meta.folio = {...next.meta.folio, ...epochFields(next), imprint:l.count + 1};
     return next;
@@ -136,9 +143,9 @@ window.Layers = (() => {
     settled(s, ['slot','remove','clear'].includes(request.action) || request.action === 'buy' && request.id === 'shelf');
     if (!s.intro.done || !l.count) throw Error('Found the first Imprint before buying its benefits.');
     if (request.action === 'buy') {
-      const cost = request.id === 'shelf' ? 2 : 1;
-      if (!['press','charter','shelf'].includes(request.id) || l.purchases[request.id] || l.seals < cost ||
-          request.id === 'charter' && !l.purchases.press || request.id === 'shelf' && !l.purchases.charter) throw Error('Purchase unavailable, already owned, or insufficient Seals.');
+      const extra = window.LegacyB?.enabled() ? EXTRA : {}, cost = request.id === 'shelf' ? 2 : extra[request.id] ?? 1;
+      if (!['press','charter','shelf',...Object.keys(extra)].includes(request.id) || l.purchases[request.id] || l.seals < cost ||
+          request.id === 'charter' && !l.purchases.press || request.id === 'shelf' && !l.purchases.charter || extra[request.id] && !l.purchases.press) throw Error('Purchase unavailable, already owned, or insufficient Seals.');
       l.seals -= cost; l.purchases[request.id] = true;
     } else if (request.action === 'genre') {
       if (!l.purchases.press || l.genre || !genre(request.id)) throw Error('Choose one genre per Imprint after buying Genre press.');
@@ -190,7 +197,9 @@ window.Layers = (() => {
   const button = (action,text,attrs='') => `<button type="button" class="o-btn" data-act="layers:${action}" ${attrs}>${text}</button>`;
   function act(action,id) {
     const result = window.Rewards.layerAction({action,id,...epochFields(api.state()),expected:copy(api.state().meta.layers ?? null)});
-    notice = result.ok ? '' : result.error; api.mark(); return result;
+    notice = result.ok ? '' : result.error; api.mark();
+    if (result.ok && action === 'buy' && EXTRA[id] && window.LGFX) { window.LGFX.sfx('levelup'); if (window.Juice) window.Juice.stamp(EXTRA_NAME[id], { tier: 1 }); }
+    return result;
   }
   function shelfUI(s, l) {
     const slots = l.shelf || [], bonus = shelfBonus(s), owned = l.purchases.shelf;
@@ -202,7 +211,7 @@ window.Layers = (() => {
     catch(e) { c.morph(pane, `<div class="o-card layers"><h3>Imprints unavailable</h3><p>${escape(e.message)}</p>${button('back','Back to Legacy')}</div>`); return; }
     let html = `<div class="o-card layers"><h3>Imprints</h3>${button('back','Back to Legacy')}<p>Imprints ${l.count} · Press Seals ${l.seals}</p><span class="o-prog" role="img" aria-label="Awarded stars toward the next Imprint"><i style="width:${Math.max(0, Math.min(100, Math.round(100 * (s.legacy.total - l.baseline) / (60 * STAR_K))))}%"></i></span><p class="o-dim">${s.legacy.total - l.baseline} / ${60 * STAR_K} · Printing ${s.printing + 1} / 8</p>${q ? `<p>+${q.seals} Seals</p>` : /^Requires Printing 8/.test(why) ? '' : `<p class="o-dim">${escape(why)}</p>`}${button('preview','Review foundation',q ? '' : 'disabled')}</div>`;
     if (l.count) {
-      html += `<div class="o-card layers"><h3>Permanent purchases</h3>${button('press',l.purchases.press ? 'Genre press owned' : 'Buy Genre press · 1 Seal',l.purchases.press || l.seals < 1 ? 'disabled' : '')}${button('charter',l.purchases.charter ? 'Folio charter owned' : 'Buy Folio charter · 1 Seal',l.purchases.charter || !l.purchases.press || l.seals < 1 ? 'disabled' : '')}</div>`;
+      html += `<div class="o-card layers"><h3>Permanent purchases</h3>${button('press',l.purchases.press ? 'Genre press owned' : 'Buy Genre press · 1 Seal',l.purchases.press || l.seals < 1 ? 'disabled' : '')}${button('charter',l.purchases.charter ? 'Folio charter owned' : 'Buy Folio charter · 1 Seal',l.purchases.charter || !l.purchases.press || l.seals < 1 ? 'disabled' : '')}${window.LegacyB?.enabled() && window.LGFX && l.purchases.press ? `<div class="lgx-row">${Object.entries(EXTRA).map(([id,cost]) => window.LGFX.tile({art:EXTRA_ART[id],sz:44,cost:l.purchases[id] ? undefined : cost,kind:'seal',act:'layers:' + id,ok:!l.purchases[id] && l.seals >= cost,on:!!l.purchases[id],label:EXTRA_NAME[id],why:EXTRA_NAME[id] + '. ' + EXTRA_TEXT[id]})).join('')}</div>` : ''}</div>${window.LegacyB?.enabled() && window.HouseUI ? window.HouseUI.html(api) : ''}`;
       html += `<div class="o-card layers"><h3>${l.genre ? escape(genre(l.genre).name) + ' Imprint' : 'Neutral Imprint'}</h3>`;
       if (l.purchases.press && !l.genre) html += genres.map(g => `${button('genre',g.name,`data-id="${g.id}"`)}<p>${genreText(g)}</p>`).join('');
       else if (l.genre) html += `<p>${genreText(genre(l.genre))}</p>`;
@@ -230,7 +239,8 @@ window.Layers = (() => {
     actions:{open:() => { shelfFirst = false; api.setTab('imprints'); }, back:() => api.setTab('legacy'), preview,
       folio:() => api.setTab('folio'), shelf:() => act('buy','shelf'),
       slot:el => act('slot',el.dataset.id), remove:el => act('remove',el.dataset.id), clear:() => act('clear'),
-      press:() => act('buy','press'), charter:() => act('buy','charter'), genre:el => act('genre',el.dataset.id)}
+      press:() => act('buy','press'), charter:() => act('buy','charter'), genre:el => act('genre',el.dataset.id),
+      blueprint:() => act('buy','blueprint'), style:() => act('buy','style'), exchange:() => act('buy','exchange'), touring:() => act('buy','touring')}
   }]);
   return {enabled, current, estateIdentity, epochValid, epochFields, epochMatches, identityKey, identityReady, initializeIdentity, advanceIdentity, identity, active, charter, settled, quote, projectRoom, finishRoom, project, proposal, stamp, pending, saleFactor, shelfBonus, openShelf:() => { shelfFirst = true; api.setTab('imprints'); }, weights, genres, same};
 })();

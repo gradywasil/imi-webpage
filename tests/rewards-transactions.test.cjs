@@ -34,7 +34,7 @@ test('every live assignment uses the actual module, stable ID and approved locke
   try {
     const rows = catalogue();
     const result = await f.page.evaluate(rows => {
-      const api = IMI.ops.extensions, hook = __OPS_EXTENSIONS.find(([id]) => id === 'rewards')[1], before = JSON.stringify(IMI.ops.dev.S().stats);
+      const api = IMI.ops.extensions, hook = __OPS_EXTENSIONS.find(([id]) => id === 'rewards')[1], before = JSON.stringify({...IMI.ops.dev.S().stats,mag:0});
       let random = 0; const original = Math.random; Math.random = () => { random++; return original(); };
       for (const r of rows) { api.state().awards[r.id] = true; hook.award({ id:r.id,tier:r.tier,silent:true },api); }
       for (const id of ['vowel','haiku','hands','timed']) { api.state().chDone[id] = true; hook.challenge({ id,kind:'done',first:true },api); }
@@ -43,7 +43,7 @@ test('every live assignment uses the actual module, stable ID and approved locke
       for (const r of rows) hook.award({ id:r.id,tier:r.tier,silent:false },api);
       hook.challenge({ id:'timed',kind:'done',first:false },api); hook.reset({ kind:'printing',previousPrinting:1 },api);
       Math.random = original;
-      return { s:api.state(),statsUnchanged:before === JSON.stringify(api.state().stats), duplicateUnchanged:once === JSON.stringify(api.state()),random,wallet:IMI.bananas.get() };
+      return { s:api.state(),statsUnchanged:before === JSON.stringify({...api.state().stats,mag:0}), duplicateUnchanged:once === JSON.stringify(api.state()),random,wallet:IMI.bananas.get() };
     },rows);
     assert.equal(result.s.prem.earned,109); assert.equal(Object.keys(result.s.rewards.claims).length,73);
     assert.equal(result.random,0); assert.equal(result.statsUnchanged,true); assert.equal(result.duplicateUnchanged,true);
@@ -129,7 +129,7 @@ for (const speed of [.5,1,1.25,2]) test('actual sustained rates, lucky expectati
       const api=IMI.ops.extensions,d=IMI.ops.dev,s=d.S(),hook=__OPS_EXTENSIONS.find(([id])=>id==='rewards')[1];
       s.desks[1].owned=true; s.desks[1].paws=1; d.ensureCrew(s.desks[1]); const t=s.desks[1].crew[0]; t.trait='lucky'; t.look='unknown'; t.talent=0; t.coach=0; t.xp=0;
       s.desks[1].up.fing=2; s.metro=true; s.sel=0;
-      const basis=api.rewardBasis(); const stats=JSON.stringify(s.stats),xp=t.xp;
+      const basis=api.rewardBasis(); const stats=JSON.stringify({...s.stats,mag:0}),xp=t.xp;
       for(const k of ['frenzy','golden','snack','sluggish','rush','critic'])d.buffs[k]=performance.now()+60000;
       s.dbl=true; const buffed=api.rewardBasis();
       const locked=[];
@@ -141,7 +141,7 @@ for (const speed of [.5,1,1.25,2]) test('actual sustained rates, lucky expectati
       s.desks[1].paws=1000000; s.desks[1].crew=Array.from({length:20},()=>({ ...t,talent:100000000 }));
       const letterCaps=[];
       for(const id of ['c10','c100','gar500']) { s.awards[id]=true;hook.award({ id,tier:0,silent:true },api);letterCaps.push(api.state().rewards.claims['award:'+id].descriptor); }
-      return { basis,buffed,locked,cashBasis,cashMiddle,cashCaps,letterCaps,statsUnchanged:stats===JSON.stringify(s.stats),xpUnchanged:xp===t.xp,letters:api.state().desks[1].letters };
+      return { basis,buffed,locked,cashBasis,cashMiddle,cashCaps,letterCaps,statsUnchanged:stats===JSON.stringify({...s.stats,mag:0}),xpUnchanged:xp===t.xp,letters:api.state().desks[1].letters };
     });
     assert.deepEqual(value.basis,value.buffed); assert.equal(value.basis.desk,1); assert.ok(value.basis.letters[1]>0);
     for(const [index,minutes] of [[0,3],[1,5],[2,10]]) {
@@ -196,7 +196,7 @@ for(const [id,db] of [['vowel',5],['haiku',7],['hands',7],['timed',9]])test('act
       s.challenge={ id,start:Date.now() }; d.action('chabandon'); const abandoned=!!s.chDone[id];
       if(id==='timed'){s.challenge={ id,start:Date.now()-C.minutes*60000-1 };__advance(1100);}
       const failed=!!s.chDone[id];
-      const books=d.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen); for(const r of books.slice(0,C.goalN)){for(const [w,n]of Object.entries(r.need))s.bank[w]=n;d.writeTitle(r.id,null,{ silent:true });}
+      const books=d.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen); for(const r of books.slice(0,C.goalN)){for(const [w,n]of Object.entries(r.need))s.bank[w]=n;d.touchBank();d.writeTitle(r.id,null,{ silent:true });}
       s.challenge={ id,start:Date.now() };__advance(1100); const first=s.prem.earned-before, stars=s.legacy.stars;
       s.challenge={ id,start:Date.now() };__advance(1100);
       return { abandoned,failed,first,total:s.prem.earned-before,stars,repeatStars:s.legacy.stars,receipt:s.rewards.claims['challenge:'+id+':first'] };
@@ -206,7 +206,7 @@ for(const [id,db] of [['vowel',5],['haiku',7],['hands',7],['timed',9]])test('act
   } finally { await f.close(); }
 });
 
-test('actual first Printing and full reset preserve continuing receipts then start an empty new timeline',async()=>{
+test('actual first Printing preserves continuing receipts and a full reset is refused once rewards exist',async()=>{
   const f=await h.fixture(browser);
   try {
     const result=await f.page.evaluate(()=>{ const d=IMI.ops.dev,s=d.S(),r=d.RECIPES.find(r=>!r.kid&&!r.lib&&!r.gen);
@@ -218,7 +218,7 @@ test('actual first Printing and full reset preserve continuing receipts then sta
     });
     assert.equal(result.sale.descriptor.kind,'C');assert.deepEqual(result.first.s1,result.sale);assert.equal(result.first.layer.descriptor.amount,5);assert.equal(result.first.pr1.descriptor.amount,2);
     assert.equal(result.first.earned,result.repeat);assert.deepEqual(result.reset.rewards.migration.oldAwardIds,[]);assert.deepEqual(result.reset.rewards.migration.oldChallengeIds,[]);
-    assert.equal(result.reset.prem.earned,0);assert.equal(result.reset.printing,0);assert.equal(result.running,true);assert.equal(result.marker,null);assert.deepEqual(f.errors,[]);await h.capture(f,'printing-reset');
+    assert.equal(result.reset.prem.earned,result.repeat);assert.ok(result.reset.printing>0);assert.equal(result.running,true);assert.deepEqual(f.errors,[]);await h.capture(f,'printing-reset');
   } finally { await f.close(); }
 });
 

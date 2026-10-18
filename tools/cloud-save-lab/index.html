@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connected saves lab | Infinite Monkey Industries</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header><p class="eyebrow">Infinite Monkey Industries / development</p><h1>Connected saves lab</h1><p>Try one account across two sample devices. Your actual game saves are never opened or changed.</p></header>
+    <aside class="notice"><strong>Local emulators only.</strong> Use made-up accounts and passwords. Google opens a simulated sign-in page. No real Google account or Firebase project is connected.</aside>
+    <section class="account" aria-labelledby="account-title">
+      <div><h2 id="account-title">Connect an account</h2><p id="identity">Restoring local session…</p></div>
+      <form id="auth-form">
+        <label>Email<input id="email" type="email" autocomplete="username" placeholder="player@example.test" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
+        <div class="actions"><button type="submit">Sign in</button><button type="submit" name="create" value="yes">Create test account</button></div>
+      </form>
+      <div class="actions"><button id="google" type="button">Google test sign-in</button><button id="sign-out" type="button" disabled>Sign out</button></div>
+      <p id="account-status" role="status" aria-live="polite">Start the emulators before signing in. Guest samples work without them.</p>
+    </section>
+    <section class="devices" aria-label="Sample devices" id="devices"></section>
+    <section class="instructions"><h2>Try a device conflict</h2><ol><li>Sign in and upload Device A.</li><li>On Device B, check cloud and choose the cloud save.</li><li>Take Device B offline and add progress. Add progress on A and upload it.</li><li>Bring B online and upload. Choose which branch to continue. Both copies are preserved.</li></ol><p>The panels share one sign-in session, but keep separate device progress. Account switching opens separate local records. Cloud saves are manual in this lab.</p><p>Inspect local Auth and Firestore data in the <a href="http://127.0.0.1:4499" target="_blank" rel="noreferrer">Firebase Emulator UI</a>.</p></section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

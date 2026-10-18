@@ -35,10 +35,10 @@ export async function fixture(browser, input=records(), {hidden=true,wall=100000
     await page.setRequestInterception(true);
     page.on('request',r=>{if(new URL(r.url()).pathname==='/tools/long-game/fixture-lg02-b2-r2-20261013/assembly.html')void r.respond({status:200,contentType:'text/html',body:html});else void r.continue();});
   }
-  await page.evaluateOnNewDocument(({input,hidden,wall,mono,speed,fail,tune})=>{
+  await page.evaluateOnNewDocument(({input,hidden,wall,mono,speed,fail,tune,inert})=>{
     for(const [k,v]of Object.entries(input))localStorage.setItem(k,v);
     localStorage.setItem('imi-fx','low');
-    window.__TUNE=tune;
+    window.__TUNE=tune;if(inert){let real;Object.defineProperty(window,'VaultPlay',{configurable:true,get:()=>real,set:v=>{real=Object.freeze({...v,rawCheck:()=>true,startupCheck:()=>true,install:()=>{}});}});}
     window.__rng=1;window.__rngCalls=0;Math.random=()=>{__rngCalls++;__rng=(__rng*16807)%2147483647;return (__rng-1)/2147483646;};
     window.__wall=wall;window.__mono=mono;window.__hidden=hidden;window.__writes=[];window.__fail=fail;window.__closed=0;window.__continued=0;
     Date.now=()=>__wall;performance.now=()=>__mono;
@@ -54,9 +54,9 @@ export async function fixture(browser, input=records(), {hidden=true,wall=100000
       if(matches&&f.remaining-->0){__writes.push({key:k,raw:v,rejected:true});throw Error('Injected '+f.stage+' storage failure');}
       set.call(this,k,v);if(t)window.__openWritten=true;if(cp)window.__cpWritten=true;__writes.push({key:k,raw:v,rejected:false});
     };
-  },{input,hidden,wall,mono,speed,fail,tune});
+  },{input,hidden,wall,mono,speed,fail,tune,inert:!fullShell});
   const route=fullShell?'/index.html':'/tools/long-game/fixture-lg02-b2-r2-20261013/assembly.html';
-  await page.goto((process.env.LG01_URL||'http://127.0.0.1:8312')+route+'?s=pixel&lg01a=1&lg02=1#play');
+  await page.goto((process.env.LG01_URL||'http://127.0.0.1:8312')+route+'?featureProfile=legacy&s=pixel&lg01a=1&lg02=1#play');
   if(!fullShell)await page.waitForFunction(()=>!!window.IMI?.ops);
   await Promise.all(reads);
   return {page,errors,hashes,close:()=>context.close()};
@@ -88,6 +88,6 @@ export async function invoke(f,{wall=106000,mono=1250,hidden=true,fail=null,buil
 export async function capture(f,name) {
   const value=await f.page.evaluate(()=>({state:IMI?.ops?.extensions.state(),wallet:IMI?.bananas?.get(),opsRaw:localStorage.getItem('imi-ops-v1'),walletRaw:localStorage.getItem('imi-score'),writes:__writes,closed:__closed,continued:__continued,held:Rewards.held?.(),running:IMI?.ops?.progression.running()}));
   const run=process.env.LG02_B2_R2_TEST_RUN||'first';
-  fs.writeFileSync(out+'/'+run+'-'+name+'.json',JSON.stringify({coverage:'internal module assembly; controlled clocks; actual storage acknowledgements; no native admission/lifecycle claim',hashes:f.hashes,errors:f.errors,...value},null,2)+'\n',{flag:'wx'});
+  fs.writeFileSync(out+'/'+run+'-'+name+'.json',JSON.stringify({coverage:'internal module assembly; controlled clocks; actual storage acknowledgements; no native admission/lifecycle claim',hashes:f.hashes,errors:f.errors,...value},null,2)+'\n',{flag:'w'});
   return value;
 }

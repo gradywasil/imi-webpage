@@ -51,6 +51,12 @@
     { id: 'pitch', when: s => s.pitch && s.sold >= 2, target: tabBtn('press'), text: 'New: Pitches. Commission your own titles in Titles > Pitches.' },
     { id: 'muse', when: s => s.museSlots > 0, target: 'tab:muses', text: 'A Muse seat is open. Invite a Muse in the Muses tab.' },
     { id: 'legacy', when: s => s.stars >= 1, target: 'tab:legacy', text: 'You earned a Legacy star! Open Legacy to go to press.' },
+    { id: 'workshop', when: s => s.lg?.workshop, target: 'tab:workshop', text: 'New: the Workshop! Send an expedition out for Parts.' },
+    { id: 'ledger', when: s => s.lg?.ledger, target: 'tab:legacy', text: 'You can buy the Rebuild Ledger in Legacy. It remembers how you rebuild.' },
+    { id: 'exphome', when: s => s.lg?.expHome, target: 'tab:workshop', text: 'Your expedition is home! Collect it in the Workshop.' },
+    { id: 'foreman', when: s => s.lg?.foreman, target: 'tab:legacy', text: 'Printing Foreman bought! Switch on Room control in Legacy.' },
+    { id: 'annex', when: s => s.lg?.campus, target: 'tab:campus', text: 'The Annex can open! Visit the Campus tab.' },
+    { id: 'studio', when: s => s.lg?.studio, target: 'tab:campus', text: 'The Studio can open! Visit the Campus tab.' },
     { id: 'daily', ev: 'daily', text: 'Come back tomorrow for a bigger banana crate.' }
   ];
 

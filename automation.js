@@ -383,7 +383,7 @@
   }
   function printRule(earned, paid, seconds, N) {
     if (!Number.isSafeInteger(earned) || earned < 0 || !Number.isSafeInteger(paid) || paid < 0 || !Number.isSafeInteger(N) || N < 5 || N > 240) return null;
-    const gain = Math.floor(Math.sqrt(earned / 12500000)), target = (gain + 1) ** 2 * 12500000, gap = target - earned;
+    const gain = Economy.starsFor(earned), target = Economy.nextStarAt(earned), gap = target - earned;
     if (!Number.isSafeInteger(target) || gap <= 0) return null;
     const rate = seconds === 300 && paid > 0 ? paid / 300 : null, estimate = rate ? gap / (60 * rate) : null;
     return {gain,gap,rate,estimate,eligible:gain >= 1 && estimate !== null && Number.isFinite(estimate) && estimate > N};

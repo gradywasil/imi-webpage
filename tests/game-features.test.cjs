@@ -12,6 +12,9 @@ test('normal URLs enable the implemented catalogue only, with explicit overrides
   const c = context();
   for (const name of ['lg01a','lg02','lg02lamp','lg02speed','lg02funding','lg03','lg05folio','lg05layers','lg08estate','lg08archive','lg08print','lg08mastery','lg08challenge','lg09works','lg09board','lg09hall','lg09seasons','lg10awards','mg01','pg01','pg02','pg03','ui01']) assert(c.GameFeatures.enabled(name), name);
   for (const name of ['lg09demo','payments','endless','unknown']) assert.equal(c.GameFeatures.enabled(name), false);
+  assert.equal(c.GameFeatures.enabled('lgb'), true, 'the long-game package is part of the game');
+  assert.equal(context('?lgb=0').GameFeatures.enabled('lgb'), false, 'and can still be switched off to compare');
+  assert.equal(context('?featureProfile=legacy').GameFeatures.enabled('lgb'), false, 'the legacy profile keeps the old economy');
   const off = context('?lg03=0&lg02speed=0');
   assert.equal(off.GameFeatures.enabled('lg03'), false);
   assert.equal(off.GameFeatures.enabled('lg02speed'), false);
@@ -34,7 +37,7 @@ test('both editions and harness load configuration before cold predicates; SW ca
     assert(html.indexOf('game-features.js') < html.indexOf('awards-catalogue.js'), file);
     assert(html.indexOf('game-features.js') < html.indexOf('vault-save-gate.js'), file);
   }
-  assert(source('sw.js').includes("const VERSION = 'imi-v85'"));
+  assert(source('sw.js').includes("const VERSION = 'imi-v87'"));
   assert(source('sw.js').includes("'game-features.js'"));
 });
 function ownedSpeed(c) {

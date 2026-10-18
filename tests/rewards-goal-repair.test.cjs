@@ -70,8 +70,8 @@ test('inventory reveals earned or bought Diamond balance at one without writes, 
         const before=JSON.stringify(s),wallet=IMI.bananas.get(),writes=__writes.length,html=Rewards.awardsHeader();
         return {html,same:before===JSON.stringify(s),walletSame:wallet===IMI.bananas.get(),writes:__writes.length-writes};
       },{earned,bought});
-      assert.equal(value.html.includes('<p>Diamond Bananas:'),visible);assert.match(value.html,/data-act="rewards:activate"/);assert.equal(value.same,true);assert.equal(value.walletSame,true);assert.equal(value.writes,0);
-      if(visible)assert.ok(value.html.includes(`Diamond Bananas: ${earned+bought} (${earned} earned, ${bought} bought)`));
+      assert.equal(value.html.includes('o-reward-wallet'),visible);assert.doesNotMatch(value.html,/data-act="rewards:activate"/,'no stored token, so no activation row is drawn');assert.equal(value.same,true);assert.equal(value.walletSame,true);assert.equal(value.writes,0);
+      if(visible)assert.ok(value.html.includes(`aria-label="${earned+bought} Diamond Bananas"`));
     }
     await h.capture(f,'goal-repair-diamond-display');assert.deepEqual(f.errors,[]);
   }finally{await f.close();}

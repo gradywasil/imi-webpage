@@ -24,7 +24,7 @@ test('inline settings, acknowledged recovery and Legacy tiers in both editions',
    await page.waitForFunction(()=>window.IMI?.ops?.extensions);
    await page.evaluate(()=>{
     const api=IMI.ops.extensions,s=api.state();Object.keys(s.intro).forEach(k=>s.intro[k]=true);s.intro.done=true;s.printing=5;s.chDone.hands=s.chDone.haiku=s.chDone.timed=true;s.legacy.stars=200;s.legacy.total=200;
-    IMI.ops.dev.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen).slice(0,8).forEach(r=>s.written[r.id]=true);s.desks[1].owned=true;s.stats.words=10;s.divTotal=1;s.muses.owned.seuss=true;IMI.bananas.add(10000);s.stats.letters=1000;s.daily={last:new Date().toDateString(),streak:1};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));
+    IMI.ops.dev.RECIPES.filter(r=>!r.kid&&!r.lib&&!r.gen).slice(0,8).forEach(r=>s.written[r.id]=true);s.desks[1].owned=true;s.stats.words=10;s.divTotal=1;s.muses.owned.seuss=true;IMI.bananas.add(10000);s.stats.letters=1000;s.daily={last:new Date().toDateString(),streak:1};s.meta.automation={version:1,ownership:{version:1,owned:Object.fromEntries(['hire','coach','shop','restore','garden','pitch','media','muse','print','challenge','net'].map(id=>[id,true]))}};s.rewards={};s.prem={};localStorage.setItem('imi-ops-v1',JSON.stringify(s));
    });
    await page.reload(); await page.waitForFunction(()=>window.IMI?.ops?.extensions?.automationAllowed());
    const go=async tab=>{await page.evaluate(tab=>IMI.ops.extensions.setTab(tab),tab);await new Promise(r=>setTimeout(r,350));};

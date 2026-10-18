@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="ops.css">
   <link rel="stylesheet" href="gems.css">
   <link rel="stylesheet" href="juice.css">
+  <link rel="stylesheet" href="longgame-fx.css">
   <link rel="stylesheet" href="commission-board.css">
 <link rel="stylesheet" href="hall.css">
 <link rel="stylesheet" href="seasons.css">
@@ -59,23 +60,26 @@
       <div class="hm-vine"></div>
       <div class="hm-bubble" id="hmBubble">OOH OOH!</div>
       <svg viewBox="0 0 80 110">
-        <g class="m-tail"><path d="M48 80 C70 82 74 98 62 102 C56 104 54 98 60 96" fill="none" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/></g>
-        <g class="m-leg-l"><ellipse cx="33" cy="94" rx="6" ry="11" fill="#6b4423"/><ellipse cx="33" cy="104" rx="6" ry="3.5" fill="#d9a066"/></g>
-        <g class="m-leg-r"><ellipse cx="47" cy="94" rx="6" ry="11" fill="#6b4423"/><ellipse cx="47" cy="104" rx="6" ry="3.5" fill="#d9a066"/></g>
-        <ellipse cx="40" cy="68" rx="15" ry="22" fill="#7a4a21"/>
-        <ellipse cx="40" cy="72" rx="9" ry="14" fill="#e8c08a"/>
-        <path class="m-arm-l" d="M29 52 Q14 34 34 9" fill="none" stroke="#7a4a21" stroke-width="7" stroke-linecap="round"/>
-        <path class="m-arm-r" d="M51 52 Q66 34 46 9" fill="none" stroke="#7a4a21" stroke-width="7" stroke-linecap="round"/>
-        <circle cx="34" cy="8" r="5" fill="#5a3517"/><circle cx="46" cy="8" r="5" fill="#5a3517"/>
-        <circle cx="22" cy="40" r="7" fill="#7a4a21"/><circle cx="22" cy="40" r="3.5" fill="#e8c08a"/>
-        <circle cx="58" cy="40" r="7" fill="#7a4a21"/><circle cx="58" cy="40" r="3.5" fill="#e8c08a"/>
-        <circle cx="40" cy="40" r="17" fill="#7a4a21"/>
-        <ellipse cx="40" cy="44" rx="12" ry="11" fill="#f0cf9c"/>
-        <g class="m-eyes"><g class="m-pupil"><circle cx="34" cy="39" r="2.6" fill="#1b1008"/><circle cx="34.8" cy="38.2" r=".8" fill="#fff"/></g>
-          <g class="m-pupil"><circle cx="46" cy="39" r="2.6" fill="#1b1008"/><circle cx="46.8" cy="38.2" r=".8" fill="#fff"/></g></g>
-        <ellipse cx="40" cy="45" rx="2.6" ry="1.8" fill="#6b3d1b"/>
-        <ellipse class="m-mouth-open" cx="40" cy="51" rx="4.5" ry="5" fill="#5a1a10"/>
-        <path class="m-smile" d="M34 49 Q40 54 46 49" fill="none" stroke="#6b3d1b" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- the typists' look: warm outline, big head, ears with skin inside, white eyes, skin muzzle, hands and feet. Layers: tail, legs, torso, arms, then the whole head on top. -->
+        <g class="m-tail"><path d="M48 80 C70 82 74 98 62 102 C56 104 54 98 60 96" fill="none" stroke="#3d2410" stroke-width="7.6" stroke-linecap="round"/><path d="M48 80 C70 82 74 98 62 102 C56 104 54 98 60 96" fill="none" stroke="#6b3418" stroke-width="4.6" stroke-linecap="round"/><circle cx="60" cy="96.5" r="2.4" fill="#b4693a"/></g>
+        <g class="m-leg-l"><rect x="27" y="84" width="12" height="21" rx="6" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="33" cy="104.5" rx="7.2" ry="4" fill="#f3b281" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><path d="M30 105.5 v1.8 M33.6 106 v1.8" stroke="#3d2410" stroke-width="1" stroke-linecap="round"/></g>
+        <g class="m-leg-r"><rect x="41" y="84" width="12" height="21" rx="6" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="47" cy="104.5" rx="7.2" ry="4" fill="#f3b281" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><path d="M44 105.5 v1.8 M47.6 106 v1.8" stroke="#3d2410" stroke-width="1" stroke-linecap="round"/></g>
+        <ellipse cx="40" cy="68" rx="16" ry="23" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/>
+        <ellipse cx="40" cy="72" rx="9.6" ry="14.6" fill="#f3b281"/>
+        <path class="m-arm-l" d="M29 52 Q14 34 34 9" fill="none" stroke="#3d2410" stroke-width="10.4" stroke-linecap="round"/><path class="m-arm-r" d="M51 52 Q66 34 46 9" fill="none" stroke="#3d2410" stroke-width="10.4" stroke-linecap="round"/>
+        <path d="M29 52 Q14 34 34 9" fill="none" stroke="#8a4a24" stroke-width="7.2" stroke-linecap="round"/><path d="M51 52 Q66 34 46 9" fill="none" stroke="#8a4a24" stroke-width="7.2" stroke-linecap="round"/>
+        <circle cx="34" cy="8" r="5.6" fill="#f3b281" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><circle cx="46" cy="8" r="5.6" fill="#f3b281" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="21.5" cy="40" r="7.6" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><circle cx="21.5" cy="40" r="4" fill="#d08853"/>
+        <circle cx="58.5" cy="40" r="7.6" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/><circle cx="58.5" cy="40" r="4" fill="#d08853"/>
+        <circle cx="40" cy="40" r="18" fill="#8a4a24" stroke="#3d2410" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M28 29 C32 23 48 23 52 29" fill="none" stroke="#b4693a" stroke-width="2.4" stroke-linecap="round" opacity=".65"/>
+        <path d="M40 37.5 C36 30.5 24.5 31.5 25.5 41 C26.2 48.5 29.8 53.5 40 54.5 C50.2 53.5 53.8 48.5 54.5 41 C55.5 31.5 44 30.5 40 37.5 Z" fill="#f3b281"/>
+        <g class="m-eyes"><ellipse cx="33" cy="39.5" rx="4.4" ry="5" fill="#fff" stroke="#3d2410" stroke-width="1"/><ellipse cx="47" cy="39.5" rx="4.4" ry="5" fill="#fff" stroke="#3d2410" stroke-width="1"/>
+          <g class="m-pupil"><circle cx="33.8" cy="40.4" r="2.7" fill="#3d2410"/><circle cx="34.7" cy="39.4" r=".9" fill="#fff"/></g>
+          <g class="m-pupil"><circle cx="46.2" cy="40.4" r="2.7" fill="#3d2410"/><circle cx="47.1" cy="39.4" r=".9" fill="#fff"/></g></g>
+        <circle cx="38.2" cy="47" r="1.1" fill="#3d2410"/><circle cx="41.8" cy="47" r="1.1" fill="#3d2410"/>
+        <ellipse class="m-mouth-open" cx="40" cy="52.5" rx="4.6" ry="4.6" fill="#5a1a1a" stroke="#3d2410" stroke-width="1"/>
+        <path class="m-smile" d="M34 50.2 Q40 55.4 46 50.2" fill="none" stroke="#3d2410" stroke-width="1.7" stroke-linecap="round"/>
         <g class="m-hat"><path d="M18 32 C20 10 60 10 62 32 C52 25 28 25 18 32Z" fill="#3a8a2e" stroke="#1f5a24" stroke-width="2" stroke-linejoin="round"/><path d="M40 14 L40 27 M40 19 L31 25 M40 19 L49 25" stroke="#7cc34a" stroke-width="2" stroke-linecap="round" fill="none"/></g>
       </svg>
     </div>
@@ -170,6 +174,16 @@
 <script src="commission-board.js"></script>
 <script src="hall.js"></script>
 <script src="seasons.js"></script>
+<script src="cycle-log.js"></script>
+<script src="legacy-b.js"></script>
+<script src="foreman.js"></script>
+<script src="longgame-fx.js"></script>
+<script src="workshop.js"></script>
+<script src="workshop-ui.js"></script>
+<script src="house.js"></script>
+<script src="house-ui.js"></script>
+<script src="campus.js"></script>
+<script src="campus-ui.js"></script>
 <script src="ops.js"></script>
   <script src="tour.js"></script>
   <script src="pickups.js"></script>

@@ -11,6 +11,7 @@
   /* ---------- palette ramps: [shadow, base, light] ---------- */
   const DEF = {
     fur: ['#3b2010', '#6e4220', '#9a6232'], furD: ['#2a170b', '#4f2d14', '#6e4220'],
+    furL: ['#7e4a24', '#b07238', '#d49a52'],
     skin: ['#b97c4c', '#e0aa76', '#f6d6a8'], white: ['#c9d3d8', '#ffffff', '#ffffff'],
     ink: ['#0d0708', '#1a0f14', '#3a2a30'], red: ['#6a1a14', '#b8322a', '#e86a50'],
     banY: ['#c98f0e', '#ffd23a', '#fff08c'], banIn: ['#d8b44a', '#f6e08a', '#fff6c0'],
@@ -112,29 +113,36 @@
     const C = (a, b, c, d, r) => cap(a * k, b * k, c * k, d * k, r * k);
     const B = (x, y, w, h) => box(x * k, y * k, w * k, h * k);
     const sh = (t, r, p) => px.shape(t, r, p, map);
+    /* The title-screen monkey wears the typists' look: a big head with a lighter fur tuft, ears with skin inside, big white eyes, a skin muzzle and skin hands and feet.
+       Layers, back to front: tail, legs, torso, arms (one layer, hands gripping the vine), then the whole head on top so the face is never covered. */
     const tx = ph ? 1.8 : -1.2, ty = ph ? -1.2 : 1;           // tail tip swishes between two poses
     const tail = [[4, 29], [9, 32], [13 + tx * .4, 30], [14.5 + tx * .8, 25 + ty * .5], [12.5 + tx, 21.5 + ty], [10 + tx, 22.5 + ty]];
-    for (let i = 0; i < tail.length - 1; i++) sh(C(...tail[i], ...tail[i + 1], 1.4), R.furD, 1);
+    for (let i = 0; i < tail.length - 1; i++) sh(C(...tail[i], ...tail[i + 1], 1.6), R.furD, 1);
+    sh(E(10 + tx, 22.5 + ty, 1.7, 1.7), R.furL, 1);                                  // lighter tail tip
     const dl = ph ? -1.4 : 1.2, dr = -dl, lyl = ph ? 37.2 : 38.4, lyr = ph ? 38.4 : 37.2;   // legs kick alternately
-    sh(C(-3.4, 30, -4.4 + dl, lyl, 2.2), R.fur, 2); sh(C(3.4, 30, 4.4 + dr, lyr, 2.2), R.fur, 2);
-    sh(E(-4.8 + dl, lyl + 1.4, 3, 1.7), R.skin, 3); sh(E(4.8 + dr, lyr + 1.4, 3, 1.7), R.skin, 3);
-    sh(E(0, 24.5, 6.6, 8.8), R.fur, 4); sh(E(0, 26, 4, 6.2), R.skin, 5);
-    sh(C(-6, 19, -3, 1.5, 1.9), R.fur, 6); sh(C(6, 19, 3, 1.5, 1.9), R.fur, 6);
-    sh(E(-3, 0.8, 2.3, 2.2), R.furD, 7); sh(E(3, 0.8, 2.3, 2.2), R.furD, 7);
-    sh(E(-7.2, 13.5, 3.2, 3.2), R.fur, 8); sh(E(7.2, 13.5, 3.2, 3.2), R.fur, 8);
-    sh(E(-7.2, 13.5, 1.6, 1.6), R.skin, 9); sh(E(7.2, 13.5, 1.6, 1.6), R.skin, 9);
-    sh(E(0, 14, 7.2, 6.8), R.fur, 10);
-    sh(or(E(-2.5, 13.6, 3.5, 3.4), E(2.5, 13.6, 3.5, 3.4), E(0, 16.3, 4.6, 3.4)), R.skin, 11);
-    if (expr === 'blink') { sh(B(-3.9, 13.2, 2.8, 0.9), R.ink, 12); sh(B(1.1, 13.2, 2.8, 0.9), R.ink, 12); }
+    sh(C(-3.6, 30, -4.6 + dl, lyl, 2.5), R.fur, 2); sh(C(3.6, 30, 4.6 + dr, lyr, 2.5), R.fur, 2);
+    sh(E(-5 + dl, lyl + 1.5, 3.3, 2), R.skin, 3); sh(E(5 + dr, lyr + 1.5, 3.3, 2), R.skin, 3);
+    sh(or(E(-6.4 + dl, lyl + 2.4, .7, .6), E(-4.6 + dl, lyl + 2.6, .7, .6)), R.furD, 4); sh(or(E(6.4 + dr, lyr + 2.4, .7, .6), E(4.6 + dr, lyr + 2.6, .7, .6)), R.furD, 4);   // toes
+    sh(E(0, 24.2, 7.2, 8.8), R.fur, 5); sh(E(0, 25.6, 4.5, 6.4), R.skin, 6);
+    sh(C(-6.6, 19.6, -3.6, 1.9, 2.3), R.fur, 7); sh(C(6.6, 19.6, 3.6, 1.9, 2.3), R.fur, 7);   // both arms on one layer
+    sh(E(-3.4, 1.2, 2.7, 2.5), R.skin, 8); sh(E(3.4, 1.2, 2.7, 2.5), R.skin, 8);              // hands on the vine
+    sh(or(E(-3.4, .3, .5, 1), E(3.4, .3, .5, 1)), R.furD, 9);
+    // ---- the head, on top of everything ----
+    sh(E(-8.7, 13.7, 3.6, 3.6), R.fur, 10); sh(E(8.7, 13.7, 3.6, 3.6), R.fur, 10);             // ears
+    sh(E(-8.7, 13.7, 2, 2), R.skin, 11); sh(E(8.7, 13.7, 2, 2), R.skin, 11);
+    sh(E(0, 13.6, 8.3, 7.7), R.fur, 12);
+    sh(E(0, 9.5, 5.6, 2.9), R.furL, 13);                                                       // the lighter fur tuft on the brow
+    sh(or(E(-2.7, 14.1, 3.7, 3.5), E(2.7, 14.1, 3.7, 3.5), E(0, 16.9, 4.9, 3.4)), R.skin, 14);  // muzzle
+    if (expr === 'blink') { sh(B(-4.2, 13.3, 3, 1), R.ink, 15); sh(B(1.2, 13.3, 3, 1), R.ink, 15); }
     else {
-      const big = expr === 'screech' ? 2.1 : expr === 'scared' ? 2.0 : 1.7;
-      sh(E(-2.5, 13.2, big, big + .1), R.white, 12); sh(E(2.5, 13.2, big, big + .1), R.white, 12);
-      if (!noPupils) { const r = expr === 'screech' ? .8 : expr === 'scared' ? .7 : 1; sh(E(-2.5, 13.4, r, r + .15), R.ink, 13); sh(E(2.5, 13.4, r, r + .15), R.ink, 13); }
+      const big = expr === 'screech' ? 2.4 : expr === 'scared' ? 2.3 : 2.1;
+      sh(E(-2.6, 13.3, big, big + .25), R.white, 15); sh(E(2.6, 13.3, big, big + .25), R.white, 15);
+      if (!noPupils) { const r = expr === 'screech' ? .9 : expr === 'scared' ? .8 : 1.15; sh(E(-2.6, 13.6, r, r + .2), R.ink, 16); sh(E(2.6, 13.6, r, r + .2), R.ink, 16); sh(or(E(-2.2, 13, .45, .45), E(3, 13, .45, .45)), R.white, 17); }
     }
-    sh(B(-1, 15.4, 2, 1.1), R.ink, 14);
-    if (expr === 'screech') { sh(E(0, 18.4, 2.6, 2.2), R.red, 15); sh(E(0, 19.4, 1.5, .9), R.skin, 16); }
-    else if (expr === 'scared') { sh(E(0, 18.6, 1.4, 1.7), R.red, 15); sh(C(-4.6, 10.8, -1.4, 9.4, .5), R.ink, 15); sh(C(4.6, 10.8, 1.4, 9.4, .5), R.ink, 15); }
-    else { sh(C(-2.6, 18.1, -1.2, 18.9, .55), R.ink, 15); sh(C(-1.2, 18.9, 1.2, 18.9, .55), R.ink, 15); sh(C(1.2, 18.9, 2.6, 18.1, .55), R.ink, 15); }
+    sh(or(E(-.9, 16, .4, .35), E(.9, 16, .4, .35)), R.ink, 18);                                // nostrils
+    if (expr === 'screech') { sh(E(0, 18.9, 2.7, 2.3), R.red, 19); sh(E(0, 19.9, 1.5, .9), R.skin, 20); }
+    else if (expr === 'scared') { sh(E(0, 19, 1.5, 1.8), R.red, 19); sh(C(-4.8, 10.6, -1.4, 9.2, .5), R.ink, 19); sh(C(4.8, 10.6, 1.4, 9.2, .5), R.ink, 19); }
+    else { sh(C(-2.7, 18.4, -1.3, 19.2, .55), R.ink, 19); sh(C(-1.3, 19.2, 1.3, 19.2, .55), R.ink, 19); sh(C(1.3, 19.2, 2.7, 18.4, .55), R.ink, 19); }
     if (hat === 1) {                                             // big leaf worn as a rain hat
       const P = [[-9.8, 10.8], [-8.2, 6.4], [-4.6, 3.4], [0, 2.4], [4.6, 3.4], [8.2, 6.4], [9.8, 10.8], [5, 9.2], [0, 8.4], [-5, 9.2]].map(([x, y]) => [x * k, y * k]);
       sh(poly(P), R.leaf, 17); sh(C(0, 3, 0, 8, .5), R.leafD, 18); sh(C(0, 5, -4.4, 8.2, .4), R.leafD, 18); sh(C(0, 5, 4.4, 8.2, .4), R.leafD, 18);
@@ -595,6 +603,136 @@
     for (let n = 0; n < 2; n++) { const x = 4 + n * 12 + Math.floor(r() * 4), y = 4 + Math.floor(r() * 14); px.dot(x, y, R.wood, 0); px.dot(x + 1, y, R.wood, 0); px.dot(x, y + 1, R.wood, 0); }
     return render2(px);
   }
+  /* ---------- long-game art: the Workshop, the room-control upgrades, the new shop families, builds, the Library and the Annex ---------- */
+  const cog = (px, cx, cy, r, ramp, part) => {
+    for (let a = 0; a < 8; a++) { const t = a * Math.PI / 4; px.shape(cap(cx + Math.cos(t) * r * .62, cy + Math.sin(t) * r * .62, cx + Math.cos(t) * r, cy + Math.sin(t) * r, r * .27), ramp, part); }
+    px.shape(ell(cx, cy, r * .78, r * .78), ramp, part + 1);
+  };
+  const book = (px, x, y, w, h, ramp, trim) => { px.shape(box(x, y, w, h), ramp, 1); px.shape(box(x, y, 1.6, h), R.woodD, 2); px.shape(box(x + 2.6, y + h * .24, w - 4.4, 1.2), trim, 3); px.shape(box(x + 2.6, y + h * .5, w - 6, 1), trim, 3); };
+  /* currencies (also drawn by gems.js) */
+  reg('i-part', make(16, 16, px => { cog(px, 8, 8, 6.6, R.metal, 1); px.shape(ell(8, 8, 2.1, 2.1), R.ink, 4); px.dot(5, 4, R.white, 2, 5); px.dot(6, 3, R.white, 2, 5); }));
+  reg('i-seal', make(16, 16, px => {
+    px.shape(poly([[4.5, 10], [7, 10], [5.8, 15.2], [3.8, 13.4]]), R.red, 1); px.shape(poly([[9, 10], [11.5, 10], [12.2, 13.4], [10.2, 15.2]]), R.red, 1);
+    px.shape(ell(8, 7.4, 6.2, 6.2), R.banY, 2); px.shape(ell(8, 7.4, 4.4, 4.4), R.red, 3);
+    px.shape(poly([[8, 4.2], [9, 6.6], [11.4, 6.8], [9.6, 8.4], [10.2, 10.8], [8, 9.4], [5.8, 10.8], [6.4, 8.4], [4.6, 6.8], [7, 6.6]]), R.banY, 4);
+  }));
+  /* tabs */
+  reg('i-workshop', make(16, 16, px => {
+    px.shape(poly([[1, 6.6], [14.4, 6.6], [13, 9.6], [2.6, 9.6]]), R.metal, 1); px.shape(box(4.6, 9.4, 6.8, 2.4), R.gray, 2); px.shape(box(3.4, 11.6, 9.2, 3), R.metal, 3);
+    px.shape(cap(10, 1.6, 12.8, 5.6, 1), R.wood, 4); px.shape(box(8.4, 0.6, 4.4, 2.8), R.metal, 5);
+  }));
+  reg('i-campus', make(16, 16, px => {
+    px.shape(box(2, 7, 12, 8), R.woodL, 1); px.shape(poly([[0.6, 7.6], [8, 1.4], [15.4, 7.6]]), R.red, 2); px.shape(box(11, 2, 2.4, 4), R.gray, 3);
+    px.shape(or(box(3.4, 9, 2.4, 2.4), box(10.2, 9, 2.4, 2.4)), R.ice, 4); px.shape(box(6.8, 10.4, 2.6, 4.6), R.woodD, 5);
+  }));
+  /* room-control upgrades */
+  reg('a-ledger', make(16, 16, px => { px.shape(box(3, 1.6, 10, 12.8), R.red, 1); px.shape(box(3, 1.6, 1.8, 12.8), R.woodD, 2); px.shape(box(5.8, 4, 5.6, 4.6), R.paper, 3); px.shape(or(box(6.4, 5, 4.2, .8), box(6.4, 6.6, 3, .8)), R.ink, 4); px.shape(box(5.8, 10, 5.6, 1.2), R.banY, 3); }));
+  reg('a-buyer', make(16, 16, px => {
+    px.shape(poly([[1.4, 3.4], [3.8, 3.4], [5, 5.4], [14, 5.4], [12.6, 10.4], [5.6, 10.4]]), R.metal, 1);
+    px.shape(or(ell(6.4, 13, 1.5, 1.5), ell(11.6, 13, 1.5, 1.5)), R.ink, 2); px.shape(or(ell(6.6, 7.6, 1.4, 1.8), ell(9.6, 7.6, 1.4, 1.8)), R.banY, 3); px.shape(cap(10.6, 6.6, 12, 4, .9), R.banG, 3);
+  }));
+  reg('a-blueprint', make(16, 16, px => {
+    px.shape(box(2.6, 2.8, 11, 9.4), R.blue, 1); px.shape(or(box(4.2, 4.4, 8, .7), box(4.2, 6.6, 8, .7), box(4.2, 8.8, 8, .7), box(6, 4, .7, 6.4), box(9, 4, .7, 6.4)), R.sky, 2);
+    px.shape(ell(8, 7.8, 2, 2), R.white, 3); px.shape(ell(12.8, 12.6, 2.4, 2.4), R.paper, 4); px.shape(ell(12.8, 12.6, 1, 1), R.ink, 5);
+  }));
+  reg('a-foreman', make(16, 16, px => {
+    px.shape(ell(8, 8.4, 6, 4.8), R.banY, 1); px.shape(box(1.6, 10.2, 12.8, 2.4), R.sun, 2); px.shape(box(6.8, 2.8, 2.4, 4.2), R.sun, 3);
+    px.shape(or(ell(5.4, 13.6, 1.6, 1.4), ell(10.6, 13.6, 1.6, 1.4)), R.skin, 4); px.dot(6, 11.5, R.ink, 1, 6); px.dot(10, 11.5, R.ink, 1, 6);
+  }));
+  /* the new shop families */
+  reg('f-drive', make(16, 16, px => { cog(px, 8, 8, 6.8, R.banY, 1); px.shape(ell(8, 8, 2.2, 2.2), R.ink, 4); px.shape(cap(3.4, 5, 5.4, 3.4, .5), R.banIn, 5); }));
+  reg('f-batch', make(16, 16, px => { [[1.6, 9.6], [2.4, 6], [1.6, 2.4]].forEach(([x, y], i) => { px.shape(box(x, y, 12, 4.4), i === 1 ? R.paper : R.woodL, 1 + i * 2); px.shape(box(x + 1.4, y - 1, 4, 1.4), R.wood, 2 + i * 2); }); px.dot(12, 4, R.ink, 1, 8); }));
+  reg('f-bundle', make(16, 16, px => { px.shape(box(2, 9, 12, 5), R.red, 1); px.shape(box(3, 4, 11, 5), R.leaf, 2); px.shape(box(1.6, 0.6, 11, 4), R.blue, 3); px.shape(box(6.8, 0.6, 1.8, 14), R.banY, 4); px.shape(box(2, 11, 12, 1), R.woodD, 5); }));
+  reg('f-dict', make(16, 16, px => {
+    px.shape(poly([[1, 3.4], [7.6, 4.6], [7.6, 14], [1, 12.8]]), R.paper, 1); px.shape(poly([[15, 3.4], [8.4, 4.6], [8.4, 14], [15, 12.8]]), R.paper, 1);
+    px.shape(box(7.4, 3.6, 1.2, 10.6), R.red, 2); px.shape(or(box(2.4, 6, 3.8, .8), box(2.4, 8.2, 3.8, .8), box(10, 6, 3.8, .8), box(10, 8.2, 3.8, .8)), R.ink, 3); px.shape(cap(4, 11, 5, 9.6, .5), R.red, 4);
+  }));
+  reg('f-backlist', make(16, 16, px => {
+    px.shape(box(0.8, 13, 14.4, 2.2), R.wood, 1);
+    [[1.6, 4, 2.6, R.red], [4.6, 2, 2.4, R.blue], [7.4, 5, 2.6, R.leaf], [10.6, 3, 2.4, R.banY]].forEach(([x, y, w, r], i) => { px.shape(box(x, y, w, 9.2 - (y - 2)), r, 2 + i); px.shape(box(x, y + 1.6, w, .8), R.paper, 7); });
+  }));
+  reg('f-editorial', make(16, 16, px => {
+    px.shape(cap(3, 12.6, 11, 4.2, 1.7), R.red, 1); px.shape(poly([[1.4, 14.6], [3.4, 11.6], [4.6, 13]]), R.skin, 2); px.shape(poly([[1.4, 14.6], [2.2, 13.4], [2.8, 14.2]]), R.ink, 3);
+    px.shape(cap(11.6, 3.6, 13.4, 1.8, 1.6), R.metal, 2); px.shape(cap(9.4, 12, 11.2, 13.8, .9), R.banG, 3); px.shape(cap(11.2, 13.8, 14.6, 9.8, .9), R.banG, 3);
+  }));
+  reg('f-genre', make(16, 16, px => {
+    px.shape(ell(5.6, 7.6, 4.6, 5.4), R.banY, 1); px.shape(ell(10.6, 8.6, 4.4, 5.2), R.ice, 2);
+    px.shape(or(ell(4, 6.4, .9, .9), ell(7.2, 6.4, .9, .9)), R.ink, 3); px.shape(cap(3.8, 9, 5.6, 10.6, .6), R.ink, 3); px.shape(cap(5.6, 10.6, 7.4, 9, .6), R.ink, 3);
+    px.shape(or(ell(9, 7.8, .9, .9), ell(12.2, 7.8, .9, .9)), R.ink, 4); px.shape(cap(9, 11.4, 10.6, 10, .6), R.ink, 4); px.shape(cap(10.6, 10, 12.2, 11.4, .6), R.ink, 4);
+  }));
+  /* expedition routes */
+  reg('x-salvage', make(16, 16, px => {
+    px.shape(box(1.6, 6.2, 12.8, 8), R.wood, 1); px.shape(box(1.2, 4, 13.6, 3), R.woodL, 2); px.shape(cap(5.4, 4, 5.4, 2.4, .8), R.metal, 3); px.shape(cap(5.4, 2.4, 10.6, 2.4, .8), R.metal, 3); px.shape(cap(10.6, 2.4, 10.6, 4, .8), R.metal, 3);
+    px.shape(box(1.6, 9.4, 12.8, 1.2), R.woodD, 4); cog(px, 8, 11.4, 2.6, R.metal, 5);
+  }));
+  reg('x-manuscript', make(16, 16, px => {
+    px.shape(box(3.6, 3, 8.8, 10), R.paper, 1); px.shape(or(ell(8, 3, 5.6, 1.7), ell(8, 13, 5.6, 1.7)), R.woodL, 2);
+    px.shape(or(box(5, 5.6, 6, .8), box(5, 7.6, 6, .8), box(5, 9.6, 4, .8)), R.ink, 3); px.shape(ell(11, 10.6, 1.5, 1.5), R.red, 4);
+  }));
+  reg('x-archive', make(16, 16, px => {
+    px.shape(cap(3, 14, 12, 3, 1), R.wood, 1); px.shape(poly([[1.4, 4], [5, 1.4], [10.6, 1.8], [14.6, 5.4], [11.6, 5], [8, 3.8], [4.4, 4.8]]), R.metal, 2);
+    px.shape(or(box(8, 11, 6, 3.4), box(9, 9.4, 5, 2.2)), R.paper, 3); px.shape(box(8, 12.2, 6, .8), R.red, 4);
+  }));
+  /* attachments */
+  reg('w-carriage', make(16, 16, px => {
+    px.shape(box(0.8, 7, 14.4, 3), R.metal, 1); px.shape(cap(11.4, 7.6, 14.4, 2.6, 1), R.woodD, 2); px.shape(ell(14.6, 2.4, 1.7, 1.7), R.red, 3);
+    px.shape(or(box(2.4, 10, 2, 3), box(7, 10, 2, 3), box(11.6, 10, 2, 3)), R.gray, 4); px.shape(poly([[3.4, 4.8], [6.6, 4.8], [5, 2.6]]), R.banY, 5);
+  }));
+  reg('w-tray', make(16, 16, px => {
+    px.shape(box(1.6, 10, 12.8, 4.6), R.woodL, 1); px.shape(box(1.6, 12.2, 12.8, 1), R.wood, 2);
+    [[2.6, 3.4], [6, 2], [9.4, 3.8]].forEach(([x, y], i) => { px.shape(box(x, y, 3.2, 8), R.paper, 3 + i); px.shape(box(x + .6, y + 1.8, 2, .8), R.ink, 7); px.shape(box(x + .6, y + 3.6, 2, .8), R.ink, 7); });
+  }));
+  reg('w-press', make(16, 16, px => {
+    px.shape(box(3, 12.4, 10, 2.8), R.metal, 1); px.shape(box(7, 3.4, 2, 9), R.gray, 2); px.shape(box(5, 10, 6, 2.4), R.red, 3);
+    px.shape(cap(2.4, 3, 13.6, 3, 1.1), R.woodD, 4); px.shape(or(ell(2.2, 3, 1.5, 1.5), ell(13.8, 3, 1.5, 1.5)), R.woodL, 5);
+  }));
+  reg('w-typebar', make(16, 16, px => {
+    px.shape(cap(3, 14.4, 6.4, 8, 1), R.metal, 1); px.shape(cap(6.4, 8, 9.6, 4.4, 1), R.metal, 1); px.shape(box(8.4, 1.4, 5.6, 4.6), R.gray, 2);
+    px.shape(or(box(9.4, 2.4, 1, 2.6), box(11.4, 2.4, 1, 2.6), box(9.4, 3.4, 3, .8)), R.paper, 3); px.shape(ell(3, 14.4, 1.8, 1.4), R.ink, 4); px.shape(cap(10, 6.4, 10, 8.4, .5), R.red, 4);
+  }));
+  /* specializations */
+  reg('b-rapid', make(16, 16, px => {
+    px.shape(ell(8, 9.4, 6.2, 4.4), R.metal, 1); px.shape(box(2, 9.4, 12, 3.6), R.gray, 2); px.shape(ell(8, 9.4, 2.2, 2.2), R.ink, 3);
+    px.shape(poly([[10.4, 0.8], [5.4, 7.6], [8.2, 7.6], [6, 13.6], [12, 5.8], [9, 5.8]]), R.banY, 4);
+  }));
+  reg('b-collector', make(16, 16, px => {
+    book(px, 2.6, 2, 10.6, 12.4, R.leaf, R.banIn);
+    px.shape(poly([[8.6, 4.8], [9.8, 7.4], [12.6, 7.6], [10.4, 9.4], [11.2, 12.2], [8.6, 10.6], [6, 12.2], [6.8, 9.4], [4.6, 7.6], [7.4, 7.4]]), R.banY, 4);
+  }));
+  reg('b-prestige', make(16, 16, px => {
+    px.shape(poly([[2, 13], [1.4, 4.6], [5.2, 8.6], [8, 2.2], [10.8, 8.6], [14.6, 4.6], [14, 13]]), R.banY, 1); px.shape(box(2, 11.4, 12, 2.6), R.sun, 2);
+    px.shape(or(ell(8, 6.6, .9, .9), ell(4.2, 8.4, .8, .8), ell(11.8, 8.4, .8, .8)), R.red, 3); px.dot(8, 12.6, R.ice, 2, 4);
+  }));
+  /* Lost Library covers */
+  reg('l-anthology', make(16, 16, px => { book(px, 2.6, 1.6, 10.8, 12.8, R.red, R.banIn); px.shape(box(10, 1.6, 1.8, 6, 0), R.banY, 4); }));
+  reg('l-almanac', make(16, 16, px => { book(px, 2.6, 1.6, 10.8, 12.8, R.blue, R.sky); px.shape(ell(9.2, 9.6, 2.2, 2.2), R.moon, 4); px.shape(ell(10, 9.2, 1.8, 1.8), R.blue, 5); }));
+  reg('l-atlas', make(16, 16, px => { book(px, 2.6, 1.6, 10.8, 12.8, R.leafD, R.banIn); px.shape(ell(8.6, 9.8, 3, 3), R.sky, 4); px.shape(or(ell(7.6, 9.2, 1.2, 1), ell(9.8, 10.8, 1.2, .9)), R.leaf, 5); }));
+  /* the explorer walks the expedition strip (two frames) and the Annex stands on the Campus tab */
+  const explorer = leg => make(16, 16, px => {
+    px.shape(box(2.4, 6.4, 3.4, 5), R.leaf, 1);                                              // backpack
+    px.shape(ell(8.6, 10, 3.6, 3.6), R.fur, 2); px.shape(cap(7, 12.4, leg ? 5.6 : 7, 15, 1), R.fur, 3); px.shape(cap(10.2, 12.4, leg ? 11.4 : 10.4, 15, 1), R.fur, 3);
+    px.shape(ell(9.6, 6.6, 3.4, 3.2), R.fur, 4); px.shape(ell(10.6, 7.4, 2, 1.7), R.skin, 5); px.dot(10.4, 6.4, R.ink, 1, 6);
+    px.shape(ell(9.6, 4.4, 4.2, 2.1), R.paper, 7); px.shape(box(5.4, 4.6, 8.4, 1), R.red, 8);   // pith helmet
+  });
+  reg('x-explorer-0', explorer(false)); reg('x-explorer-1', explorer(true));
+  reg('c-annex', make(48, 34, px => {
+    px.shape(box(2, 12, 44, 21), R.woodL, 1); px.shape(poly([[0, 13], [24, 1], [48, 13]]), R.red, 2); px.shape(box(35, 1, 5, 9), R.gray, 3);
+    [[6, 16], [14, 16], [30, 16], [38, 16]].forEach(([x, y]) => px.shape(box(x, y, 5, 6), R.blue, 4)); px.shape(box(21, 22, 6, 11), R.woodD, 5); px.shape(box(2, 31.6, 44, 1.4), R.wood, 6);
+    px.shape(box(20, 14, 8, 4), R.paper, 7); px.shape(box(21, 15, 6, 2), R.ink, 8);
+  }));
+  reg('c-house', make(48, 34, px => {
+    px.shape(box(2, 12, 44, 21), R.woodL, 1); px.shape(poly([[0, 13], [24, 1], [48, 13]]), R.leafD, 2); px.shape(box(35, 1, 5, 9), R.gray, 3);
+    [[6, 16], [14, 16], [30, 16], [38, 16]].forEach(([x, y]) => px.shape(box(x, y, 5, 6), R.blue, 4)); px.shape(box(21, 22, 6, 11), R.woodD, 5); px.shape(box(2, 31.6, 44, 1.4), R.wood, 6);
+  }));
+  reg('c-studio', make(48, 34, px => {
+    px.shape(box(2, 12, 44, 21), R.paper, 1); px.shape(poly([[0, 13], [24, 1], [48, 13]]), R.blue, 2); px.shape(box(35, 1, 5, 9), R.gray, 3);
+    px.shape(box(13, 15, 22, 9), R.sky, 4); px.shape(box(23, 15, 2, 9), R.white, 5); px.shape(box(6, 17, 4, 5), R.banY, 6); px.shape(box(38, 17, 4, 5), R.banY, 6);
+    px.shape(box(21, 25, 6, 8), R.woodD, 7); px.shape(box(2, 31.6, 44, 1.4), R.wood, 8);
+  }));
+  reg('c-lit', make(6, 7, px => { px.shape(box(0, 0, 6, 7), R.banY, 1); px.dot(1, 1, R.star, 2, 2); px.dot(2, 1, R.star, 2, 2); }));
+  reg('c-puff', make(8, 8, px => { px.shape(or(ell(3, 4.4, 2.6, 2.4), ell(5.2, 3.4, 2.4, 2.2)), R.white, 1); }));
+  reg('c-coin', make(8, 8, px => { px.shape(ell(4, 4, 3.4, 3.4), R.banY, 1); px.dot(3, 3, R.star, 2, 2); }));
+
   const render2 = px => { // render without outline (tiles)
     const { w, h, c, t } = px, out = new Uint8ClampedArray(w * h * 4);
     for (let i = 0; i < w * h; i++) { const col = ramps[c[i]][(t[i] || 2) - 1]; out[i * 4] = col[0]; out[i * 4 + 1] = col[1]; out[i * 4 + 2] = col[2]; out[i * 4 + 3] = 255; }
@@ -686,7 +824,7 @@
       set('starsA', starField(w, h, 3, Math.floor(w * h / 260))); set('starsB', starField(w, h, 9, Math.floor(w * h / 300)));
     },
     install() {
-      ['dbanana', 'i-star', 'i-insp', 'banana'].forEach(n => this.css('g-' + n, spr[n].url));
+      ['dbanana', 'i-star', 'i-insp', 'banana', 'i-part', 'i-seal'].forEach(n => this.css('g-' + n, spr[n].url));
       this.css('plank', url(plankTile())); this.css('vine-v', url(vineTile(16, 48, false))); this.css('vine-thin', url(vineTile(8, 24, false)));
       this.css('vine-h', url(vineTile(16, 48, true)));
       this.css('frame-wood', url(frames.wood)); this.css('frame-dark', url(frames.dark)); this.css('frame-leaf', url(frames.leaf));

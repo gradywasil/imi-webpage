@@ -8,7 +8,7 @@ window.VaultSaveGate = (() => {
   try {
     const raw = localStorage.getItem('imi-ops-v1');
     if (raw !== null) {
-      const state = JSON.parse(raw);
+      const parsed = JSON.parse(raw), state = object(parsed) ? parsed : {};   // a non-object record is no save; Ops starts fresh from it
       const layers = object(state) && object(state.meta) && state.meta.layers;
       if (object(layers) && own(layers, 'pending') && layers.pending !== null) {
         imprint = true;

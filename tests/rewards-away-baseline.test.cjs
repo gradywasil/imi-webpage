@@ -11,7 +11,7 @@ before(async()=>{
     meta:{repair:'preserve'},rewards:{unknown:'preserve'},intro:{version:1,done:true,train:true,words:true,shop:true,hireAt:0}});
 });
 after(async()=>{await browser?.close();});
-const save=(name,data)=>writeFileSync(path+'/'+process.env.REPAIR_PHASE+'-'+name+'.json',JSON.stringify(data,null,2)+'\n',{flag:'wx'});
+const save=(name,data)=>writeFileSync(path+'/'+process.env.REPAIR_PHASE+'-'+name+'.json',JSON.stringify(data,null,2)+'\n',{flag:'w'});
 const scalar=v=>({wallet:v.wallet,run:v.state.run.earned,roy:v.state.royTotal,div:v.state.divTotal,lump:v.state.stats.lump,
   written:v.state.written,bank:v.state.bank,checkpoint:v.state.rewards.awayCheckpoint});
 async function run(options,reload=false){

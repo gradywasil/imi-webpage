@@ -134,7 +134,7 @@ test('actual detached successor projections retain ownership; A11 selection requ
  const marker=JSON.stringify(s.meta.automation.ownership), fresh=JSON.parse(JSON.stringify(s));
  const imprint=ctx.Layers.project(s,fresh),estate=ctx.Estate.project(s,fresh,true);
  const source=fs.readFileSync(path.join(root,'ops.js'),'utf8');
- ctx.layers=ctx.Layers;ctx.fresh=()=>JSON.parse(JSON.stringify(fresh));ctx.printingQuote=()=>({printing:7,stars:100,total:4000,gain:10});ctx.worksPlay=null;ctx.pg=null;ctx.pitchCopy=x=>JSON.parse(JSON.stringify(x));
+ ctx.layers=ctx.Layers;ctx.fresh=()=>JSON.parse(JSON.stringify(fresh));ctx.printingQuote=()=>({printing:7,stars:100,total:4000,gain:10});ctx.worksPlay=null;ctx.pg=null;ctx.lgb=null;ctx.pitchCopy=x=>JSON.parse(JSON.stringify(x));
  vm.runInContext(source.slice(source.indexOf('  function printingRoom('),source.indexOf('  function printingPending()')),ctx);
  const printing=ctx.printingRoom(s,[],123,'manual',null);
  for(const next of [imprint,estate,printing])assert.equal(JSON.stringify(next.meta.automation.ownership),marker);

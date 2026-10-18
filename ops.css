@@ -1819,3 +1819,23 @@ html[data-style="pixel"] .o-leg-wallet .gem-amt { font-size: 1.4em; }
 .o-starbtn .gem-art { filter: drop-shadow(1px 0 0 #6a4408) drop-shadow(-1px 0 0 #6a4408) drop-shadow(0 1px 0 #6a4408) drop-shadow(0 -1px 0 #6a4408); }
 .o-card .o-row .o-gear { min-width: 40px; min-height: 40px; }
 .o-h .gem { --s: 28px; }
+
+/* effects and facts are a big number and a word (fxc in ops.js), not a sentence */
+.o-eff { display: inline-flex; align-items: baseline; gap: 6px; margin: 0 4px 4px 0; padding: 3px 10px 3px 8px; font-size: .95em; background: rgba(255,255,255,.07); border-left: 3px solid var(--c, #ffd23a); }
+.o-eff b { font-weight: 400; font-size: 1.25em; color: #ffd23a; }
+html[data-style="pixel"] .o-eff { font-size: .85em; }
+html[data-style="classic"] .o-eff { border-left: 0; border-radius: 99px; padding: 3px 12px; background: rgba(255,255,255,.1); }
+html[data-style="classic"] .o-eff b { font-weight: 700; }
+.o-trackrow { display: flex; gap: 8px; }
+.o-trk { flex: 1; max-width: 88px; aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.18); }
+.o-trk .o-lookpic { width: 100%; height: 100%; }
+.o-trk .o-lookpic > img, .o-trk .o-lookpic > svg { width: 175%; height: 175%; left: -38%; top: -22%; max-width: none; max-height: none; }
+.o-trk:not(.on):not(.new) .o-lookpic { filter: brightness(0) opacity(.5); }
+.o-trk.on { border-color: #7be05a; }
+.o-trk.new { border-color: #ffd23a; }
+.o-odds { margin: 4px 0 8px; }
+.o-kchip .o-kd { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: baseline; }
+.o-kchip.off { opacity: .55; }
+.o-fprice { flex: none; display: inline-flex; align-items: center; gap: 4px; color: #ffd23a; }
+#oFocus.ready { box-shadow: 0 0 14px #ffd23a; animation: j-tag .7s steps(2) infinite alternate; }
+#oFocus.ready .o-fn { color: #7be05a; }

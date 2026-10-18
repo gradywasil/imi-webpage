@@ -207,7 +207,8 @@
     const f = V ? { base: V.fur.base, light: V.fur.light, dark: V.fur.dark } : { base: '#7d4c17', light: '#b47323', dark: '#492b0c' };
     const k = V ? { base: V.skin.light, dark: V.skin.base } : { base: '#f3b281', dark: '#d08853' };
     const [hb, ho] = hat ? ['', awardHat(hat)] : headgear(s, f);
-    const out = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${back(s)}${tail(f)}${legs(s, f)}${body(s, f, k)}${hb}${face(s, f, k, hat)}${ho}${arms(s, f, k)}${prop(s)}</svg>`;
+    /* layer order: back, tail, both legs, torso, both arms, held prop, then the head (headgear back, face, headgear front) on top so the face is never covered */
+    const out = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${back(s)}${tail(f)}${legs(s, f)}${body(s, f, k)}${arms(s, f, k)}${prop(s)}${hb}${face(s, f, k, hat)}${ho}</svg>`;
     return (cache[key] = out);
   }
   /* the keyboard crew draws bitmaps, not live SVG: each look/hat/expression is rasterised once at the size on screen, so a hop only swaps

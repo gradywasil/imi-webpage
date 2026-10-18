@@ -7,10 +7,14 @@
 .gem.star { --gg: #ffd23a; --gi: var(--g-i-star); }
 .gem.insp { --gg: #ffe28a; --gi: var(--g-i-insp); }
 .gem.ban { --gg: #ffd23a; --gi: var(--g-banana); }
+.gem.part { --gg: #b8c4e8; --gi: var(--g-i-part); }
+.gem.seal { --gg: #ff8f7a; --gi: var(--g-i-seal); }
 html[data-style="classic"] .gem.dbn { --gi: var(--gc-dbn); }
 html[data-style="classic"] .gem.star { --gi: var(--gc-star); }
 html[data-style="classic"] .gem.insp { --gi: var(--gc-insp); }
 html[data-style="classic"] .gem.ban { --gi: var(--gc-ban); }
+html[data-style="classic"] .gem.part { --gi: var(--gc-part); }
+html[data-style="classic"] .gem.seal { --gi: var(--gc-seal); }
 html[data-style="classic"] .gem-art { image-rendering: auto; }
 
 /* the diamond banana: it bobs, a glint sweeps across its shape and sparkles pop around it */
@@ -24,6 +28,12 @@ html[data-style="classic"] .gem-art { image-rendering: auto; }
 @keyframes gem-float { 0%, 100% { transform: translateY(6%) rotate(-5deg); } 50% { transform: translateY(-8%) rotate(5deg); } }
 @keyframes gem-shine { 0%, 30% { background-position: 160% 0; } 62%, 100% { background-position: -80% 0; } }
 @keyframes gem-twinkle { 0%, 100% { opacity: 0; transform: scale(.15) rotate(0); } 40% { opacity: 1; transform: scale(1) rotate(45deg); } 70% { opacity: 0; transform: scale(.3) rotate(90deg); } }
+/* Parts turn slowly like a gear; a Press Seal catches the light now and then */
+.gem.part .gem-art { animation: gem-turn 7s linear infinite; }
+.gem.seal::after { content: ''; -webkit-mask: var(--gi) center / contain no-repeat; mask: var(--gi) center / contain no-repeat; image-rendering: pixelated;
+  background: linear-gradient(112deg, transparent 40%, rgba(255,255,255,.9) 50%, transparent 60%) 160% 0 / 260% 100% no-repeat; animation: gem-shine 4.2s ease-in-out infinite; }
+@keyframes gem-turn { to { transform: rotate(360deg); } }
+html[data-style="pixel"] .gem.part .gem-art { animation-timing-function: steps(16); }
 html[data-style="pixel"] .gem.dbn .gem-art { animation-timing-function: steps(6); }
 html[data-style="pixel"] .gem-sp { animation-timing-function: steps(5); }
 html[data-fx="low"] .gem *, html[data-fx="low"] .gem::after { animation: none !important; }
