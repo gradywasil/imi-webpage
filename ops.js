@@ -424,6 +424,7 @@
   let skyOv = null, skyC = null, skyT = 0;
   const sky = () => { if (skyOv) return skyOv; const t = Date.now(); if (!skyC || t - skyT > 400) { skyC = World.at(t); skyT = t; } return skyC; };
   const isNight = () => sky().night;
+  const mgPerk = k => extensions.get('minigames')?.perk?.(k) || 0;   // Break Room ideas: flashFreq, flashSecs, luck
   const inspired = new WeakMap();                                  // typist -> until (runtime only: a good idea is not worth a save)
   function typistSpeed(t) {
     if (!t) return 1;
@@ -729,7 +730,7 @@
     if (!auto && i === S.sel) comboHit();
     const ch = roll(d, i, auto, ty);
     generatedLetter(d, i, ch);
-    if (!auto && !chal('hands') && rand() < CRIT_P * (museOn('shakes') ? 2 : 1)) critTap(d, i);
+    if (!auto && !chal('hands') && rand() < CRIT_P * (museOn('shakes') ? 2 : 1) * (1 + mgPerk('luck'))) critTap(d, i);
     if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) generatedLetter(d, i, roll(d, i, true, ty)); }
     const st = S.stats; st.letters++; if (!auto) { st.manual++; cycleLog?.key(); introProgress(); IMI.emit('tap', { letters: st.letters }); } st.byLetter[ch] = (st.byLetter[ch] || 0) + 1;
     if (stormy()) st.storm++; if (isNight()) st.night++;
@@ -3668,7 +3669,7 @@
     return took;
   }
   const extensionAPI = {
-    state: () => S, save, mark, morph, setTab, hydrate,
+    state: () => S, save, mark, morph, setTab, hydrate, subTabs: (dept, items) => subTabs(dept, items), sub: dept => ui.sub[dept],
     /* Workshop: expeditions are funded only from bananas this room has earned, never seed grants or refunds */
     workshopContext: () => ({ printing: S.printing, ref: bundleRef(), fundable: Math.max(0, Math.min(bananas.get(), (S.run.earned || 0) - (S.xFund || 0))), fundWords: fundable('words'), fundLetters: fundable('letters'), challenge: !!S.challenge || !!challengeActive() || masteryActive(),
       round: Economy.round, blocked: cycleProbe().blocked, groups: DESKS.map((D, i) => ({ name: D.name.split(' ')[0], owned: !!S.desks[i].owned })) }),
@@ -4295,7 +4296,7 @@
     const n = auto ? 0 : Juice.chain('sale', 30000), u = force ?? rand(), boost = auto ? 0 : .012 * Math.min(n - 1, 6), [x, y] = at || [innerWidth / 2, 170];
     if (n >= 2) { floatText(`CHAIN x${n}`, x, y - 70, '#7be05a', true); IMI.sfx.streak && IMI.sfx.streak(n); }
     let acc = 0, hit = null;
-    for (const L of LUCKY) { acc += L.p * (museOn('carroll') ? 2 : 1) + (L === LUCKY[2] ? boost : 0); if (u < acc) { hit = L; break; } }
+    for (const L of LUCKY) { acc += L.p * (museOn('carroll') ? 2 : 1) * (1 + mgPerk('luck')) + (L === LUCKY[2] ? boost : 0); if (u < acc) { hit = L; break; } }
     if (!hit) return;
     const bonus = roundMoney(pay * hit.x); if (!(bonus > 0)) return;
     S.stats.lucky = (S.stats.lucky || 0) + 1; if (hit.tier === 3) S.stats.jackpots = (S.stats.jackpots || 0) + 1;
@@ -4760,12 +4761,12 @@
   let inspireAt = performance.now() + 50000 + rand() * 60000;
   function inspireStep(now) {
     if (now < inspireAt) return;
-    inspireAt = now + 70000 + rand() * 110000;
+    inspireAt = now + (70000 + rand() * 110000) / (1 + mgPerk('flashFreq'));
     if (!progressing() || document.hidden || IMI.screen() !== 'game' || introActive() || challengeActive()) return;
     const here = cur().crew.slice(0, cur().paws), all = S.desks.flatMap(d => d.owned ? d.crew.slice(0, d.paws) : []);
     const pool = here.length && rand() < .75 ? here : all; if (!pool.length) return;
     const t = pool[Math.floor(rand() * pool.length)]; if (!t) return;
-    inspired.set(t, now + 14000); S.stats.inspired = (S.stats.inspired || 0) + 1;
+    inspired.set(t, now + 14000 + 1000 * mgPerk('flashSecs')); S.stats.inspired = (S.stats.inspired || 0) + 1;
     newsPush(`${t.name} has an idea and is typing like mad.`);
     const k = here.indexOf(t), ty = k >= 0 && ui.tab === 'floor' ? typists.find(x => x.ci === k) : null;
     if (ty) { say(ty, 'INSPIRED!'); jump(ty); IMI.sfx.levelup && IMI.sfx.levelup(); const x = stageXY[0] + ty.x, y = stageXY[1] + ty.y - keyW; IMI.burst(x, y, ['star', 'spark'], 10); shock(x, y, '#ffd23a', true); floatText('x2.5', x, y - 30, '#ffd23a', true); }
@@ -4774,7 +4775,7 @@
   let hourAt = performance.now() + 150000 + rand() * 150000;
   function goldenHourStep(now) {
     if (now < hourAt) return;
-    hourAt = now + 300000 + rand() * 300000;
+    hourAt = now + (300000 + rand() * 300000) / (1 + mgPerk('luck'));
     if (!progressing() || document.hidden || IMI.screen() !== 'game' || introActive() || challengeActive()) return;
     buffs.frenzy = Math.max(buffs.frenzy, now + 20000); buffs.golden = Math.max(buffs.golden, now + 20000);
     S.stats.hours = (S.stats.hours || 0) + 1;

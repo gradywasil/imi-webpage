@@ -63,7 +63,7 @@
     const st = { cv, g, W, H, K, sc: 3 };
     st.hi = (img, x, y, flipX) => { const w = img.width / K, hh = img.height / K, rx = Math.round(x * K) / K, ry = Math.round(y * K) / K; if (flipX) { g.save(); g.translate(rx + w, ry); g.scale(-1, 1); g.drawImage(img, 0, 0, w, hh); g.restore(); } else g.drawImage(img, rx, ry, w, hh); };
     function fit() {
-      const padX = opts.padX || 8, padY = Math.max(opts.padY || 0, 66), FR = 11;          /* the wooden frame adds about 11 art pixels around the canvas */
+      const hosted = document.documentElement.dataset.hosted, padX = hosted ? 10 : opts.padX || 8, padY = hosted ? 10 : Math.max(opts.padY || 0, 66), FR = hosted ? 8 : 11;          /* the frame adds about 11 art pixels around the canvas (8 when hosted) */
       st.sc = Math.max(1, Math.floor(Math.min((innerWidth - padX) / (W + FR), (innerHeight - padY) / (H + FR)) * K) / K);
       host.style.setProperty('--sc', st.sc + 'px');
       host.style.setProperty('--u', clamp(W * st.sc / 360, .8, 2.2).toFixed(2));
@@ -120,7 +120,9 @@
   function boot() {
     if (new URLSearchParams(location.search).get('flat')) document.head.appendChild(Object.assign(document.createElement('style'), { textContent: '.backdrop,.mg-nav{display:none!important}*{animation-duration:0s!important;animation-delay:0s!important}' }));
     decorateNav();
-    backdrop(); PXA.install();
+    PXA.install();
+    if (document.documentElement.dataset.hosted) return;
+    backdrop();
     const dr = document.getElementById('drifters');
     if (dr) for (let i = 0; i < 7; i++) {
       const s = PXA.el(i % 2 ? 'leaf' : 'leaf2', 1); s.style.left = (6 + i * 14) + '%'; s.style.animationDuration = (16 + i * 3) + 's'; s.style.animationDelay = (-i * 4) + 's'; dr.appendChild(s);
@@ -192,9 +194,12 @@
         applyPhase('waiting'); window.MGHosted.start(S.mode, () => { if (S.phase === 'waiting') applyPhase('play'); });
       } else applyPhase(ph);
     };
+    S.score = o.score;
     window.MGHosted?.attach(S);
-    S.best = m => store.get(bestKey(m || S.mode), 0);
+    S.best = m => window.MGHosted ? MGHosted.best(m || S.mode) : store.get(bestKey(m || S.mode), 0);          /* hosted games compare against the best saved with the factory */
+    let firstTitle = true;
     S.title = () => {
+      const skip = firstTitle && modes.length === 1 && window.MGHosted?.skipTitle; firstTitle = false;
       setPhase('title'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; ui.hideBanner();
       const leg = h('div', 'mg-legend');
       (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.hi ? 2 : cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
@@ -204,6 +209,7 @@
       if (longest > 8) ttl.style.fontSize = `max(12px, calc(var(--u) * ${Math.round(27 * 8 / longest)}px))`;
       over.append(ttl, h('p', 'mg-sub', o.sub || ''), leg, btns, h('p', 'mg-hint', o.hint || ''), h('p', 'mg-best', 'BEST  ' + best));
       if (o.onTitle) o.onTitle();
+      if (skip) S.start();
     };
     /* 3-2-1-GO: the game is set up but frozen until the count ends (a tap skips it) */
     let countT = 0;
@@ -225,12 +231,13 @@
     S.finish = stats => {
       setPhase('over'); host.classList.add('menu-open'); ui.hideBanner(); ui.setMeter(0); ui.combo.classList.remove('on'); host.querySelectorAll('.mg-float,.mg-count').forEach(e => e.remove());
       window.MGHosted?.finish(o.score());
-      const score = o.score(), prev = S.best(), isNew = score > prev && score > 0; if (isNew) store.set(bestKey(S.mode), score);
+      const score = o.score(), prev = S.best(), isNew = score > prev && score > 0; if (isNew) { store.set(bestKey(S.mode), score); window.MGHosted?.setBest(S.mode, score); }
       over.hidden = false; over.innerHTML = '';
       const grid = h('div', 'mg-stats'); (stats || []).forEach(([k, v], i) => { const a = h('span', '', k), b = h('b', '', v); a.style.setProperty('--i', i); b.style.setProperty('--i', i); grid.append(a, b); });
       const big = h('h2', 'mg-big', '0');
       over.append(h('p', 'mg-sub', o.overTitle || "THAT'S A WRAP"), big, isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', 'BEST ' + Math.max(prev, score)), grid,
-        ui.btn('AGAIN', 'primary', () => S.start()), ui.btn(modes.length > 1 ? 'MODES' : 'MENU', 'alt', () => { if (o.onMenu) o.onMenu(); S.title(); }));
+        ui.btn('AGAIN', 'primary', () => S.start()), ...(modes.length > 1 || !window.MGHosted ? [ui.btn(modes.length > 1 ? 'MODES' : 'MENU', 'alt', () => { if (o.onMenu) o.onMenu(); S.title(); })] : []), ...(window.MGHosted ? [ui.btn('DONE', 'alt', S.quit)] : []));
+      if (window.MGHosted) { const rw = h('div', 'mg-reward'); rw.hidden = true; big.after(rw); S.reward = d => { rw.hidden = false; rw.innerHTML = `<b>+${d.total.toLocaleString('en-US')}</b><span>INSPIRATION</span>${d.best ? `<em>NEW BEST +${d.best.toLocaleString('en-US')}</em>` : ''}`; sfx.golden(); }; }
       /* roll the final score up with ticks, then pop it; new bests get confetti */
       let shown = 0; const t0 = performance.now(), dur = clamp(Math.sqrt(score) * 28, 350, 1100);
       const roll = () => { const k = clamp((performance.now() - t0) / dur, 0, 1), v = Math.round(score * (1 - Math.pow(1 - k, 3))); if (v !== shown) { shown = v; big.textContent = v; if (k < 1 && shown % 3 === 0) sfx.tick(); } if (k < 1) requestAnimationFrame(roll); else { big.textContent = score; big.classList.add('hit'); if (isNew) { sfx.golden(); confetti(over); } } };
@@ -239,13 +246,13 @@
     S.quit = () => { window.MGHosted?.quit(); if (o.onMenu) o.onMenu(); S.title(); };
     S.pause = () => {
       if (S.phase !== 'play') return; setPhase('pause'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
-      over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', 'primary', S.resume), ui.btn('QUIT TO MENU', 'alt', S.quit));
+      over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', 'primary', S.resume), ui.btn(window.MGHosted ? 'LEAVE' : 'QUIT TO MENU', 'alt', S.quit));
     };
     S.resume = () => { if (S.phase === 'pause') { setPhase('play'); over.hidden = true; host.classList.remove('menu-open'); if (o.onResume) o.onResume(); } };
     addEventListener('keydown', e => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (S.phase === 'count' && !e.repeat) { S.skipCount(); }
-      if (e.key === 'Escape') { S.phase === 'play' ? S.pause() : S.resume(); return; }
+      if (e.key === 'Escape') { if (window.MGHosted && (S.phase === 'title' || S.phase === 'over')) { S.quit(); return; } S.phase === 'play' ? S.pause() : S.resume(); return; }
       if ((e.key === 'Enter' || (e.key === ' ' && o.spaceStarts !== false)) && !e.repeat) {
         if (S.phase === 'title' || S.phase === 'over') { sfx.unlock(); S.start(); e.preventDefault(); } else if (S.phase === 'pause') { S.resume(); e.preventDefault(); }
       }

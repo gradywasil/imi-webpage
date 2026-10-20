@@ -190,7 +190,37 @@ Numbers added in the late-game pass. None were run through the balance bot (it n
 | Pitch assistants (`S.pitchteam`) | 250,000 base bananas, needs 3 sold titles | A second crew per desk banks words for the best commissioned pitch that is not the goal, at `SUB_SLOW` = 2 keeper periods per word. Pitch words are banked on top of what the goal needs. Also runs while away. The Auto-pitch helper adds one more such crew (two crews halve the period), keeps title auto focus off commissions, and sells a ready commission every 6 s when the sale leaves the goal's words alone |
 | Carbon paper (`S.carbon`) | 1,500,000 base bananas, needs Honeycomb Ledger | Banking a word no longer takes its letters. Training keeps back only one copy of each letter the goal needs |
 | Shared training `factors` | `[1, 8, 28, 90, 280, 900]` (was `[1, 4, 8, 16, 32, 64]`) | About 1.5x the PAW_BASE ratio of each machine. A full set of upgrades on desk 3 is about 98k letters x 90, so an 8-hour stockpile (a few million) funds the first levels at once but not the last |
-| Break Room games | 14 games, 5k to 64M base bananas, bought in order | Each game owned adds 1 Inspiration to a full first minute of a rewarded break (base 10) |
+| Break Room games | 15 games, 5k to 64M base bananas, bought in order | Each game pays more per par run than the one before (see the Break Room section below) |
+
+## Break Room: score-paid Inspiration and the Ideas (Oct 2026)
+
+Untested by the balance bot; the numbers are reasoned. Par scores come from the games' own autoplayers (`?bot=1&warp=N`), halved for a human.
+
+| Knob | Value | Why |
+| --- | --- | --- |
+| A rewarded break | one run, paid when it ends (or when you leave, for the score so far) | The old reward was play time (10 to 24 Inspiration per minute); it ignored how well you played |
+| Run value | `pay x (score / par)^0.85` at or above par, `^1.15` below; score is capped at 60x par | Doubling a score pays about 1.8x, so skill matters but an outlier cannot run away; a token score earns a token reward |
+| `pay` (a par run) | 100 for Banana Barrel, x1.31 per game bought: 130, 170, 220, 290, 380, 500, 650, 850, 1,120, 1,470, 1,920, 2,520, 3,300, 4,330 | Later games cost far more bananas and are harder, so a modest score on them beats a good score on the first game |
+| `par` | Barrel 1,500 / Shuffle 2,500 / Road Hop 120 / Key Whack 3,500 / Fruit Stall 1,000 / Vine Swing 450 / Peel Dash 2,000 / Stack 2,500 / Slice 3,000 / Rhythm 3,500 / Tidy 3,000 / Bowling 150 / Packer 130 / Heist 300 / Plinko 1,200 | Normalises scores that differ by orders of magnitude. Rhythm modes: easy par x0.7 pays x0.6, hard par x1.3 pays x1.6 |
+| Fresh | x1.25 when the game is not one of your last two rewarded breaks (needs 3+ games) | Nudges play across the whole Break Room |
+| New best | +25% of the run's Inspiration when it beats a saved best | Bests are saved with the factory (`best`) and survive a reload; practice counts toward them but never pays |
+| Breaks | 6 held, one back every 2 hours; a break that never got played comes back | Ideas below raise the cap to 20 and shorten the wait to 20 minutes |
+| A closed tab | An interrupted break is banked for the score it had reached the next time the game loads | Checkpoints save the score every second of play |
+
+The Ideas replace the nine one-off nodes. Each is a track bought a level at a time; a card shows the next level (`+35% > +70%`). Tracks marked "tail" never end: past the listed levels they add the stated amount per level and the cost grows x1.5 to x1.6. Levels past the first need more Break Room games owned.
+
+| Track | Effect (cumulative per level) | Cost per level (Inspiration) | Games needed |
+| --- | --- | --- | --- |
+| Warm hands | automatic typing +15, +35, +70, +130, +230%, then +100% a level | 150, 600, 2.4K, 9.5K, 38K, then x1.6 | 0, 2, 4, 7, 10 |
+| Fresh eyes | keeper speed, same steps | 170, 680, 2.7K, 10.5K, 42K, then x1.6 | 2, 3, 5, 8, 11 |
+| Good stories | title income +10, +25, +50, +90, +150%, then +75% a level | 220, 900, 3.6K, 14K, 56K, then x1.6 | 3, 4, 6, 9, 12 |
+| Bright ideas | inspired typists come x1.3, x1.6, x2, x2.5 as often and last +4, +8, +12, +18 s | 400, 1.8K, 7K, 28K | 4, 6, 8, 11 |
+| Lucky streak | crit-tap odds, lucky-sale odds and Golden Hour frequency +20, +45, +80, +130, +200% | 350, 1.6K, 6.5K, 26K, 100K | 5, 6, 8, 10, 13 |
+| Room for play | breaks held 8, 10, 12, 15, 20 | 120, 500, 2K, 8K, 30K | 2, 3, 5, 7, 10 |
+| Quick breaks | a break returns every 90, 60, 45, 30, 20 minutes | 250, 1.2K, 5K, 20K, 75K | 3, 5, 7, 9, 12 |
+| Studio notes | Inspiration per run +20, +45, +80, +130%, then +50% a level | 300, 1.5K, 6K, 24K, then x1.5 | 3, 5, 7, 10 |
+
+The old ideas map onto the new levels on first load (Warm-up, Nimble paws and Steady hands are Warm hands 1 to 3; Fresh eyes and Quick keepers are Fresh eyes 1 to 2; Good stories and Bestsellers are Good stories 1 to 2; Room for play and Big break are Room for play 1 and Studio notes 1). Everything is additive inside a track and multiplicative with every other source, so a fully bought set is a large multiplier on typing, keepers and sales: the tail is the intended long-term sink for Inspiration.
 
 ## Letter garden rework (Oct 2026)
 Untested by the bot; reasoned from the formulas.
