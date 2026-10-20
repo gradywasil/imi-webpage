@@ -59,7 +59,7 @@ test('the Studio earns beside the Annex, scheduling pushes until a machine count
   const before=await page.evaluate(()=>{const s=IMI.ops.extensions.state();s.pub.on=false;return {wallet:IMI.bananas.get(),earned:s.run.earned};});
   await page.waitForFunction(()=>IMI.ops.extensions.state().meta.campus.studio.room.earned>0,{timeout:30000});
   const made=await page.evaluate(()=>{const s=IMI.ops.extensions.state(),c=s.meta.campus;return {studio:c.studio.room.earned,annex:c.room.earned,wallet:IMI.bananas.get(),earned:s.run.earned};});
-  assert.ok(made.wallet>before.wallet,'the income reached the wallet');
+  assert.ok(made.earned>before.earned,'the income was counted as production');
   assert.ok(Math.abs((made.earned-before.earned)-(made.wallet-before.wallet))<=100,'every banana gained is counted as production exactly once, from both buildings');
 
   // a transfer: one typist from the Annex to the Studio, nothing else changes

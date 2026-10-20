@@ -31,7 +31,7 @@ A 9 simulated-hour run takes 30-45 wall-clock minutes late game (it gets slower 
 ## Keepers are free
 Owning a desk means its keeper works from the first second (no purchase, task 03). All keepers chase **one shared goal** (`S.focus`, chosen by auto focus unless the player sets it) and letter pools stay **per desk**, so the tactical lever is the *Paused* toggle on each desk:
 
-- A keeper only banks words the goal needs, and only at its own pace: **`KEEPER_PERIOD`** = seconds per banked word per desk, `[0.6, 1.2, 2, 3, 4, 5]`. Muse "hemi" doubles the rate. `keeperBulk`/`simulateAway` use the same period scaled by the away efficiency (`eff`, 0.4 at base), so offline banking is the same ballpark as online: a 2-hour test with a keeper stack target of 1000 (so the keeper never runs out of work) banked 1,946 words online and 838 offline, 43% of online at `eff` 0.4.
+- A keeper only banks words the goal needs, and only at its own pace: **`KEEPER_PERIOD`** = seconds per banked word per desk, `[0.6, 1.2, 2, 3, 4, 5]`. Muse "hemi" doubles the rate. `keeperBulk`/`simulateAway` use the same period scaled by the away efficiency (`eff`, 0.4 at base), so offline banking is the same ballpark as online: a 2-hour test with a keeper stack target of 1000 (so the keeper never runs out of work) banked 1,946 words online and 838 offline, 43% of online at `eff` 0.4. Away, nobody sells the goal, so the keepers work down a queue of the next 8 best titles (`planAway`, the same effort-per-pay rule as auto focus, with words counted cumulatively so none is promised twice) instead of stalling once the goal is ready. A 1-hour test went from 25 words banked to 166.
 - Letters the goal does not need pile up. Typist hires and upgrades cost letters **from that desk**, so a collecting keeper turns the useful letters into words (progress toward titles) while a paused keeper leaves the whole pile for hiring. Hoarding therefore trades title speed for crew speed.
 - Auto focus (`pickAutoFocus`, `autoEffort` in `ops.js`) now picks the best return for the crews' time: for each reachable unsold title it sums missing letters weighted by that desk's seconds per letter and divided by its crew size, then divides by the title's rights. Without this a goal on a slow desk could stall the whole room while cheap kids' titles went unwritten, and cheap kids' titles could starve the valuable authored titles.
 
@@ -47,7 +47,7 @@ Owning a desk means its keeper works from the first second (no purchase, task 03
 | `KID_PAY` (new) multiplier on the baked-in pay of kids' titles | 1 (24 per word) | 0.1 | About 100-170 bananas per kids' title, so 25 of them plus the six authored ones fund Hibiscus |
 | `LIB_PAY` (new) multiplier on the baked-in pay of the 900 library stories (5-, 7-, 9-letter caps), by band | n/a | 0, 0.03, 0.018, 0.018 | Baked pay is words x `RATE[band]`; at these values a 65-word cap-5 story pays about 530, a 71-word cap-7 about 4.3K, a 77-word cap-9 about 28K. See "Library stories" below |
 | `LIB_ROY` (new) share of normal royalties the library stories pay | n/a | 0.5 | Same treatment as the kids' books |
-| `PUB_COST`, `PUB_PERIOD` (new) | n/a | bananas [6000, 50000, 350000]; seconds [12, 6] | Publisher's assistant, Shop > Market tools. Tier 1 sells a ready title every 12 s (needs 3 sold titles), tier 2 every 6 s, tier 3 also sells while away at market x1.0. Task 11 |
+| `PUB_COST`, `PUB_PERIOD` (new) | n/a | bananas [6000, 50000, 350000]; seconds [12, 6] | Publisher's assistant, Shop > Market tools. Tier 1 sells a ready title every 12 s (needs 3 sold titles), tier 2 every 6 s. Every tier keeps selling while away at market x1.0 and at its own pace scaled by away efficiency; tier 3 (Night shift) sells away at full pace and x1.2 (`NIGHT_SHIFT`). Task 11 |
 | `TIER` (cost multipliers of the tiered upgrades), `UPV` (their chances by level) | `[1, 2.5, 6]`, levels 0-3 | `[1, 2.5, 6, 24, 96]`, levels 0-5 | Levels 4 and 5 need the machine restored to Mk II and Mk III. Task 12 |
 | `COACH_MAX`, `COACH_STEP`, `COACH_GROW`, `COACH_BASE` (new) | n/a | 10 levels, +2% each, x1.35, bananas [18, 215, 2700, 33500, 4.2e5, 5e6] by desk | Per-monkey coaching on the Train page. Task 12 |
 | `REROLL_BASE` (new) | n/a | bananas [20, 250, 3000, 38000, 5e5, 5.6e6], x1.5 per reroll | Rerolls a monkey's trait and talent. Task 12 |
@@ -187,7 +187,7 @@ Numbers added in the late-game pass. None were run through the balance bot (it n
 | Quick fingers (`fing`) | no cap; 15% faster per level for 10 levels, then 7% per level (`FING_SOFT`, `FING_LATE`); cost x1.6 per level to level 10, then x1.4 | Every level still helps, but each one costs 25% more time to earn than the last, so the climb slows without a wall |
 | Rapid touch (`rapid`) | no cap; cost x1.7 per level to 8, then x1.4 | Held typing grows by +2/s a level |
 | Keeper speed | no cap; x0.9 period to level 6, then x0.95; cost x1.8 to level 6, then x1.45; period floor 0.05 s (`KEEPER_MIN_PERIOD`) | The tick banks four words at most, so 0.05 s is the real ceiling |
-| Pitch assistants (`S.pitchteam`) | 250,000 base bananas, needs 3 sold titles | A second crew per desk banks words for the best commissioned pitch that is not the goal, at `SUB_SLOW` = 2 keeper periods per word. Also runs while away |
+| Pitch assistants (`S.pitchteam`) | 250,000 base bananas, needs 3 sold titles | A second crew per desk banks words for the best commissioned pitch that is not the goal, at `SUB_SLOW` = 2 keeper periods per word. Pitch words are banked on top of what the goal needs. Also runs while away. The Auto-pitch helper adds one more such crew (two crews halve the period), keeps title auto focus off commissions, and sells a ready commission every 6 s when the sale leaves the goal's words alone |
 | Carbon paper (`S.carbon`) | 1,500,000 base bananas, needs Honeycomb Ledger | Banking a word no longer takes its letters. Training keeps back only one copy of each letter the goal needs |
 | Shared training `factors` | `[1, 8, 28, 90, 280, 900]` (was `[1, 4, 8, 16, 32, 64]`) | About 1.5x the PAW_BASE ratio of each machine. A full set of upgrades on desk 3 is about 98k letters x 90, so an 8-hour stockpile (a few million) funds the first levels at once but not the last |
 | Break Room games | 14 games, 5k to 64M base bananas, bought in order | Each game owned adds 1 Inspiration to a full first minute of a rewarded break (base 10) |
@@ -236,3 +236,18 @@ Variable rewards and ceremonies on top of the existing juice. Only the first fou
 | Awards | Bronze chime, silver confetti + fanfare, gold full-screen burst; +1% income flies into the counter. Diamond Bananas from awards fly into their chip | none |
 | Press, Break Room | Stars and Inspiration fly into their chips | none |
 | Near-complete | Bars and the Goals tag throb at 90% | none |
+
+## Muses added Oct 2026
+
+Six muses tie the guest list to other systems. Costs are base bananas (scaled like the rest).
+
+| Muse | Cost | Effect |
+|---|---|---|
+| William Shakespaw (`shakes`) | 11,000 | crit taps x2 (3% -> 6%) |
+| Charles Chimpens (`chimpens`) | 25,000 | commissioned pitches sell x1.3 (inside `salePay`, so the Muse director sees it) |
+| Homape (`homer`) | 45,000 | typist XP x1.5, online and away |
+| Beatrix Potape (`potter`) | 85,000 | garden harvests x1.5 |
+| F. Scott Fitzgerape (`fitz`) | 160,000 | Publisher's assistant period /2, online and away |
+| Lewis Carrolangutan (`carroll`) | 300,000 | lucky-sale odds x2 (hot sale 18%, bestseller 5.2%, jackpot 0.8%); still skipped in mastery/A11 |
+
+Untested by the bot; still three seats.

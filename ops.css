@@ -1839,3 +1839,70 @@ html[data-style="classic"] .o-eff b { font-weight: 700; }
 .o-fprice { flex: none; display: inline-flex; align-items: center; gap: 4px; color: #ffd23a; }
 #oFocus.ready { box-shadow: 0 0 14px #ffd23a; animation: j-tag .7s steps(2) infinite alternate; }
 #oFocus.ready .o-fn { color: #7be05a; }
+
+/* ---- Pitches page: the pitch crew's line, next to the title goal ---- */
+.o-pitchgoal { --c: #ff9a3a; border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.o-pitchgoal .o-prog i { background: var(--c); }
+.o-pitchauto { flex: 0 0 auto; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #2a1400; background: var(--c); animation: o-pitchauto 1.6s ease-in-out infinite; }
+@keyframes o-pitchauto { 50% { filter: brightness(1.25); } }
+html[data-style="pixel"] .o-pitchauto { border-radius: 0; animation-timing-function: steps(2); }
+@media (prefers-reduced-motion: reduce) { .o-pitchauto { animation: none; } }
+
+/* ---- Muse portraits (muse-art.js): pixel strips play in steps, classic parts move with these classes ---- */
+.o-portrait .ma-strip { position: absolute; inset: 0; background-size: 600% 100%; background-repeat: no-repeat; image-rendering: pixelated; animation: ma-run 1.2s steps(6) infinite; }
+@keyframes ma-run { to { background-position: 120% 0; } }
+.o-portrait img.ma-still { left: 0; top: 0; translate: none; width: 100%; height: 100%; }
+.o-portrait .ma-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.o-portrait.veiled .ma-svg { filter: brightness(0) opacity(.55); }
+.ma-svg * { transform-box: fill-box; }
+.ma-svg .ma-fig { animation: ma-breathe 2.4s ease-in-out infinite; }
+.ma-sway { transform-origin: 50% 100%; animation: ma-sway 1.6s ease-in-out infinite alternate; }
+.ma-bob { animation: ma-bob 2s ease-in-out infinite; }
+.ma-twinkle { animation: ma-twinkle 1.4s steps(2) infinite; }
+.ma-flap { transform-origin: 0% 100%; animation: ma-flap .5s ease-in-out infinite alternate; }
+.ma-fall { animation: ma-fall 3s linear infinite; }
+.ma-rise { animation: ma-rise 2s ease-out infinite; }
+.ma-steam { animation: ma-steam 1.6s ease-out infinite; }
+.ma-puff { transform-origin: 50% 50%; animation: ma-puff 1.8s ease-out infinite; }
+.ma-bubble { animation: ma-bubble 1.2s ease-out infinite; }
+.ma-snow { animation: ma-snow 4s linear infinite; }
+.ma-ring { transform-origin: 50% 50%; animation: ma-ring 2.4s ease-out infinite; }
+.ma-hop { animation: ma-hop 1.2s ease-in-out infinite; }
+.ma-leap { transform-origin: 50% 50%; animation: ma-leap 2.6s ease-in-out infinite; }
+.ma-drift { animation: ma-drift 1.6s linear infinite; }
+.ma-buzz { animation: ma-buzz 1.6s ease-in-out infinite; }
+.ma-glow { animation: ma-glow 2.2s ease-in-out infinite; }
+.ma-blink { animation: ma-blink 2s steps(1) infinite; }
+.ma-write { stroke-dasharray: 8; animation: ma-write 3s linear infinite; }
+.ma-scribble { transform-origin: 0% 100%; animation: ma-scribble .45s ease-in-out infinite alternate; }
+.ma-spin { transform-origin: 50% 50%; animation: ma-spin 1.4s linear infinite; }
+.ma-swing { transform-origin: 50% 0%; animation: ma-swing 1.1s ease-in-out infinite alternate; }
+.ma-twitch { transform-origin: 50% 100%; animation: ma-twitch 2s ease-in-out infinite; }
+.ma-wiggle { transform-origin: 50% 100%; animation: ma-wiggle 1.4s ease-in-out infinite alternate; }
+.ma-beam { transform-origin: 0% 50%; animation: ma-beam 2.6s ease-in-out infinite alternate; }
+@keyframes ma-breathe { 50% { transform: translateY(.5px); } }
+@keyframes ma-sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+@keyframes ma-bob { 50% { transform: translateY(-1.5px); } }
+@keyframes ma-twinkle { 50% { opacity: .15; } }
+@keyframes ma-flap { to { transform: rotate(-35deg); } }
+@keyframes ma-fall { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(3px, 38px); opacity: 0; } }
+@keyframes ma-rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-8px); opacity: 0; } }
+@keyframes ma-steam { from { transform: translateY(0); opacity: .9; } to { transform: translateY(-4px); opacity: 0; } }
+@keyframes ma-puff { from { transform: translate(0, 0) scale(1); opacity: .9; } to { transform: translate(2px, -7px) scale(1.8); opacity: 0; } }
+@keyframes ma-bubble { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-5px); opacity: 0; } }
+@keyframes ma-snow { from { transform: translate(0, 0); } to { transform: translate(2px, 40px); } }
+@keyframes ma-ring { from { transform: translate(0, 0) scale(1); opacity: .9; } to { transform: translate(1px, -12px) scale(2); opacity: 0; } }
+@keyframes ma-hop { 0%, 45%, 100% { transform: translateY(0); } 22% { transform: translateY(-3px); } }
+@keyframes ma-leap { 0% { transform: translate(0, 6px) rotate(-30deg); opacity: 0; } 15%, 85% { opacity: 1; } 50% { transform: translate(5px, -6px) rotate(0deg); } 100% { transform: translate(10px, 6px) rotate(30deg); opacity: 0; } }
+@keyframes ma-drift { to { transform: translateX(-8px); } }
+@keyframes ma-buzz { 20% { transform: translate(2px, -2px); } 40% { transform: translate(3px, 1px); } 60% { transform: translate(-1px, 2px); } 80% { transform: translate(-3px, 0); } }
+@keyframes ma-glow { 50% { opacity: .5; } }
+@keyframes ma-blink { 70% { opacity: .1; } }
+@keyframes ma-write { from { stroke-dashoffset: 8; } to { stroke-dashoffset: 0; } }
+@keyframes ma-scribble { from { transform: rotate(-6deg) translateX(-.5px); } to { transform: rotate(4deg) translateX(.8px); } }
+@keyframes ma-spin { to { transform: rotate(360deg); } }
+@keyframes ma-swing { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@keyframes ma-twitch { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-25deg); } }
+@keyframes ma-wiggle { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@keyframes ma-beam { from { transform: rotate(-12deg); opacity: .25; } to { transform: rotate(10deg); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .o-portrait .ma-strip, .ma-svg, .ma-svg * { animation: none !important; } }

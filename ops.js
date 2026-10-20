@@ -299,6 +299,12 @@
   let dirty = true, holding = false, holdAcc = 0, popSlot = 0, lastBananas = bananas.get();
   const introActive = () => !S.intro.done;
   const keepersReady = () => !introActive() || S.intro.words;
+  /* Auto-pitch (automation helper) is read several times a tick per desk, and its unlock check walks the Imprint record, so it is sampled 4x a second */
+  let autoPitchAt = -1e9, autoPitchOn = false;
+  const autoPitch = () => { const now = performance.now(); if (now - autoPitchAt > 250) { autoPitchAt = now; autoPitchOn = !!extensions.get('automation')?.pitchOn?.(); } return autoPitchOn; };
+  const pitchCrews = () => (S.pitchteam ? 1 : 0) + (autoPitch() ? 1 : 0);
+  const pitchWant = (r, w) => { const g = focusRecipe(); return (r.need[w] || 0) + (g && g.id !== r.id ? g.need[w] || 0 : 0); };
+  const pitchClear = r => Object.keys(r.need).every(w => stock(w) >= pitchWant(r, w));     // selling it leaves the goal's words alone
   function introProgress() {
     const intro = S.intro; if (intro.done) return;
     intro.train ||= S.stats.manual >= 25;
@@ -434,7 +440,7 @@
   const maxLevel = () => S.desks.reduce((m, d) => d.crew.reduce((a, t) => Math.max(a, levelOf(t.xp)), m), 1);
   function grantXp(d, p, amt, silent) {
     const t = d.crew[p]; if (!t) return;
-    t.xp += amt; const l = levelOf(t.xp);
+    t.xp += amt * (museOn('homer') ? 1.5 : 1); const l = levelOf(t.xp);
     if (l > (t.lv || 1)) {
       t.lv = l; if (silent) return;
       IMI.sfx.tick();
@@ -592,11 +598,12 @@
       if (S.focus !== was) IMI.emit('focus', { id: S.focus });
       return;
     }
-    if (!S.autoFocus || focusRecipe()) return;
+    if (!S.autoFocus || focusRecipe() && !(focusRecipe().gen && autoPitch())) return;   // with Auto-pitch on, an auto-picked pitch moves to the pitch line
     let best = null, bm = Infinity;
     const genre = genreChoice();   // Imprint unlock: weigh pay the way the genre will actually pay it
     for (const r of RECIPES) {
       if (!titleAvailable(r) || S.written[r.id] || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
+      if (r.gen && autoPitch()) continue;                              // Auto-pitch runs commissions on their own line
       const miss = autoEffort(r) / (r.pay * (genre ? (genre.bands.includes(r.band) ? 1.15 : .95) : 1));
       if (miss < bm || (miss === bm && best && r.pay < best.pay)) { best = r; bm = miss; }
     }
@@ -722,7 +729,7 @@
     if (!auto && i === S.sel) comboHit();
     const ch = roll(d, i, auto, ty);
     generatedLetter(d, i, ch);
-    if (!auto && !chal('hands') && rand() < CRIT_P) critTap(d, i);
+    if (!auto && !chal('hands') && rand() < CRIT_P * (museOn('shakes') ? 2 : 1)) critTap(d, i);
     if (ty) { grantXp(d, p, 1); if (ty.trait === 'lucky' && rand() < .05 * trMul(ty)) generatedLetter(d, i, roll(d, i, true, ty)); }
     const st = S.stats; st.letters++; if (!auto) { st.manual++; cycleLog?.key(); introProgress(); IMI.emit('tap', { letters: st.letters }); } st.byLetter[ch] = (st.byLetter[ch] || 0) + 1;
     if (stormy()) st.storm++; if (isNight()) st.night++;
@@ -978,7 +985,7 @@
     const p = S.meta.productionGoal;
     if (pg && p !== undefined && !pg.valid(p)) return -1;
     if (pg?.active(pgContext) && (p.manual || !['all','pitches'].includes(p.collection)) ||
-        S.focus && !S.autoFocus && !S.written[S.focus] || S.meta.folio?.working || S.meta.folio !== undefined && !folio.valid(S.meta.folio)) return -1;
+        S.meta.folio?.working || S.meta.folio !== undefined && !folio.valid(S.meta.folio)) return -1;
     return (S.offers || []).map((p,i) => ({p,i,r:pitchRecord(p) ? buildRecipe({...p,gen:true}) : null})).filter(({p,r}) =>
       r && !S.written[p.id] && !RBY[p.id] && !S.pitches.some(x => x.id === p.id) && S.offers.filter(x => x.id === p.id).length === 1 &&
       Object.keys(r.need).every(w => S.desks[bandOf(w.length)]?.owned && !((chal('haiku') || masteryActive()) && bandOf(w.length) > 1)) &&
@@ -1069,8 +1076,10 @@
   function pitchHTML() {
     if (!S.offers || !S.offers.length) S.offers = newOffers();
     const act = pitchActive(), full = act >= PITCH_MAX || !challengeCommissionAllowed(), cost = repitchCost();
-    const mine = RECIPES.filter(r => r.gen && !S.written[r.id]);
-    return `<div class="o-card o-pitch"><div class="o-row"><h3>Your commissions</h3><span class="o-dim">${act}/${PITCH_MAX} commissions open</span></div>
+    const mine = RECIPES.filter(r => r.gen && !S.written[r.id]), pr = pitchCrews() ? pitchGoal() : null;
+    const crew = pitchCrews() ? `<div class="o-card o-goalbar o-pitchgoal"><div class="o-row o-gtop">${pr ? `<span class="o-gtitle">Pitch crew: <b>${esc(pr.title)}</b></span><span class="o-dim">${progress(pr)}/${pr.total}</span>` : '<span>Pitch crew: waiting for a commission</span>'}</div>
+      <div class="o-progrow o-gbar">${pr ? bar(progress(pr), pr.total) : '<span class="o-dim">Commission a pitch below</span>'}${autoPitch() ? '<span class="o-pitchauto" title="Auto-pitch commissions, writes and sells pitches next to your title goal">Auto</span>' : ''}</div></div>` : '';
+    return crew + `<div class="o-card o-pitch"><div class="o-row"><h3>Your commissions</h3><span class="o-dim">${act}/${PITCH_MAX} commissions open</span></div>
       ${mine.length ? `<div class="o-grid">${mine.map(bookCard).join('')}</div>` : '<p class="o-dim">None yet</p>'}</div>
       <div class="o-card o-pitch"><div class="o-row"><h3>New pitches</h3></div>
       <div class="o-grid">${S.offers.map((p, i) => {
@@ -1264,13 +1273,19 @@
   /* ================= muses: literary patrons seated in up to three slots ================= */
   const MUSES = [
     { id: 'seuss', name: 'Dr. Zoos', cost: 8000, desc: 'Titles in the two shortest bands (2-5 letters) sell for 20% more.', fx: ['+20%', 'sales · 2–5 letter titles'] },
+    { id: 'shakes', name: 'William Shakespaw', cost: 11000, desc: 'Critical taps happen twice as often.', fx: ['×2', 'crit taps'] },
     { id: 'poe', name: 'Edgar Allan Chimp', cost: 15000, desc: 'Typists work 25% faster at night.', fx: ['+25%', 'typing at night'] },
     { id: 'dick', name: 'Emily Dickinsimian', cost: 20000, desc: 'Every typist leans toward vowels after a consonant.', fx: ['vowels', 'after consonants'] },
+    { id: 'chimpens', name: 'Charles Chimpens', cost: 25000, desc: 'Commissioned pitches sell for 30% more.', fx: ['+30%', 'pitch sales'] },
     { id: 'hemi', name: 'Ernest Hemingwape', cost: 30000, desc: 'Word keepers bank twice as fast.', fx: ['×2', 'keeper speed'] },
     { id: 'christie', name: 'Agatha Chrisbanana', cost: 40000, desc: 'Golden bananas show up 30% sooner.', fx: ['+30%', 'golden banana rate'] },
+    { id: 'homer', name: 'Homape', cost: 45000, desc: 'Typists gain experience 50% faster.', fx: ['×1.5', 'typist XP'] },
     { id: 'woolf', name: 'Virginia Woolfkin', cost: 60000, desc: 'Away work is 15 points more efficient.', fx: ['+15', 'away efficiency points'] },
+    { id: 'potter', name: 'Beatrix Potape', cost: 85000, desc: 'Garden harvests yield 50% more letters.', fx: ['+50%', 'harvest yield'] },
     { id: 'austen', name: 'Jane Apesten', cost: 120000, desc: 'Royalties +25%.', fx: ['+25%', 'royalties'] },
+    { id: 'fitz', name: 'F. Scott Fitzgerape', cost: 160000, desc: 'The Publisher’s assistant sells twice as often, here and away.', fx: ['×2', 'publisher pace'] },
     { id: 'tolken', name: 'J.R.R. Tolkong', cost: 200000, desc: 'Titles in the 8-13 letter bands sell for 25% more.', fx: ['+25%', 'sales · 8–13 letter titles'] },
+    { id: 'carroll', name: 'Lewis Carrolangutan', cost: 300000, desc: 'Lucky sales (hot sales, bestsellers, jackpots) come twice as often.', fx: ['×2', 'lucky sales'] },
     { id: 'twain', name: 'Mark Twainana', cost: 500000, desc: 'Division income +20%.', fx: ['+20%', 'division income'] }
   ].map(x => ({ ...x, cost: cash(x.cost) }));
   const museSlots = () => (soldCount() >= 13 ? 3 : soldCount() >= 8 ? 2 : soldCount() >= 3 ? 1 : 0);
@@ -1292,7 +1307,7 @@
       (selected ? r.id === selected : !pg || pg.allowsSale(pgContext,r)));
     const quote = saleContext();
     quote.state = {meta:{layers:S.meta.layers === undefined ? undefined : JSON.parse(JSON.stringify(S.meta.layers))}};
-    return {titles:titles.map(r => ({id:r.id,band:r.band,pay:r.pay})), quote, markets:S.market.v.map((_,b) => marketMult(b)),
+    return {titles:titles.map(r => ({id:r.id,band:r.band,pay:r.pay,gen:!!r.gen})), quote, markets:S.market.v.map((_,b) => marketMult(b)),
       night:!!sky().night, productive:S.desks.some(d => d.owned && autoRate(d) > 0), slots:museSlots(),
       owned:MUSES.filter(m => S.muses.owned[m.id]).map(m => m.id), paused:!!folioGoal()};
   }
@@ -1348,15 +1363,11 @@
     if (result.ok) { S.muses = candidate.muses; S.meta = candidate.meta; S.lastSeen = candidate.lastSeen; IMI.sfx[p.id === null ? 'tick' : 'ding'](); }
     helper.museResult(result); mark(); return result;
   }
-  /* every muse sits for a portrait: a pixel monkey in their signature hat, in a gilt frame */
-  const MUSE_LOOK = { seuss: [3, '#ff5d73'], poe: [0, '#3a2a5a'], dick: [7, '#f08aa4'], hemi: [6, '#5fa8f0'], christie: [2, '#b58cf0'], woolf: [8, '#78d9a0'], austen: [4, '#f2b23a'], tolken: [5, '#9a6a3a'], twain: [2, '#dfe3f2'] };
-  const museArt = {};
+  /* every muse sits for an animated portrait in a gilt frame: a typist monkey dressed as their namesake, in a little scene (muse-art.js) */
+  const MUSE_BG = { seuss: '#86d8cf', poe: '#2b2046', dick: '#f6cad8', hemi: '#8ecbf0', christie: '#6a4c9c', woolf: '#86c2b4', austen: '#f2d79a', tolken: '#a8d8f0', twain: '#f4c58a', chimpens: '#55657e', potter: '#a8dc84', fitz: '#14323a', shakes: '#3a0c16', carroll: '#82c8b8', homer: '#5aa0e0' };
   function portrait(id, owned) {
-    const [hat, bg] = MUSE_LOOK[id] || [0, '#3a2a10'];
-    let art;
-    if (PX) art = `<img alt="" src="${museArt[id] || (museArt[id] = PXA.monkeyFrame('desk', 'normal', 0, false, 0, hat).cv.toDataURL())}">`;
-    else art = `<span class="o-pt-mk">🐒</span>${hat ? `<span class="o-pt-hat">${(hatById(hat) || {}).emoji || ''}</span>` : ''}`;
-    return `<span class="o-portrait${owned ? '' : ' veiled'}" style="--mc:${bg}" aria-hidden="true">${art}</span>`;
+    const art = window.MuseArt?.html(id, !owned) || '<span class="o-pt-mk">🐒</span>';
+    return `<span class="o-portrait${owned ? '' : ' veiled'}" style="--mc:${MUSE_BG[id] || '#3a2a10'}" aria-hidden="true">${art}</span>`;
   }
   function renderMuses() {
     const slots = museSlots(), M = S.muses, have = bananas.get();
@@ -1397,7 +1408,7 @@
   const gardenTime = (ch, desk) => { const i = desk == null ? S.sel : desk; return Math.max(5, Math.round((30 + (12 - FREQ[ch]) * 8) * GARDEN_SLOW[i] / farmSpeed(i))); };   // seconds: rare letters take longer
   const fmtSecs = n => (n >= 3600 ? `${Math.floor(n / 3600)}h ${Math.round(n % 3600 / 60)}m` : n >= 120 ? `${Math.round(n / 60)}m` : `${n}s`);
   const gardenBase = ch => Math.round(6 + (12 - FREQ[ch]) * 1.2);   // ...and give more
-  const gardenYield = (ch, desk, s = S) => Math.max(1, Math.round(gardenBase(ch) * farmYield(desk == null ? S.sel : desk, s)));
+  const gardenYield = (ch, desk, s = S) => Math.max(1, Math.round(gardenBase(ch) * farmYield(desk == null ? S.sel : desk, s) * (museOn('potter') ? 1.5 : 1)));
   const fieldBeds = i => S.garden.beds.map((b, k) => k).filter(k => S.garden.owner[k] === i);
   const plotCost = i => { const n = fieldBeds(i).length; return n >= PLOT_MAX ? 0 : roundMoney(GARDEN_COSTS[n - 1] * PLOT_SCALE[i]); };
   const farmerTier = i => S.garden.farmers?.[i] || 0;
@@ -2463,8 +2474,8 @@
   }
   function pubCard(have) {
     const t = S.pub.tier, names = ['Publisher’s assistant', 'Fast presses', 'Night shift'];
-    const descs = [fxc(`1 / ${PUB_PERIOD[0]}s`, 'auto-sells at your price'), fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells'), fxc('away', 'keeps selling offline')];
-    if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>${fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells · even away')}</p></div>`;
+    const descs = [fxc(`1 / ${PUB_PERIOD[0]}s`, 'auto-sells at your price'), fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells'), fxc('×' + NIGHT_SHIFT, 'away sales · full pace')];
+    if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>${fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells') + ' ' + fxc('×' + NIGHT_SHIFT, 'away sales')}</p></div>`;
     const lock = challengeShopLock('pub') || (t === 0 && soldCount() < 3 ? 'Needs 3 sold titles' : '');
     return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}${names[t]}</h3>${price(PUB_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="pub" ${lock || have < PUB_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
@@ -2484,7 +2495,7 @@
   const marketMult = b => Math.max(marketFloor(), Math.round(S.market.v[b] * 100) / 100);
   const saleContext = () => ({contracts:toolOn('contracts') ? 1.25 : 1, awards:awardMult(), desks:S.desks.map(d => 1 + .05 * (d.mk || 0)),
     legacy:legacyMult() * (lgb ? lgb.powerMult(legLvl('power')) : 1), edition:editionMult(), minigames:1 + (extensions.get('minigames')?.titleSaleBonus?.() || 0), state:S});
-  const salePay = (r, m = marketMult(r.band), on = museOn, c = saleContext()) => roundMoney(r.pay * c.contracts * c.awards * m * c.desks[r.band] * museSale(r.band,on) * c.legacy * c.edition * c.minigames * (layers?.saleFactor(c.state, r.band, on) || 1) * (wsOn() ? Workshop.press(S.meta.workshop, r.band, (S.editions || {})[r.id] || 0) : 1) * (houseOn() ? House.saleFactor(S.meta.house, r.band, (S.editions || {})[r.id] || 0, soldCount()) : 1));
+  const salePay = (r, m = marketMult(r.band), on = museOn, c = saleContext()) => roundMoney(r.pay * c.contracts * c.awards * m * c.desks[r.band] * museSale(r.band,on) * (r.gen && on('chimpens') ? 1.3 : 1) * c.legacy * c.edition * c.minigames * (layers?.saleFactor(c.state, r.band, on) || 1) * (wsOn() ? Workshop.press(S.meta.workshop, r.band, (S.editions || {})[r.id] || 0) : 1) * (houseOn() ? House.saleFactor(S.meta.house, r.band, (S.editions || {})[r.id] || 0, soldCount()) : 1));
   function marketBias(b, sk = sky()) {
     const wx = sk.wx, night = sk.night;
     if (b === 0) return night ? .3 : 0;                       // bedtime books sell at night
@@ -2532,7 +2543,7 @@
   }
   /* ---- the Publisher's assistant: sells finished titles for you (Shop > Market tools, three tiers) ---- */
   let pubClock = 0;
-  const pubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] * (lgb ? lgb.backlistFactor(sbRank('backlist'), catalogSize()) : 1);
+  const pubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] * (lgb ? lgb.backlistFactor(sbRank('backlist'), catalogSize()) : 1) / (museOn('fitz') ? 2 : 1);
   /* Editorial desk: a surplus title is held back if selling it would eat words the selected goal still needs */
   const desked = r => { if (!lgb || !sbRank('editorial')) return true; const g = focusRecipe(); if (!g || g.id === r.id) return true; return Object.keys(r.need).every(w => !g.need[w] || stock(w) - r.need[w] >= g.need[w]); };
   const pubSellable = () => readyList().filter(r => desked(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)));          // a title you picked by hand stays yours to sell
@@ -2543,6 +2554,18 @@
     const picks = pubSellable().filter(r => marketMult(r.band) >= rule).map(r => [salePay(r), r]).sort((a, b) => b[0] - a[0]).slice(0, lgb ? lgb.bundleSize(sbRank('bundle')) : 1);
     if (!picks.length) return false;
     for (const [, r] of picks) { if (document.querySelector('.o-modal, .o-celebrate')) break; writeTitle(r.id, null, { auto: true }); }
+    if (ui.tab === 'press') mark();
+    return true;
+  }
+  /* Auto-pitch sells a finished commission on its own clock, next to the Publisher, as long as the sale leaves the goal's words alone */
+  let pitchSellClock = 0;
+  const pitchSellable = () => readyList().filter(r => r.gen && pitchClear(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)) &&
+    !(pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id));
+  function pitchSell() {
+    if (challengeControlled() || workPaused() || (chal('patientpress') || masteryActive()) || document.querySelector('.o-modal, .o-celebrate')) return false;
+    const r = pitchSellable().sort((a, b) => salePay(b) - salePay(a))[0];
+    if (!r) return false;
+    writeTitle(r.id, null, { auto: true });
     if (ui.tab === 'press') mark();
     return true;
   }
@@ -2727,14 +2750,17 @@
     } catch (error) { fmStatus = error.message; }
   }
   /* tier 3: at return, sell what finished while you were away, at an average market (x1.0), as many as the assistant could have managed */
-  function autoSellAway(effSec, limit = 200, checkpoint) {
-    const out = { n: 0, pay: 0 }; if (challengeActive() || workPaused() || (chal('patientpress') || masteryActive()) || S.pub.tier < 3 || !S.pub.on) return out;
-    if (checkpoint) checkpoint.saleLeft ??= Math.min(limit, Math.floor(effSec / PUB_PERIOD[1]));
-    for (let k = checkpoint ? checkpoint.saleLeft : Math.min(limit, Math.floor(effSec / PUB_PERIOD[1])); k > 0; k--) {
-      let best = null, bp = -1; for (const r of pubSellable()) { if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id) continue; const p = salePay(r, 1); if (p > bp) { best = r; bp = p; } }
+  /* every tier of the assistant keeps selling while you are away, at its own pace; the Night shift sells at full pace and a better price */
+  const NIGHT_SHIFT = 1.2;
+  const awayPubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] / (museOn('fitz') ? 2 : 1);
+  function autoSellAway(effSec, limit = 200, checkpoint, mult = 1) {
+    const out = { n: 0, pay: 0 }; if (challengeActive() || workPaused() || (chal('patientpress') || masteryActive()) || !S.pub.tier || !S.pub.on) return out;
+    if (checkpoint) checkpoint.saleLeft ??= Math.min(limit, Math.floor(effSec / awayPubPeriod()));
+    for (let k = checkpoint ? checkpoint.saleLeft : Math.min(limit, Math.floor(effSec / awayPubPeriod())); k > 0; k--) {
+      let best = null, bp = -1; for (const r of pubSellable()) { if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id) continue; const p = salePay(r, mult); if (p > bp) { best = r; bp = p; } }
       if (!best) break;
       if (checkpoint) checkpoint.saleLeft--;
-      writeTitle(best.id, null, { silent: true, mult: 1 }); out.n++; out.pay += bp;
+      writeTitle(best.id, null, { silent: true, mult }); out.n++; out.pay += bp;
       if (!progressing()) return out;
     }
     return out;
@@ -3081,7 +3107,7 @@
     let left = lim;
     for (const w of BAND_WORDS[i]) {
       if (!r.need[w] || left <= 0) continue;
-      const c = Math.min(makeCopies(d, w), r.need[w] - stock(w), left); if (!(c > 0)) continue;
+      const c = Math.min(makeCopies(d, w), pitchWant(r, w) - stock(w), left); if (!(c > 0)) continue;
       if (!freeWords()) { const cn = lcount(w); for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; } }
       S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; S.run.words = (S.run.words || 0) + c; left -= c;
     }
@@ -3100,6 +3126,11 @@
       if (banked >= lim) return banked;
     }
     if (folioGoal() || pg?.active(pgContext)) return banked;
+    if (!work && awayPlan) for (const q of awayPlan) for (const w of words) {
+      if (!q.cum[w]) continue;
+      const c = Math.min(makeCopies(d, w), q.cum[w] - stock(w), lim - banked); if (c > 0) bankN(w, c);
+      if (banked >= lim) return banked;
+    }
     const reserved = r && !freeWords() ? focusNeeds(d, i).oneCopy : {};
     for (let pass = work ? work.pass : 0; pass < 12 && banked < lim; pass++) {
       let any = work ? work.any : false;
@@ -3118,9 +3149,33 @@
     }
     return banked;
   }
+  /* Away, nobody sells the goal title and moves the focus on, so the keepers work down a short queue of the next best titles
+     instead of stalling once the goal is ready. `cum` is what the bank must hold for every title up to that one, so no word is counted twice. */
+  const AWAY_QUEUE = 8;
+  let awayPlan = null;
+  function planAway() {
+    if (folioGoal() || pg?.active(pgContext) || challengeActive()) return null;
+    const plan = [], claim = {}, fr = focusRecipe();
+    const add = r => { const cum = {}; for (const w in r.need) cum[w] = claim[w] = (claim[w] || 0) + r.need[w]; plan.push({ id: r.id, cum }); };
+    if (fr) add(fr);
+    const pool = RECIPES.filter(r => r !== fr && titleAvailable(r) && !S.written[r.id] && inPlay(r) && Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned));
+    while (plan.length < AWAY_QUEUE && pool.length) {
+      let bi = 0, bm = Infinity;
+      pool.forEach((r, k) => {
+        let t = 0;
+        for (const w in r.need) { const n = r.need[w] - Math.max(0, stock(w) - (claim[w] || 0)); if (n > 0) { const b = bandOf(w.length); t += n * w.length * PAW_BASE[b] / Math.max(1, S.desks[b].paws); } }
+        if (t / r.pay < bm) { bm = t / r.pay; bi = k; }
+      });
+      add(pool.splice(bi, 1)[0]);
+    }
+    return plan;
+  }
   let boundaryJob = null, historicalEnd = null, boundaryProposal = null;
   const savedWallNow = () => historicalEnd ?? boundaryJob?.displayEnd ?? Date.now();
   function simulateAway(awaySec, fixedEnd = null) {
+    try { return simulateAwayRun(awaySec, fixedEnd); } finally { awayPlan = null; }
+  }
+  function simulateAwayRun(awaySec, fixedEnd) {
     if (!progressing()) return;
     S.desks.forEach(ensureCrew);
     let cp = writer ? S.rewards.awayCheckpoint : null;
@@ -3137,8 +3192,8 @@
     // Positive-duration speed changes opt into timed ordering; zero/default calls retain bulk behavior.
     const timed = cp ? cp.timed : sec > 0 && multiplier !== 1 && chal('timed');
     const deadline = cp ? cp.deadline ?? Infinity : timed ? (chDef('timed').minutes * 60 - ((fixedEnd ?? Date.now()) - awaySec * 1000 - S.challenge.start) / 1000) / multiplier : Infinity;
-    const slots = timed && S.pub.tier >= 3 && S.pub.on ? Math.min(200, Math.floor(workSec * eff / PUB_PERIOD[1])) : 0;
-    const saleTimes = cp ? cp.saleTimes : Array.from({ length: slots }, (_, i) => (i + 1) * PUB_PERIOD[1] / (multiplier * eff));
+    const slots = timed && S.pub.tier && S.pub.on ? Math.min(200, Math.floor(workSec * eff / awayPubPeriod())) : 0;
+    const saleTimes = cp ? cp.saleTimes : Array.from({ length: slots }, (_, i) => (i + 1) * awayPubPeriod() / (multiplier * eff));
     const boundaries = cp ? cp.boundaries : timed ? [...new Set([0, ...Array.from({ length: steps }, (_, i) => (i + 1) * realDt), ...saleTimes, Math.max(0, Math.min(sec, deadline))])].sort((a, b) => a - b) : null;
     const sold = cp ? cp.sold : { n: 0, pay: 0 }, royaltyRate = cp ? cp.royaltyRate : timed ? royBase() : 0;
     const nowMs = cp ? cp.nowMs : fixedEnd ?? Date.now();
@@ -3159,6 +3214,7 @@
       advanceDeadlines(sec * (multiplier - 1) * 1000, awaySec * (multiplier - 1) * 1000);
       if (cp) cp.phase = 'work';
     }
+    awayPlan = timed ? null : planAway();
     let batch = cp ? cp.batch : 0, budgets = cp ? cp.budgets : timed ? [] : null;
     for (let st = cp ? cp.st : 0; st < (timed ? boundaries.length - 1 : steps); st++) {
       if (cp) { batch = cp.batch; budgets = cp.budgets; }
@@ -3203,7 +3259,7 @@
           if (timed) {
             const capacity = batchEnd ? Math.max(2, Math.ceil(budget.keeperRaw)) : Math.floor(budget.keeperRaw * fraction);
             budget.banked += keeperBulk(d, i, Math.max(0, capacity - budget.banked), budget);
-          } else { farmBulk(d, i, stepDt * eff); keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i)))); if (S.pitchteam) subBulk(d, i, Math.max(1, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / (keeperPeriod(i) * SUB_SLOW)))); }
+          } else { farmBulk(d, i, stepDt * eff); keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i)))); if (pitchCrews()) subBulk(d, i, Math.max(1, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) * pitchCrews() / (keeperPeriod(i) * SUB_SLOW)))); }
         }
       });
       if (!cp || cp.phase === 'work') worksAdvance();
@@ -3211,7 +3267,7 @@
       if (timed) {
         readyC = null; // Offline time is fixed at return; a new production prefix must invalidate the timed cache.
         if (!cp || cp.phase === 'sale') {
-          if (saleTimes.includes(to)) { const sale = autoSellAway(PUB_PERIOD[1], 1, cp); if (!cp) { sold.n += sale.n; sold.pay += sale.pay; } }
+          if (saleTimes.includes(to)) { const sale = autoSellAway(awayPubPeriod(), 1, cp); if (!cp) { sold.n += sale.n; sold.pay += sale.pay; } }
           if (!progressing()) { skyOv = null; return; }
           if (cp) { cp.saleLeft = null; cp.phase = 'challenge'; }
         }
@@ -3258,7 +3314,7 @@
     if (cp?.phase === 'archive' && !writer.archiveIncome().ok) return;
     S.stats.awayMax = Math.max(S.stats.awayMax || 0, awaySec);
     if (!cp || cp.phase === 'bulk') {
-      const sales = timed ? sold : autoSellAway(workSec * eff, 200, cp); rep.pubSold = cp ? cp.sold.n : sales.n; rep.pubPay = cp ? cp.sold.pay : sales.pay;
+      const sales = timed ? sold : autoSellAway(workSec * (S.pub.tier >= 3 ? 1 : eff), 200, cp, S.pub.tier >= 3 ? NIGHT_SHIFT : 1); rep.pubSold = cp ? cp.sold.n : sales.n; rep.pubPay = cp ? cp.sold.pay : sales.pay;
       if (!progressing()) return;
       if (cp) { writer.consumeGold(workSec * 1000); cp.phase = 'complete'; }
     }
@@ -3680,7 +3736,7 @@
     printingOff:() => { printingHelper()?.turnPrintOff(); mark(); },
     printSampleAllowed(committed = false) {
       return printingEnabled() && !printingHelper()?.challengeReserved() && writer?.owns() && !paused && !writer.held() && !writer.localDisposition() &&
-        (committed && writer.transacting() || progressing() && writer.guard(S)) && !window.VaultSaveGate?.blocked &&
+        (committed && writer.transacting() || progressing() && writer.poll(S)) && !window.VaultSaveGate?.blocked &&
         !document.hidden && IMI.screen() === 'game' && !S.challenge && !workPaused() && !S.meta.archive?.working &&
         !S.meta.layers?.pending && !S.meta.estate?.pending && !S.meta.archive?.pending && !S.meta.automation?.print?.pending &&
         !S.meta.automation?.pitch?.sale && !S.meta.automation?.media?.pending && !S.prem.vault?.transition && !S.rewards.awayCheckpoint &&
@@ -3876,7 +3932,7 @@
       }
     } : {}),
     ...((window.GameFeatures?.enabled('lg03') ?? new URLSearchParams(location.search).get('lg03') === '1') ? {
-      automationAllowed: () => !masteryActive() && !window.VaultSaveGate?.blocked && progressing() && (!writer || !writer.localDisposition() && writer.guard(S)),
+      automationAllowed: () => !masteryActive() && !window.VaultSaveGate?.blocked && progressing() && (!writer || !writer.localDisposition() && writer.poll(S)),
       museEnabled:gardenPrototype, seatMuse, commitMuse, museContext, museScore, museSelection, clearMuseIncomplete,
       museStatus:() => ({pending:!!musePending}),
       retryMuse:() => musePending ? commitMuse(musePending) : {ok:false,retryable:false,error:'No waiting seating choice'},
@@ -4149,9 +4205,10 @@
     }
     if (best) { bankWord(d, best); keeperFloat(i, best); }
   }
-  /* Shop > Pitch assistants: while the main keepers work on the goal, this sub team banks words for the best commissioned pitch that is not the goal. */
+  /* Shop > Pitch assistants and the Auto-pitch helper: while the main keepers work on the goal, each adds a sub team that banks words for the best
+     commissioned pitch that is not the goal. Pitch words are banked on top of what the goal needs, so the two lines run side by side. */
   function pitchGoal() {
-    if (!S.pitchteam || folioGoal() || challengeActive()) return null;
+    if (!pitchCrews() || folioGoal() || challengeActive()) return null;
     let best = null, bm = Infinity;
     for (const r of RECIPES) {
       if (!r.gen || S.written[r.id] || r.id === S.focus || !titleAvailable(r) || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
@@ -4166,13 +4223,13 @@
     const r = pitchGoal(); if (!r) return;
     const main = focusRecipe(), reserved = main && !freeWords() ? focusNeeds(d, i).oneCopy : {};
     for (const w of BAND_WORDS[i]) {
-      if (!r.need[w] || stock(w) >= r.need[w] || !canMake(d, w)) continue;
+      if (!r.need[w] || stock(w) >= pitchWant(r, w) || !canMake(d, w)) continue;
       const c = lcount(w); let safe = true;
       for (const ch in c) { const have = d.letters[ch] || 0; if (have - c[ch] < Math.min(have, reserved[ch] || 0)) { safe = false; break; } }
       if (safe) { bankWord(d, w); return; }
     }
   }
-  const pitchTeamLine = () => { if (!S.pitchteam) return ''; const r = pitchGoal(); return `<p class="o-dim o-teamline">Pitch assistants: ${r ? `working on <b>${esc(r.title)}</b> (${progress(r)}/${r.total})` : 'waiting for a commissioned pitch'}.</p>`; };
+  const pitchTeamLine = () => { if (!pitchCrews()) return ''; const r = pitchGoal(); return `<p class="o-dim o-teamline">${S.pitchteam ? 'Pitch assistants' : 'Pitch crew'}: ${r ? `working on <b>${esc(r.title)}</b> (${progress(r)}/${r.total})` : 'waiting for a commissioned pitch'}.</p>`; };
   function keeperFloat(i, w) {
     if (i !== S.sel || ui.tab !== 'floor') return;
     const t = $('#oTray'); if (!t) return; const b = t.getBoundingClientRect();
@@ -4233,7 +4290,7 @@
     const n = auto ? 0 : Juice.chain('sale', 30000), u = force ?? rand(), boost = auto ? 0 : .012 * Math.min(n - 1, 6), [x, y] = at || [innerWidth / 2, 170];
     if (n >= 2) { floatText(`CHAIN x${n}`, x, y - 70, '#7be05a', true); IMI.sfx.streak && IMI.sfx.streak(n); }
     let acc = 0, hit = null;
-    for (const L of LUCKY) { acc += L.p + (L === LUCKY[2] ? boost : 0); if (u < acc) { hit = L; break; } }
+    for (const L of LUCKY) { acc += L.p * (museOn('carroll') ? 2 : 1) + (L === LUCKY[2] ? boost : 0); if (u < acc) { hit = L; break; } }
     if (!hit) return;
     const bonus = roundMoney(pay * hit.x); if (!(bonus > 0)) return;
     S.stats.lucky = (S.stats.lucky || 0) + 1; if (hit.tier === 3) S.stats.jackpots = (S.stats.jackpots || 0) + 1;
@@ -4429,7 +4486,7 @@
     } else if (what === 'pub') {
       const t = S.pub.tier; if (t >= 3 || (t === 0 && soldCount() < 3) || !bananas.spend(PUB_COST[t])) return;
       S.pub.tier = t + 1; if (t === 0) S.pub.on = true;
-      logIt(['Hired a publisher’s assistant: finished titles now sell themselves.', 'Fast presses installed: the assistant sells twice as often.', 'The assistant now works the night shift: titles sell while you are away.'][t]);
+      logIt(['Hired a publisher’s assistant: finished titles now sell themselves.', 'Fast presses installed: the assistant sells twice as often.', 'The assistant now works the night shift: away sales run at full pace and a better price.'][t]);
     } else if (lgb && lgb.FAMILIES.includes(what)) {
       const t = sbRank(what), cost = sbCost(what); if (cost === null || lgb.rankLocked(what, S.printing, S.pub.tier, sbExtra()) || (what === 'bundle' && challengeShopLock('pub')) || !bananas.spend(cost)) return;
       S.sb = { ...S.sb, [what]: t + 1 }; logIt(`${SB_INFO[what].name} ${t + 1}: ${SB_INFO[what].fx(t).join(' ')}.`);
@@ -5563,11 +5620,11 @@
     if (frame) frame.phase=3;
     }
     if (!frame || frame.phase === 3) {
-    focusClock += dt; if (focusClock >= 1) { focusClock = 0; if (!S.focus && S.autoFocus) pickAutoFocus(); }
+    focusClock += dt; if (focusClock >= 1) { focusClock = 0; if (S.autoFocus && (!S.focus || RBY[S.focus]?.gen && autoPitch())) pickAutoFocus(); }
     worksAdvance();
     S.desks.forEach((d, i) => {
       if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; const cap = lgb ? lgb.batchCap(sbRank('batch')) : 4; while (keeperT[i] >= keeperPeriod(i) && g++ < cap) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); if (wsOn() && Workshop.tray(S.meta.workshop, i)) keeperStep(d, i); } if (g >= cap) keeperT[i] = lgb ? Math.min(keeperT[i], cap * keeperPeriod(i)) : 0;   // lgb carries unfinished banking work forward, bounded to one more batch, instead of dropping it
-      if (S.pitchteam) { subT[i] = (subT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); const per = keeperPeriod(i) * SUB_SLOW; let h = 0; while (subT[i] >= per && h++ < 2) { subT[i] -= per; subStep(d, i); } if (h >= 2) subT[i] = 0; }
+      if (pitchCrews()) { subT[i] = (subT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); const per = keeperPeriod(i) * SUB_SLOW / pitchCrews(); let h = 0; while (subT[i] >= per && h++ < 2) { subT[i] -= per; subStep(d, i); } if (h >= 2) subT[i] = 0; }
     });
     if (frame) frame.phase=4;
     }
@@ -5632,6 +5689,7 @@
     if (!frame || frame.phase === 8) {
     if (frame) frame.phase=9;
     if (!(chal('patientpress') || masteryActive()) && S.pub.tier && S.pub.on) { pubClock += dt; if (pubClock >= pubPeriod()) { pubClock = 0; pubSell(); } } else pubClock = 0;
+    if (autoPitch()) { pitchSellClock += dt; if (pitchSellClock >= PUB_PERIOD[1]) { pitchSellClock = 0; pitchSell(); } } else pitchSellClock = 0;
     if (lgb && !S.meta.automation?.print?.pending) { if (foreman) foremanTick(dt); houseTick(dt); campusTick(dt); }
     if (frame && !progressing()) return;
     }

@@ -37,7 +37,7 @@ test('both editions and harness load configuration before cold predicates; SW ca
     assert(html.indexOf('game-features.js') < html.indexOf('awards-catalogue.js'), file);
     assert(html.indexOf('game-features.js') < html.indexOf('vault-save-gate.js'), file);
   }
-  assert(source('sw.js').includes("const VERSION = 'imi-v87'"));
+  assert(source('sw.js').includes("const VERSION = 'imi-v89'"));
   assert(source('sw.js').includes("'game-features.js'"));
 });
 function ownedSpeed(c) {

@@ -122,7 +122,13 @@ for(const speed of [1,2])test('original batch production/keeper/RNG conservation
   const run=async f=>f.page.evaluate(()=>{const d=IMI.ops.dev,s=d.S();s.desks[0].paws=3;d.ensureCrew(s.desks[0]);s.desks[0].keeper.def=20;
     if(__fixtureSpeed!==1)s.challenge={id:'timed',start:Date.now()-1150000};__skip(60000);const rep=IMI.ops.simulateAway(60);
     return {rep,letters:s.desks[0].letters,crew:s.desks[0].crew,bank:s.bank,tray:s.desks[0].tray,market:s.market,stats:s.stats,rng:__rngcount,challenge:s.challenge};});
-  try{const a=await run(control),b=await run(candidate);assert.deepEqual(b,a);assert.deepEqual(control.errors,[]);assert.deepEqual(candidate.errors,[]);
+  try{const a=await run(control),b=await run(candidate);
+    // Untimed away keepers now work down a queue of the next titles (planAway) instead of stalling on a ready goal, so the bank and the
+    // letters left in the drawers may differ from the sealed source; the tray rebuilt from those letters then shuffles a different number of
+    // times, which moves the RNG and the market roll after it. Typing, crew levels and timed runs are still conserved exactly.
+    if(speed===1){const pick=v=>({typed:v.rep.letters,crew:v.crew,letters:v.stats.letters,challenge:v.challenge});
+      assert.deepEqual(pick(b),pick(a));assert.ok(b.rep.words>=a.rep.words,'away keepers bank at least as many words as before');}
+    else assert.deepEqual(b,a);assert.deepEqual(control.errors,[]);assert.deepEqual(candidate.errors,[]);
     await h.capture(control,'conserved-before-'+speed);await h.capture(candidate,'conserved-candidate-'+speed);
   }finally{await control.close();await candidate.close();}
 });

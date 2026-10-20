@@ -224,5 +224,7 @@
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(id, hat).replace('aria-hidden="true">', 'aria-hidden="true"><style>' + EXPR_CSS[expr] + '</style>'));
     return null;
   }
-  window.CrewSvg = { svg, bitmap };
+  /* extra looks (the Muses dress up in muse-art.js): same spec as the table above */
+  function define(id, spec) { L[id] = spec; for (const k in cache) if (k.startsWith(id + ':')) delete cache[k]; }
+  window.CrewSvg = { svg, bitmap, define };
 })();

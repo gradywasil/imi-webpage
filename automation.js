@@ -222,7 +222,7 @@
     const ids = m?.manual?.ids;
     return m === undefined || object(m) && m.version === 1 && (m.enabled === undefined || typeof m.enabled === 'boolean') &&
       (m.manual === undefined || object(m.manual) && Layers.epochValid(m.manual) && (m.manual.complete === undefined || typeof m.manual.complete === 'boolean') &&
-        (ids === undefined || Array.isArray(ids) && ids.length <= 2 && new Set(ids).size === ids.length && ids.every(id => ['seuss','poe','dick','hemi','christie','woolf','austen','tolken','twain'].includes(id))) &&
+        (ids === undefined || Array.isArray(ids) && ids.length <= 2 && new Set(ids).size === ids.length && ids.every(id => ['seuss','poe','dick','hemi','christie','woolf','austen','tolken','twain','shakes','chimpens','homer','potter','fitz','carroll'].includes(id))) &&
         (!m.manual.complete || ids?.length === 2) &&
         ['imprint','printing'].every(k => m.manual[k] === undefined ? !ids?.length || m.manual.complete : Number.isSafeInteger(m.manual[k]) && m.manual[k] >= 0));
   }
@@ -731,7 +731,7 @@
     baseRequestAllowed:(id,expected) => !admission && (!pending || pending.base === id && pending.expected === expected),
     identitySettled:() => !admission && !pending && !gardenPending,
     challengeOn, challengeAuthorize, challengeReserved, challengeLocalOff, challengeSaveOff,
-    reset, turnPrintOff, printChoice, printRule, printDecision, validPrintDecision, printAuthorize, printPosting, resetSample, sampleUpdate, printSampleToken:(committed = false) => sampleUpdate(committed) ? sampleGeneration : null, printSampleStatus:() => ({seconds:sampleSeconds,paid:samplePaid,active:sampleActive,elapsed:printElapsed,generation:sampleGeneration}), pendingGarden:() => !!gardenPending, pendingChoice:() => !!pending, earnedInterval, validMuse, museReady, museActive, museSuspend, museEvidence, museResult, mediaReady, pitchReady, validConfig:supported, pendingCrop, gardenEvidence, clearGardenPending, gardenAction, gardenReady,
+    reset, turnPrintOff, printChoice, printRule, printDecision, validPrintDecision, printAuthorize, printPosting, resetSample, sampleUpdate, printSampleToken:(committed = false) => sampleUpdate(committed) ? sampleGeneration : null, printSampleStatus:() => ({seconds:sampleSeconds,paid:samplePaid,active:sampleActive,elapsed:printElapsed,generation:sampleGeneration}), pendingGarden:() => !!gardenPending, pendingChoice:() => !!pending, earnedInterval, validMuse, museReady, museActive, museSuspend, museEvidence, museResult, mediaReady, pitchReady, pitchOn:() => !!api && owned('pitch') && pitchUnlocked() && pitchSetting().enabled && !suspended.has('pitch'), validConfig:supported, pendingCrop, gardenEvidence, clearGardenPending, gardenAction, gardenReady,
     firstClearFloor(id, current) {
       const helper = {smallcrew:'hire', quietshop:'shop', patientpress:'coach', baremetal:'restore'}[id];
       if (!helper || !supported(current)) return null;
@@ -860,7 +860,10 @@
       api.mark();
     }
   };
-  new MutationObserver(observeNet).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['hidden', 'inert', 'class', 'style']});
+  // The typists, keys, meters and counters restyle every frame and never hold a net item or a modal. Without this filter every hop
+  // re-ran observeNet, whose sample check clones the whole save, and the floor dropped to a few frames a second.
+  const NET_QUIET = '.o-crewlayer, .o-kbd, #oBars, #oCar, .o-cnt, #oSheet';
+  new MutationObserver(records => { if (records.some(r => !r.target.closest?.(NET_QUIET))) observeNet(); }).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['hidden', 'inert', 'class', 'style']});
   document.addEventListener('visibilitychange', () => { sampleUpdate(); cancelNet(); resetGardenClock(); resetPitchClock(); resetMediaClock(); resetMuseClock(); });
   addEventListener('resize', cancelNet);
   document.addEventListener('change', e => { const field = e.target.dataset?.lg06a; if (field) editGarden(field, field === 'bed' ? Number(e.target.value) : e.target.value); const id = e.target.dataset?.lg03Reserve; if (id) edit(id, 'reservePercent', Number(e.target.value)); });

@@ -359,11 +359,23 @@ window.Rewards = (() => {
     return id.startsWith('award:') ? m.oldAwardIds.includes(id.slice(6)) :
       id.startsWith('challenge:') ? m.oldChallengeIds.includes(id.split(':')[1]) : m.oldPrinting >= 1;
   }
-  function guard(candidate) {
+  // Polling callers (the print sample clock, automation gates) ask about the live state several times a frame. Cloning the whole save
+  // for each ask made the floor stutter on big saves, so a structural pass on the same object is reused for a quarter second.
+  // Every flag below is still read fresh, and new candidate objects are always checked in full.
+  let checked = null, checkedAt = 0;
+  function poll(candidate) {
+    const now = performance.now(), fresh = candidate === checked && now - checkedAt < 250;
+    const ok = guard(candidate, fresh);
+    if (ok && !fresh) { checked = candidate; checkedAt = now; } else if (!ok) checked = null;
+    return ok;
+  }
+  function guard(candidate, structureChecked = false) {
     try {
-      window.WorksDemo?.retained(candidate);
-      window.WorksPlay?.retained(candidate);
-      normalize(clone(candidate));
+      if (!structureChecked) {
+        window.WorksDemo?.retained(candidate);
+        window.WorksPlay?.retained(candidate);
+        normalize(clone(candidate));
+      }
       if (!candidate.rewards.migration) return hold('Initial reward history is waiting to save.');
       for (const id of eligible(candidate)) if (!candidate.rewards.claims[id]) return hold('Missing reward metadata: ' + id + '. Repair required.');
       return !fundingWaiting && !expandedWaiting && !hallWaiting && !volatile && !fault && !writing && !seasonsWaiting && !candidate.meta.seasons?.pending && !boardWaiting && !candidate.meta.commissionBoard?.pending && !candidate.meta.automation?.challenge?.pending && !candidate.meta.challengeMastery?.pending && !candidate.meta.layers?.pending && !candidate.meta.estate?.pending && !candidate.meta.archive?.pending && !candidate.meta.automation?.pitch?.sale && !candidate.meta.automation?.media?.pending && !candidate.meta.automation?.print?.pending && (!api.mediaEnabled?.() || api.validMedia(candidate.meta.automation?.media));
@@ -1471,7 +1483,7 @@ window.Rewards = (() => {
   }]);
   return Object.freeze({ enabled, owns, start, timers, onPagehide: callback => finalizers.push(callback),
     onStatusPresentation: callback => { statusPresentation = callback; presentStatus(); },
-    guard, retry, expandedReady, expandedDiscover, hallAction, seasonsAction, boardAction, challengeAction, masteryAction, printingAction, printingWallet, worksPlayAction, worksDemoAction, archiveAction, archiveIncome, estateAction, estateWallet, imprintChallengeClear, activate, incomeSeconds, consumeGold, awayCredit, folioAction, layerAction, layerWallet, pitchSale, mediaRelease, mediaWallet,
+    guard, poll, retry, expandedReady, expandedDiscover, hallAction, seasonsAction, boardAction, challengeAction, masteryAction, printingAction, printingWallet, worksPlayAction, worksDemoAction, archiveAction, archiveIncome, estateAction, estateWallet, imprintChallengeClear, activate, incomeSeconds, consumeGold, awayCredit, folioAction, layerAction, layerWallet, pitchSale, mediaRelease, mediaWallet,
     estateReward:basis => descriptor('layer:estate:first','new',basis),
     validateEstateReward:d => {validateDescriptor('layer:estate:first',d);if(d.kind !== 'L' || d.desk !== 0 || d.origin !== 'new') invalid('Invalid Estate Letters');},
     layerReward:basis => descriptor('layer:imprint:first','new',basis), transacting:() => writing,
