@@ -51,7 +51,7 @@
 .o-desk b { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .o-desk span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .o-desk .o-d3 { display: none; }
-.o-wrap:is([data-tab="press"], [data-tab="shop"], [data-tab="studios"], [data-tab="muses"], [data-tab="records"]) .o-desks { display: none; }   /* machine-specific pages only */
+.o-wrap:not([data-tab="floor"], [data-tab="training"], [data-tab="lab"]) .o-desks { display: none; }   /* machine-specific pages only */
 
 /* ---------- the panel: the floor fills it, every other department scrolls inside it ---------- */
 .o-panel { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -1906,3 +1906,48 @@ html[data-style="pixel"] .o-pitchauto { border-radius: 0; animation-timing-funct
 @keyframes ma-wiggle { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
 @keyframes ma-beam { from { transform: rotate(-12deg); opacity: .25; } to { transform: rotate(10deg); opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { .o-portrait .ma-strip, .ma-svg, .ma-svg * { animation: none !important; } }
+
+/* ---- clarity pass (Oct 2026): one toolbar instead of stacked control rows; cards show rather than tell ---- */
+.o-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 12px; }
+.o-toolbar .o-tool { display: inline-flex; align-items: center; gap: 6px; }
+.o-toolbar .o-seg { width: auto; flex: 0 1 auto; flex-basis: auto; }
+.o-toolbar .o-seg button { flex: 0 0 auto; padding: 4px 10px; }
+.o-toolbar .o-have { margin-right: auto; }
+.o-ltool { margin: 12px 0 10px; }
+.o-ltool .o-search { margin: 0; width: auto; min-width: 0; }
+.o-ltool #oLibQ { flex: 1 1 140px; }
+.o-ltool .o-lsort { flex: 0 1 auto; max-width: 100%; }
+.o-gctl { flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.o-gctl .pg01-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.o-gctl .pg01-controls details[open] { flex-basis: 100%; }
+.o-gctl .pg01-controls summary { padding-block: 6px; min-height: 40px; }
+.o-gctl .pg01-status:empty { display: none; }
+.o-goalbar .o-pubbar { margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.o-goalbar .o-pubbar .o-row { flex-wrap: wrap; gap: 6px; }
+.o-gtop .o-price { flex: none; color: #ffd23a; }
+.o-bookpay { gap: 8px; align-items: center; flex-wrap: wrap; min-height: 0; }
+.o-bprice .o-price { color: #ffd23a; }
+.o-mm { font-size: .8em; padding: 0 6px; border: 1px solid currentColor; }
+.o-mm.up { color: #7dff9a; } .o-mm.down { color: #ff9a8a; }
+.o-needdots { margin-left: auto; display: inline-flex; gap: 4px; }
+.o-needdots i { width: 12px; height: 12px; background: var(--dc); box-shadow: inset 0 0 0 2px rgba(0,0,0,.35); }
+.o-needdots i.off { background: transparent; box-shadow: inset 0 0 0 2px var(--dc); opacity: .7; }
+.o-pit.lib { background: #b9c8d8; }
+.o-book.focus { box-shadow: 0 0 0 3px #ffd23a; }
+.o-upcurrent small { font-size: .72em; opacity: .85; }
+.o-upcurrent .o-leg-next { opacity: .75; font-size: .8em; }
+.o-drv { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; opacity: .45; font-size: 1.1em; }
+.o-drv small { font-size: .7em; }
+.o-drv.on { opacity: 1; color: #7dff9a; }
+.o-mrow { grid-template-columns: minmax(96px, 150px) 132px 100px auto 1fr; }
+html[data-style="pixel"] .o-needdots i { border-radius: 0; }
+html[data-style="classic"] .o-needdots i { border-radius: 99px; }
+html[data-style="classic"] .o-mm { border-radius: 99px; }
+html[data-style="pixel"] .o-book.focus { box-shadow: 0 0 0 3px #ffd23a, 0 0 0 6px #3a210d; }
+@media (max-width: 720px) {
+  .o-toolbar { gap: 6px 10px; }
+  .o-toolbar .o-have { flex-basis: 100%; }
+  .o-ltool > .o-seg { flex-basis: 100%; }
+  .o-ltool > .o-seg button { flex: 1 1 auto; }
+  .o-mrow { grid-template-columns: 1fr auto auto; }
+}

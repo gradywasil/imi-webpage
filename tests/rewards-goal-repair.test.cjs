@@ -11,7 +11,7 @@ test('planting every bed keeps the unfinished goal through growth and ripeness; 
   const f=await game({rewards:{goals:{version:1,revealed:true,ids:['gar1','s4','d1'],unknown:'keep'}}});
   try {
     const first=await refresh(f.page);
-    await f.page.evaluate(()=>{window.__OPS_HEADLESS=false;IMI.ops.extensions.setTab('lab');__advance(400);});
+    await f.page.evaluate(()=>{window.__OPS_HEADLESS=false;IMI.ops.dev.ui.sub.lab='garden';IMI.ops.extensions.setTab('lab');__advance(400);});
     await f.page.click('[data-act="plant"][data-i="0"]');
     await f.page.click('[data-act="plant"][data-i="1"]');
     const growing=await f.page.evaluate(()=>({beds:IMI.ops.dev.S().garden.beds,harvested:IMI.ops.dev.S().stats.harvested||0,award:!!IMI.ops.dev.S().awards.gar1,now:Date.now()}));

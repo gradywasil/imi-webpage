@@ -1087,7 +1087,7 @@
         return `<div class="o-card sub"><div class="o-row"><h3>${esc(p.title)}</h3><span class="o-tag b${r.band}">${DESKS[r.band].lo}–${DESKS[r.band].hi}</span></div>
           <p class="o-dim">${r.total} words · rights ${price(p.pay)}</p><p class="o-pitchtext">${esc(p.text.split('. ')[0])}…</p>
           ${lock !== undefined ? `<p class="o-warn">Needs ${DESKS[lock].name}</p>` : ''}
-          <button type="button" class="o-btn sm gold" data-act="commission" data-i="${i}" ${full ? 'disabled' : ''}>${full ? 'Sell some titles first' : lock !== undefined ? 'Commission anyway' : 'Commission'}</button></div>`;
+          <button type="button" class="o-btn sm gold" data-act="commission" data-i="${i}" ${full ? 'disabled' : ''}>${full ? act >= PITCH_MAX ? 'Sell a commission first' : 'Not during this challenge' : lock !== undefined ? 'Commission anyway' : 'Commission'}</button></div>`;
       }).join('')}</div>
       <div class="o-row o-left"><button type="button" class="o-btn sm" data-act="repitch" ${bananas.get() < cost ? 'disabled' : ''}>New pitches · ${price(cost)}</button></div></div>`;
   }
@@ -1497,6 +1497,7 @@
     const g = S.garden, b = g.beds[i]; if (writer?.localDisposition() || !b || savedWallNow() < b.ready) return 0;
     return grantCrop(S,i);
   }
+  const gardenRipe = () => S.garden.beds.some(b => b && savedWallNow() >= b.ready);
   function gardenHTML() {
     const g = S.garden, need = focusNeeds(cur(), S.sel).missing, now = savedWallNow(), xp = farmXp(), head = headLvl();
     const seeds = Object.keys(FREQ).sort().map(ch => `<button type="button" class="o-seed${ui.seed === ch ? ' on' : ''}${need[ch] ? ' need' : ''}" data-act="seed" data-ch="${ch}" aria-label="Seed ${ch}">${ch}</button>`).join('');
@@ -2799,6 +2800,8 @@
     const fav = favoured(sk); if (fav.length) bits.push('lifts ' + fav.join(', '));
     return `<b>${SKY_PHASE[sk.phase]}, ${SKY_WX[sk.wx].toLowerCase()}</b> · ${bits.join(' · ')}`;
   }
+  /* what lifts each band's demand: shown as a chip on its row that lights while the sky is lifting it */
+  const MARKET_DRIVER = [['☾', 'night'], ['☂', 'rain'], ['ϟ', 'storms'], ['☀', 'clear day'], ['✦', 'clear night'], ['ϟ☾', 'stormy night']];
   function marketHTML() {
     const M = S.market, rows = DESKS.map((D, b) => {
       const v = marketMult(b), h = M.hist[b], prev = h.length > 1 ? h[h.length - 2] : v, dir = v > prev + .004 ? 'up' : v < prev - .004 ? 'down' : 'flat';
@@ -2806,10 +2809,10 @@
       const nx = toolOn('analyst') ? marketNext(b) : null, fc = nx === null ? '' : `<span class="o-dim o-fc">soon: ${nx > v + .01 ? 'rising' : nx < v - .01 ? 'falling' : 'steady'}</span>`;
       const tag = v >= 1.5 ? '<span class="o-mtag hot">HOT</span>' : v <= .8 ? '<span class="o-mtag cold">COLD</span>' : '';
       const any = RECIPES.some(r => r.band === b), left = any ? RECIPES.filter(r => r.band === b && !S.written[r.id] && inPlay(r)).length : 1;
-      return `<div class="o-mrow${left ? '' : ' done'}" style="--bc:${D.color}"><span class="o-mname"><b>${D.name.split(' ')[0]}</b><small>${D.lo}–${D.hi} letters${any ? (left ? '' : ' · all sold') : ' · pitch to unlock'}</small></span><span class="o-spark" aria-hidden="true">${bars}</span><span class="o-mval"><i class="o-arr ${dir}"></i>x${v.toFixed(2)}</span><span class="o-mextra">${tag}${fc}</span></div>`;
+      const lift = marketBias(b, sky()) > 0, [g, wx] = MARKET_DRIVER[b];
+      return `<div class="o-mrow${left ? '' : ' done'}" style="--bc:${D.color}"><span class="o-mname"><b>${D.name.split(' ')[0]}</b><small>${D.lo}–${D.hi} letters${any ? (left ? '' : ' · all sold') : ' · pitch to unlock'}</small></span><span class="o-drv${lift ? ' on' : ''}" title="Demand rises ${wx === 'storms' ? 'in storms' : 'at ' + wx}${lift ? ': lifting now' : ''}">${g}<small>${wx}</small></span><span class="o-spark" aria-hidden="true">${bars}</span><span class="o-mval"><i class="o-arr ${dir}"></i>x${v.toFixed(2)}</span><span class="o-mextra">${tag}${fc}</span></div>`;
     }).join('');
-    return `<div class="o-card o-market"><div class="o-row"><h3>Rights market</h3></div>${rows}
-      <p class="o-dim">Demand drivers: night lifts Bamboo, rain lifts Hibiscus, storms lift Lagoon, a clear day lifts Honeycomb, a clear night lifts Orchid, and a stormy night lifts Moonflower. The sky follows its own clock, so plan around it.</p></div>`;
+    return `<div class="o-card o-market"><div class="o-row"><h3>Rights market</h3></div>${rows}</div>`;
   }
 
   /* ================= awards ================= */
@@ -3000,8 +3003,11 @@
     const sub = ui.sub.records;
     tabs[0].push(sub !== 'awards' && ui.unseen ? ui.unseen : 0);
     if (sub === 'awards') ui.unseen = 0;
-    const awardsHTML = `${writer ? writer.awardsHeader() : ''}<p class="o-lede"><b>${cnt('r-aw', awardCount())}/${allAwards().length}</b> awards, <b>+${cnt('r-aw2', awardCount())}%</b> income (each adds 1%).</p>
-      <div class="o-awards">${sorted.map((a, n) => { const on = !!S.awards[a.id]; return `<div ${writer ? `id="o-award-${a.id}" tabindex="-1"` : ''} class="o-award t${a.tier}${on ? '' : ' locked'}" style="--n:${n}">${ico(on ? 'trophy' + a.tier : 'trophy0', 36)}<span><b>${esc(a.name)}</b><small>${esc(a.desc)}</small>${writer ? writer.rewardLine(a.id) : ''}</span></div>`; }).join('')}</div>`;
+    /* headline first, then the goals being worked on, then what is left to earn; earned awards go last */
+    const todo = sorted.filter(a => !S.awards[a.id]), earned = sorted.filter(a => S.awards[a.id]);
+    const awardsHTML = `<p class="o-lede"><b>${cnt('r-aw', awardCount())}/${allAwards().length}</b> awards, <b>+${cnt('r-aw2', awardCount())}%</b> income (each adds 1%).</p>${writer ? writer.awardsHeader() : ''}
+      ${[['To earn', todo], ['Earned', earned]].filter(([, list]) => list.length).map(([title, list]) => `<h3 class="o-h">${title} <span class="o-dim">${list.length}</span></h3>
+      <div class="o-awards">${list.map((a, n) => { const on = !!S.awards[a.id]; return `<div ${writer ? `id="o-award-${a.id}" tabindex="-1"` : ''} class="o-award t${a.tier}${on ? '' : ' locked'}" style="--n:${n}">${ico(on ? 'trophy' + a.tier : 'trophy0', 36)}<span><b>${esc(a.name)}</b><small>${esc(a.desc)}</small>${writer ? writer.rewardLine(a.id) : ''}</span></div>`; }).join('')}</div>`).join('')}`;
     const logHTML = `<ol class="o-log">${S.log.map(t => `<li>${esc(t)}</li>`).join('') || '<li class="o-dim">Nothing yet. Go type something.</li>'}</ol>`;
     const statsHTML = `
       <div class="o-grid">
@@ -4229,7 +4235,6 @@
       if (safe) { bankWord(d, w); return; }
     }
   }
-  const pitchTeamLine = () => { if (!pitchCrews()) return ''; const r = pitchGoal(); return `<p class="o-dim o-teamline">${S.pitchteam ? 'Pitch assistants' : 'Pitch crew'}: ${r ? `working on <b>${esc(r.title)}</b> (${progress(r)}/${r.total})` : 'waiting for a commissioned pitch'}.</p>`; };
   function keeperFloat(i, w) {
     if (i !== S.sel || ui.tab !== 'floor') return;
     const t = $('#oTray'); if (!t) return; const b = t.getBoundingClientRect();
@@ -4407,11 +4412,17 @@
     return { n, cost };
   }
   const buyWant = () => (ui.buyN === 'max' ? Infinity : +ui.buyN || 1);
+  const UP_UNIT = { vowel: 'vowel aim', ink: 'new-word aim', practice: 'title-word aim', stock: 'low-stock aim', ribbon: 'swap chance' };
+  /* "x1.63 typing speed" and "x1.92 typing speed" read better as one line: x1.63 › x1.92 typing speed */
+  const upDelta = (now, next) => {
+    const a = /^(\S+) (.+)$/.exec(now), b = next && /^(\S+) (.+)$/.exec(next);
+    return a && b && a[2] === b[2] ? `<p class="o-upcurrent"><b>${a[1]}</b> <span class="o-leg-next">› ${b[1]}</span> <small>${a[2]}</small></p>` : '';
+  };
   function upEffect(u, d, level) {
     if (u.k === 'paw') return `${level} automatic typist${level === 1 ? '' : 's'}`;
     if (u.k === 'fing') return `x${(1 / fingMult(level)).toFixed(2)} typing speed`;
     if (u.k === 'rapid') return `${holdRate({ ...d, up: { ...d.up, rapid: level } })}/s held typing`;
-    return `${Math.round(UPV[u.k][level] * 100)}% ${u.k === 'ribbon' ? 'swap chance' : 'configured bias'}`;
+    return `${Math.round(UPV[u.k][level] * 100)}% ${UP_UNIT[u.k] || 'aim'}`;
   }
   /* Legacy perks that set up a fresh run (Seed Money, Veteran Crew) also pay out in the run you are already in, so buying one never means waiting for the next Printing.
      A fresh run starts with exactly this much, so the gift is the difference the new level makes. */
@@ -4961,18 +4972,19 @@
     const d = cur(), i = S.sel, have = totalLetters(d), want = buyWant();
     const tsub = ui.sub.training || 'crew';
     morph($('#o-training'), subTabs('training', [['crew', 'Crew'], ['book', `Look book ${Object.keys(S.looks || {}).length}/${LOOKS.length}`]]) + (tsub === 'book' ? lookBook() : `
-      ${trainingPool && S.desks.filter(x => x.owned).length > 1 ? trainingPool.controls(esc, fmt) : ''}
-      <p>${fxc(fmt(have), 'letters to spend')}${trainingPool && trainingPool.mode() !== 'local' ? ' ' + fxc('shared', 'surplus') : ''}</p>
-      ${keepersReady() ? `<div class="o-row o-left"><span class="o-dim">Keeper</span>${keeperSeg(i)}</div>` : '<p class="o-dim">Letters stay here until your keeper is introduced.</p>'}
-      <div class="o-row o-left"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
+      <div class="o-toolbar"><span class="o-have">${fxc(fmt(have), 'letters to spend')}${trainingPool && trainingPool.mode() !== 'local' ? ' ' + fxc('shared', 'surplus') : ''}</span>
+        ${keepersReady() ? `<span class="o-tool"><span class="o-dim">Keeper</span>${keeperSeg(i)}</span>` : ''}
+        <span class="o-tool"><span class="o-dim">Buy</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></span></div>
       <div class="o-grid">${UPS.filter(u => !(u.needs === 'hold' && !toolOn('hold'))).map(u => {
         const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), soft = u.soft || max, lock = upLock(u, d), done = lvl >= max, plan = trainingQuote(u, d, i, want);
         const first = u.k === 'paw' && i === 0 && d.paws === 0 && plan.n === 1;
+        const now = upEffect(u, d, lvl), next = done ? '' : upEffect(u, d, lvl + (lock ? 1 : plan.n || 1)), merged = !lock && upDelta(now, next);
         return `<div class="o-card"><div class="o-row"><h3 title="${esc(u.desc)}">${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${max === Infinity ? 'Lv ' + lvl : lvl + '/' + max}</span></div>
-          ${pips(Math.min(lvl, soft), soft)}<p class="o-upcurrent">${upEffect(u, d, lvl)}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
-          ${done ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${upEffect(u, d, lvl + (lock ? 1 : plan.n))}</p>`}
+          ${pips(Math.min(lvl, soft), soft)}${merged || `<p class="o-upcurrent">${now}</p>`}${lock ? `<p class="o-warn">${lock}</p>` : ''}
+          ${done || merged ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${next}</p>`}
           <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button>${u.k === 'paw' ? `<div class="lg03-inline" data-own data-automation="hire" data-desk="${DESKS[i].id}"></div>` : ''}</div>`;
       }).join('')}</div>
+      ${trainingPool && S.desks.filter(x => x.owned).length > 1 ? trainingPool.controls(esc, fmt) : ''}
       <div class="lg03-inline" data-own data-automation="coach"></div><h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
       ${d.crew.length ? `<div class="o-grid o-crew">${d.crew.map((t, p) => {
         const l = levelOf(t.xp), nx = LVL_XP[l], pv = LVL_XP[l - 1], pct = nx ? Math.round(100 * (t.xp - pv) / (nx - pv)) : 100, hh = hatById(t.hat);
@@ -5004,15 +5016,20 @@
     words = q ? words.filter(x => x.w.includes(q)) : words.filter(x => x.n > 0);
     words.sort((a, b) => ((stock(a.w) === 0) !== (stock(b.w) === 0) ? (stock(a.w) === 0 ? -1 : 1) : (needed[b.w] ? 1 : 0) - (needed[a.w] ? 1 : 0) || a.w.localeCompare(b.w)));
     const ownedBank = Object.keys(S.bank).sort((a, b) => a.length - b.length || a.localeCompare(b));
-    morph(pane, `
+    /* two jobs, two tabs: banking words (the goal, the word list, your letters) and tending the letter garden */
+    const ripe = S.garden.beds.filter(b => b && savedWallNow() >= b.ready).length;
+    if (ui.sub.lab === 'garden') {
+      morph(pane, subTabs('lab', [['bank', 'Bank'], ['garden', 'Garden', ripe || '']]) + `${gardenHTML()}<div class="lg03-inline" data-own data-automation="garden"></div>`);
+      hydrate(pane); return;
+    }
+    morph(pane, subTabs('lab', [['bank', 'Bank'], ['garden', 'Garden', ripe || '']]) + `
       ${keeperStrip()}
-      ${gardenHTML()}<div class="lg03-inline" data-own data-automation="garden"></div>
-      <div class="o-card"><h3>Letters</h3>
-        <div class="o-letters">${Object.keys(FREQ).sort().map(c => `<div class="o-lcell${d.letters[c] ? '' : ' zero'}" title="${Economy.exact(d.letters[c] || 0)} ${c} letters"><b>${c}</b>${fmt(d.letters[c] || 0)}</div>`).join('')}</div></div>
       <div class="o-card"><h3>Make a ${D.lo}–${D.hi} letter word</h3>
         <input class="o-search" id="oBankQ" placeholder="Search words…" value="${esc(ui.bankq)}" autocomplete="off" aria-label="Search words">
         <div class="o-words">${words.slice(0, 60).map(({ w, n }) => `<button type="button" class="o-word${!stock(w) ? ' new' : ''}${needed[w] && stock(w) < needed[w] ? ' need' : ''}" data-act="bankword" data-w="${w}" ${n > 0 ? '' : 'disabled'}><span>${w}</span><i>${n > 0 ? 'x' + n : ''}${stock(w) ? ' · ' + stock(w) + ' banked' : ''}</i></button>`).join('') || '<p class="o-dim">No words can be made from these letters yet.</p>'}</div>
 </div>
+      <div class="o-card"><h3>Letters</h3>
+        <div class="o-letters">${Object.keys(FREQ).sort().map(c => `<div class="o-lcell${d.letters[c] ? '' : ' zero'}" title="${Economy.exact(d.letters[c] || 0)} ${c} letters"><b>${c}</b>${fmt(d.letters[c] || 0)}</div>`).join('')}</div></div>
       <div class="o-card"><h3>Shared word bank</h3>
         <div class="o-chips">${ownedBank.map(w => `<span class="o-chip b${bandOf(w.length)}${w === ui.lastBanked && performance.now() - ui.bankedAt < 800 ? ' pop' : ''}">${w} x${S.bank[w]}</span>`).join('') || '<span class="o-dim">Empty. Bank a word above.</span>'}</div></div>
       <details class="o-card o-adv"><summary><h3 style="display:inline">Advanced stock targets</h3></summary>
@@ -5030,23 +5047,29 @@
     const all = Object.entries(r.need).sort((a, b) => a[0].length - b[0].length || a[0].localeCompare(b[0]));
     const chip = ([w, n]) => `<span class="o-chip b${bandOf(w.length)}${stock(w) >= n ? ' ok' : ''}">${w} ${Math.min(stock(w), n)}/${n}</span>`;
     if (all.length <= CHIP_MAX) return all.map(chip).join('');
-    const todo = all.filter(([w, n]) => stock(w) < n), got = all.length - todo.length;
-    return todo.slice(0, CHIP_MAX).map(chip).join('') + (todo.length > CHIP_MAX ? `<span class="o-chip">+${todo.length - CHIP_MAX} more to bank</span>` : '') + (got ? `<span class="o-chip ok">${got} of ${all.length} words banked</span>` : '');
+    const todo = all.filter(([w, n]) => stock(w) < n);       // the bar under the title already counts what is banked
+    return todo.slice(0, CHIP_MAX).map(chip).join('') + (todo.length > CHIP_MAX ? `<span class="o-chip">+${todo.length - CHIP_MAX} more to bank</span>` : '');
   };
   const subTabs = (dept, items) => `<div class="o-subtabs" role="tablist">${items.map(([id, label, badge]) => `<button type="button" role="tab" data-act="sub" data-dept="${dept}" data-sub="${id}" aria-selected="${(ui.sub[dept] || items[0][0]) === id}">${label}${badge ? `<i class="o-subbadge">${badge}</i>` : ''}</button>`).join('')}</div>`;
   const firstPitch = () => !(S.stats.pitched || 0) && soldCount() >= 1 && pitchActive() < PITCH_MAX;
   const needDesks = r => r._nd || (r._nd = [...new Set(Object.keys(r.need).map(w => bandOf(w.length)))].sort((a, b) => a - b));       // fixed per title, so computed once
   const lockedDesk = r => needDesks(r).find(b => !S.desks[b].owned);
   function bookCard(r) {
-        const done = S.written[r.id], ready = canWrite(r), foc = S.focus === r.id, lock = lockedDesk(r);
-    return `<div class="o-card o-book${done ? ' done' : ''}${ui.fresh === r.id ? ' fresh' : ''}${ready ? ' ready' : ''}"><div class="o-row"><h3>${esc(r.title)}${r.gen && !done ? ' <small class="o-pit">COMMISSIONED</small>' : ''}</h3><span class="o-tag b${r.band}">${DESKS[r.band].lo}–${DESKS[r.band].hi}</span></div>
-          <p class="o-dim">${r.total} words · rights ${price(done ? r.pay : salePay(r))}${!done && marketMult(r.band) !== 1 ? ` <span class="o-dim">(x${marketMult(r.band).toFixed(2)})</span>` : ''}${foc ? ' <span class="o-tag o-now">NOW WRITING</span>' : ''}</p>
-          <div class="o-progrow">${bar(done ? r.total : progress(r), r.total)}<span class="o-dim">${done ? r.total : progress(r)}/${r.total}</span></div>
-          ${!titleAvailable(r) ? '<p class="o-warn">Archived, retire entry to resume sales</p>' : ''}${done ? '' : `<div class="o-chips">${chipsFor(r)}</div>`}
-          ${done ? '' : `<div class="o-chips o-needs"><span class="o-dim">Needs</span>${needDesks(r).map(b => `<span class="o-chip b${b}${S.desks[b].owned ? ' ok' : ''}">${DESKS[b].name.split(' ')[0]}</span>`).join('')}${lock !== undefined ? `<span class="o-warn">Needs ${DESKS[lock].name}</span>` : ''}</div>`}
+        const done = S.written[r.id], ready = canWrite(r), foc = S.focus === r.id, lock = lockedDesk(r), mm = marketMult(r.band);
+    /* the card shows rather than tells: price and progress up top, the typewriters it needs as coloured dots, and the word list only for the
+       title being written (or when you ask). Library stories and kids' books get a tag, because they pay far less than an authored title. */
+    const kind = r.gen ? ['COMMISSIONED', 'A pitch you commissioned'] : r.lib ? ['LIBRARY', 'A library story: a reprint, so its rights pay far less than an authored title'] : r.kid ? ['KIDS', "A kids' book: short, quick and cheap"] : null;
+    const showWords = !done && (foc || ui.words === r.id);
+    return `<div class="o-card o-book${done ? ' done' : ''}${ui.fresh === r.id ? ' fresh' : ''}${ready ? ' ready' : ''}${foc ? ' focus' : ''}"><div class="o-row"><h3>${esc(r.title)}${kind && !done ? ` <small class="o-pit${r.gen ? '' : ' lib'}" title="${kind[1]}">${kind[0]}</small>` : ''}</h3><span class="o-tag b${r.band}">${DESKS[r.band].lo}–${DESKS[r.band].hi}</span></div>
+          <div class="o-row o-left o-bookpay"><span class="o-bprice" title="What its rights pay${done ? '' : ' now'}">${price(done ? r.pay : salePay(r))}</span>${!done && mm !== 1 ? `<span class="o-mm ${mm > 1 ? 'up' : 'down'}" title="Market for ${DESKS[r.band].name.split(' ')[0]} titles">x${mm.toFixed(2)}</span>` : ''}${foc ? '<span class="o-tag o-now">NOW WRITING</span>' : ''}
+            ${done ? '' : `<span class="o-needdots" title="Typewriters it needs: ${needDesks(r).map(b => DESKS[b].name).join(', ')}">${needDesks(r).map(b => `<i style="--dc:${DESKS[b].color}"${S.desks[b].owned ? '' : ' class="off"'}></i>`).join('')}</span>`}</div>
+          <div class="o-progrow">${bar(done ? r.total : progress(r), r.total)}<span class="o-dim" title="Words banked">${done ? r.total : progress(r)}/${r.total}</span></div>
+          ${!titleAvailable(r) ? '<p class="o-warn">Archived, retire entry to resume sales</p>' : ''}${showWords ? `<div class="o-chips">${chipsFor(r)}</div>` : ''}
+          ${!done && lock !== undefined ? `<p class="o-warn">Needs ${DESKS[lock].name}</p>` : ''}
           ${done ? `<i class="o-stamp${ui.fresh === r.id ? ' slam' : ''}">SOLD!</i>` : ''}
           ${ui.read === r.id ? `<div class="o-read">${esc(r.text)}</div>` : ''}
           <div class="o-row o-actions"><button type="button" class="o-btn sm" data-act="read" data-id="${r.id}">${ui.read === r.id ? 'Close' : 'Read'}</button>
+            ${!done && !foc && !ready ? `<button type="button" class="o-btn sm" data-act="words" data-id="${r.id}" aria-pressed="${ui.words === r.id}">Words</button>` : ''}
             ${done ? '<span class="o-lvl">WRITTEN &amp; SOLD</span>' : `<button type="button" class="o-btn sm" data-act="focus" data-id="${r.id}" ${foc || lock !== undefined || !titleAvailable(r) ? 'disabled' : ''}>${foc ? 'Focused' : 'Focus'}</button>
             <button type="button" class="o-btn sm gold" data-act="write" data-id="${r.id}" ${ready ? '' : 'disabled'}>${ready && marketMult(r.band) >= 1.4 ? 'Sell now!' : 'Write &amp; sell'}</button>`}</div></div>`;
   }
@@ -5057,13 +5080,15 @@
     close: (a, b) => a.left - b.left, pay: (a, b) => b.r.pay - a.r.pay, short: (a, b) => a.r.total - b.r.total, az: (a, b) => a.r.title.localeCompare(b.r.title)
   };
   function pressList() {
+    if (ui.libf === 'pitched') ui.libf = 'open';                    // commissions have their own tab now
     const q = ui.libq.trim().toLowerCase(), f = ui.libf, byBand = DESKS.map(() => 0);
     const pre = [];                                                  // matches status and search, before the word-max and locked filters
     for (const r of RECIPES) {
       const done = !!S.written[r.id];
       if (!done && !inPlay(r)) continue;
       if (q && !r.title.toLowerCase().includes(q)) continue;
-      if (!(f === 'all' || (f === 'written' ? done : f === 'ready' ? canWrite(r) : f === 'pitched' ? r.gen && !done : !done))) continue;
+      // Open leaves commissions to the Pitches tab, unless one is ready to sell or is the goal
+      if (!(f === 'all' || (f === 'written' ? done : f === 'ready' ? canWrite(r) : f === 'pitched' ? r.gen && !done : !done && (!r.gen || S.focus === r.id || canWrite(r))))) continue;
       byBand[r.band]++; pre.push(r);
     }
     const browsing = f === 'written';   // picking a word max, or Show locked, reveals titles that need a machine you have not bought
@@ -5078,14 +5103,13 @@
     rows.sort((a, b) => a.tier - b.tier || cmp(a, b) || b.r.pay - a.r.pay || (a.r.id < b.r.id ? -1 : 1));
     const shown = rows.slice(0, ui.libLimit);
     const seg = (items, act, cur, attr) => `<span class="o-seg">${items.map(([k, n, extra]) => `<button type="button" data-act="${act}" data-${attr}="${k}" aria-pressed="${String(cur) === String(k)}"${extra ? ` class="${extra}"` : ''}>${n}</button>`).join('')}</span>`;
-    const caps = [['all', 'All'], ...DESKS.map((D, i) => [String(i), `${D.hi}<i class="o-capn">${byBand[i]}</i>`, S.desks[i].owned ? '' : 'o-cap-locked']).filter(([k]) => S.desks[+k].owned && byBand[+k] > 0 || ui.libcap === k)];
-    return `<div class="o-row o-left o-lsearch"><input class="o-search" id="oLibQ" placeholder="Search titles…" value="${esc(ui.libq)}" autocomplete="off" aria-label="Search titles">
-        <select class="o-search o-lsort" data-in="libsort" aria-label="Sort titles">${SORTS.map(([k, n]) => `<option value="${k}"${ui.libsort === k ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
-      <div class="o-filters o-lfilters">
-        <div class="o-row o-left">${seg([['open', 'Open'], ['ready', 'Ready'], ['pitched', 'Pitch'], ['written', 'Sold'], ['all', 'All']], 'libf', f, 'f')}</div>
-        <div class="o-row o-left"><span class="o-dim o-flab" title="The longest word in the title: which typewriter it needs">Longest word</span>${seg(caps, 'libcap', ui.libcap, 'c')}</div>
-      </div>
-      <div class="o-row o-left o-lcount"><span class="o-dim">${rows.length.toLocaleString('en-US')} title${rows.length === 1 ? '' : 's'}</span></div>
+    const caps = [['all', 'Any machine'], ...DESKS.map((D, i) => [String(i), `${D.name.split(' ')[0]} ${D.lo}–${D.hi} (${byBand[i]})`]).filter(([k]) => S.desks[+k].owned && byBand[+k] > 0 || ui.libcap === k)];
+    const ready = readyList().length;
+    /* one toolbar: what to show, which typewriter, the order, and a search box */
+    return `<div class="o-toolbar o-ltool">${seg([['open', 'Open'], ['ready', `Ready${ready ? `<i class="o-capn">${ready}</i>` : ''}`], ['written', 'Sold'], ['all', 'All']], 'libf', f, 'f')}
+        <select class="o-search o-lsort" data-in="libcap" aria-label="Which typewriter: the longest word in the title" title="Filter by the typewriter a title's longest word needs">${caps.map(([k, n]) => `<option value="${k}"${String(ui.libcap) === k ? ' selected' : ''}>${n}</option>`).join('')}</select>
+        <select class="o-search o-lsort" data-in="libsort" aria-label="Sort titles">${SORTS.map(([k, n]) => `<option value="${k}"${ui.libsort === k ? ' selected' : ''}>${n}</option>`).join('')}</select>
+        <input class="o-search" id="oLibQ" placeholder="Search ${rows.length.toLocaleString('en-US')} title${rows.length === 1 ? '' : 's'}…" value="${esc(ui.libq)}" autocomplete="off" aria-label="Search titles"></div>
       <div class="o-grid">${shown.map(x => bookCard(x.r)).join('') || '<p class="o-dim">No titles match.</p>'}</div>
       ${rows.length > shown.length ? `<div class="o-row"><button type="button" class="o-btn sm" data-act="libmore">Show more (${(rows.length - shown.length).toLocaleString('en-US')})</button></div>` : ''}`;
   }
@@ -5093,7 +5117,7 @@
     if ((chal('patientpress') || masteryActive())) return `<p class="o-warn">${masteryActive() ? 'Publisher suspended for manual Small Crew mastery.' : 'Publisher disabled by Patient Press.'} Manual selling is available.</p>`;
     if (!S.pub.tier) return '';
     const rules = [['any', 'Any', 'Sell as soon as a title is finished'], ['fair', 'Fair', 'Hold titles until the market is at least x1.0'], ['hot', 'Hot', 'Hold titles until the market is HOT (x1.4 or more)']];
-    return `<div class="o-card o-pubbar"><div class="o-row o-left"><span class="o-seg"><button type="button" data-act="pubon" aria-pressed="${S.pub.on}" title="Let the assistant sell finished titles for you">Auto-sell ${S.pub.on ? 'on' : 'off'}</button></span>
+    return `<div class="o-pubbar"><div class="o-row o-left"><span class="o-seg"><button type="button" data-act="pubon" aria-pressed="${S.pub.on}" title="Let the assistant sell finished titles for you">Auto-sell ${S.pub.on ? 'on' : 'off'}</button></span>
       <span class="o-seg">${rules.map(([k, n, t]) => `<button type="button" data-act="pubrule" data-r="${k}" title="${t}" aria-pressed="${S.pub.rule === k}">${n}</button>`).join('')}</span></div>
       <p class="o-dim o-pubstat">${pubStatus()}</p></div>`;
   }
@@ -5105,10 +5129,11 @@
     const sub = ui.sub.press;
     let body = '';
     if (sub === 'titles') {
-      const fr = focusRecipe();
-      body = `${pg && (sold >= 3 || pg.active(pgContext) || S.meta.productionGoal !== undefined) ? pg.controls(pgContext, esc) : `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle">Now writing: <b>${esc(fr.title)}</b></span><span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span>Pick a title below</span>'}</div><div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) : '<span class="o-dim">Auto picks the best title</span>'}<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span></div></div>`}
-
-        ${pitchTeamLine()}${pubBar()}
+      const fr = focusRecipe(), usePg = pg && (sold >= 3 || pg.active(pgContext) || S.meta.productionGoal !== undefined);
+      /* one card answers "what are we writing, how close is it, and who sells it"; the list below starts with whatever is ready to sell */
+      body = `<div class="o-card o-goalbar" id="oGoal"><div class="o-row o-gtop">${fr ? `<span class="o-gtitle"><span class="o-dim">Now writing</span> <b>${esc(fr.title)}</b></span>${price(salePay(fr))}` : '<span class="o-gtitle">Pick a title below</span>'}</div>
+        <div class="o-progrow o-gbar">${fr ? bar(progress(fr), fr.total) + `<span class="o-dim">${progress(fr)}/${fr.total}</span>` : '<span class="o-dim">Auto picks the title that pays best for the effort</span>'}</div>
+        <div class="o-row o-left o-gctl">${usePg ? pg.controls(pgContext, esc) : `<span class="o-seg" title="Auto: the keepers pick the title that pays best for the effort"><button type="button" data-act="autotoggle" aria-pressed="${S.autoFocus}">Auto</button></span>`}${pubBar()}</div></div>
         <div id="oTitleList">${pressList()}</div>${KIDS.length ? `<p class="o-dim o-kidsline">Kids' reading list: ${kidsSold()} of ${KIDS.length} written${LIBS.length ? ` · Library stories: ${libSold()} of ${LIBS.length} written` : ''}</p>` : ''}`;
     } else if (sub === 'shelf') {
       ui.shelfNew = 0;
@@ -5196,19 +5221,23 @@
       item(cart('s-team') + 'Pitch assistants', fxc('+1', 'sub team writing pitches'), SHOP.pitchteam, S.pitchteam, '', 'pitchteam', null, soldCount() >= 3 || S.pitchteam),
       item(cart('s-carbon') + 'Carbon paper', fxc('0', 'letters spent banking words'), SHOP.carbon, S.carbon, '', 'carbon', null, S.desks[3].owned),
       lampCard(have)]);
-    morph($('#o-shop'), `
-      <p class="o-lede">Spend the bananas your titles earn.</p>
-      ${section('Typewriters', machines)}
-      ${section(`Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span>`, deals)}
+    /* the shop is split by what you are buying with and for: your room, your sales, Break Room games, Diamond Bananas.
+       Each tab's badge counts the bananas buys you can afford there right now, so nothing affordable hides behind a tab. */
+    const upgrades = `${section('Typewriters', machines)}
       ${section('Restorations', `<div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>`, '<div class="lg03-inline" data-own data-automation="restore"></div>')}
       ${section('Keepers', `<div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? keeperCard(i, have) : '').join('')}</div>`)}
       ${section('Garden', (S.stats.harvested || 0) > 0 && gardenCard(have) ? `<div class="o-grid">${gardenCard(have)}</div>` : '')}
-      ${section('Market tools', market)}
-      ${section('Room-wide upgrades', room, '<div class="lg03-inline" data-own data-automation="shop"></div>')}
-      ${bought.length ? `<p class="o-dim o-ownedline">Bought: ${bought.join(' · ')}.</p>` : ''}
-      ${S.intro.done && extensions.has('minigames') ? `<h3 class="o-h" aria-label="Break Room games">${ico('i-game', 26)}${gem('insp')}</h3><div data-own data-minigame-shop></div>` : ''}
-      ${window.VaultPlay?.enabled() && S.intro.done && (S.prem.earned > 0 || S.prem.vault) ? `<h3 class="o-h" aria-label="Diamond Bananas">${gem('dbn')}</h3><div data-own data-vault-slot></div>` : ''}
-      `);
+      ${section('Room-wide upgrades', room, '<div class="lg03-inline" data-own data-automation="shop"></div>')}`;
+    const sales = `${section(`Publishing deals <span class="o-dim">(royalties ${fmtRate(royBase())}/s now)</span>`, deals)}${section('Market tools', market)}`;
+    const games = S.intro.done && extensions.has('minigames'), diamonds = window.VaultPlay?.enabled() && S.intro.done && (S.prem.earned > 0 || S.prem.vault);
+    const can = html => (html.match(/<button[^>]*\bgold\b[^>]*>/g) || []).filter(b => !/\bdisabled\b/.test(b)).length || '';
+    const tabs = [['upgrades', 'Upgrades', can(upgrades)], ...(sales.trim() ? [['market', 'Sales', can(sales)]] : []), ...(games ? [['games', 'Break Room']] : []), ...(diamonds ? [['diamonds', `${gem('dbn')} Diamonds`]] : [])];
+    if (!tabs.some(t => t[0] === ui.sub.shop)) ui.sub.shop = 'upgrades';
+    const sub = ui.sub.shop;
+    morph($('#o-shop'), (tabs.length > 1 ? subTabs('shop', tabs) : '') + (sub === 'market' ? sales
+      : sub === 'games' ? `<h3 class="o-h" aria-label="Break Room games">${ico('i-game', 26)}${gem('insp')}</h3><div data-own data-minigame-shop></div>`
+      : sub === 'diamonds' ? `<h3 class="o-h" aria-label="Diamond Bananas">${gem('dbn')}</h3><div data-own data-vault-slot></div>`
+      : `${upgrades}${bought.length ? `<p class="o-dim o-ownedline">Bought: ${bought.join(' · ')}.</p>` : ''}`));
     hydrate($('#o-shop'));
   }
 
@@ -5217,12 +5246,14 @@
   const keeperSeg = i => `<span class="o-seg" title="${KPAUSE}"><button type="button" data-act="ktoggle" data-i="${i}" aria-pressed="${S.desks[i].keeper.on}">Collecting</button><button type="button" data-act="ktoggle" data-i="${i}" aria-pressed="${!S.desks[i].keeper.on}">Paused</button></span>`;
   const dn = D => { const [a, ...r] = D.name.split(' '); return `<b>${a}<em class="o-rest"> ${r.join(' ')}</em></b>`; };
   /* little dots on the department tabs when something there is worth doing */
+  const BADGE_ACK = new Set(['training', 'lab', 'muses', 'studios', 'legacy', 'shop']);
+  ui.badgeSeen = {}; ui.badgeOn = {};
   function badgeFor(k) {
     const xb = extensions.get(k)?.badge?.(extensionAPI); if (xb) return xb;     // an extension's own tab can raise its badge (a returned expedition, a building ready to open)
     const d = cur(), i = S.sel;
     if (k === 'training') return UPS.some(u => trainingQuote(u, d, i, 1).ok) ? '!' : '';
-    if (k === 'lab') return d.owned && BAND_WORDS[i].some(w => !stock(w) && canMake(d, w)) ? '!' : '';
-    if (k === 'lab' && S.garden.beds.some(b => b && savedWallNow() >= b.ready)) return '!';
+    // ripe crops; new words only matter while this desk's keeper is not banking them for you
+    if (k === 'lab') return gardenRipe() || d.owned && !(keepersReady() && d.keeper.on) && BAND_WORDS[i].some(w => !stock(w) && canMake(d, w)) ? '!' : '';
     if (k === 'muses') { const slots = museSlots(); return slots && S.muses.seated.slice(0, slots).some(x => !x) && MUSES.some(m => S.muses.owned[m.id] && !S.muses.seated.includes(m.id)) ? '!' : (slots && MUSES.some(m => !S.muses.owned[m.id] && bananas.get() >= m.cost) ? '!' : ''); }
     if (k === 'studios') return DIVS.some(D => divUnlocked(D) && divCount(D) < divCap(D) && bananas.get() >= divPlan(D, 1).cost) ? '!' : '';
     if (k === 'records') return ui.unseen ? String(ui.unseen) : '';
@@ -5293,7 +5324,16 @@
     }).join(''));
     hydrate($('#oDesks'));
     const badge = (b, bd) => { if (bd) b.dataset.badge = bd; else delete b.dataset.badge; };
-    document.querySelectorAll('.o-tab[data-tab]').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)); b.hidden = !tabVisible(b.dataset.tab); badge(b, b.hidden || b.dataset.tab === ui.tab ? '' : badgeFor(b.dataset.tab)); });
+    /* a "!" only means something once: it lights when a tab gains something worth doing and goes quiet once you have looked,
+       until it has nothing, then something again. Counts (titles ready, new awards) always show. */
+    const tnow = performance.now();
+    document.querySelectorAll('.o-tab[data-tab]').forEach(b => {
+      const t = b.dataset.tab; b.setAttribute('aria-selected', String(t === ui.tab)); b.hidden = !tabVisible(t);
+      const raw = b.hidden ? '' : badgeFor(t), ack = BADGE_ACK.has(t) && raw === '!';
+      if (t === ui.tab) ui.badgeSeen[t] = tnow;
+      if (!ack) ui.badgeOn[t] = 0; else if (!ui.badgeOn[t]) ui.badgeOn[t] = tnow;
+      badge(b, b.hidden || t === ui.tab ? '' : ack ? (ui.badgeOn[t] > (ui.badgeSeen[t] || 0) ? '!' : '') : raw);
+    });
     $$('.o-pane').forEach(p => { p.hidden = p.id !== 'o-' + ui.tab; });
     const D = DESKS[S.sel];
     const wrap = $('.o-wrap');                                       // on .o-wrap itself: its own defaults would otherwise shadow these
@@ -5517,6 +5557,7 @@
     archf: el => { ui.archf = el.dataset.f; renderArchive(); },
     pull: el => { ui.pulled = ui.pulled === el.dataset.id ? null : el.dataset.id; ui.sub.press = 'shelf'; IMI.sfx.tick(); if (ui.tab !== 'press') setTab('press'); else mark(); },
     read: el => { ui.read = ui.read === el.dataset.id ? null : el.dataset.id; mark(); },
+    words: el => { ui.words = ui.words === el.dataset.id ? null : el.dataset.id; mark(); },
     reset: () => { if (resetBlocked()) { IMI.say(resetExplanation); return; } if (imprintChallenge() && !challengeSettled()) return; if (confirm('Reset Typewriter Ops and bananas?')) { if (writer && !bananas.resetAcknowledged().ok) { writer.resetFailure(); return; } IMI.pickups?.clear(); if (!writer) bananas.spend(bananas.get()); S = fresh(); extensionEvent('init', 'full-reset'); extensionEvent('reset', { kind: 'full-reset' }); goldEnd?.(); royAcc = coinBank = 0; Object.assign(ui, { tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, libLimit: 24, sub: {}, pulled: null, read: null, shelfNew: 0 }); saveView(); combo.n = combo.t = 0; ui.mcd = {}; Object.keys(buffs).forEach(k => buffs[k] = 0); holding = false; keeperT = []; rt.forEach(r => r.timers = []); try { localStorage.removeItem('imi-tour'); } catch { /* storage blocked */ } IMI.tour?.reset(); save(); buildStage(); mark(); } }
   };
   const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','coach','reroll','ovrset','bankword']);
@@ -5540,6 +5581,7 @@
     if (el && el.dataset.in === 'pgrange') pg?.configure(pgContext, el.value === 'auto' ? { enabled: false, manual: null } : { enabled: true, band: +el.value, manual: null });
     if (el && el.dataset.in === 'pgcollection') pg?.configure(pgContext, { collection: el.value, manual: null });
     if (el && el.dataset.in === 'libsort') { ui.libsort = el.value; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); }
+    if (el && el.dataset.in === 'libcap') { ui.libcap = el.value; ui.libLimit = 24; saveView(); IMI.sfx.tick(); mark(); }
     if (el && el.dataset.in === 'kdef') { cur().keeper.def = Math.max(0, Math.min(9999, el.value | 0)); save(); mark(); }
   });
   root.addEventListener('input', e => {

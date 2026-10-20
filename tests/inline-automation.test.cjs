@@ -64,7 +64,7 @@ test('inline settings, acknowledged recovery and Legacy tiers in both editions',
    await page.reload();await page.waitForFunction(()=>window.IMI?.ops?.extensions);
    assert.equal(await page.evaluate(id=>IMI.ops.extensions.state().meta.automation.desks[id].reservePercent,desk),40);
    assert.equal(await page.evaluate(()=>IMI.ops.extensions.state().meta.automation.shop.priority[0]),'contracts');
-   const screens=[['training','hire'],['training','coach'],['legacy','helpers','upgrades'],['shop','shop'],['shop','restore'],['lab','garden'],['press','pitch','pitches'],['studios','media'],['muses','muse'],['legacy','print','press'],['legacy','challenge','challenges'],['floor','net']];
+   const screens=[['training','hire'],['training','coach'],['legacy','helpers','upgrades'],['shop','shop'],['shop','restore'],['lab','garden','garden'],['press','pitch','pitches'],['studios','media'],['muses','muse'],['legacy','print','press'],['legacy','challenge','challenges'],['floor','net']];
    for(const [tab,helper,sub] of screens){
     await go(tab);
     if(sub){await page.click(`[data-dept="${tab}"][data-sub="${sub}"]`);await new Promise(r=>setTimeout(r,350));}
