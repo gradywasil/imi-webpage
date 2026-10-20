@@ -105,85 +105,6 @@
      SPRITES
      ============================================================ */
 
-  /* ---------- MONKEY (rotated analytically so every frame is clean pixel art) ---------- */
-  function drawMonkey(k, ang, expr, noPupils, ph = 0, hat = 0) {
-    const W = Math.round(72 * k), H = Math.round(52 * k), px = new Px(W, H);
-    const map = rot(W / 2, 3 * k + 1, ang);
-    const E = (cx, cy, rx, ry) => ell(cx * k, cy * k, rx * k, ry * k);
-    const C = (a, b, c, d, r) => cap(a * k, b * k, c * k, d * k, r * k);
-    const B = (x, y, w, h) => box(x * k, y * k, w * k, h * k);
-    const sh = (t, r, p) => px.shape(t, r, p, map);
-    /* The title-screen monkey wears the typists' look: a big head with a lighter fur tuft, ears with skin inside, big white eyes, a skin muzzle and skin hands and feet.
-       Layers, back to front: tail, legs, torso, arms (one layer, hands gripping the vine), then the whole head on top so the face is never covered. */
-    const tx = ph ? 1.8 : -1.2, ty = ph ? -1.2 : 1;           // tail tip swishes between two poses
-    const tail = [[4, 29], [9, 32], [13 + tx * .4, 30], [14.5 + tx * .8, 25 + ty * .5], [12.5 + tx, 21.5 + ty], [10 + tx, 22.5 + ty]];
-    for (let i = 0; i < tail.length - 1; i++) sh(C(...tail[i], ...tail[i + 1], 1.6), R.furD, 1);
-    sh(E(10 + tx, 22.5 + ty, 1.7, 1.7), R.furL, 1);                                  // lighter tail tip
-    const dl = ph ? -1.4 : 1.2, dr = -dl, lyl = ph ? 37.2 : 38.4, lyr = ph ? 38.4 : 37.2;   // legs kick alternately
-    sh(C(-3.6, 30, -4.6 + dl, lyl, 2.5), R.fur, 2); sh(C(3.6, 30, 4.6 + dr, lyr, 2.5), R.fur, 2);
-    sh(E(-5 + dl, lyl + 1.5, 3.3, 2), R.skin, 3); sh(E(5 + dr, lyr + 1.5, 3.3, 2), R.skin, 3);
-    sh(or(E(-6.4 + dl, lyl + 2.4, .7, .6), E(-4.6 + dl, lyl + 2.6, .7, .6)), R.furD, 4); sh(or(E(6.4 + dr, lyr + 2.4, .7, .6), E(4.6 + dr, lyr + 2.6, .7, .6)), R.furD, 4);   // toes
-    sh(E(0, 24.2, 7.2, 8.8), R.fur, 5); sh(E(0, 25.6, 4.5, 6.4), R.skin, 6);
-    sh(C(-6.6, 19.6, -3.6, 1.9, 2.3), R.fur, 7); sh(C(6.6, 19.6, 3.6, 1.9, 2.3), R.fur, 7);   // both arms on one layer
-    sh(E(-3.4, 1.2, 2.7, 2.5), R.skin, 8); sh(E(3.4, 1.2, 2.7, 2.5), R.skin, 8);              // hands on the vine
-    sh(or(E(-3.4, .3, .5, 1), E(3.4, .3, .5, 1)), R.furD, 9);
-    // ---- the head, on top of everything ----
-    sh(E(-8.7, 13.7, 3.6, 3.6), R.fur, 10); sh(E(8.7, 13.7, 3.6, 3.6), R.fur, 10);             // ears
-    sh(E(-8.7, 13.7, 2, 2), R.skin, 11); sh(E(8.7, 13.7, 2, 2), R.skin, 11);
-    sh(E(0, 13.6, 8.3, 7.7), R.fur, 12);
-    sh(E(0, 9.5, 5.6, 2.9), R.furL, 13);                                                       // the lighter fur tuft on the brow
-    sh(or(E(-2.7, 14.1, 3.7, 3.5), E(2.7, 14.1, 3.7, 3.5), E(0, 16.9, 4.9, 3.4)), R.skin, 14);  // muzzle
-    if (expr === 'blink') { sh(B(-4.2, 13.3, 3, 1), R.ink, 15); sh(B(1.2, 13.3, 3, 1), R.ink, 15); }
-    else {
-      const big = expr === 'screech' ? 2.4 : expr === 'scared' ? 2.3 : 2.1;
-      sh(E(-2.6, 13.3, big, big + .25), R.white, 15); sh(E(2.6, 13.3, big, big + .25), R.white, 15);
-      if (!noPupils) { const r = expr === 'screech' ? .9 : expr === 'scared' ? .8 : 1.15; sh(E(-2.6, 13.6, r, r + .2), R.ink, 16); sh(E(2.6, 13.6, r, r + .2), R.ink, 16); sh(or(E(-2.2, 13, .45, .45), E(3, 13, .45, .45)), R.white, 17); }
-    }
-    sh(or(E(-.9, 16, .4, .35), E(.9, 16, .4, .35)), R.ink, 18);                                // nostrils
-    if (expr === 'screech') { sh(E(0, 18.9, 2.7, 2.3), R.red, 19); sh(E(0, 19.9, 1.5, .9), R.skin, 20); }
-    else if (expr === 'scared') { sh(E(0, 19, 1.5, 1.8), R.red, 19); sh(C(-4.8, 10.6, -1.4, 9.2, .5), R.ink, 19); sh(C(4.8, 10.6, 1.4, 9.2, .5), R.ink, 19); }
-    else { sh(C(-2.7, 18.4, -1.3, 19.2, .55), R.ink, 19); sh(C(-1.3, 19.2, 1.3, 19.2, .55), R.ink, 19); sh(C(1.3, 19.2, 2.7, 18.4, .55), R.ink, 19); }
-    if (hat === 1) {                                             // big leaf worn as a rain hat
-      const P = [[-9.8, 10.8], [-8.2, 6.4], [-4.6, 3.4], [0, 2.4], [4.6, 3.4], [8.2, 6.4], [9.8, 10.8], [5, 9.2], [0, 8.4], [-5, 9.2]].map(([x, y]) => [x * k, y * k]);
-      sh(poly(P), R.leaf, 17); sh(C(0, 3, 0, 8, .5), R.leafD, 18); sh(C(0, 5, -4.4, 8.2, .4), R.leafD, 18); sh(C(0, 5, 4.4, 8.2, .4), R.leafD, 18);
-    }
-    const pts = a => a.map(([x, y]) => [x * k, y * k]);
-    if (hat === 2) {                                             // top hat
-      sh(B(-7, 7.4, 14, 1.8), R.ink, 17); sh(B(-4.4, 0.6, 8.8, 7.4), R.ink, 18); sh(B(-4.4, 5.2, 8.8, 1.6), R.red, 19);
-    } else if (hat === 3) {                                      // party cone
-      sh(poly(pts([[-4.6, 8.4], [4.6, 8.4], [0, -2]])), R.red, 17); sh(B(-4.6, 6.6, 9.2, 1.2), R.banY, 18); sh(E(0, -2, 1.2, 1.2), R.banY, 18);
-    } else if (hat === 4) {                                      // beret
-      sh(E(0, 6.2, 7.6, 3.4), R.blue, 17); sh(B(-.7, 2.2, 1.4, 1.8), R.blue, 18);
-    } else if (hat === 5) {                                      // crown
-      sh(poly(pts([[-5, 7], [-5, 1.5], [-2.5, 4], [0, .5], [2.5, 4], [5, 1.5], [5, 7]])), R.banY, 17); sh(B(-5, 6, 10, 2.6), R.banY, 18); sh(E(0, 7.3, .9, .9), R.red, 19);
-    } else if (hat === 6) {                                      // baseball cap
-      sh(E(0, 7.4, 6.8, 4.4), R.red, 17); sh(B(1, 8.2, 9.5, 1.5), R.ink, 18);
-    } else if (hat === 7) {                                      // hibiscus flower
-      sh(E(5.2, 6.4, 1.5, 1.5), R.red, 17); sh(E(3.4, 8, 1.5, 1.5), R.red, 17); sh(E(7, 8, 1.5, 1.5), R.red, 17); sh(E(5.2, 9.6, 1.5, 1.5), R.red, 17); sh(E(5.2, 8, 1, 1), R.banY, 18);
-    } else if (hat === 8) {                                      // graduation cap
-      sh(B(-5, 6.4, 10, 2.4), R.ink, 17); sh(B(-8, 4.8, 16, 1.6), R.ink, 18); sh(C(7, 5.6, 7.6, 9.8, .45), R.banY, 19);
-    }
-    return { cv: render(px), W, H, pivot: [W / 2, 3 * k + 1], k };
-  }
-  const monkeySets = {
-    hero: { k: 2, max: 35, step: 7 },
-    desk: { k: 0.6, max: 42, step: 6 },
-  };
-  Object.values(monkeySets).forEach(s => { s.angles = []; for (let a = -s.max; a <= s.max; a += s.step) s.angles.push(a); s.cache = {}; });
-  function monkeyFrame(set, expr, angleRad, noPupils, ph = 0, hat = 0) {
-    const s = monkeySets[set], deg = angleRad * 180 / Math.PI;
-    let bi = 0, bd = 1e9; s.angles.forEach((a, i) => { const d = Math.abs(a - deg); if (d < bd) { bd = d; bi = i; } });
-    const key = expr + bi + (noPupils ? 'n' : '') + ph + 'h' + hat;
-    if (!s.cache[key]) s.cache[key] = drawMonkey(s.k, s.angles[bi] * Math.PI / 180, expr, noPupils, ph, hat);
-    return s.cache[key];
-  }
-  function monkeyEyes(set, angleRad) {   // eye positions (art px, relative to frame top-left) for pupil overlay
-    const f = monkeyFrame(set, 'normal', angleRad, true), s = monkeySets[set];
-    let bi = 0, bd = 1e9; const deg = angleRad * 180 / Math.PI; s.angles.forEach((a, i) => { const d = Math.abs(a - deg); if (d < bd) { bd = d; bi = i; } });
-    const a = s.angles[bi] * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
-    return [-2.5, 2.5].map(ex => { const lx = ex * s.k, ly = 13.4 * s.k; return [f.pivot[0] + lx * ca - ly * sa, f.pivot[1] + lx * sa + ly * ca]; });
-  }
-
   /* ---------- WEATHER ICON (4 states: clear, drizzle, rain, storm) ---------- */
   function weatherFrame(i) {
     return make(40, 38, px => {
@@ -810,7 +731,7 @@
 
   /* ---------- install: expose everything as CSS vars + helper API ---------- */
   const PXA = {
-    S, R, spr, frames, monkeyFrame, monkeyEyes, monkeySets,
+    S, R, spr, frames,
     banana: null, coconut: null,
     css(name, u) { document.documentElement.style.setProperty('--' + name, `url(${u})`); },
     el(name, mult = 1) { const d = document.createElement('div'), s = spr[name]; d.className = 'spr'; d.style.cssText = `width:${s.w * S * mult}px;height:${s.h * S * mult}px;background-image:url(${s.url});background-size:100% 100%`; return d; },

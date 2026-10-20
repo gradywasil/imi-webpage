@@ -188,10 +188,9 @@ body.night .hero-motes i { background: #c8ff7a; box-shadow: 0 0 6px 2px rgba(200
 .hero-monkey { position: absolute; top: -6px; left: calc(11vw - 216px); width: 432px; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 2; animation: hm-in 1.3s steps(8) both; }
 .hm-vine { width: 48px; height: 24vh; background: var(--vine-v) repeat-y center top / 48px 144px; }
 .hm-cv { display: block; margin-top: -21px; }
-.hm-pupil { position: absolute; width: 6px; height: 9px; background: var(--ink); pointer-events: none; }
-.hm-hit { position: absolute; left: 156px; width: 120px; height: 260px; top: 24vh; pointer-events: auto; cursor: pointer; }
+.hm-hit { position: absolute; left: 180px; width: 156px; height: 260px; top: 24vh; pointer-events: auto; cursor: pointer; }
 .hm-bubble {
-  position: absolute; left: 62%; top: calc(24vh + 24px); white-space: nowrap; padding: 6px 12px;
+  position: absolute; left: 80%; top: calc(24vh + 12px); white-space: nowrap; padding: 6px 12px;
   font-family: var(--font-px); font-size: 16px; color: #3a210d;
   border: 12px solid transparent; border-image: var(--frame-paper-s) 4 / 12px stretch; background: var(--cream) padding-box;
   visibility: hidden;

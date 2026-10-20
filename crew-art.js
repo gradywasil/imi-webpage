@@ -2792,7 +2792,10 @@
   /* GAME: the award hats from ops.js HATS, sized to the 64px head (skull dome centre 0,-6, radius 7.8) */
   const HAT = { ink: '#1a0f14', inkL: '#3a2a30', red: '#b8322a', redL: '#e86a50', gold: '#ffd23a', goldD: '#c98f0e', blue: '#2e44a8', blueL: '#5470d8', white: '#fff6d6' };
   function drawGameHat(buf, id) {
-    if (id === 2) {                                               // top hat
+    if (id === 1) {                                               // a big leaf held over the head as a rain hat (the title-screen monkey wears it in the rain)
+      [[-17, 6], [-16, 12], [-15, 16], [-14, 20], [-13, 22], [-12, 22], [-11, 18]].forEach(([y, w]) => buf.rect(-Math.floor(w / 2), y, w, 1, y === -11 ? '#2f6b22' : '#5aa83a'));
+      buf.rect(-9, -15, 4, 1, '#8fd062'); buf.rect(0, -17, 1, 7, '#2f6b22'); buf.rect(-5, -14, 4, 1, '#2f6b22'); buf.rect(1, -14, 4, 1, '#2f6b22'); buf.rect(0, -19, 1, 2, '#2f6b22');
+    } else if (id === 2) {                                               // top hat
       buf.rect(-9, -14, 18, 2, HAT.ink); buf.rect(-5, -23, 10, 9, HAT.ink); buf.rect(-5, -17, 10, 2, HAT.red); buf.rect(-4, -22, 1, 4, HAT.inkL);
     } else if (id === 3) {                                        // party cone
       for (let r = 0; r < 11; r++) { const w = Math.max(1, Math.round(10 - r * .9)); buf.rect(-Math.floor(w / 2), -14 - r, w, 1, r % 4 === 1 ? HAT.gold : HAT.red); }

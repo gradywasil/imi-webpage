@@ -133,19 +133,41 @@
   };
 
   /* =====================  THE TITLE SCREEN'S MONKEY  ===================== */
-  const hero = $('#heroMonkey'), hCv = $('#heroCv'), bubble = $('#hmBubble'), hit = $('#hmHit'), pupils = [$('#hmPL'), $('#hmPR')];
-  const H = { wild: null, busy: false, look: [0, 0], frame: null, expr: 'normal' };
+  const hero = $('#heroMonkey'), hCv = $('#heroCv'), bubble = $('#hmBubble'), hit = $('#hmHit');
+  const H = { wild: null, busy: false, frame: null, expr: 'normal' };
+  /* The title-screen monkey is a real typist: the same 64px CrewArt sprite as the floor, wearing your lead typist's look and hat (a fresh
+     game gets the plain overalls monkey). It hangs one-handed from the vine, mirrored so it swings out toward the title rather than off the screen edge. Each swing angle is rotated at twice the sprite's resolution with
+     nearest-neighbour sampling and drawn at the menu's pixel scale, so every frame stays on the same pixel grid as the rest of the title screen. */
+  const HERO_FALLBACK = 'v07', HAND = [25, 13], UP = 2, HW = 176, HH = 118, PIV = [HW / 2, 6];
+  const heroArt = { look: HERO_FALLBACK, hat: 0, cache: new Map() };
+  function heroLook() {
+    let look = HERO_FALLBACK, hat = 0;
+    try { const t = JSON.parse(localStorage.getItem('imi-ops-v1'))?.desks?.[0]?.crew?.[0]; if (t && window.CrewArt?.VARIANTS[t.look]) { look = t.look; hat = +t.hat || 0; } } catch { /* a fresh or unreadable save keeps the default monkey */ }
+    if (look !== heroArt.look || hat !== heroArt.hat) { heroArt.look = look; heroArt.hat = hat; heroArt.cache.clear(); H.frame = null; }
+  }
+  function heroFrame(expr, angle, ph, rain) {
+    const step = Math.round(angle * 180 / Math.PI / 3), key = expr + step + ph + (rain ? 'r' : '');
+    let f = heroArt.cache.get(key); if (f) return f;
+    const src = CrewArt.renderCustomMonkey64(heroArt.look, 'stomp', { x: 32, y: 34, facing: -1, expr: expr === 'normal' ? 'determined' : 'screech',
+      armR: [32 - HAND[0], HAND[1] - 34], armL: ph ? [-13, -5] : [-12, 2], legL: ph ? [-7, 17] : [-4, 20], legR: ph ? [5, 20] : [7, 17], hat: rain ? 1 : heroArt.hat });
+    const from = src.getContext('2d').getImageData(0, 0, 64, 64).data, cv = document.createElement('canvas'); cv.width = HW; cv.height = HH;
+    const g = cv.getContext('2d'), img = g.createImageData(HW, HH), a = step * 3 * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    const px = (HAND[0] + .5) * UP, py = (HAND[1] + .5) * UP;
+    for (let y = 0; y < HH; y++) for (let x = 0; x < HW; x++) {
+      const dx = x + .5 - PIV[0], dy = y + .5 - PIV[1], sx = Math.floor((px + dx * ca + dy * sa) / UP), sy = Math.floor((py - dx * sa + dy * ca) / UP);
+      if (sx < 0 || sy < 0 || sx > 63 || sy > 63) continue;
+      const i = (sy * 64 + sx) * 4, o = (y * HW + x) * 4; if (!from[i + 3]) continue;
+      img.data[o] = from[i]; img.data[o + 1] = from[i + 1]; img.data[o + 2] = from[i + 2]; img.data[o + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    f = { cv, W: HW, H: HH }; heroArt.cache.set(key, f); return f;
+  }
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   hit.addEventListener('click', () => {
     if (H.busy) return; H.busy = true; H.expr = 'screech'; H.wild = { t: performance.now() };
     bubble.textContent = pick(['OOH OOH!', 'AHH AHH!', 'EEEK!', 'BANANA?!']); bubble.classList.add('show');
     IMI.sfx.monkey();
     setTimeout(() => { H.busy = false; H.expr = 'normal'; bubble.classList.remove('show'); }, 1300);
-  });
-  addEventListener('pointermove', e => {
-    if (!onMenu() || hero.offsetParent === null) return;
-    const r = hCv.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + 120;
-    H.look = [clamp(Math.round((e.clientX - cx) / 160), -1, 1), clamp(Math.round((e.clientY - cy) / 160), -1, 1)];
   });
   function updateHero(now) {
     let a = reduceMotion ? 0 : 0.2 * Math.sin(now / 1100);
@@ -155,13 +177,9 @@
     a = clamp(a, -0.6, 0.6);
     let ex = H.expr;
     if (ex === 'normal') { if (Mood.startle(now) || shakeA > 0) ex = 'screech'; else if (Mood.scared) ex = 'scared'; }
-    const f = PXA.monkeyFrame('hero', ex, a, ex === 'normal', ex === 'screech' || H.wild ? Math.floor(now / 130) % 2 : Math.floor(now / 900) % 2, Mood.hat ? 1 : 0);
+    const f = heroFrame(ex, a, ex === 'screech' || H.wild ? Math.floor(now / 130) % 2 : Math.floor(now / 900) % 2, Mood.hat);
     if (f !== H.frame) { PXA.blit(hCv, f); H.frame = f; }
     hCv.style.transform = ex === 'scared' && !reduceMotion ? `translateX(${Math.floor(now / 70) % 2 ? S : 0}px)` : '';
-    if (ex === 'normal') {
-      const eyes = PXA.monkeyEyes('hero', a);
-      pupils.forEach((p, i) => { p.style.display = 'block'; p.style.left = Math.round(hCv.offsetLeft + eyes[i][0] * S - 3 + H.look[0] * S) + 'px'; p.style.top = Math.round(hCv.offsetTop + eyes[i][1] * S - 5 + H.look[1] * S) + 'px'; });
-    } else pupils.forEach(p => { p.style.display = 'none'; });
   }
   function frame(now) {
     Mood.update(now);                                            // wetness drives the CSS dimming everywhere
@@ -190,7 +208,8 @@
     bannerText: t => '>> ' + t + ' <<',
     paintSound: (btn, on) => setSpr(btn.firstChild, on ? 'drum-on' : 'drum-off', 2),
   });
-  IMI.onScreen(name => { if (name === 'menu') requestAnimationFrame(placeVines); });
+  heroLook();
+  IMI.onScreen(name => { if (name === 'menu') { heroLook(); requestAnimationFrame(placeVines); } });
   requestAnimationFrame(frame);
   }
   if (window.Rewards?.enabled) Rewards.start(start); else start();
