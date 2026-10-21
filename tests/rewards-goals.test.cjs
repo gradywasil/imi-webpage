@@ -46,10 +46,10 @@ test('intro and Awards gates defer selection and preserve authored guidance',asy
   try {assert.equal(await refresh(f.page),undefined);assert.equal(await f.page.evaluate(() => __writes.some(w=>JSON.parse(w.value)?.rewards?.goals)),false);}
   finally {await f.close();}
 });
-test('current room capacity excludes crew thresholds requiring unowned desks',async () => {
+test('current room capacity counts what the owned desks can hold: one desk holds 48 typists, so the 20 and 40 typist awards are reachable',async () => {
   const ids = require('node:fs').readFileSync('rewards.js','utf8').match(/const assignments = \{([\s\S]*?)\n  \};/)[1].match(/\w+(?=:'[LCDG]')/g);
   const f=await game({awards:Object.fromEntries(ids.filter(id=>!['p20','p40'].includes(id)).map(id=>[id,true]))});
-  try{assert.deepEqual((await refresh(f.page)).ids,[]);assert.equal(await f.page.evaluate(()=>IMI.ops.extensions.goalFacts().capacity.crew),12);}
+  try{const ids2=(await refresh(f.page)).ids;assert.ok(ids2.length>0&&ids2.every(id=>['p20','p40'].includes(id)),'only the crew awards are left to choose from: '+ids2);assert.equal(await f.page.evaluate(()=>IMI.ops.extensions.goalFacts().capacity.crew),48);}
   finally{await f.close();}
 });
 test('failed selection remains unsaved, repeated Retry persists once with unknown data',async () => {

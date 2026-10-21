@@ -102,7 +102,7 @@ window.Layers = (() => {
   // Overwrite only room fields. Everything else, including unknown top-level/meta data, survives.
   function projectRoom(s, fresh) {
     const next = copy(s);
-    const room = ['focus','autoFocus','printing','run','challenge','muses','garden','divs','offers','market','agent','analyst','pitchteam','carbon','baro','pub','lamp','deals','hold','metro','dbl','contracts','sel','written','bank','desks'];
+    const room = ['focus','autoFocus','printing','run','challenge','muses','garden','divs','divLv','offers','market','agent','analyst','pitchteam','agencyLv','pitchShelf','carbon','baro','pub','lamp','deals','hold','metro','dbl','contracts','sel','written','bank','desks'];
     for (const key of room) next[key] = object(fresh[key]) ? {...next[key], ...fresh[key]} : copy(fresh[key]);
     // These maps are room inventory; old keys must not survive the merge above.
     for (const key of ['written','bank','deals']) next[key] = {};

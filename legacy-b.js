@@ -5,9 +5,9 @@ window.LegacyB = (() => {
   'use strict';
   const VERSION = 1;
   const defaults = {
-    press:  { max: 4, costs: [5, 15, 40, 100], mult: 2 },        // automatic typing, 16x at rank IV
-    keeper: { max: 3, costs: [5, 15, 40], mult: 2 },             // banking action budget, 8x at rank III
-    power:  { max: 4, costs: [10, 25, 60, 150], mult: 1.5 },     // eligible sale income, about 5.06x at rank IV
+    press:  { max: 4, costs: [5, 15, 40, 100], mult: 2, tail: { ranks: 56, mult: 1.5, grow: 2.2 } },        // automatic typing, 16x at rank IV, then x1.5 a rank with no end in practice (each rank costs 2.2x the last)
+    keeper: { max: 3, costs: [5, 15, 40], mult: 2, tail: { ranks: 57, mult: 1.5, grow: 2.2 } },             // banking action budget, 8x at rank III, then x1.5 a rank
+    power:  { max: 4, costs: [10, 25, 60, 150], mult: 1.5, tail: { ranks: 56, mult: 1.25, grow: 2.2 } },     // eligible sale income, about 5.06x at rank IV, then x1.25 a rank
     control: { ledger: 10, buyer: 15, blueprint: 20, foreman: 30 },  // Rebuild Ledger, Machine Buyer, Publisher Blueprint, Printing Foreman (phase C)
     powerNeeds: false,                                           // true makes Publishing Power need Printing Press I and Quick Keepers I (off: it is open from the first star)
     crewRefund: 30,                                              // the old Veteran Crew price, returned once because the crew becomes free
@@ -30,10 +30,19 @@ window.LegacyB = (() => {
   const spent = (id, rank) => OLD[id].costs.slice(0, Math.min(rank, OLD[id].costs.length)).reduce((a, b) => a + b, 0);
 
   /* new rank id -> its track: the stored ids stay speed/keeper/power so saves and aliases keep working */
-  const track = id => ({ speed: cfg().press, keeper: cfg().keeper, power: cfg().power })[id];
+  /* a track may carry a tail: past its listed ranks every further rank multiplies by tail.mult and costs tail.grow times the last (tuned tracks without a tail behave as they always did) */
+  const tailed = new WeakMap();
+  const withTail = t => {
+    if (!t || !t.tail) return t;
+    if (!tailed.has(t)) { const costs = t.costs.slice(); for (let k = 0; k < t.tail.ranks; k++) costs.push(Math.round(costs[costs.length - 1] * t.tail.grow)); tailed.set(t, { ...t, base: t.max, max: t.max + t.tail.ranks, costs }); }
+    return tailed.get(t);
+  };
+  const track = id => withTail(({ speed: cfg().press, keeper: cfg().keeper, power: cfg().power })[id]);
   const mult = (id, rank) => {
     const t = track(id);
-    return t ? Math.pow(t.mult, Math.min(Math.max(0, rank | 0), t.max)) : 1;
+    if (!t) return 1;
+    const r = Math.min(Math.max(0, rank | 0), t.max), base = t.base ?? t.max;
+    return Math.pow(t.mult, Math.min(r, base)) * (t.tail ? Math.pow(t.tail.mult, Math.max(0, r - base)) : 1);
   };
   /* The temporary bridge: only when a tuned track cannot cover an old benefit. The old spend was refunded in full, and the old benefit
      stays as a non-stacking floor until any new rank of that track is bought, which replaces it in the same state write. */
@@ -115,7 +124,8 @@ window.LegacyB = (() => {
 
   /* the Legacy shop: replaces the old speed/keeper tracks, hides the paid crew, adds Publishing Power */
   function shop(base) {
-    const t = cfg(), x = n => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''));
+    const t = { ...cfg(), press: track('speed'), keeper: track('keeper'), power: track('power') }, K = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']], x0 = n => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''));
+    const x = n => { const u = K.find(([v]) => n >= v); return u ? Number((n / u[0]).toPrecision(3)) + u[1] : x0(n); };
     const out = base.filter(u => u.id !== 'crew').map(u => {
       if (u.id === 'speed') return { ...u, name: 'Printing Press', max: t.press.max, costs: t.press.costs.slice(), now: lv => '×' + x(mult('speed', lv)), unit: 'automatic typing' };
       if (u.id === 'keeper') return { ...u, name: 'Quick Keepers', max: t.keeper.max, costs: t.keeper.costs.slice(), now: lv => '×' + x(mult('keeper', lv)), unit: 'keeper banking' };

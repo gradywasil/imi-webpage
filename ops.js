@@ -122,12 +122,18 @@
   const KEEPER_UP_GROW = TUNE.KEEPER_UP_GROW || 1.8;                      // each level costs this much more than the last
   const KEEPER_LATE_STEP = TUNE.KEEPER_LATE_STEP || 0.95;                 // past the original levels each keeper level multiplies the period by this instead
   const KEEPER_LATE_GROW = TUNE.KEEPER_LATE_GROW || 1.45;                 // ...and costs this much more than the last
-  const KEEPER_MIN_PERIOD = TUNE.KEEPER_MIN_PERIOD || 0.05;               // a keeper never banks faster than one word every 50ms (the tick banks four at most)
+  const KEEPER_MIN_PERIOD = TUNE.KEEPER_MIN_PERIOD || 0.004;               // a keeper never banks faster than one word every 4ms (the tick banks them in bulk once it is quicker than 20ms)
+  const KEEPER_MILE = TUNE.KEEPER_MILE || 10, KEEPER_MILE_STEP = TUNE.KEEPER_MILE_STEP || 0.8;      // past the original levels, every tenth level multiplies the period by a further 0.8
   const FING_SOFT = 10, FING_LATE = TUNE.FING_LATE || 0.93;               // Quick fingers: 15% faster for ten levels, then 7% per level without end
+  const FING_MILE = TUNE.FING_MILE || 10, FING_MILE_STEP = TUNE.FING_MILE_STEP || 0.8;      // ...and every tenth level past those is a further 1.25x
   const SUB_SLOW = TUNE.SUB_SLOW || 2;                                    // the pitch assistants bank one word per this many keeper periods
   const KEEPER_UP_BASE = (TUNE.KEEPER_UP_BASE || [100, 600, 3000, 30000, 4e5, 5e6]).map(cash);   // bananas for level 1, by desk
-  const COACH_MAX = TUNE.COACH_MAX || 10;                                // Train > crew cards: coaching levels per monkey
+  const COACH_MAX = TUNE.COACH_MAX || 1000;                              // Train > crew cards: coaching levels per monkey (past level 10 every tenth level adds a further +10%)
+  const MK_TAIL = TUNE.MK_TAIL || 1.2, MK_TAIL_GROW = TUNE.MK_TAIL_GROW || 6;     // restorations past Mk III: each is x1.2 typing and costs 6x the one before
+  const PAW_MAX = TUNE.PAW_MAX || 48, PAW_SOFT = 12, PAW_LATE = TUNE.PAW_LATE || 1.3, SHIFT_NEEDS = PAW_MAX, SHIFT_PER = 12, SHIFT_MILE = 1.5, CREW_SHOWN = 12;                               // typists a desk can hold (the first 12 cost x1.55 each, the rest x1.3); Shift crews start on a full desk: each adds a twelfth of the crew's output, and every tenth is a further x1.5; the Train page draws 12 crew cards unless you ask for all
+  const REMASTER_BASE = TUNE.REMASTER_BASE || 8, REMASTER_GROW = TUNE.REMASTER_GROW || 1.6, REMASTER_STEP = TUNE.REMASTER_STEP || 1.12;     // media remasters: x1.12 a level (and x1.5 at every tenth), costing 8 releases' worth, then 1.6x more each
   const COACH_STEP = TUNE.COACH_STEP || 2;                               // each coaching level is +this % typing speed on top of the monkey's talent
+  const coachPct = c => c * COACH_STEP + 10 * Math.floor(Math.max(0, c - 10) / 10);
   const COACH_GROW = TUNE.COACH_GROW || 1.35;
   const COACH_BASE = (TUNE.COACH_BASE || [18, 215, 2700, 33500, 4.2e5, 5e6]).map(cash);     // bananas for a monkey's first coaching level, by desk (all 10 levels cost about half the next machine)
   const REROLL_BASE = (TUNE.REROLL_BASE || [20, 250, 3000, 38000, 5e5, 5.6e6]).map(cash);     // bananas for a monkey's first reroll, by desk; each reroll costs 1.5x the last
@@ -141,6 +147,14 @@
   const TITLE_SCALE = TUNE.TITLE_SCALE || [1, 1.3, 1.7, 2.2, 3, 4];     // pitched titles get bigger with the band
   const PITCH_PAY = TUNE.PITCH_PAY || [40, 504, 5000, 39120, 4.885e5, 6.12e6];   // rights for a standard pitched title, by band
   const SHOP = Object.fromEntries(Object.entries({ hold: 500, metro: 3000, dbl: 2000, contracts: 10000, agent: 40000, analyst: 150000, pitchteam: 250000, carbon: 1500000, ...(TUNE.SHOP || {}) }).map(([key, value]) => [key, cash(value)]));
+  const AGENCY_COST = [SHOP.pitchteam, ...(TUNE.AGENCY_COST || [3e6, 6e7]).map(cash)];     // Shop > Sales > Pitch agency, three tiers: Pitch assistants (above), the Commissioning desk, Syndication
+  const RUN_STEP = TUNE.RUN_STEP || 1.15, RUN_MILE = TUNE.RUN_MILE || 10, RUN_MILE_MULT = TUNE.RUN_MILE_MULT || 2;     // speed levels past the tiers: +15% a level, and doubled again at every tenth level, with no end
+  const AGENCY_LV_BASE = cash(TUNE.AGENCY_LV_BASE || 2e7), AGENCY_LV_GROW = TUNE.AGENCY_LV_GROW || 1.55;     // Pitch agency levels: bananas for level 1, each later level costs this much more
+  const PRESS_LV_BASE = cash(TUNE.PRESS_LV_BASE || 2e6), PRESS_LV_GROW = TUNE.PRESS_LV_GROW || 1.5;       // Publisher press-run levels, bought after the Night shift
+  const INDUSTRY_STEP = TUNE.INDUSTRY_STEP || 1.04, INDUSTRY_MILE = TUNE.INDUSTRY_MILE || 1.5;           // every agency or press level speeds every typewriter by 4%, and every tenth level by a further 1.5x
+  const PITCH_SOLD_MAX = 160, PITCH_KEEP = 40, SHELF_COUNT_CAP = 500, SALE_PASS_MAX = 12;   // sold pitches pile up fast at agency speed, so the oldest are folded into one shelf total; at most 12 sale passes a tick
+  const BULK_PRESS = TUNE.BULK_PRESS || 6;                                 // a desk whose typists press this many times in one tick types in bulk instead of key by key (per-key typing stops at 8 presses a typist a tick)
+  const KEEPER_BULK_BELOW = .02, KEEPER_BULK_MAX = 400;                   // a keeper this quick banks its words in one bulk step instead of one at a time
   const FREQ = { E: 12, T: 9, A: 8, O: 8, I: 7, N: 7, S: 6, H: 6, R: 6, D: 4, L: 4, C: 3, U: 3, M: 3, W: 2, F: 2, G: 2, Y: 2, P: 2, B: 1.5, V: 1, K: 1, J: .3, X: .3, Q: .2, Z: .2 };
   const POP_COLORS = ['#ff5d73', '#ffd23a', '#7be05a', '#4cc9f0', '#c39bff', '#ff9ec0'];
   const EXTRA_WORDS = `up if me we be no so or as at by my ox an am us
@@ -220,6 +234,7 @@
   const LIB_ROY = TUNE.LIB_ROY || 0.5;                            // library stories pay this share of normal royalties
   const KID_ROY = TUNE.KID_ROY || 0.5;                           // kids' titles pay this share of normal royalties
   const RBY = Object.fromEntries(RECIPES.map(r => [r.id, r]));
+  const GENS = RECIPES.filter(r => r.gen);                      // the pitched titles, kept as their own list (the whole shelf is 1,200 titles; pitches come and go)
   const VOCAB = new Set(EXTRA_WORDS.map(w => w.toUpperCase()).filter(w => w.length >= 2 && w.length <= 13));
   RECIPES.forEach(r => Object.keys(r.need).forEach(w => VOCAB.add(w)));
   Object.values(GEN).forEach(list => list.forEach(w => VOCAB.add(w.toUpperCase())));
@@ -234,10 +249,10 @@
   const newIntro = () => ({ version: 1, done: false, train: false, words: false, shop: false, hireAt: null });
   const newDesk = i => ({
     owned: i === 0, paws: 0, crew: [], mk: 0, letters: {}, tray: [],
-    up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0 },
+    up: { fing: 0, rapid: 0, vowel: 0, ink: 0, practice: 0, stock: 0, ribbon: 0, shift: 0 },
     keeper: { owned: i === 0, on: true, def: 0, targets: {}, lv: 0 }
   });
-  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {}, k: Economy.starScale }, editions: {}, looks: {}, run: { earned: 0, words: 0, lp: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null], owner: [0, 0], farmers: [0, 0, 0, 0, 0, 0] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, pitchteam: false, carbon: false, baro: 0, pub: { tier: 0, on: true, rule: 'any' }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
+  const fresh = () => ({ meta: {}, rewards: {}, prem: {}, economyVersion: Economy.version, intro: newIntro(), focus: null, autoFocus: true, printing: 0, legacy: { stars: 0, total: 0, ups: {}, k: Economy.starScale }, editions: {}, looks: {}, run: { earned: 0, words: 0, lp: 0 }, challenge: null, chDone: {}, muses: { owned: {}, seated: [null, null, null] }, garden: { beds: [null, null], owner: [0, 0], farmers: [0, 0, 0, 0, 0, 0] }, divs: { songs: 0, tv: 0, radio: 0, sketch: 0, film: 0 }, divLv: {}, divAuto: false, divTotal: 0, pitches: [], offers: [], market: { v: [1, 1, 1, 1, 1, 1], m: [0, 0, 0, 0, 0, 0], hist: [[1], [1], [1], [1], [1], [1]] }, agent: false, analyst: false, pitchteam: false, agencyLv: 0, pitchShelf: { n: 0, pay: 0 }, carbon: false, baro: 0, pub: { tier: 0, on: true, rule: 'any', lv: 0 }, lamp: 0, lastSeen: 0, awards: {}, stats: { pitched: 0, pitchSold: 0, awayMax: 0, letters: 0, manual: 0, words: 0, lump: 0, rotten: 0, secs: 0, playSecs: 0, pickups: 0, pickupEarned: 0, storm: 0, night: 0, byLetter: {} }, deals: {}, royTotal: 0, gold: 0, best: 0, hold: false, metro: false, dbl: false, contracts: false, sel: 0, written: {}, bank: {}, log: [], desks: DESKS.map((_, i) => newDesk(i)) });
   let hallHistory = {};
   let S = (() => {
     try {
@@ -301,8 +316,20 @@
   const keepersReady = () => !introActive() || S.intro.words;
   /* Auto-pitch (automation helper) is read several times a tick per desk, and its unlock check walks the Imprint record, so it is sampled 4x a second */
   let autoPitchAt = -1e9, autoPitchOn = false;
-  const autoPitch = () => { const now = performance.now(); if (now - autoPitchAt > 250) { autoPitchAt = now; autoPitchOn = !!extensions.get('automation')?.pitchOn?.(); } return autoPitchOn; };
-  const pitchCrews = () => (S.pitchteam ? 1 : 0) + (autoPitch() ? 1 : 0);
+  /* Shop > Sales > Pitch agency: tier 1 Pitch assistants (a crew writes pitches), tier 2 the Commissioning desk (commissions and sells them too, as Auto-pitch does), tier 3 Syndication (sells twice as fast).
+     Past that, agency levels speed the crew, the commissions and the sales without end. Older saves hold true for tier 1. */
+  const agencyTier = () => Math.min(3, S.pitchteam | 0);
+  const agencyOn = () => agencyTier() >= 2;
+  const agencyLv = () => agencyTier() >= 3 ? Math.max(0, S.agencyLv | 0) : 0;
+  const runSpeed = lv => Math.pow(RUN_STEP, lv) * Math.pow(RUN_MILE_MULT, Math.floor(lv / RUN_MILE));
+  const pubLv = () => S.pub.tier >= 3 ? Math.max(0, S.pub.lv | 0) : 0;
+  const industryLv = () => agencyLv() + pubLv();
+  const industryAt = n => n ? Math.pow(INDUSTRY_STEP, n) * Math.pow(INDUSTRY_MILE, Math.floor(n / RUN_MILE)) : 1;
+  const industryMult = () => industryAt(industryLv());      // the late game feeds back into every typewriter, so the starter machine stays a workhorse
+  const autoPitch = () => { if (agencyOn()) return true; const now = performance.now(); if (now - autoPitchAt > 250) { autoPitchAt = now; autoPitchOn = !!extensions.get('automation')?.pitchOn?.(); } return autoPitchOn; };
+  const pitchCrews = () => (agencyTier() >= 1 ? 1 : 0) + (autoPitch() ? 1 : 0);
+  const crewRate = () => pitchCrews() * runSpeed(agencyLv());
+  const pitchSellPeriod = () => agencyOn() ? PUB_PERIOD[1] / (agencyTier() >= 3 ? 2 : 1) / runSpeed(agencyLv()) : PUB_PERIOD[1];
   const pitchWant = (r, w) => { const g = focusRecipe(); return (r.need[w] || 0) + (g && g.id !== r.id ? g.need[w] || 0 : 0); };
   const pitchClear = r => Object.keys(r.need).every(w => stock(w) >= pitchWant(r, w));     // selling it leaves the goal's words alone
   function introProgress() {
@@ -366,6 +393,7 @@
     { id: 'v30', name: 'Lucky Cowboy', trait: 'lucky', r: 'c', fx: { k: 'coins', c: ['#ffd23a', '#e8b878'] } }
   ];
   const lookById = id => LOOKS.find(l => l.id === id) || LOOKS[0];
+  const LOOK_IDS = new Set(LOOKS.map(l => l.id));
   /* rarer looks are harder to roll and their trait works harder: every trait's bonus is multiplied by mul (see traitText) */
   const RARITY = { c: { name: 'Common', odds: .71, mul: 1 }, r: { name: 'Rare', odds: .22, mul: 1.5 }, e: { name: 'Epic', odds: .06, mul: 2 }, l: { name: 'Legendary', odds: .01, mul: 3 } };
   const rarOf = t => (t && t.look ? lookById(t.look).r : 'c') || 'c';
@@ -391,7 +419,9 @@
   }
   const seeLook = id => { (S.looks || (S.looks = {}))[id] = 1; };
   const LVL_XP = [0, 40, 120, 300, 650, 1300, 2400, 4200, 7000, 11000];
-  const levelOf = xp => { let l = 1; while (l < LVL_XP.length && xp >= LVL_XP[l]) l++; return l; };
+  const LVL_TAIL = 1.8;                                            // past level 10 each level needs 1.8x the xp of the one before, with no last level (+4% typing a level)
+  const levelOf = xp => { let l = 1; while (l < LVL_XP.length && xp >= LVL_XP[l]) l++; return l < LVL_XP.length ? l : LVL_XP.length + Math.floor(Math.log(xp / LVL_XP[LVL_XP.length - 1]) / Math.log(LVL_TAIL)); };
+  const lvlXp = l => l < LVL_XP.length ? LVL_XP[l] : LVL_XP[LVL_XP.length - 1] * Math.pow(LVL_TAIL, l - LVL_XP.length + 1);      // xp that finishes level l
   const HATS = [
     { id: 6, name: 'Cap', emoji: '🧢', award: 'l1k' }, { id: 4, name: 'Beret', emoji: '👒', award: 's1' }, { id: 7, name: 'Flower', emoji: '🌺', award: 'd1' },
     { id: 3, name: 'Party cone', emoji: '🎉', award: 'c10' }, { id: 2, name: 'Top hat', emoji: '🎩', award: 's8' }, { id: 8, name: 'Graduation cap', emoji: '🎓', award: 'g10' },
@@ -414,7 +444,7 @@
     while (d.crew.length < d.paws) d.crew.push(newTypist());
     if (d.crew.length > d.paws) d.crew.length = d.paws;
     d.crew.forEach(t => {                                          // saves from before looks: dress each monkey in a look that matches the trait it already had
-      if (t.look && LOOKS.some(l => l.id === t.look)) return;
+      if (t.look && LOOK_IDS.has(t.look)) return;
       const fits = LOOKS.filter(l => l.trait === t.trait), pool = fits.length ? fits : LOOKS, look = pool[hashStr(t.name) % pool.length];
       t.look = look.id; t.trait = look.trait; seeLook(look.id);
     });
@@ -426,18 +456,26 @@
   const isNight = () => sky().night;
   const mgPerk = k => extensions.get('minigames')?.perk?.(k) || 0;   // Break Room ideas: flashFreq, flashSecs, luck
   const inspired = new WeakMap();                                  // typist -> until (runtime only: a good idea is not worth a save)
-  function typistSpeed(t) {
+  /* What is the same for every typist (perks, drive, the sky, Break Room and Works bonuses) is read once. During a tick that one reading serves every typist and every desk;
+     outside a tick each call reads it fresh, so nothing can be stale after a purchase or in a test. */
+  let inTick = false, speedCtx = null;
+  const speedContext = () => ({ perk: speedPerks(), drive: lgb ? lgb.driveMult(sbRank('drive')) : 1, night: isNight(), poe: museOn('poe') && isNight(), wx: sky().wx, storm: stormy(), now: performance.now(),
+    bonus: 1 + (extensions.get('minigames')?.automaticTypingBonus?.() || 0), play: worksPlay?.factor(S) || 1 });
+  const ctxNow = () => inTick ? (speedCtx ||= speedContext()) : speedContext();
+  function typistSpeed(t, c = ctxNow()) {
     if (!t) return 1;
     let m = 1 + .04 * (levelOf(t.xp) - 1);
-    if ((inspired.get(t) || 0) > performance.now()) m *= 2.5;
+    if ((inspired.get(t) || 0) > c.now) m *= 2.5;
     if (t.trait === 'speedy') m *= 1 + .25 * trMul(t);
-    if (t.trait === 'owl') m *= isNight() ? 1 + .4 * trMul(t) : .9;
-    if (museOn('poe') && isNight()) m *= 1.25;
-    if (lgb) m *= lgb.driveMult(sbRank('drive'));
-    m *= speedPerks() * (1 + ((t.talent || 0) + (t.coach || 0) * COACH_STEP) / 100);        // the monkey's talent roll plus coaching
-    if (t.trait === 'rainy') { if (sky().wx >= 1) m *= 1 + .3 * trMul(t); if (stormy()) m *= 2; }
-    return m * (1 + (extensions.get('minigames')?.automaticTypingBonus?.() || 0)) * (worksPlay?.factor(S) || 1);
+    if (t.trait === 'owl') m *= c.night ? 1 + .4 * trMul(t) : .9;
+    if (c.poe) m *= 1.25;
+    m *= c.drive;
+    m *= c.perk * (1 + ((t.talent || 0) + coachPct(t.coach || 0)) / 100);        // the monkey's talent roll plus coaching
+    if (t.trait === 'rainy') { if (c.wx >= 1) m *= 1 + .3 * trMul(t); if (c.storm) m *= 2; }
+    return m * c.bonus * c.play;
   }
+  /* a desk's whole crew at once: n typists counted from the front (the crew list, unless a number is given) */
+  const deskSpeed = (d, n = d.crew.length) => { const c = ctxNow(); let s = 0; for (let p = 0; p < n; p++) s += typistSpeed(d.crew[p], c); return s; };
   const maxLevel = () => S.desks.reduce((m, d) => d.crew.reduce((a, t) => Math.max(a, levelOf(t.xp)), m), 1);
   function grantXp(d, p, amt, silent) {
     const t = d.crew[p]; if (!t) return;
@@ -493,6 +531,7 @@
     if (soldC && soldC.ref === S.written) return soldC;
     let all = 0, kids = 0, libs = 0, authored = 0, pay = 0;
     for (const id in S.written) { const r = RBY[id]; if (!r) continue; pay += r.pay * (r.kid ? KID_ROY : r.lib ? LIB_ROY : 1); if (r.kid) kids++; else if (r.lib) libs++; else { all++; if (!r.gen) authored++; } }
+    if (S.pitchShelf) { all += Math.min(S.pitchShelf.n, SHELF_COUNT_CAP); pay += S.pitchShelf.pay; }      // pitches folded into the shelf total still pay royalties
     return (soldC = { ref: S.written, all, kids, libs, authored, pay });
   };
   const authoredSold = () => soldStats().authored;
@@ -507,6 +546,7 @@
     return listC;
   };
   const inPlay = r => !r.kid || kidsListed().has(r.id);
+  const deskReady = r => { const b = r._bands || (r._bands = [...new Set(Object.keys(r.need).map(w => bandOf(w.length)))]); for (let k = 0; k < b.length; k++) if (!S.desks[b[k]].owned) return false; return true; };
   const readyList = () => { const now = performance.now(); if (!readyC || now - readyT > 250) { readyC = RECIPES.filter(canWrite); readyT = now; } return readyC; };
   const dropCaches = () => { listC = null; readyC = null; soldC = null; };
   const dealMult = () => DEALS.reduce((m, d) => (S.deals[d.id] ? m * (d.mult || 1) : m), 1) * (S.deals.clubs ? 1 + .03 * soldCount() : 1);
@@ -516,10 +556,10 @@
   const royRate = () => royBase() * passive();
   const fmtRate = IMI.fmtRate;
   const buffOn = k => productiveMono() < buffs[k];
-  const fingMult = level => Math.pow(.85, Math.min(level, FING_SOFT)) * Math.pow(FING_LATE, Math.max(0, level - FING_SOFT));
+  const fingMult = level => Math.pow(.85, Math.min(level, FING_SOFT)) * Math.pow(FING_LATE, Math.max(0, level - FING_SOFT)) * Math.pow(FING_MILE_STEP, Math.floor(Math.max(0, level - FING_SOFT) / FING_MILE));
   const pawSecs = d => PAW_BASE[S.desks.indexOf(d)] * fingMult(d.up.fing) * (toolOn('metro') ? 0.5 : 1) * (stormy() ? 2 : 1) * (buffOn('frenzy') ? 0.5 : 1) * (buffOn('snack') ? 1 / 1.5 : 1) * (buffOn('sluggish') ? 1.7 : 1);
   const holdRate = d => ((TUNE.HOLD_BASE || 4) + (TUNE.RAPID_STEP || 2) * d.up.rapid) * (toolOn('dbl') ? (TUNE.DBL || 2) : 1);
-  const autoRate = d => (d.paws ? d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) / pawSecs(d) : 0);
+  const autoRate = d => (d.paws ? deskSpeed(d) * deskMk(d) / pawSecs(d) : 0);
   const rewardBasis = () => {
     const multiplier = speed(), letters = S.desks.map((d, i) => !d.owned || !d.paws ? 0 :
       multiplier * deskMk(d) / (PAW_BASE[i] * fingMult(d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) *
@@ -603,7 +643,7 @@
     let best = null, bm = Infinity;
     const genre = genreChoice();   // Imprint unlock: weigh pay the way the genre will actually pay it
     for (const r of RECIPES) {
-      if (!titleAvailable(r) || S.written[r.id] || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
+      if (S.written[r.id] || !inPlay(r) || !deskReady(r) || !titleAvailable(r)) continue;
       if (r.gen && autoPitch()) continue;                              // Auto-pitch runs commissions on their own line
       const miss = autoEffort(r) / (r.pay * (genre ? (genre.bands.includes(r.band) ? 1.15 : .95) : 1));
       if (miss < bm || (miss === bm && best && r.pay < best.pay)) { best = r; bm = miss; }
@@ -721,6 +761,22 @@
     const now = performance.now(); if (now - critAt < 450 || !fx) return; critAt = now;
     const b = fx.stage.getBoundingClientRect(), x = b.left + b.width * (.3 + rand() * .4), y = b.top + b.height * .32;
     floatText('CRIT! x5', x, y, '#ff5d73', true); shock(x, y, '#ff5d73', false, true); IMI.burst(x, y, ['spark', 'star'], 6); IMI.sfx.crit && IMI.sfx.crit(); vib(10);
+  }
+  /* n automatic presses at once (a desk typing faster than the key-by-key loop can follow): letters land in the drawer by the same odds the away run uses */
+  function bulkType(d, i, n) {
+    if (!progressing()) return;
+    const memo = rt[i].dist, dist = memo && tickN - memo.at < 4 ? memo.d : (rt[i].dist = { d: offlineDist(d, i), at: tickN }).d, st = S.stats;      // the mix follows the goal and the bank, which move slowly next to a tick
+    for (const ch in dist) {
+      const exp = n * dist[ch], c = Math.floor(exp) + (rand() < exp % 1 ? 1 : 0); if (c <= 0) continue;
+      const ordinary = c - (activeWork()?.route(S, i, ch, c) || 0);
+      d.letters[ch] = (d.letters[ch] || 0) + ordinary; S.run.lp = (S.run.lp || 0) + ordinary; st.byLetter[ch] = (st.byLetter[ch] || 0) + c;
+    }
+    st.letters += n; if (stormy()) st.storm += n; if (isNight()) st.night += n;
+    if (d.crew.length) { const each = n / d.crew.length; for (let q = 0; q < d.crew.length; q++) grantXp(d, q, each, true); }
+    for (let k = 0; k < 4; k++) { const ch = pick(dist); d.tray.push(ch); rt[i].sheet = (rt[i].sheet + ch).slice(-120); rt[i].n++; }      // a few keys for the sheet and the tray, so the machine still looks busy
+    if (d.tray.length > 80) d.tray.splice(0, d.tray.length - 80);
+    if (i === S.sel) for (let p = 0; p < Math.min(2, d.paws); p++) animatePress(pick(dist), true, rt[i].n, p);
+    mark();
   }
   function press(i, auto, p) {
     if (!progressing()) return;
@@ -901,7 +957,7 @@
   }
   function registerPitch(p) {
     if (RBY[p.id]) return RBY[p.id];
-    const r = buildRecipe({ ...p, gen: true }); RECIPES.push(r); RBY[r.id] = r; addRecipeWords(r); return r;
+    const r = buildRecipe({ ...p, gen: true }); RECIPES.push(r); GENS.push(r); RBY[r.id] = r; addRecipeWords(r); return r;
   }
   function genPitch(band) {
     let best = null;
@@ -939,7 +995,7 @@
     return top;
   }
   function newOffers() { const bands = []; for (let k = 0; k < 3; k++) bands.push(pickPitchBand(bands)); return bands.map(b => genPitch(b)); }
-  const pitchActive = () => RECIPES.filter(r => r.gen && !S.written[r.id]).length;
+  const pitchActive = () => { let n = 0; for (const r of GENS) if (!S.written[r.id]) n++; return n; };
   const repitchCost = () => Math.max(cash(25), roundMoney(royBase() * 20));
   function commissionPublished(p,el) {
     ui.fresh = p.id; setTimeout(() => { if (ui.fresh === p.id) ui.fresh = null; mark(); }, 2200);
@@ -982,7 +1038,7 @@
       pitch:{...p, manual:{...p.manual, pending:null}}}};
   }
   let commissionPending = null, commissionNotice = '';
-  function pitchSelection() {
+  function pitchSelection(market = true) {
     const p = S.meta.productionGoal;
     if (pg && p !== undefined && !pg.valid(p)) return -1;
     if (pg?.active(pgContext) && (p.manual || !['all','pitches'].includes(p.collection)) ||
@@ -990,7 +1046,7 @@
     return (S.offers || []).map((p,i) => ({p,i,r:pitchRecord(p) ? buildRecipe({...p,gen:true}) : null})).filter(({p,r}) =>
       r && !S.written[p.id] && !RBY[p.id] && !S.pitches.some(x => x.id === p.id) && S.offers.filter(x => x.id === p.id).length === 1 &&
       Object.keys(r.need).every(w => S.desks[bandOf(w.length)]?.owned && !((chal('haiku') || masteryActive()) && bandOf(w.length) > 1)) &&
-      marketMult(r.band) >= 1 && (!pg?.active(pgContext) || r.band === S.meta.productionGoal.band))
+      (!market || marketMult(r.band) >= 1) && (!pg?.active(pgContext) || r.band === S.meta.productionGoal.band))
       .sort((a,b) => a.r.band - b.r.band || a.i - b.i)[0]?.i ?? -1;
   }
   function commission(i, origin = 'manual', el, retry = null) {
@@ -1129,7 +1185,10 @@
   const divCap = D => (divOrder[D.id] ? divOrder[D.id].length : 600);
   const divFactor = D => { const n = Math.min(divCount(D), divCap(D)), p = divPrefix[D.id]; return p ? p[n] : n; };
   const divUnlocked = D => soldCount() >= D.need;
-  const divUnit = D => D.base * (TUNE.DIV_BASE || 0.35) * D.mult();
+  const remasterLv = D => (S.divLv && S.divLv[D.id]) || 0;
+  const remasterMult = lv => Math.pow(REMASTER_STEP, lv) * Math.pow(SHIFT_MILE, Math.floor(lv / 10));
+  const remasterCost = D => roundMoney(D.cost * REMASTER_BASE * Math.pow(REMASTER_GROW, remasterLv(D)));
+  const divUnit = D => D.base * (TUNE.DIV_BASE || 0.35) * D.mult() * remasterMult(remasterLv(D));
   const divBase = () => DIVS.reduce((a, D) => a + (divCount(D) ? divUnit(D) * divFactor(D) : 0), 0) * (museOn('twain') ? 1.2 : 1) * legacyMult();
   const passive = () => (buffOn('rush') || (writer && S.rewards.activeGold?.remainingGameMs > 0) ? 7 : 1) * (buffOn('critic') ? .5 : 1);
   const divRate = () => divBase() * passive();
@@ -1232,6 +1291,33 @@
     const before = divCount(D); S.divs[D.id] = before + plan.n;
     releasePublished(D,before,plan.n); mark(); save();
   }
+  function remasterDiv(id) {
+    if (chal('paperonly')) return;
+    const D = DIVS.find(x => x.id === id); if (!D || !divUnlocked(D) || !divCount(D)) return;
+    if (!bananas.spend(remasterCost(D))) return;
+    S.divLv = { ...S.divLv, [D.id]: remasterLv(D) + 1 }; S.stats.remasters = (S.stats.remasters || 0) + 1;
+    logIt(`${D.name} remastered its whole catalogue: level ${remasterLv(D)}, ×${xFmt(remasterMult(remasterLv(D)))} income.`); IMI.sfx.ding(); mark(); save();
+  }
+  /* Auto-remaster: once you have remastered by hand three times, a switch on the Media page remasters for you. Every 20 game seconds it buys the remaster
+     that adds the most income for its price, if the wallet holds twice that price (so it never spends the money a release or a machine is waiting for). */
+  const remasterAutoOpen = () => (S.stats.remasters || 0) >= 3;
+  let remasterClock = 0;
+  function remasterAuto() {
+    if (!S.divAuto || !remasterAutoOpen() || chal('paperonly') || challengeActive() || workPaused() || !progressing()) return 0;
+    let done = 0;
+    for (let k = 0; k < 3; k++) {
+      let best = null, bg = 0;
+      for (const D of DIVS) {
+        if (!divUnlocked(D) || !divCount(D)) continue;
+        const cost = remasterCost(D); if (!(bananas.get() >= 2 * cost)) continue;
+        const gain = divUnit(D) * divFactor(D) * (remasterMult(remasterLv(D) + 1) / remasterMult(remasterLv(D)) - 1) / cost;
+        if (gain > bg) { best = D; bg = gain; }
+      }
+      if (!best) break;
+      remasterDiv(best.id); done++;
+    }
+    return done;
+  }
   function releasePublished(D,before,quantity) {
     const plan = {n:quantity};
     const ord = divOrder[D.id], last = ord && ord[Math.min(before + plan.n, ord.length) - 1];
@@ -1262,11 +1348,13 @@
         <p>${fmtRate(unit)}/s per release now · total <b>${fmtRate(unit * divFactor(D) * passive())}/s</b></p>
         <p class="o-quirk" title="${esc(D.quirk)}">${D.status()}</p>
         ${recent ? `<div class="o-chips">${recent}</div>` : ''}
-        <button type="button" class="o-btn gold" data-act="release" data-id="${D.id}" ${chal('paperonly') || full || bananas.get() < plan.cost ? 'disabled' : ''}>${full ? 'Catalogue complete' : `${plan.n > 1 ? `Release x${plan.n}` : `Release ${/^[aeiou]/.test(D.unit) ? 'an' : 'a'} ${D.unit}`} · ${price(plan.cost)}`}</button></div>`;
+        <button type="button" class="o-btn gold" data-act="release" data-id="${D.id}" ${chal('paperonly') || full || bananas.get() < plan.cost ? 'disabled' : ''}>${full ? 'Catalogue complete' : `${plan.n > 1 ? `Release x${plan.n}` : `Release ${/^[aeiou]/.test(D.unit) ? 'an' : 'a'} ${D.unit}`} · ${price(plan.cost)}`}</button>
+        ${n ? `<p class="o-dim">Remaster Lv ${remasterLv(D)}: ${fxc('×' + xFmt(remasterMult(remasterLv(D))), 'income')} <span class="o-leg-next">› ×${xFmt(remasterMult(remasterLv(D) + 1))}</span></p><button type="button" class="o-btn" data-act="remaster" data-id="${D.id}" ${chal('paperonly') || bananas.get() < remasterCost(D) ? 'disabled' : ''}>Remaster the catalogue · ${price(remasterCost(D))}</button>` : ''}</div>`;
     }).join('');
     morph($('#o-studios'), `
       <div class="o-row o-left"><span>${fxc(fmtRate(divRate()) + '/s', 'income')} ${fxc(fmt(total), 'released')}</span></div>
       <div class="o-row o-left"><span class="o-dim">Release</span><span class="o-seg">${[1, 10, 100, 'max'].map(n => `<button type="button" data-act="buyn" data-n="${n}" aria-pressed="${String(ui.buyN) === String(n)}">${n === 'max' ? 'Max' : 'x' + n}</button>`).join('')}</span></div>
+      ${remasterAutoOpen() ? `<div class="o-row o-left"><button type="button" class="o-btn sm" data-act="remasterauto" aria-pressed="${!!S.divAuto}" title="Every 20 game seconds, remasters the catalogue that adds the most income for its price, if you hold twice that price">Auto-remaster: ${S.divAuto ? 'on' : 'off'}</button></div>` : ''}
       <div class="lg03-inline" data-own data-automation="media"></div><div class="o-grid">${cards}</div>`);
     hydrate($('#o-studios'));
   }
@@ -1536,7 +1624,7 @@
     { id: 'crew', name: 'Veteran Crew', ico: 'i-monkey', max: 1, costs: [30], now: lv => lv ? '2 + Hold' : '0', unit: 'starting typists' },
     { id: 'speed', name: 'Printing Press', ico: 'u-rapid', max: 10, costs: costRamp(10, 20, 1.42), now: lv => `+${10 * lv}%`, unit: 'typing speed' },
     { id: 'keeper', name: 'Quick Keepers', ico: 's-keeper', max: 8, costs: costRamp(8, 25, 1.5), now: lv => `+${10 * lv}%`, unit: 'keeper speed' },
-    { id: 'sales', name: 'Prestige Imprint', ico: 'd-reprints', max: 10, costs: costRamp(10, 30, 1.45), now: lv => `+${10 * lv}%`, unit: 'banana income' },
+    { id: 'sales', name: 'Prestige Imprint', ico: 'd-reprints', max: 40, costs: costRamp(40, 30, 1.45), now: lv => `+${10 * lv}%`, unit: 'banana income' },
     { id: 'golden', name: 'Golden Touch', ico: 'i-star', max: 5, costs: costRamp(5, 20, 1.6), now: lv => `+${25 * lv}%`, unit: 'golden bananas' }
   ];
   const LEG = lgb ? lgb.shop(LEG_BASE) : LEG_BASE;
@@ -1616,7 +1704,7 @@
   const challengeReward = c => c.imprint || c.helper ? `${c.perk} First clear also pays a one-off letters bundle.` : `+${c.stars * Economy.starScale} stars and a perk: ${c.perk}`;
   const toolOn = key => !!S[key] && !chal('quietshop');
   const challengeShopLock = what => chal('quietshop') && ['hold', 'contracts', 'metro', 'dbl', 'agent', 'analyst'].includes(what) ? 'Blocked by Quiet Shop' :
-    (chal('patientpress') || masteryActive()) && what === 'pub' ? masteryActive() ? 'Blocked by manual Small Crew mastery' : 'Blocked by Patient Press' : chal('baremetal') && what === 'mk' ? 'Blocked by Bare Metal' : '';
+    (chal('patientpress') || masteryActive()) && (what === 'pub' || what === 'pubrun') ? masteryActive() ? 'Blocked by manual Small Crew mastery' : 'Blocked by Patient Press' : chal('baremetal') && what === 'mk' ? 'Blocked by Bare Metal' : '';
   const chPerk = id => !!S.chDone[id];
   const pressPerk = legacy => lgb ? lgb.speedMult(legacy) : 1 + .1 * (legacy.ups.speed || 0);
   const speedPerks = () => pressPerk(S.legacy) * (chPerk('vowel') ? 1.05 : 1) * (chPerk('hands') ? 1.1 : 1);
@@ -2345,7 +2433,7 @@
     const unseen = u => lgb && !legLvl(u.id) && legLock(u.id), shown = LEG.filter(u => !unseen(u)), next = LEG.find(unseen);
     const legCards = shown.map(u => {
       const lv = legLvl(u.id), cost = u.costs[lv];
-      return `<div class="o-card o-leg${cost !== undefined && L.stars >= cost ? ' can' : ''}"${u.tip ? ` title="${esc(u.tip)}"` : ''}><div class="o-row"><h3>${cart(u.ico)}${u.name}</h3><span class="o-lvl">${lv}/${u.max}</span></div>${pips(lv, u.max)}
+      return `<div class="o-card o-leg${cost !== undefined && L.stars >= cost ? ' can' : ''}"${u.tip ? ` title="${esc(u.tip)}"` : ''}><div class="o-row"><h3>${cart(u.ico)}${u.name}</h3><span class="o-lvl">${u.max > 12 ? 'Lv ' + lv : lv + '/' + u.max}</span></div>${u.max > 12 ? '' : pips(lv, u.max)}
         ${u.unit ? `<p class="o-leg-fx"><b>${u.now(lv)}</b> ${u.unit}${lv < u.max ? ` <span class="o-leg-next">› ${u.now(lv + 1)}</span>` : ''}</p>` : ''}
         ${lgb && lgb.bridgeMult(L, u.id) > 1 ? `<p class="o-leg-fx lgx-bridge" title="Your old benefit stays until you buy a rank here. The new rank replaces it; they never stack."><b>×${lgb.bridgeMult(L, u.id).toFixed(1).replace(/\.0$/, '')}</b> bridge</p>` : ''}
         ${lv >= u.max ? '<span class="o-lvl">MAX</span>' : legLock(u.id) ? `<span class="o-dim">${legLock(u.id)}</span>` : `<button type="button" class="o-btn gold o-starbtn" data-act="legbuy" data-id="${u.id}" ${L.stars < cost ? 'disabled' : ''}>${gemAmt('star', cost)}</button>`}</div>`;
@@ -2378,14 +2466,18 @@
 
   /* ================= restorations ================= */
   const MK_BASE = [5000, 40000, 500000, 6e6, 8e7, 1e9].map(cash), MK_NAMES = ['', 'Mk II', 'Mk III'];
+  const roman = n => { let out = ''; for (const [v, s] of [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { out += s; n -= v; } return out; };
+  const mkName = n => MK_NAMES[n] || 'Mk ' + roman(n + 1);
   /* the Imprint record, cached per save object because sales ask for it constantly */
   let impRef = null, impVal = null;
   const imp = () => { if (!layers?.enabled) return null; if (impRef !== S.meta.layers) { impRef = S.meta.layers; try { impVal = layers.current(S); } catch { impVal = null; } } return impVal; };
   const houseOn = () => lgb && window.House && imp()?.count > 0 && !S.challenge;
   const wsOn = () => lgb && window.Workshop && !S.challenge;
   const genreRun = d => { if (!lgb || !sbRank('genre') || S.challenge) return 1; const g = layers?.enabled && layers.active(S); return g ? lgb.genreSpeed(sbRank('genre'), g.bands.includes(S.desks.indexOf(d))) : 1; };      // Workshop attachments are suppressed inside a restricted challenge run
-  const deskMk = d => (1 + .25 * (d.mk || 0)) * (wsOn() || houseOn() ? (wsOn() ? Workshop.carriage(S.meta.workshop, S.desks.indexOf(d)) * Workshop.typebarSpeed(S.meta.workshop, S.desks.indexOf(d)) : 1) * (houseOn() ? House.touring(S.meta.house, !!imp().purchases.touring, S.desks.indexOf(d)) : 1) : 1) * genreRun(d);
-  const mkCost = i => roundMoney(MK_BASE[i] * (S.desks[i].mk ? 12 : 1) * (chPerk('haiku') ? .8 : 1));
+  const mkMult = mk => (1 + .25 * Math.min(mk, 2)) * Math.pow(MK_TAIL, Math.max(0, mk - 2));
+  const shiftMult = n => (1 + n / SHIFT_PER) * Math.pow(SHIFT_MILE, Math.floor(n / 10));
+  const deskMk = d => industryMult() * mkMult(d.mk || 0) * (d.paws >= SHIFT_NEEDS && d.up.shift ? shiftMult(d.up.shift) : 1) * (wsOn() || houseOn() ? (wsOn() ? Workshop.carriage(S.meta.workshop, S.desks.indexOf(d)) * Workshop.typebarSpeed(S.meta.workshop, S.desks.indexOf(d)) : 1) * (houseOn() ? House.touring(S.meta.house, !!imp().purchases.touring, S.desks.indexOf(d)) : 1) : 1) * genreRun(d);
+  const mkCost = i => { const mk = S.desks[i].mk || 0; return roundMoney(MK_BASE[i] * (mk ? 12 * Math.pow(MK_TAIL_GROW, mk - 1) : 1) * (chPerk('haiku') ? .8 : 1)); };
   /* ---- keepers: each desk's keeper can be tuned up (faster banking) with bananas ---- */
   const keeperLv = i => S.desks[i].keeper.lv || 0;
   /* the control panel for the self-running room: pictures, lamps and numbers. It appears only once one of its Legacy upgrades is owned. */
@@ -2415,12 +2507,14 @@
     if (!foreman.valid(next)) return;
     S.legacy = { ...S.legacy, fm: next }; if ('enabled' in patch) { if (patch.enabled) { IMI.sfx.levelup && IMI.sfx.levelup(); window.LGFX?.float('Room control on', innerWidth * .5, innerHeight * .3, '#7be05a', true); } else IMI.sfx.tick(); } else IMI.sfx.tick(); mark(); save();
   }
-  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0) + (lgb ? lgb.keeperMult(S.legacy) - 1 : .1 * legLvl('keeper'))));      // seconds per banked word (the Muse multiplier is applied to the clock, not here)
+  const keeperAt = (i, lv) => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(lv, KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, lv - KEEPER_UP_MAX)) * Math.pow(KEEPER_MILE_STEP, Math.floor(Math.max(0, lv - KEEPER_UP_MAX) / KEEPER_MILE)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0) + (lgb ? lgb.keeperMult(S.legacy) - 1 : .1 * legLvl('keeper'))));      // seconds per banked word at a keeper level (the Muse multiplier is applied to the clock, not here)
+  const keeperPeriod = i => keeperAt(i, keeperLv(i));
+  const perFmt = p => p >= .1 ? p.toFixed(2) : p >= .01 ? p.toFixed(3) : p.toFixed(4);
   const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_GROW, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)));
   function keeperCard(i, have) {
-    const D = DESKS[i], lv = keeperLv(i), cost = keeperUpCost(i), now = keeperPeriod(i), nextPeriod = Math.max(KEEPER_MIN_PERIOD, now * (lv >= KEEPER_UP_MAX ? KEEPER_LATE_STEP : KEEPER_UP_STEP)), atFloor = now <= KEEPER_MIN_PERIOD;
+    const D = DESKS[i], lv = keeperLv(i), cost = keeperUpCost(i), now = keeperPeriod(i), nextPeriod = keeperAt(i, lv + 1), atFloor = now <= KEEPER_MIN_PERIOD;
     return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart('s-keeper')}${D.name.split(' ')[0]} keeper</h3>${atFloor ? '<span class="o-lvl">TOP SPEED</span>' : price(cost)}</div>
-      ${pips(Math.min(lv, KEEPER_UP_MAX), KEEPER_UP_MAX)}<p class="o-upcurrent">${fxc(now.toFixed(2) + 's', 'per word')}${atFloor ? '' : ` <span class="o-leg-next">› ${nextPeriod.toFixed(2)}s</span>`}</p>
+      ${pips(Math.min(lv, KEEPER_UP_MAX), KEEPER_UP_MAX)}<p class="o-upcurrent">${fxc(perFmt(now) + 's', 'per word')}${atFloor ? '' : ` <span class="o-leg-next">› ${perFmt(nextPeriod)}s</span>`}</p>${lv >= KEEPER_UP_MAX ? `<p class="o-dim">Level ${lv} · ×${KEEPER_MILE_STEP} again at level ${KEEPER_UP_MAX + (Math.floor((lv - KEEPER_UP_MAX) / KEEPER_MILE) + 1) * KEEPER_MILE}</p>` : ''}
       ${atFloor ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="keeper" data-i="${i}" ${have < cost ? 'disabled' : ''}>Tune up</button>`}</div>`;
   }
   function baroCard(have) {
@@ -2474,19 +2568,47 @@
     return `<div class="o-card"><div class="o-row"><h3>${cart(info.ico)}${info.name}</h3>${price(cost)}</div>${pips(t, max)}<p>${fxc(...info.fx(t))}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="${key}" ${lock || have < cost ? 'disabled' : ''}>Buy</button></div>`;
   }
+  const agencyLvCost = lv => roundMoney(AGENCY_LV_BASE * Math.pow(AGENCY_LV_GROW, lv));
+  const pubRunCost = lv => roundMoney(PRESS_LV_BASE * Math.pow(PRESS_LV_GROW, lv));
+  const nextMile = lv => (Math.floor(lv / RUN_MILE) + 1) * RUN_MILE;
+  const xFmt = n => n >= 1000 ? fmt(n) : n >= 100 ? n.toFixed(0) : n.toFixed(2).replace(/\.?0+$/, '');
+  const perSec = p => p >= 1 ? (p >= 10 ? p.toFixed(0) : p.toFixed(1)).replace(/\.0$/, '') + 's' : p >= .01 ? (p * 1000).toFixed(0) + 'ms' : (p * 1000).toFixed(1) + 'ms';
+  function pubRunCard(have) {
+    const lv = pubLv(), cost = pubRunCost(lv), lock = challengeShopLock('pubrun');
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Press run Lv ${lv}</h3>${price(cost)}</div>
+      <p>${fxc('1 / ' + perSec(PUB_PERIOD[1] / runSpeed(lv)), 'auto-sells')} <span class="o-leg-next">› ${perSec(PUB_PERIOD[1] / runSpeed(lv + 1))}</span></p>
+      <p>${fxc('×' + xFmt(industryMult()), 'all typewriters')} <span class="o-leg-next">› ×${xFmt(industryAt(industryLv() + 1))}</span></p>
+      <p class="o-dim">×${RUN_MILE_MULT} sales at level ${nextMile(lv)}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+      <button type="button" class="o-btn gold" data-act="buy" data-what="pubrun" ${lock || have < cost ? 'disabled' : ''}>Buy</button></div>`;
+  }
+  function agencyCard(have) {
+    const t = agencyTier(), names = ['Pitch assistants', 'Commissioning desk', 'Syndication'];
+    const descs = [fxc('+1', 'sub team writing pitches'), fxc('auto', 'commissions, writes and sells pitches'), fxc('×2', 'pitch selling pace · full pace away')];
+    if (t < 3) {
+      const lock = t === 0 ? shopLock('pitchteam') : '';
+      return `<div class="o-card"><div class="o-row"><h3>${cart('s-team')}${names[t]}</h3>${price(AGENCY_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
+        <button type="button" class="o-btn gold" data-act="buy" data-what="agency" ${lock || have < AGENCY_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
+    }
+    const lv = agencyLv(), cost = agencyLvCost(lv);
+    return `<div class="o-card"><div class="o-row"><h3>${cart('s-team')}Pitch agency Lv ${lv}</h3>${price(cost)}</div>
+      <p>${fxc('1 / ' + perSec(pitchSellPeriod()), 'pitch sales')} <span class="o-leg-next">› ${perSec(pitchSellPeriod() * runSpeed(lv) / runSpeed(lv + 1))}</span></p>
+      <p>${fxc('×' + xFmt(industryMult()), 'all typewriters')} <span class="o-leg-next">› ×${xFmt(industryAt(industryLv() + 1))}</span></p>
+      <p class="o-dim">×${RUN_MILE_MULT} crew and sales at level ${nextMile(lv)}</p>
+      <button type="button" class="o-btn gold" data-act="buy" data-what="agency" ${have < cost ? 'disabled' : ''}>Buy</button></div>`;
+  }
   function pubCard(have) {
     const t = S.pub.tier, names = ['Publisher’s assistant', 'Fast presses', 'Night shift'];
     const descs = [fxc(`1 / ${PUB_PERIOD[0]}s`, 'auto-sells at your price'), fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells'), fxc('×' + NIGHT_SHIFT, 'away sales · full pace')];
-    if (t >= 3) return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}Publisher’s assistant</h3><span class="o-lvl">MAXED</span></div>${pips(3, 3)}<p>${fxc(`1 / ${PUB_PERIOD[1]}s`, 'auto-sells') + ' ' + fxc('×' + NIGHT_SHIFT, 'away sales')}</p></div>`;
+    if (t >= 3) return pubRunCard(have);
     const lock = challengeShopLock('pub') || (t === 0 && soldCount() < 3 ? 'Needs 3 sold titles' : '');
     return `<div class="o-card"><div class="o-row"><h3>${cart('s-pub')}${names[t]}</h3>${price(PUB_COST[t])}</div>${pips(t, 3)}<p>${descs[t]}</p>${lock ? `<p class="o-warn">${lock}</p>` : ''}
       <button type="button" class="o-btn gold" data-act="buy" data-what="pub" ${lock || have < PUB_COST[t] ? 'disabled' : ''}>Buy</button></div>`;
   }
   function mkCard(i, have) {
-    const D = DESKS[i], d = S.desks[i], next = MK_NAMES[d.mk + 1];
-    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart(`tw-${D.id}-${d.mk || 0}`)}${D.name}${d.mk ? ' ' + MK_NAMES[d.mk] : ''}</h3>${d.mk >= 2 ? '<span class="o-lvl">MAXED</span>' : price(mkCost(i))}</div>
-      <p>${fxc(d.mk >= 2 ? '×1.5' : d.mk ? '×1.5' : '×1.25', 'typing')} ${fxc(d.mk >= 2 || d.mk ? '+10%' : '+5%', 'sales')}</p>
-      ${d.mk >= 2 ? '' : `<button type="button" class="o-btn gold" data-act="buy" data-what="mk" data-i="${i}" ${challengeShopLock('mk') || have < mkCost(i) ? 'disabled' : ''}>${challengeShopLock('mk') || 'Restore'}</button>`}</div>`;
+    const D = DESKS[i], d = S.desks[i], mk = d.mk || 0;
+    return `<div class="o-card" style="--c:${D.color}"><div class="o-row"><h3>${cart(`tw-${D.id}-${Math.min(mk, 2)}`)}${D.name}${mk ? ' ' + mkName(mk) : ''}</h3>${price(mkCost(i))}</div>
+      <p>${fxc('×' + xFmt(mkMult(mk)), 'typing')} <span class="o-leg-next">› ×${xFmt(mkMult(mk + 1))}</span> ${fxc('+' + 5 * Math.max(1, mk) + '%', 'sales')}</p>
+      <button type="button" class="o-btn gold" data-act="buy" data-what="mk" data-i="${i}" ${challengeShopLock('mk') || have < mkCost(i) ? 'disabled' : ''}>${challengeShopLock('mk') || `Restore to ${mkName(mk + 1)}`}</button></div>`;
   }
 
   /* ================= rights market =================
@@ -2545,31 +2667,78 @@
   }
   /* ---- the Publisher's assistant: sells finished titles for you (Shop > Market tools, three tiers) ---- */
   let pubClock = 0;
-  const pubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] * (lgb ? lgb.backlistFactor(sbRank('backlist'), catalogSize()) : 1) / (museOn('fitz') ? 2 : 1);
+  const pubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] * (lgb ? lgb.backlistFactor(sbRank('backlist'), catalogSize()) : 1) / (museOn('fitz') ? 2 : 1) / runSpeed(pubLv());
   /* Editorial desk: a surplus title is held back if selling it would eat words the selected goal still needs */
   const desked = r => { if (!lgb || !sbRank('editorial')) return true; const g = focusRecipe(); if (!g || g.id === r.id) return true; return Object.keys(r.need).every(w => !g.need[w] || stock(w) - r.need[w] >= g.need[w]); };
-  const pubSellable = () => readyList().filter(r => desked(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)));          // a title you picked by hand stays yours to sell
-  function pubSell() {
+  const pubSellableOk = r => desked(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r));          // a title you picked by hand stays yours to sell
+  const pubSellable = () => readyList().filter(pubSellableOk);
+  /* what recent sales brought in, a second at a time over the last 20, so the pace of a fast press or agency shows beside the royalties */
+  const makeFlow = n => ({ n, sec: 0, sums: new Array(n).fill(0) });
+  const flowTo = (f, s) => { if (s - f.sec >= f.n) f.sums.fill(0); else for (let k = f.sec + 1; k <= s; k++) f.sums[k % f.n] = 0; f.sec = s; };
+  const flowPush = (f, v) => { flowTo(f, Math.floor(performance.now() / 1000)); f.sums[f.sec % f.n] += v; };
+  const flowRate = f => { flowTo(f, Math.floor(performance.now() / 1000)); return f.sums.reduce((a, b) => a + b, 0) / f.n; };
+  const saleFlow = makeFlow(20), wordFlow = DESKS.map(() => makeFlow(5));
+  const flowAdd = pay => flowPush(saleFlow, pay), saleRate = () => flowRate(saleFlow);
+  const wordAdd = (i, n) => { if (inTick) flowPush(wordFlow[i], n); }, wordRate = i => flowRate(wordFlow[i]);      // words banked a second on each desk, over the last five (live play only; the away run reports its own totals)
+  let saleFxAt = 0, focusDefer = 0, focusLate = false;      // a pass of sales picks the next title to work on once, at its end
+  const sellPass = fn => { focusDefer++; try { return fn(); } finally { if (!--focusDefer && focusLate) { focusLate = false; pickAutoFocus(); } } };
+  const loudDue = () => { const now = performance.now(); if (now - saleFxAt < 1500) return false; saleFxAt = now; return true; };      // fast selling keeps the fanfare (and the save it triggers) to once every 1.5 s
+  function pubSell(passes = 1) {
     if (challengeControlled() || workPaused() || (chal('patientpress') || masteryActive()) || !S.pub.tier || !S.pub.on || document.querySelector('.o-modal, .o-celebrate')) return false;
     const rule = PUB_RULES[S.pub.rule] != null ? PUB_RULES[S.pub.rule] : 1;
     /* one action sells the best-paying title; Publisher Bundles let it sell several. Each sale is a normal single sale, rechecked first, so no word is used twice and nothing unfinished goes out. */
-    const picks = pubSellable().filter(r => marketMult(r.band) >= rule).map(r => [salePay(r), r]).sort((a, b) => b[0] - a[0]).slice(0, lgb ? lgb.bundleSize(sbRank('bundle')) : 1);
+    const picks = pubSellable().filter(r => marketMult(r.band) >= rule).map(r => [salePay(r), r]).sort((a, b) => b[0] - a[0]).slice(0, (lgb ? lgb.bundleSize(sbRank('bundle')) : 1) * passes);
     if (!picks.length) return false;
-    for (const [, r] of picks) { if (document.querySelector('.o-modal, .o-celebrate')) break; writeTitle(r.id, null, { auto: true }); }
+    const slow = passes === 1 && pubPeriod() >= 1.5;
+    sellPass(() => picks.forEach(([, r], k) => { if (document.querySelector('.o-modal, .o-celebrate')) return; writeTitle(r.id, null, { auto: true, silent: !slow && !(k === 0 && loudDue()) }); }));
     if (ui.tab === 'press') mark();
     return true;
   }
   /* Auto-pitch sells a finished commission on its own clock, next to the Publisher, as long as the sale leaves the goal's words alone */
   let pitchSellClock = 0;
-  const pitchSellable = () => readyList().filter(r => r.gen && pitchClear(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)) &&
-    !(pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id));
-  function pitchSell() {
+  const pitchOk = r => r.gen && pitchClear(r) && challengeSaleAllowed(r) && (S.autoFocus || S.focus !== r.id) && (!pg || pg.allowsSale(pgContext, r)) &&
+    !(pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id);
+  const pitchSellable = () => readyList().filter(pitchOk);
+  function pitchSell(passes = 1) {
     if (challengeControlled() || workPaused() || (chal('patientpress') || masteryActive()) || document.querySelector('.o-modal, .o-celebrate')) return false;
-    const r = pitchSellable().sort((a, b) => salePay(b) - salePay(a))[0];
-    if (!r) return false;
-    writeTitle(r.id, null, { auto: true });
-    if (ui.tab === 'press') mark();
-    return true;
+    const slow = passes === 1 && pitchSellPeriod() >= 1.5; let any = false;
+    sellPass(() => {      // rank what is ready once, then take the best that is still sellable after each sale (a sale changes the bank, so each pick is checked again)
+      const list = passes > 1 ? pitchSellable().sort((a, b) => salePay(b) - salePay(a)) : pitchSellable().sort((a, b) => salePay(b) - salePay(a)).slice(0, 1);
+      for (let k = 0, j = 0; k < passes && j < list.length; j++) {
+        const r = list[j]; if (!(canWrite(r) && pitchOk(r))) continue;
+        writeTitle(r.id, null, { auto: true, silent: !slow && !(k === 0 && loudDue()) }); any = true; k++;
+      }
+    });
+    if (any && ui.tab === 'press') mark();
+    return any;
+  }
+  /* The Commissioning desk (Pitch agency tier 2) keeps a few commissions open by itself: the best-fitting offer, replaced the way a normal commission is, with no fanfare.
+     Sold pitches pile up at this speed, so past PITCH_SOLD_MAX the oldest are folded into one shelf total (still counted in royalties) and dropped from the recipe list. */
+  let agencyClock = 0, scoutAt = -1e9;
+  const agencyWant = () => Math.min(PITCH_MAX, 3 + (agencyLv() >> 1));
+  function retirePitches() {
+    const sold = S.pitches.filter(p => S.written[p.id]);
+    if (sold.length <= PITCH_SOLD_MAX) return 0;
+    const drop = new Set(sold.slice(0, sold.length - PITCH_KEEP).map(p => p.id)), shelf = S.pitchShelf = { n: S.pitchShelf?.n || 0, pay: S.pitchShelf?.pay || 0 };
+    for (const p of sold) if (drop.has(p.id)) { shelf.n++; shelf.pay += RBY[p.id]?.pay || 0; delete S.written[p.id]; if (S.editions) delete S.editions[p.id]; delete RBY[p.id]; }
+    S.pitches = S.pitches.filter(p => !drop.has(p.id));
+    for (let k = RECIPES.length - 1; k >= 0; k--) if (drop.has(RECIPES[k].id)) RECIPES.splice(k, 1);
+    for (let k = GENS.length - 1; k >= 0; k--) if (drop.has(GENS[k].id)) GENS.splice(k, 1);
+    bankV++; dropCaches(); return drop.size;
+  }
+  function agencyCommission(limit = 3, want = null) {
+    if (!agencyOn() || !challengeCommissionAllowed() || challengeControlled() || workPaused() || (chal('patientpress') || masteryActive())) return 0;
+    let made = 0; if (!S.offers || !S.offers.length) S.offers = newOffers();
+    while (made < limit && pitchActive() < (want ?? agencyWant())) {
+      let i = pitchSelection(false);
+      if (i < 0 && performance.now() - scoutAt > 5000) { scoutAt = performance.now(); S.offers = newOffers(); i = pitchSelection(false); }      // nothing on the table fits the machines you own now: the desk scouts a fresh set
+      if (i < 0) break;
+      const p = S.offers[i], rep = genPitch(buildRecipe(p).band);
+      if (!pitchRecord(rep) || RBY[rep.id] || S.offers.some(x => x.id === rep.id) || S.pitches.some(x => x.id === rep.id)) break;
+      S.pitches.push(pitchCopy(p)); S.offers[i] = rep; S.stats.pitched = (S.stats.pitched || 0) + 1; registerPitch(p); made++;
+    }
+    if (made) { retirePitches(); bankV++; dropCaches(); mark(); }
+    return made;
   }
   function pubStatus() {
     const p = S.pub; if (workPaused()) return 'Publisher paused while working on Folio, Archive restoration or Works.'; if ((chal('patientpress') || masteryActive())) return masteryActive() ? 'Publisher suspended for manual Small Crew mastery.' : 'Publisher disabled by Patient Press. Sell titles manually.'; if (!p.tier) return '';
@@ -2754,12 +2923,22 @@
   /* tier 3: at return, sell what finished while you were away, at an average market (x1.0), as many as the assistant could have managed */
   /* every tier of the assistant keeps selling while you are away, at its own pace; the Night shift sells at full pace and a better price */
   const NIGHT_SHIFT = 1.2;
-  const awayPubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] / (museOn('fitz') ? 2 : 1);
-  function autoSellAway(effSec, limit = 200, checkpoint, mult = 1) {
-    const out = { n: 0, pay: 0 }; if (challengeActive() || workPaused() || (chal('patientpress') || masteryActive()) || !S.pub.tier || !S.pub.on) return out;
+  const awayPubPeriod = () => PUB_PERIOD[S.pub.tier >= 2 ? 1 : 0] / (museOn('fitz') ? 2 : 1) / runSpeed(pubLv());
+  function autoSellAway(effSec, limit = 200, checkpoint, mult = 1, queue = null, owed = null) {
+    const out = { n: 0, pay: 0 }, pubOn = !!(S.pub.tier && S.pub.on); if (challengeActive() || workPaused() || (chal('patientpress') || masteryActive()) || !(pubOn || agencyOn())) return out;      // the Publisher's assistant sells anything finished; the Commissioning desk alone sells pitches
+    if (queue) {                                                    // away, mid-stretch (queue is the keepers' queue): rank what is finished once, then take the best one still finished after each sale
+      const held = () => pitchPrototype() && trackedPitch() ? S.meta.automation.pitch.manual.pending.recipe.id : null;
+      const list = queue.map(q => RBY[q.id]).filter(r => r && (pubOn || r.gen) && canWrite(r) && pubSellableOk(r) && r.id !== held()).map(r => [salePay(r, mult), r]).sort((a, b) => b[0] - a[0]);
+      for (let k = Math.min(limit, Math.floor(effSec / awayPubPeriod())); k > 0; k--) {
+        const hit = list.find(([, r]) => canWrite(r) && pubSellableOk(r)); if (!hit) break;
+        writeTitle(hit[1].id, null, { silent: true, mult, owed }); out.n++; out.pay += hit[0];
+        if (!progressing()) return out;
+      }
+      return out;
+    }
     if (checkpoint) checkpoint.saleLeft ??= Math.min(limit, Math.floor(effSec / awayPubPeriod()));
     for (let k = checkpoint ? checkpoint.saleLeft : Math.min(limit, Math.floor(effSec / awayPubPeriod())); k > 0; k--) {
-      let best = null, bp = -1; for (const r of pubSellable()) { if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id) continue; const p = salePay(r, mult); if (p > bp) { best = r; bp = p; } }
+      let best = null, bp = -1; for (const r of pubSellable()) { if (!pubOn && !r.gen) continue; if (pitchPrototype() && trackedPitch() && S.meta.automation.pitch.manual.pending.recipe.id === r.id) continue; const p = salePay(r, mult); if (p > bp) { best = r; bp = p; } }
       if (!best) break;
       if (checkpoint) checkpoint.saleLeft--;
       writeTitle(best.id, null, { silent: true, mult }); out.n++; out.pay += bp;
@@ -3116,7 +3295,7 @@
       if (!r.need[w] || left <= 0) continue;
       const c = Math.min(makeCopies(d, w), pitchWant(r, w) - stock(w), left); if (!(c > 0)) continue;
       if (!freeWords()) { const cn = lcount(w); for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; } }
-      S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; S.run.words = (S.run.words || 0) + c; left -= c;
+      S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; S.run.words = (S.run.words || 0) + c; left -= c; wordAdd(i, c);
     }
   }
   function keeperBulk(d, i, lim, work) {
@@ -3125,19 +3304,19 @@
     const bankN = (w, c) => {
       const cn = lcount(w);
       if (!freeWords()) for (const ch in cn) { d.letters[ch] -= cn[ch] * c; if (d.letters[ch] <= 0) delete d.letters[ch]; }
-      S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; S.run.words = (S.run.words || 0) + c; banked += c;
+      S.bank[w] = stock(w) + c; bankV++; S.stats.words += c; S.run.words = (S.run.words || 0) + c; banked += c; wordAdd(i, c);
     };
     if (r) for (const w of words) {
       if (!r.need[w]) continue;
       const c = Math.min(makeCopies(d, w), r.need[w] - stock(w), lim - banked); if (c > 0) bankN(w, c);
       if (banked >= lim) return banked;
     }
-    if (folioGoal() || pg?.active(pgContext)) return banked;
-    if (!work && awayPlan) for (const q of awayPlan) for (const w of words) {
-      if (!q.cum[w]) continue;
+    if (folioGoal()) return banked;
+    if (!work && awayPlan) for (const q of awayPlan) for (const w of q.byBand[i]) {
       const c = Math.min(makeCopies(d, w), q.cum[w] - stock(w), lim - banked); if (c > 0) bankN(w, c);
       if (banked >= lim) return banked;
     }
+    if (pg?.active(pgContext)) return banked;
     const reserved = r && !freeWords() ? focusNeeds(d, i).oneCopy : {};
     for (let pass = work ? work.pass : 0; pass < 12 && banked < lim; pass++) {
       let any = work ? work.any : false;
@@ -3157,25 +3336,51 @@
     return banked;
   }
   /* Away, nobody sells the goal title and moves the focus on, so the keepers work down a short queue of the next best titles
-     instead of stalling once the goal is ready. `cum` is what the bank must hold for every title up to that one, so no word is counted twice. */
-  const AWAY_QUEUE = 8;
+     instead of stalling once the goal is ready. `cum` is what the bank must hold for every title up to that one, so no word is counted twice.
+     The assistant sells as the stretch goes (see simulateAwayRun), so the queue is rebuilt after every sale: finished titles drop out and the ones they unlock come in. */
+  const AWAY_QUEUE = 8, AWAY_QUEUE_MAX = 120, AWAY_SALES_MAX = 600, AWAY_MISMATCH = 2, AWAY_COMMISSIONS = 8, OWED_CREDITS = 24;      // up to 24 sales are paid one credit each; a bigger pile is paid in about that many credits
+  const awaySalesMax = () => AWAY_SALES_MAX * Math.max(1, Math.min(20, runSpeed(Math.max(pubLv(), agencyLv()))));      // faster presses and agencies sell more in a stretch
   let awayPlan = null;
-  function planAway() {
-    if (folioGoal() || pg?.active(pgContext) || challengeActive()) return null;
-    const plan = [], claim = {}, fr = focusRecipe();
-    const add = r => { const cum = {}; for (const w in r.need) cum[w] = claim[w] = (claim[w] || 0) + r.need[w]; plan.push({ id: r.id, cum }); };
-    if (fr) add(fr);
-    const pool = RECIPES.filter(r => r !== fr && titleAvailable(r) && !S.written[r.id] && inPlay(r) && Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned));
-    while (plan.length < AWAY_QUEUE && pool.length) {
-      let bi = 0, bm = Infinity;
-      pool.forEach((r, k) => {
-        let t = 0;
-        for (const w in r.need) { const n = r.need[w] - Math.max(0, stock(w) - (claim[w] || 0)); if (n > 0) { const b = bandOf(w.length); t += n * w.length * PAW_BASE[b] / Math.max(1, S.desks[b].paws); } }
-        if (t / r.pay < bm) { bm = t / r.pay; bi = k; }
-      });
-      add(pool.splice(bi, 1)[0]);
+  /* what each desk can supply over the rest of the stretch: letters (typed plus already in the drawers, discounted because the mix is not tailored to a title) and keeper words */
+  function awayCapacity(workSec, eff) {
+    return S.desks.map((d, i) => {
+      if (!d.owned || !d.paws) return { letters: 0, words: 0 };
+      const speedSum = deskSpeed(d) * deskMk(d) || d.paws;
+      let held = 0; for (const ch in d.letters) held += d.letters[ch];
+      return { letters: (speedSum / (PAW_BASE[i] * fingMult(d.up.fing) * (toolOn('metro') ? .5 : 1)) * workSec * eff + held) / AWAY_MISMATCH,
+        words: d.keeper.owned && d.keeper.on ? workSec * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i) : 0 };
+    });
+  }
+  /* Best return for effort first, but titles the desks can actually finish in the time left come ahead of ones they cannot; a production goal narrows it to the titles the goal allows to sell. */
+  function planAway(workSec = 0, eff = 0, len = AWAY_QUEUE, genOnly = false) {
+    if (folioGoal() || challengeActive()) return null;
+    const plan = [], claim = {}, fr = focusRecipe(), pgOn = pg?.active(pgContext), cap = awayCapacity(workSec, eff);
+    const add = r => { const cum = {}, byBand = DESKS.map(() => []); for (const w in r.need) { cum[w] = claim[w] = (claim[w] || 0) + r.need[w]; byBand[bandOf(w.length)].push(w); } plan.push({ id: r.id, cum, byBand }); };
+    if (fr && (!genOnly || fr.gen)) add(fr);
+    const cand = [];
+    for (const r of RECIPES) {
+      if (r === fr || genOnly && !r.gen || !titleAvailable(r) || S.written[r.id] || !inPlay(r) || pgOn && !pg.allowsSale(pgContext, r)) continue;
+      let t = 0, ok = true; const need = DESKS.map(() => ({ letters: 0, words: 0 }));
+      for (const w in r.need) {
+        const b = bandOf(w.length); if (!S.desks[b].owned) { ok = false; break; }
+        const n = r.need[w] - stock(w); if (!(n > 0)) continue;
+        t += n * w.length * PAW_BASE[b] / Math.max(1, S.desks[b].paws); need[b].letters += n * w.length; need[b].words += n;
+      }
+      if (ok) cand.push({ r, m: t / r.pay, need });
     }
+    cand.sort((x, y) => x.m - y.m);
+    const rest = [];
+    for (const c of cand) {
+      if (plan.length >= len) break;
+      if (c.need.every((x, b) => x.letters <= cap[b].letters && x.words <= cap[b].words)) { c.need.forEach((x, b) => { cap[b].letters -= x.letters; cap[b].words -= x.words; }); add(c.r); } else rest.push(c);
+    }
+    for (const c of rest) { if (plan.length >= len) break; add(c.r); }
     return plan;
+  }
+  /* after a sale: drop the sold titles from the queue and count the rest again from scratch (a full planAway also brings in titles the sale unlocked) */
+  function trimPlan(plan) {
+    const claim = {}, left = plan.filter(q => !S.written[q.id]);
+    return left.map(q => { const cum = {}; for (const w in RBY[q.id].need) cum[w] = claim[w] = (claim[w] || 0) + RBY[q.id].need[w]; return { id: q.id, cum, byBand: q.byBand }; });
   }
   let boundaryJob = null, historicalEnd = null, boundaryProposal = null;
   const savedWallNow = () => historicalEnd ?? boundaryJob?.displayEnd ?? Date.now();
@@ -3221,7 +3426,16 @@
       advanceDeadlines(sec * (multiplier - 1) * 1000, awaySec * (multiplier - 1) * 1000);
       if (cp) cp.phase = 'work';
     }
-    awayPlan = timed ? null : planAway();
+    const pubAway = !!(S.pub.tier && S.pub.on), pitchAway = agencyOn(), nightAway = S.pub.tier >= 3 || agencyTier() >= 3;
+    const salePace = (pubAway ? (S.pub.tier >= 3 ? 1 : eff) / awayPubPeriod() : 0) + (pitchAway ? (agencyTier() >= 3 ? 1 : eff) / pitchSellPeriod() : 0), perStep = workSec / steps * salePace;
+    let selling = !timed && (pubAway || pitchAway);
+    const queueLen = selling ? Math.min(AWAY_QUEUE_MAX, Math.max(24, Math.ceil(perStep * 4) + 16)) : AWAY_QUEUE;
+    if (pitchAway && !timed) agencyCommission(AWAY_COMMISSIONS);      // the Commissioning desk keeps pitches open, so there is something to write and sell
+    awayPlan = timed ? null : planAway(workSec, eff, queueLen, !pubAway && pitchAway);
+    if (!awayPlan) selling = false;                                 // a Folio goal or a challenge keeps the old way: sell what is finished at the end
+    if (cp) cp.owed ||= [];
+    const localOwed = [], owedNow = () => cp ? cp.owed : localOwed;   // what the assistant earned from titles sold during the stretch, paid once it is done (a payment replaces cp.owed with a copy, so ask each time)
+    let saleBank = 0;
     let batch = cp ? cp.batch : 0, budgets = cp ? cp.budgets : timed ? [] : null;
     for (let st = cp ? cp.st : 0; st < (timed ? boundaries.length - 1 : steps); st++) {
       if (cp) { batch = cp.batch; budgets = cp.budgets; }
@@ -3233,7 +3447,7 @@
       skyOv = World.at(timed ? nowMs - awaySec * 1000 + (batch + .5) * realDt * 1000 : nowMs - sec * 1000 + (st + .5) * realDt * 1000); // weather remains real time
       if (!cp || cp.phase === 'work') S.desks.forEach((d, i) => {
         if (!d.owned || !d.paws) return;
-        const speedSum = d.crew.reduce((a, t) => a + typistSpeed(t), 0) * deskMk(d) || d.paws;
+        const speedSum = deskSpeed(d) * deskMk(d) || d.paws;
         const raw = speedSum / (PAW_BASE[i] * fingMult(d.up.fing) * (toolOn('metro') ? .5 : 1) * (stormy() ? 2 : 1)) * stepDt * eff;
         let n = Math.round(raw), budget = timed ? budgets[i] : null;
         if (timed) {
@@ -3266,10 +3480,21 @@
           if (timed) {
             const capacity = batchEnd ? Math.max(2, Math.ceil(budget.keeperRaw)) : Math.floor(budget.keeperRaw * fraction);
             budget.banked += keeperBulk(d, i, Math.max(0, capacity - budget.banked), budget);
-          } else { farmBulk(d, i, stepDt * eff); keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i)))); if (pitchCrews()) subBulk(d, i, Math.max(1, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) * pitchCrews() / (keeperPeriod(i) * SUB_SLOW)))); }
+          } else { farmBulk(d, i, stepDt * eff); keeperBulk(d, i, Math.max(2, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) / keeperPeriod(i)))); if (pitchCrews()) subBulk(d, i, Math.max(1, Math.ceil(stepDt * eff * (museOn('hemi') ? 2 : 1) * crewRate() / (keeperPeriod(i) * SUB_SLOW)))); }
         }
       });
       if (!cp || cp.phase === 'work') worksAdvance();
+      if (selling && (!cp || cp.phase === 'work')) {
+        /* the assistant sells whatever the keepers have finished, at its own pace, as the stretch goes; the money is paid with the royalties, in one credit */
+        saleBank += stepDt * salePace;
+        const due = Math.min(Math.floor(saleBank), awaySalesMax() - sold.n); saleBank -= Math.floor(saleBank);
+        if (due > 0) {
+          const sale = autoSellAway((due + .001) * awayPubPeriod(), due, null, nightAway ? NIGHT_SHIFT : 1, awayPlan || [], owedNow());
+          sold.n += sale.n; sold.pay += sale.pay;
+          if (!progressing()) { skyOv = null; return; }
+          if (sale.n && awayPlan) { const made = pitchAway ? agencyCommission(AWAY_COMMISSIONS) : 0, rest = trimPlan(awayPlan); awayPlan = made || st % 4 === 0 || rest.length < queueLen / 2 ? planAway((steps - st - 1) * stepDt, eff, queueLen, !pubAway && pitchAway) : rest; }
+        }
+      }
       if (cp && cp.phase === 'work') cp.phase = 'sale';
       if (timed) {
         readyC = null; // Offline time is fixed at return; a new production prefix must invalidate the timed cache.
@@ -3321,7 +3546,10 @@
     if (cp?.phase === 'archive' && !writer.archiveIncome().ok) return;
     S.stats.awayMax = Math.max(S.stats.awayMax || 0, awaySec);
     if (!cp || cp.phase === 'bulk') {
-      const sales = timed ? sold : autoSellAway(workSec * (S.pub.tier >= 3 ? 1 : eff), 200, cp, S.pub.tier >= 3 ? NIGHT_SHIFT : 1); rep.pubSold = cp ? cp.sold.n : sales.n; rep.pubPay = cp ? cp.sold.pay : sales.pay;
+      dropCaches();                                                 // the keepers banked words since the title list was last cached
+      /* titles sold during the stretch are paid here, one credit each, the same way a bulk sale always was (a failed credit is retried, never repeated) */
+      while (!timed && owedNow().length) { const group = Math.max(1, Math.ceil(owedNow().length / OWED_CREDITS)); let pay = 0; for (let g = 0; g < group && owedNow().length; g++) pay += owedNow().shift(); if (cp) { if (!writer.awayCredit(pay, 'bulk')) return; } else bananas.add(pay); if (!progressing()) return; }
+      const sales = timed || selling || sold.n ? sold : autoSellAway(workSec * (S.pub.tier >= 3 ? 1 : eff), 200, cp, S.pub.tier >= 3 ? NIGHT_SHIFT : 1); rep.pubSold = cp ? cp.sold.n : sales.n; rep.pubPay = cp ? cp.sold.pay : sales.pay;
       if (!progressing()) return;
       if (cp) { writer.consumeGold(workSec * 1000); cp.phase = 'complete'; }
     }
@@ -3752,7 +3980,7 @@
         !IMI.tour?.active() && !document.querySelector('.o-modal, .o-celebrate, .set-pop:not([hidden])');
     },
     printSampleStart:archiveSettle,
-    printSampleSpeed:() => JSON.stringify([speed(),buffOn('rush'),buffOn('critic'),S.rewards.activeGold?.remainingGameMs > 0,S.desks.map(d => [deskMk(d) / pawSecs(d),d.crew.map(t => typistSpeed(t))])]),
+    printSampleSpeed:() => JSON.stringify([speed(),buffOn('rush'),buffOn('critic'),S.rewards.activeGold?.remainingGameMs > 0,S.desks.map(d => [deskMk(d) / pawSecs(d),d.crew.length,deskSpeed(d)])]),
     challengeCommissionAllowed, challengeSeatsLocked,
     imprintChallengeCommit(request) {
       const C = chDef(S.challenge?.id);
@@ -4069,8 +4297,7 @@
         if (!d?.owned) return { ok:false, error:'Desk is not owned' };
         const level = S.meta.automation?.tiers?.restore ?? 0;
         if (!extensions.get('automation').validConfig(S.meta.automation)) return { ok:false, error:'Unsupported automation tier' };
-        const price = mkCost(i), margin = [2, 1.75, 1.5, 1][level], error = challengeShopLock('mk') || (d.mk >= 2 ? 'Restoration cap reached' :
-          !(bananas.get() >= margin * price) ? `Waiting for wallet of at least ${margin} times the restoration price` : '');
+        const price = mkCost(i), margin = [2, 1.75, 1.5, 1][level], error = challengeShopLock('mk') || (!(bananas.get() >= margin * price) ? `Waiting for wallet of at least ${margin} times the restoration price` : '');
         return { ok:!error, error, price };
       },
       restoreAutomationOne(i) {
@@ -4182,7 +4409,7 @@
   IMI.ops.extensions = extensionAPI; IMI.ops.clock = extensionAPI.clock;
   /* Balance harness hook (tools/balance.html): lets a bot drive the real game logic. Not used by the site itself. */
   Object.defineProperty(IMI.ops, 'dev', { configurable: true, get: () => ({
-    S: () => S, pickAutoFocus, cycles: () => cycleLog?.snapshot(), foremanStatus: () => fmStatus, registerPitch, pitchGoal, subStep, bankWord, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
+    S: () => S, pickAutoFocus, cycles: () => cycleLog?.snapshot(), foremanStatus: () => fmStatus, registerPitch, pitchGoal, subStep, remasterAuto, wordRate: i => wordRate(i), levelOf, lvlXp, deskSpeed, PAW_MAX, mkCost, mkMult, mkName, shiftMult, coachPct, remasterDiv, remasterMult, spendLetters, divBase: () => divBase(), soldCount: () => soldCount(), royBase: () => royBase(), agencyCommission, agencyTier: () => agencyTier(), industryMult: () => industryMult(), pitchSell, pubSell, retirePitches, runSpeed, keeperAt, bankWord, tabVisible, introProgress, completeIntro, upEffect, holdRate, ui, tick, press, genPitch, newOffers, buyUp, buy, writeTitle, bankWord, keeperStep, canWrite, RECIPES, RBY, DESKS, KEEPER_PERIOD, UPS, upPlan, upLock, DIVS, divPlan, releaseDiv, DEALS, SHOP, LAMP, MUSES, MK_BASE, mkCost,
     ...(layers?.enabled ? {layerFrequency:freqNow, layerOfflineDist:offlineDist} : {}),
     GARDEN_COSTS, MILES, focusNeeds, focusRecipe, stock, totalLetters, soldCount, kidsSold, kidsListed, KIDS, libSold, LIBS, touchBank: () => { bankV++; mark(); }, sky, marketBias, BARO_COST, typistSpeed, autoRate, coachTypist, rerollTypist, unrollTypist, coachCost, rerollCost, COACH_MAX, COACH_STEP, upCap, pubSell, pubStatus, PUB_COST, PUB_PERIOD, PUB_RULES, keeperPeriod, keeperUpCost, keeperLv, KEEPER_UP_MAX, royBase, divBase, salePay, marketMult, checkAwards, starsNow, museSlots, registerPitch, pitchActive, PITCH_MAX, buffs, makeCopies,
     luckySale, critTap, magnitudeFx, inspireStep, inspired, achieve, plant, harvest, gardenTime, gardenYield, ensureGarden, fieldBeds, farmerTick, farmerAct, farmBulk, deskLvl, headLvl, farmXp, farmerLetter, BAND_WORDS, target, ensureCrew, doPrint, awayCap, awayEff, LEG, legLvl, CHALLENGES, dailyState, buffOn, ROY_BASE, RATE, action: (name, dataset = {}) => ACTIONS[name]?.({ dataset }), comboHit: () => comboHit(), setSel: i => { S.sel = i; }
@@ -4193,7 +4420,7 @@
     const c = lcount(w);
     for (const k in c) if ((d.letters[k] || 0) < c[k]) return false;
     if (!freeWords()) for (const k in c) for (let n = 0; n < c[k]; n++) takeLetter(d, k);
-    S.stats.words++; S.run.words = (S.run.words || 0) + 1; S.bank[w] = stock(w) + 1; bankV++; ui.lastBanked = w; ui.bankedAt = performance.now(); mark(); IMI.emit('bank', { word: w }); return true;
+    S.stats.words++; S.run.words = (S.run.words || 0) + 1; S.bank[w] = stock(w) + 1; bankV++; wordAdd(S.desks.indexOf(d), 1); ui.lastBanked = w; ui.bankedAt = performance.now(); mark(); IMI.emit('bank', { word: w }); return true;
   }
   function keeperStep(d, i) {
     if (worksActive() || !keepersReady()) return;
@@ -4217,8 +4444,8 @@
   function pitchGoal() {
     if (!pitchCrews() || folioGoal() || challengeActive()) return null;
     let best = null, bm = Infinity;
-    for (const r of RECIPES) {
-      if (!r.gen || S.written[r.id] || r.id === S.focus || !titleAvailable(r) || !inPlay(r) || !Object.keys(r.need).every(w => S.desks[bandOf(w.length)].owned)) continue;
+    for (const r of GENS) {
+      if (S.written[r.id] || r.id === S.focus || !inPlay(r) || !deskReady(r) || !titleAvailable(r)) continue;
       const miss = autoEffort(r) / r.pay;
       if (miss < bm) { best = r; bm = miss; }
     }
@@ -4241,7 +4468,8 @@
     const t = $('#oTray'); if (!t) return; const b = t.getBoundingClientRect();
     floatText('+' + w, b.left + 20 + rand() * Math.max(10, b.width - 80), b.top); if (typists.length) kick(false);
   }
-  const canWrite = r => titleAvailable(r) && !S.written[r.id] && inPlay(r) && progress(r) === r.total;
+  const haveAll = r => { const ws = r._ws || (r._ws = Object.keys(r.need), r._wn = r._ws.map(w => r.need[w]), r._ws), wn = r._wn, bank = S.bank; for (let k = 0; k < ws.length; k++) if ((bank[ws[k]] || 0) < wn[k]) return false; return true; };
+  const canWrite = r => !!r.need && !S.written[r.id] && haveAll(r) && inPlay(r) && titleAvailable(r);      // cheapest tests first: this runs over every title whenever the shelf or the bank changes
   /* the title's word chips lift off the card and pour into the sell button, like pages into a binding */
   function gatherWords(btn) {
     const card = btn.closest('.o-card'); if (!card || IMI.reduceMotion) return;
@@ -4276,14 +4504,15 @@
     dropCaches(); S.written[id] = true; cycleLog?.sale(!opts.auto && !opts.silent); if (lgb) workshopSale(r); challengeAfterSale(S); introProgress(); if (r.gen) S.stats.pitchSold = (S.stats.pitchSold || 0) + 1;
     pg?.clearManual(S, id);
     if (S.focus === id) S.focus = null;
-    pickAutoFocus();
+    if (focusDefer) focusLate = true; else pickAutoFocus();
     const at = fromEl ? IMI.centerOf(fromEl) : undefined;
-    if (quiet && writer && S.rewards.awayCheckpoint) {
+    if (quiet && opts.owed) opts.owed.push(pay);                    // away: the caller pays for it once the stretch is done
+    else if (quiet && writer && S.rewards.awayCheckpoint) {
       const cp = S.rewards.awayCheckpoint; cp.sold.n++; cp.sold.pay += pay;
       if (!writer.awayCredit(pay, cp.phase)) return;
     } else {
       const sample = printingHelper()?.printSampleToken(), balance = bananas.get();
-      if (quiet) bananas.add(pay); else bananas.earn(pay, at);
+      flowAdd(pay); if (quiet) bananas.add(pay); else bananas.earn(pay, at);
       printingHelper()?.printPosting(bananas.get() - balance,sample);
     }
     salePublished(r,pay,mk,at,opts);
@@ -4334,8 +4563,9 @@
   /* chance by level, 0 to 5, of each tiered upgrade (levels 4 and 5 need the machine restored to Mk II and Mk III) */
   const UPV = { practice: [.65, .75, .85, .95, .97, .98], stock: [0, .2, .4, .6, .72, .8], ink: [0, .25, .45, .65, .78, .88], vowel: [0, .45, .65, .8, .88, .92], ribbon: [0, .1, .2, .3, .38, .45] };
   const UPS = [
-    { k: 'paw',      ico: 'monkey', name: 'Hire a typist', base: 25, max: 12, desc: 'Another junior monkey swings in and types letters on its own.' },
-    { k: 'fing',     name: 'Quick fingers', base: 40, grow: 1.6, max: Infinity, soft: 10, late: 1.4, desc: "Typing speed from this upgrade. 15% faster per level for ten levels, then 7% per level with no limit. Crew, weather and boosts apply separately." },
+    { k: 'paw',      ico: 'monkey', name: 'Hire a typist', base: 25, max: PAW_MAX, soft: PAW_SOFT, late: PAW_LATE, desc: 'Another junior monkey swings in and types letters on its own.' },
+    { k: 'shift',    ico: 'monkey', name: 'Shift crews', base: 0, grow: 1.5, max: Infinity, soft: 10, late: 1.5, needs: 'crew', desc: `Once a desk has all ${PAW_MAX} typists, a shift crew adds a twelfth more output each without taking a desk or a monkey, and every tenth shift is a further 1.5x.` },
+    { k: 'fing',     name: 'Quick fingers', base: 40, grow: 1.6, max: Infinity, soft: 10, late: 1.4, desc: "Typing speed from this upgrade. 15% faster per level for ten levels, then 7% per level with no limit, and every tenth level after that is a further 1.25x. Crew, weather and boosts apply separately." },
     { k: 'rapid',    name: 'Rapid touch', base: 75, grow: 1.7, max: Infinity, soft: 8, late: 1.4, desc: 'Held typing on this desk, with no limit. Double touch applies to the displayed rate.', needs: 'hold' },
     { k: 'vowel',    name: 'Vowel rhythm', base: 30, tier: 1, desc: 'Vowel bias after a consonant, when earlier letter biases do not apply. Traits and Muses may raise it; the vowel challenge disables it.' },
     { k: 'ink',      name: 'Fresh ink', base: 40, tier: 1, desc: 'Finishing-letter bias for words never banked, when earlier letter biases do not apply.' },
@@ -4349,7 +4579,7 @@
   function coachTypist(i, p) {
     if (challengeActive() && !challengeHandover()) return;
     const t = S.desks[i].crew[p]; if (!t || (t.coach || 0) >= COACH_MAX || !bananas.spend(coachCost(i, t))) return false;
-    t.coach = (t.coach || 0) + 1; IMI.sfx.ding(); logIt(`${t.name} was coached to +${t.coach * COACH_STEP}%.`); mark(); save(); return true;
+    t.coach = (t.coach || 0) + 1; IMI.sfx.ding(); logIt(`${t.name} was coached to +${coachPct(t.coach)}%.`); mark(); save(); return true;
   }
   function rerollTypist(i, p) {
     if (challengeActive() && !challengeHandover()) return;
@@ -4367,10 +4597,12 @@
   const upMax = u => (u.k === 'paw' ? u.max : u.tier ? 5 : u.max);
   const upCap = (u, d) => (u.k === 'paw' && chal('smallcrew') ? 2 : u.tier ? (d.mk >= 2 ? 5 : d.mk >= 1 ? 4 : 3) : upMax(u));      // levels 4 and 5 of the tiered upgrades need the machine restored (Shop > Restorations)
   const upGrowth = (u, l) => { const g = u.k === 'paw' ? PAW_GROW : u.grow || 1.7; return u.soft && l > u.soft ? Math.pow(g, u.soft) * Math.pow(u.late, l - u.soft) : Math.pow(g, l); };
-  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base; return Math.round((trainingPool && trainingPool.mode() !== 'local' ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l))); };
+  const shiftBase = i => PAW_COST[i] * (1 + PAW_DESK_STEP * i) * upGrowth(UPS[0], Math.max(0, PAW_MAX - (i ? 1 : 0)));      // what the next typist would cost, were there room
+  const upCost = (u, d, i) => { const l = upLevel(u, d, i), bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.k === 'shift' ? shiftBase(i) : u.base; return Math.round((trainingPool && trainingPool.mode() !== 'local' ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l))); };
   const upLock = (u, d) => {
     if (u.k === 'paw' && chal('smallcrew') && d.paws >= 2) return 'Small Crew allows 2 typists per desk';
     if (u.needs === 'hold' && !toolOn('hold')) return 'Needs Hold to type (in the Shop)';
+    if (u.needs === 'crew' && d.paws < SHIFT_NEEDS) return `Needs all ${SHIFT_NEEDS} typists on this desk`;
     if (u.tier) { const lv = d.up[u.k]; if (lv >= upCap(u, d) && lv < 5) return `Needs ${MK_NAMES[lv - 2]} (restore this machine in the Shop)`; }
     return '';
   };
@@ -4406,7 +4638,7 @@
     const max = upCap(u, d), pooled = trainingPool && trainingPool.mode() !== 'local', facts = pooled ? trainingPoolFacts(0) : null, have = pooled ? facts.spendable || 0 : worksActive() ? localTrainingHave(d,i) : totalLetters(d); let lv = u.k === 'paw' ? d.paws : d.up[u.k], n = 0, cost = 0;
     while (n < want && lv + n < max) {
       const l = u.k === 'paw' ? Math.max(0, lv + n - (i ? 1 : 0)) : lv + n;
-      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.base, c = Math.round((pooled ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l)));
+      const bs = u.k === 'paw' ? PAW_COST[i] * (1 + PAW_DESK_STEP * i) : u.k === 'shift' ? shiftBase(i) : u.base, c = Math.round((pooled ? trainingPool.factors[i] : 1) * (u.tier ? bs * TIER[l] : bs * upGrowth(u, l)));
       if (want === Infinity && (pooled || n > 0) && cost + c > have) break;
       cost += c; n++;
     }
@@ -4421,7 +4653,8 @@
   };
   function upEffect(u, d, level) {
     if (u.k === 'paw') return `${level} automatic typist${level === 1 ? '' : 's'}`;
-    if (u.k === 'fing') return `x${(1 / fingMult(level)).toFixed(2)} typing speed`;
+    if (u.k === 'shift') return `x${xFmt(shiftMult(level))} crew output`;
+    if (u.k === 'fing') return `x${xFmt(1 / fingMult(level))} typing speed`;
     if (u.k === 'rapid') return `${holdRate({ ...d, up: { ...d.up, rapid: level } })}/s held typing`;
     return `${Math.round(UPV[u.k][level] * 100)}% ${UP_UNIT[u.k] || 'aim'}`;
   }
@@ -4439,6 +4672,20 @@
     }
     return '';
   }
+  /* the same result as taking one letter at a time from the biggest pile, for prices too big to loop over: the biggest piles are levelled down together */
+  function spendLetters(d, cost, floor = {}) {
+    const avail = Object.keys(d.letters).map(ch => [ch, d.letters[ch] - (floor[ch] || 0)]).filter(([, n]) => n > 0);
+    cost = Math.min(cost, avail.reduce((a, [, n]) => a + n, 0));
+    const removed = L => avail.reduce((a, [, n]) => a + Math.max(0, n - L), 0);
+    let lo = 0, hi = Math.max(0, ...avail.map(([, n]) => n));
+    while (lo < hi) { const mid = Math.floor((lo + hi) / 2); if (removed(mid) <= cost) hi = mid; else lo = mid + 1; }
+    let extra = cost - removed(lo);
+    for (const [ch, n] of avail) {
+      let keep = Math.min(n, lo); if (n >= lo && lo > 0 && extra > 0) { keep--; extra--; }
+      const left = keep + (floor[ch] || 0); if (left > 0) d.letters[ch] = left; else delete d.letters[ch];
+    }
+    const seen = {}; d.tray = d.tray.slice().reverse().filter(ch => (seen[ch] = (seen[ch] || 0) + 1) <= (d.letters[ch] || 0)).reverse();
+  }
   function buyUp(k, i = S.sel, want = buyWant()) {
     if (challengeActive() && !challengeHandover()) return;
     const d = S.desks[i], u = UPS.find(x => x.k === k); if (!u || !d?.owned) return;
@@ -4454,6 +4701,7 @@
     } else {
       let left = plan.cost;                               // incumbent local spending
       const floor = worksActive() ? worksFloors()[i] : {};
+      if (left > 2000) { spendLetters(d, left, floor); left = 0; }
       while (left-- > 0) { const top = Object.keys(d.letters).filter(ch => d.letters[ch] > (floor[ch] || 0)).sort((a, b) => d.letters[b] - d.letters[a])[0]; takeLetter(d, top); }
     }
     if (u.k === 'paw') { d.paws += plan.n; ensureCrew(d); } else d.up[u.k] += plan.n;
@@ -4490,8 +4738,8 @@
       if (!farmerOffer(i) || !bananas.spend(farmerCost(i))) return;
       S.garden.farmers[i] = farmerTier(i) + 1; farmT[i] = 0; logIt(`${FARMER_NAMES[S.garden.farmers[i] - 1]} hired for the ${DESKS[i].name.split(' ')[0]} field.`);
     } else if (what === 'mk') {
-      const d = S.desks[i]; if (!d || !d.owned || d.mk >= 2 || !bananas.spend(mkCost(i))) return;
-      d.mk++; logIt(`${DESKS[i].name} restored to ${MK_NAMES[d.mk]}. It gleams.`);
+      const d = S.desks[i]; if (!d || !d.owned || !bananas.spend(mkCost(i))) return;
+      d.mk++; logIt(`${DESKS[i].name} restored to ${mkName(d.mk)}. It gleams.`);
     } else if (what === 'baro') {
       const t = S.baro; if (t >= 2 || soldCount() < 2 || !bananas.spend(BARO_COST[t])) return;
       S.baro = t + 1; logIt(t ? 'A better barometer: the forecast reaches four changes ahead.' : 'Hung a barometer on the porch: the forecast now names what is coming.');
@@ -4499,6 +4747,13 @@
       const t = S.pub.tier; if (t >= 3 || (t === 0 && soldCount() < 3) || !bananas.spend(PUB_COST[t])) return;
       S.pub.tier = t + 1; if (t === 0) S.pub.on = true;
       logIt(['Hired a publisher’s assistant: finished titles now sell themselves.', 'Fast presses installed: the assistant sells twice as often.', 'The assistant now works the night shift: away sales run at full pace and a better price.'][t]);
+    } else if (what === 'agency') {
+      const t = agencyTier(); if (t === 0 && shopLock('pitchteam')) return;
+      if (t < 3) { if (!bananas.spend(AGENCY_COST[t])) return; S.pitchteam = t + 1; logIt(['Hired pitch assistants: a second crew banks words for your commissions.', 'The Commissioning desk opens: pitches are commissioned, written and sold for you.', 'Syndication: the agency sells pitches twice as fast, and keeps working while you are away.'][t]); }
+      else { if (!bananas.spend(agencyLvCost(agencyLv()))) return; S.agencyLv = agencyLv() + 1; logIt(`Pitch agency level ${S.agencyLv}: ×${xFmt(runSpeed(S.agencyLv))} on crew, commissions and sales.`); }
+    } else if (what === 'pubrun') {
+      if (S.pub.tier < 3 || challengeShopLock('pubrun') || !bananas.spend(pubRunCost(pubLv()))) return;
+      S.pub = { ...S.pub, lv: pubLv() + 1 }; logIt(`Press run level ${S.pub.lv}: the assistant sells once every ${perSec(PUB_PERIOD[1] / runSpeed(S.pub.lv))}.`);
     } else if (lgb && lgb.FAMILIES.includes(what)) {
       const t = sbRank(what), cost = sbCost(what); if (cost === null || lgb.rankLocked(what, S.printing, S.pub.tier, sbExtra()) || (what === 'bundle' && challengeShopLock('pub')) || !bananas.spend(cost)) return;
       S.sb = { ...S.sb, [what]: t + 1 }; logIt(`${SB_INFO[what].name} ${t + 1}: ${SB_INFO[what].fx(t).join(' ')}.`);
@@ -4611,11 +4866,11 @@
           <div class="o-drips">${Array.from({ length: 6 }, (_, k) => `<i style="left:${8 + k * 16 + rand() * 8}%;--d:${1.1 + rand() * .9}s;--dl:${-rand() * 2}s"></i>`).join('')}</div>
           <div class="o-flies">${Array.from({ length: 7 }, () => `<i style="left:${5 + rand() * 90}%;top:${10 + rand() * 50}%;--d:${5 + rand() * 5}s;--dl:${-rand() * 8}s"></i>`).join('')}</div>
         </div>
-        <div class="o-tw mk${cur().mk || 0} ${partsOf(cur())}" id="oTw">
+        <div class="o-tw mk${Math.min(2, cur().mk || 0)} ${partsOf(cur())}" id="oTw">
           <div class="o-sheetwrap"><div class="o-sheet"><span id="oSheet"></span></div></div>
           <div class="o-carriage" id="oCar"><i class="o-bell"></i></div>
           <div class="o-bars" id="oBars"><i class="o-spool l"></i><i class="o-spool r"></i>${Array.from({ length: 9 }, (_, n) => `<i class="o-bar" style="--a:${-48 + n * 12}deg"></i>`).join('')}</div>
-          <div class="o-body" data-name="${esc(D.name.toUpperCase() + (cur().mk ? ' ' + MK_NAMES[cur().mk].toUpperCase() : ''))}"><i class="o-led"></i>
+          <div class="o-body" data-name="${esc(D.name.toUpperCase() + (cur().mk ? ' ' + mkName(cur().mk).toUpperCase() : ''))}"><i class="o-led"></i>
             <div class="o-kbd">${ROWS.map(r => `<div class="o-krow">${[...r].map(c => `<b class="o-key" data-k="${c}">${c}</b>`).join('')}</div>`).join('')}
               <div class="o-krow"><b class="o-key o-space" data-k=" "></b></div></div>
           </div>
@@ -4943,7 +5198,7 @@
     if (ft) ft.classList.toggle('ready', !!fr && canWrite(fr));
     hydrate(ft || document.body);
     morph($('#oSky'), skyLine());
-    morph($('#oStats'), `<span class="o-s1"><b>${cnt('f-let' + S.sel, totalLetters(d))}</b> letters</span><span class="o-s2"><b>${d.paws}</b> typists · <b>${autoRate(d).toFixed(2)}</b>/s</span>` +
+    morph($('#oStats'), `<span class="o-s1"><b>${cnt('f-let' + S.sel, totalLetters(d))}</b> letters</span><span class="o-s2"><b>${d.paws}</b> typists · <b>${fmtRate(autoRate(d))}</b>/s</span><span class="o-sx"><b>${fmtRate(wordRate(S.sel))}</b> words/s</span>` +
       (toolOn('hold') ? `<span class="o-sx"><b>${holdRate(d)}</b>/s held</span>` : '') + `<span class="o-sx o-dim">${D.lo}–${D.hi} letter words</span>` +
       (stormy() ? '<span class="o-sx o-warn">Storm! Half speed.</span>' : ''));
     const now = performance.now();
@@ -4980,25 +5235,25 @@
         const lvl = u.k === 'paw' ? d.paws : d.up[u.k], max = upMax(u), soft = u.soft || max, lock = upLock(u, d), done = lvl >= max, plan = trainingQuote(u, d, i, want);
         const first = u.k === 'paw' && i === 0 && d.paws === 0 && plan.n === 1;
         const now = upEffect(u, d, lvl), next = done ? '' : upEffect(u, d, lvl + (lock ? 1 : plan.n || 1)), merged = !lock && upDelta(now, next);
-        return `<div class="o-card"><div class="o-row"><h3 title="${esc(u.desc)}">${cart(u.k === 'paw' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${max === Infinity ? 'Lv ' + lvl : lvl + '/' + max}</span></div>
+        return `<div class="o-card"><div class="o-row"><h3 title="${esc(u.desc)}">${cart(u.k === 'paw' || u.k === 'shift' ? 'i-monkey' : 'u-' + u.k)}${u.name}</h3><span class="o-lvl">${max === Infinity ? 'Lv ' + lvl : lvl + '/' + max}</span></div>
           ${pips(Math.min(lvl, soft), soft)}${merged || `<p class="o-upcurrent">${now}</p>`}${lock ? `<p class="o-warn">${lock}</p>` : ''}
           ${done || merged ? '' : `<p class="o-upnext">${lock ? 'After unlocking' : plan.n > 1 ? `After buying x${plan.n}` : 'Next'}: ${next}</p>`}
           <button type="button" class="o-btn" data-act="up" data-k="${u.k}" title="${esc(Economy.exact(plan.cost))} letters" ${done || lock || !plan.ok ? 'disabled' : ''}>${done ? 'Maxed' : lock ? 'Locked' : !plan.n ? 'No affordable levels' : `${first ? 'Hire first typist · ' : ''}${plan.n > 1 ? `x${plan.n} · ` : ''}${fmt(plan.cost)} letters`}</button>${u.k === 'paw' ? `<div class="lg03-inline" data-own data-automation="hire" data-desk="${DESKS[i].id}"></div>` : ''}</div>`;
       }).join('')}</div>
       ${trainingPool && S.desks.filter(x => x.owned).length > 1 ? trainingPool.controls(esc, fmt) : ''}
       <div class="lg03-inline" data-own data-automation="coach"></div><h3 class="o-h">The crew <span class="o-dim">(${d.crew.length}) · ${Object.keys(S.looks || {}).length}/${LOOKS.length} looks found</span></h3>
-      ${d.crew.length ? `<div class="o-grid o-crew">${d.crew.map((t, p) => {
-        const l = levelOf(t.xp), nx = LVL_XP[l], pv = LVL_XP[l - 1], pct = nx ? Math.round(100 * (t.xp - pv) / (nx - pv)) : 100, hh = hatById(t.hat);
+      ${d.crew.length ? `<div class="o-grid o-crew">${(ui.crewAll ? d.crew : d.crew.slice(0, CREW_SHOWN)).map((t, p) => {
+        const l = levelOf(t.xp), nx = lvlXp(l), pv = lvlXp(l - 1), pct = nx ? Math.round(100 * (t.xp - pv) / (nx - pv)) : 100, hh = hatById(t.hat);
         return `<div class="o-card o-crewcard${t.shiny ? ' shiny' : ''}" data-r="${rarOf(t)}"><div class="o-row"><button type="button" class="o-name" data-act="rename" data-p="${p}" title="Rename">${t.shiny ? '✦ ' : ''}${esc(t.name)}</button><span class="o-lvl">Lv ${l}</span></div>
           <div class="o-crewlook">${lookArt(t.look, t.hat || 0)}<div class="o-lookname"><b>${lookById(t.look).name}</b><span class="o-chip trait">${TRAITS[t.trait].name}</span><span class="o-chip o-rar r-${rarOf(t)}">${RARITY[rarOf(t)].name}</span></div></div>
-          <div class="o-chips"><span class="o-chip" title="This monkey's roll when hired">Talent +${t.talent || 0}%</span>${t.coach ? `<span class="o-chip ok" title="Coaching">Coached +${t.coach * COACH_STEP}%</span>` : ''}</div><p class="o-dim">${traitText(t)}</p>
+          <div class="o-chips"><span class="o-chip" title="This monkey's roll when hired">Talent +${t.talent || 0}%</span>${t.coach ? `<span class="o-chip ok" title="Coaching">Coached +${coachPct(t.coach)}%</span>` : ''}</div><p class="o-dim">${traitText(t)}</p>
           <span class="o-prog" role="img" aria-label="${pct}% to the next level"><i style="width:${pct}%"></i></span>
-          <p>${fxc('+' + (t.coach || 0) * COACH_STEP + '%', 'coached')}${(t.coach || 0) >= COACH_MAX ? '' : ` <span class="o-leg-next">› +${((t.coach || 0) + 1) * COACH_STEP}%</span>`}</p>
+          <p>${fxc('+' + coachPct(t.coach || 0) + '%', 'coached')}${(t.coach || 0) >= COACH_MAX ? '' : ` <span class="o-leg-next">› +${coachPct((t.coach || 0) + 1)}%</span>`}</p>
           <div class="o-row"><span class="o-dim">${fmt(t.xp)} xp${nx ? ' / ' + fmt(nx) : ' (max)'}</span><button type="button" class="o-btn sm" data-act="hat" data-p="${p}" ${HATS.some(hatOpen) ? '' : 'disabled'} title="${HATS.some(hatOpen) ? 'Change hat' : 'Earn awards to unlock hats'}">${hh ? hh.name : 'No hat'}</button></div>
-          <div class="o-row o-left o-coach"><button type="button" class="o-btn sm" data-act="coach" data-p="${p}" ${(t.coach || 0) >= COACH_MAX || bananas.get() < coachCost(i, t) ? 'disabled' : ''} title="Coaching: +${COACH_STEP}% typing speed for this monkey (${t.coach || 0}/${COACH_MAX}). Cost: ${Economy.exact(coachCost(i, t))} bananas">${(t.coach || 0) >= COACH_MAX ? 'Fully coached' : `Coach ${ico('banana', 16)} ${fmtBig(coachCost(i, t))}`}</button>
+          <div class="o-row o-left o-coach"><button type="button" class="o-btn sm" data-act="coach" data-p="${p}" ${(t.coach || 0) >= COACH_MAX || bananas.get() < coachCost(i, t) ? 'disabled' : ''} title="Coaching: +${COACH_STEP}% typing speed for this monkey (level ${t.coach || 0}; every tenth level past 10 adds a further +10%). Cost: ${Economy.exact(coachCost(i, t))} bananas">${(t.coach || 0) >= COACH_MAX ? 'Fully coached' : `Coach ${ico('banana', 16)} ${fmtBig(coachCost(i, t))}`}</button>
             <button type="button" class="o-btn sm" data-act="reroll" data-p="${p}" ${bananas.get() < rerollCost(i, t) ? 'disabled' : ''} title="Re-roll this monkey's trait and talent. Coaching is kept. Cost: ${Economy.exact(rerollCost(i, t))} bananas">Reroll ${ico('banana', 16)} ${fmtBig(rerollCost(i, t))}</button>
             ${t.prev ? `<button type="button" class="o-btn sm" data-act="unroll" data-p="${p}" title="Go back to the previous roll">Undo (was ${t.prev.look ? lookById(t.prev.look).name : TRAITS[t.prev.trait].name} +${t.prev.talent}%)</button>` : ''}</div></div>`;
-      }).join('')}</div>` : '<p class="o-dim">Nobody works here yet. Hire a typist above.</p>'}`));
+      }).join('')}</div>${d.crew.length > CREW_SHOWN ? `<div class="o-row o-left"><span class="o-dim">${ui.crewAll ? `All ${d.crew.length} typists shown` : `${d.crew.length - CREW_SHOWN} more typists working`}</span><button type="button" class="o-btn sm" data-act="crewall">${ui.crewAll ? 'Show fewer' : 'Show all'}</button></div>` : ''}` : '<p class="o-dim">Nobody works here yet. Hire a typist above.</p>'}`));
     hydrate($('#o-training'));
   }
 
@@ -5211,7 +5466,7 @@
     const nextDesk = S.desks.findIndex((d, i) => i > 0 && !d.owned);
     const machines = grid(DESKS.slice(1).map((D, n) => { const i = n + 1; return item(cart(`tw-${D.id}-0`) + D.name, `${fxc(D.lo + '–' + D.hi, 'letter words')} ${fxc('1', 'typist')}`, D.price, S.desks[i].owned, haiku(i), 'desk', i, i === nextDesk || S.desks[i].owned); }));
     const deals = grid(DEALS.map(x => item(cart('d-' + x.id) + x.name, fxc(...x.fx), x.cost, !!S.deals[x.id], '', 'deal', x.id, !!S.deals[x.id] || soldCount() >= x.need)));
-    const market = grid([soldCount() >= 2 || S.baro ? baroCard(have) : '', soldCount() >= 3 || S.pub.tier ? pubCard(have) : '', ...(lgb && S.printing >= 1 ? lgb.FAMILIES.filter(k => S.printing >= lgb.minPrinting(k) && (k !== 'bundle' || S.pub.tier) && (k !== 'editorial' || S.legacy.ups.ledger) && (k !== 'genre' || sbExtra().genre)).map(k => sbCard(k, have)) : []),
+    const market = grid([soldCount() >= 2 || S.baro ? baroCard(have) : '', soldCount() >= 3 || S.pub.tier ? pubCard(have) : '', soldCount() >= 3 || S.pitchteam ? agencyCard(have) : '', ...(lgb && S.printing >= 1 ? lgb.FAMILIES.filter(k => S.printing >= lgb.minPrinting(k) && (k !== 'bundle' || S.pub.tier) && (k !== 'editorial' || S.legacy.ups.ledger) && (k !== 'genre' || sbExtra().genre)).map(k => sbCard(k, have)) : []),
       item(cart('s-agent') + 'Literary agent', fxc('≥ ×0.85', 'sale price floor'), SHOP.agent, S.agent, '', 'agent', null, soldCount() >= 2 || S.agent),
       item(cart('s-analyst') + 'Market analyst', fxc('see', 'where each band is heading'), SHOP.analyst, S.analyst, '', 'analyst', null, soldCount() >= 2 || S.analyst)]);
     const room = grid([
@@ -5219,7 +5474,6 @@
       item(cart('s-metro') + 'Paw metronome', fxc('×2', 'typist speed'), SHOP.metro, S.metro, '', 'metro', null, blue),
       item(cart('s-dbl') + 'Double touch', fxc('×2', 'held typing speed'), SHOP.dbl, S.dbl, '', 'dbl', null, blue && S.hold),
       item(cart('s-contracts') + 'Writing contracts', fxc('+25%', 'title rights income'), SHOP.contracts, S.contracts, '', 'contracts', null, blue),
-      item(cart('s-team') + 'Pitch assistants', fxc('+1', 'sub team writing pitches'), SHOP.pitchteam, S.pitchteam, '', 'pitchteam', null, soldCount() >= 3 || S.pitchteam),
       item(cart('s-carbon') + 'Carbon paper', fxc('0', 'letters spent banking words'), SHOP.carbon, S.carbon, '', 'carbon', null, S.desks[3].owned),
       lampCard(have)]);
     /* the shop is split by what you are buying with and for: your room, your sales, Break Room games, Diamond Bananas.
@@ -5266,11 +5520,11 @@
       const can = (next > 0 && S.desks[next - 1].owned && have >= DESKS[next].price) ||
         (!S.hold && have >= SHOP.hold) || (blue && !S.metro && have >= SHOP.metro) || (blue && S.hold && !S.dbl && have >= SHOP.dbl) || (blue && !S.contracts && have >= SHOP.contracts);
       const plots = (S.stats.harvested || 0) > 0 && S.desks.some((d, i) => d.owned && (plotCost(i) && have >= plotCost(i) || farmerOffer(i) && have >= farmerCost(i)));
-      const mks = plots || S.desks.some((d, i) => d.owned && d.mk < 2 && have >= mkCost(i));
+      const mks = plots || S.desks.some((d, i) => d.owned && have >= mkCost(i));
       const keepers = mks || S.desks.some((d, i) => d.owned && keeperPeriod(i) > KEEPER_MIN_PERIOD && have >= keeperUpCost(i));
-      const pubOk = S.pub.tier < 3 && (S.pub.tier > 0 || soldCount() >= 3) && have >= PUB_COST[S.pub.tier];
+      const pubOk = S.pub.tier < 3 ? (S.pub.tier > 0 || soldCount() >= 3) && have >= PUB_COST[S.pub.tier] : have >= pubRunCost(pubLv());
       const baroOk = S.baro < 2 && soldCount() >= 2 && have >= BARO_COST[S.baro];
-      const upgrades = (!S.pitchteam && soldCount() >= 3 && have >= SHOP.pitchteam) || (!S.carbon && S.desks[3].owned && have >= SHOP.carbon);
+      const upgrades = (agencyTier() < 3 ? (agencyTier() > 0 || soldCount() >= 3) && have >= AGENCY_COST[agencyTier()] : have >= agencyLvCost(agencyLv())) || (!S.carbon && S.desks[3].owned && have >= SHOP.carbon);
       const tools = upgrades || keepers || pubOk || baroOk || (!S.agent && soldCount() >= 2 && have >= SHOP.agent) || (!S.analyst && soldCount() >= 2 && have >= SHOP.analyst);
       const deal = tools || DEALS.some(x => !S.deals[x.id] && soldCount() >= x.need && have >= x.cost);
       return can || deal || (LAMP[S.lamp] && have >= LAMP[S.lamp].cost) ? '!' : '';
@@ -5279,7 +5533,7 @@
   }
   /* ---- header readout + the always-visible buff bar ---- */
   const hudEl = document.getElementById('hud');
-  const hudRate = document.createElement('small'); hudRate.className = 'hud-rate'; hudRate.id = 'hudRate'; hudRate.title = 'Royalties from your bookshelf, per second';
+  const hudRate = document.createElement('small'); hudRate.className = 'hud-rate'; hudRate.id = 'hudRate'; hudRate.title = 'Royalties, studios and (once an assistant sells for you) recent sales, per second';
   if (hudEl) {                                   // stack the rate under the banana count so the header stays one row
     const col = document.createElement('span'); col.className = 'hud-col'; const sc = hudEl.querySelector('#score');
     hudEl.insertBefore(col, sc); col.appendChild(sc); col.appendChild(hudRate);
@@ -5303,7 +5557,7 @@
       return `<div class="o-buff ${k} ${BUFF_INFO[k][1]}"><b>${BUFF_INFO[k][0]}</b>${meter}</div>`;
     }).join('') + (S.challenge ? `<div class="o-buff chal"><b>OULIPO: ${esc(chDef(S.challenge.id).name)}</b><span>${chProgress()}</span></div>` : ''));
     const st = $('#oStage'); if (st) { st.classList.toggle('frenzy', buffOn('frenzy')); st.classList.toggle('golden', buffOn('golden')); }
-    const r = royRate() + divRate(); hudRate.textContent = r > 0 ? `+${fmtRate(r)}/s` : ''; hudRate.hidden = r <= 0;
+    const r = royRate() + divRate() + (S.pub.tier || agencyTier() ? saleRate() : 0); hudRate.textContent = r > 0 ? `+${fmtRate(r)}/s` : ''; hudRate.hidden = r <= 0;
   }
   /* the title screen: a live board of the floor, and PLAY turns into CONTINUE once you have started */
   const menuLive = document.getElementById('heroLive'), playLabel = document.getElementById('playLabel');
@@ -5321,7 +5575,7 @@
       const d = S.desks[i]; if (firstLocked >= 0 && i > firstLocked) return '';
       if (!d.owned && !Object.keys(S.written).length) return '';     // locked machines are a spoiler until the first sale
       if (!d.owned) { const pc = Math.min(100, Math.floor(100 * bananas.get() / D.price)); return `<button type="button" class="o-desk locked${pc >= 100 ? ' can' : ''}" style="--tw:${D.color}" data-act="go" data-tab="shop">${dn(D)}<span class="o-d1">${D.lo}–${D.hi} letters</span><span class="o-d2">${price(D.price)}</span><span class="o-dbar" aria-hidden="true"><i style="width:${pc}%"></i></span></button>`; }
-      const ar = autoRate(d); return `<button type="button" class="o-desk" style="--tw:${D.color}" data-act="sel" data-i="${i}" aria-pressed="${i === S.sel}">${ar > 0 ? `<i class="o-dact" style="--spd:${Math.max(.12, Math.min(2, 1 / ar)).toFixed(2)}s" aria-hidden="true"></i>` : ''}${dn(D)}<span class="o-d1">${D.lo}–${D.hi} letters · ${fmt(totalLetters(d))} held</span><span class="o-d2">${d.paws} typists · ${autoRate(d).toFixed(2)}/s</span><span class="o-d3">${fmt(totalLetters(d))} held</span><span ${keepersReady() ? '' : 'hidden'} class="o-ktog${d.keeper.on ? '' : ' off'}" role="button" tabindex="0" data-act="ktoggle" data-i="${i}" title="${KPAUSE}" aria-label="Keeper ${d.keeper.on ? 'collecting' : 'paused'}: click to toggle"><i class="o-kdot"></i><span class="o-kw">Keeper</span><span class="o-kst">${d.keeper.on ? ' on' : ' paused'}</span></span></button>`;
+      const ar = autoRate(d); return `<button type="button" class="o-desk" style="--tw:${D.color}" data-act="sel" data-i="${i}" aria-pressed="${i === S.sel}" title="${fmtRate(wordRate(i))} words banked a second">${ar > 0 ? `<i class="o-dact" style="--spd:${Math.max(.12, Math.min(2, 1 / ar)).toFixed(2)}s" aria-hidden="true"></i>` : ''}${dn(D)}<span class="o-d1">${D.lo}–${D.hi} letters · ${fmt(totalLetters(d))} held</span><span class="o-d2">${d.paws} typists · ${fmtRate(autoRate(d))}/s</span><span class="o-d3">${fmt(totalLetters(d))} held</span><span ${keepersReady() ? '' : 'hidden'} class="o-ktog${d.keeper.on ? '' : ' off'}" role="button" tabindex="0" data-act="ktoggle" data-i="${i}" title="${KPAUSE}" aria-label="Keeper ${d.keeper.on ? 'collecting' : 'paused'}: click to toggle"><i class="o-kdot"></i><span class="o-kw">Keeper</span><span class="o-kst">${d.keeper.on ? ' on' : ' paused'}</span></span></button>`;
     }).join(''));
     hydrate($('#oDesks'));
     const badge = (b, bd) => { if (bd) b.dataset.badge = bd; else delete b.dataset.badge; };
@@ -5481,6 +5735,9 @@
     },
     repitch: () => { const c = repitchCost(); if (!bananas.spend(c)) return; S.offers = newOffers(); IMI.sfx.tick(); mark(); save(); },
     release: el => releaseDiv(el.dataset.id),
+    remaster: el => remasterDiv(el.dataset.id),
+    crewall: () => { ui.crewAll = !ui.crewAll; mark(); },
+    remasterauto: () => { S.divAuto = !S.divAuto; remasterClock = 0; IMI.sfx.tick(); mark(); save(); },
     seed: el => { ui.seed = el.dataset.ch; IMI.sfx.tick(); mark(); },
     plant: el => plant(+el.dataset.i, ui.seed),
     harvest: el => {
@@ -5561,7 +5818,7 @@
     words: el => { ui.words = ui.words === el.dataset.id ? null : el.dataset.id; mark(); },
     reset: () => { if (resetBlocked()) { IMI.say(resetExplanation); return; } if (imprintChallenge() && !challengeSettled()) return; if (confirm('Reset Typewriter Ops and bananas?')) { if (writer && !bananas.resetAcknowledged().ok) { writer.resetFailure(); return; } IMI.pickups?.clear(); if (!writer) bananas.spend(bananas.get()); S = fresh(); extensionEvent('init', 'full-reset'); extensionEvent('reset', { kind: 'full-reset' }); goldEnd?.(); royAcc = coinBank = 0; Object.assign(ui, { tab: 'floor', libq: '', libf: 'open', libcap: 'all', libsort: 'close', libshow: false, libLimit: 24, sub: {}, pulled: null, read: null, shelfNew: 0 }); saveView(); combo.n = combo.t = 0; ui.mcd = {}; Object.keys(buffs).forEach(k => buffs[k] = 0); holding = false; keeperT = []; rt.forEach(r => r.timers = []); try { localStorage.removeItem('imi-tour'); } catch { /* storage blocked */ } IMI.tour?.reset(); save(); buildStage(); mark(); } }
   };
-  const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','coach','reroll','ovrset','bankword']);
+  const challengeInterventions = new Set(['focus','unfocus','autofocus','autotoggle','ktoggle','koff','up','buy','chpick','pgadvance','pgreturn','pgretry','plant','harvest','harvestall','commission','repitch','release','museinvite','museseat','museout','legbuy','remaster','coach','reroll','ovrset','bankword']);
   if (writer) for (const name of Object.keys(ACTIONS)) {
     const action = ACTIONS[name]; ACTIONS[name] = (...args) => { if (progressing() && (!challengeActive() || !challengeInterventions.has(name) || challengeHandover())) return action(...args); };
   }
@@ -5610,7 +5867,9 @@
 
   /* ================= main loop ================= */
   let coinClock = 0, chalClock = 0, gardenClock = 0, marketClock = 0, awardClock = 0, royAcc = 0, royClock = 0, royFloat = 2.4, goldIn = 25 + rand() * 25, buffWas = false, last = performance.now(), keeperT = [], subT = [], focusClock = 0, saveT = 0, renderT = 0, renderGap = .25;
-  function tick(frame = null) {
+  let tickN = 0;
+  function tick(frame = null) { inTick = true; tickN++; speedCtx = null; try { return tickRun(frame); } finally { inTick = false; speedCtx = null; } }
+  function tickRun(frame) {
     if (!frame && extensions.get('automation')?.admissionPending()) {
       extensions.get('automation').admit();
       if (extensions.get('automation').admissionPending()) { render(); return; }
@@ -5633,11 +5892,15 @@
     S.desks.forEach((d, i) => {
       if (frame && (i < frame.desk || !progressing())) return;
       if (!d.owned || !d.paws) return;
-      const T = rt[i].timers, base = pawSecs(d);
+      const T = rt[i].timers, base = pawSecs(d), mkNow = deskMk(d);
       while (T.length < d.paws) T.push(rand() * base);
+      if (!frame) {                                                 // a very fast desk types in bulk: the same letter mix the away run uses, with no key-by-key work
+        const due = deskSpeed(d, d.paws) * mkNow / base * dt;
+        if (due >= BULK_PRESS) { rt[i].acc = (rt[i].acc || 0) + due; const n = Math.floor(rt[i].acc); rt[i].acc -= n; if (n > 0) bulkType(d, i, n); return; }
+      }
       for (let p = 0; p < d.paws; p++) {
         if (frame && p < frame.paw) continue;
-        const secs = base / typistSpeed(d.crew[p]) / deskMk(d);
+        const secs = base / typistSpeed(d.crew[p]) / mkNow;
         if (!frame || !frame.debited) T[p] -= dt;
         if (frame) { frame.desk=i; frame.paw=p; frame.debited=true; }
         let guard = frame?.presses || 0;
@@ -5666,8 +5929,8 @@
     focusClock += dt; if (focusClock >= 1) { focusClock = 0; if (S.autoFocus && (!S.focus || RBY[S.focus]?.gen && autoPitch())) pickAutoFocus(); }
     worksAdvance();
     S.desks.forEach((d, i) => {
-      if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; const cap = lgb ? lgb.batchCap(sbRank('batch')) : 4; while (keeperT[i] >= keeperPeriod(i) && g++ < cap) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); if (wsOn() && Workshop.tray(S.meta.workshop, i)) keeperStep(d, i); } if (g >= cap) keeperT[i] = lgb ? Math.min(keeperT[i], cap * keeperPeriod(i)) : 0;   // lgb carries unfinished banking work forward, bounded to one more batch, instead of dropping it
-      if (pitchCrews()) { subT[i] = (subT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); const per = keeperPeriod(i) * SUB_SLOW / pitchCrews(); let h = 0; while (subT[i] >= per && h++ < 2) { subT[i] -= per; subStep(d, i); } if (h >= 2) subT[i] = 0; }
+      if (!d.owned) return; keeperT[i] = (keeperT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); let g = 0; const cap = lgb ? lgb.batchCap(sbRank('batch')) : 4, kp = keeperPeriod(i), kn = Math.floor(keeperT[i] / kp); if (kp < KEEPER_BULK_BELOW && kn > cap && d.keeper.owned && d.keeper.on) { keeperT[i] -= kn * kp; keeperBulk(d, i, Math.min(KEEPER_BULK_MAX, kn * (wsOn() && Workshop.tray(S.meta.workshop, i) ? 2 : 1))); } else while (keeperT[i] >= kp && g++ < cap) { keeperT[i] -= keeperPeriod(i); keeperStep(d, i); if (wsOn() && Workshop.tray(S.meta.workshop, i)) keeperStep(d, i); } if (g >= cap) keeperT[i] = lgb ? Math.min(keeperT[i], cap * keeperPeriod(i)) : 0;   // lgb carries unfinished banking work forward, bounded to one more batch, instead of dropping it
+      if (pitchCrews()) { subT[i] = (subT[i] || 0) + dt * (museOn('hemi') ? 2 : 1); const per = keeperPeriod(i) * SUB_SLOW / crewRate(), sn = Math.floor(subT[i] / per); if (sn > 2 && d.keeper.owned && d.keeper.on) { subT[i] -= sn * per; subBulk(d, i, Math.min(KEEPER_BULK_MAX, sn)); } else { let h = 0; while (subT[i] >= per && h++ < 2) { subT[i] -= per; subStep(d, i); } if (h >= 2) subT[i] = 0; } }
     });
     if (frame) frame.phase=4;
     }
@@ -5731,8 +5994,10 @@
     }
     if (!frame || frame.phase === 8) {
     if (frame) frame.phase=9;
-    if (!(chal('patientpress') || masteryActive()) && S.pub.tier && S.pub.on) { pubClock += dt; if (pubClock >= pubPeriod()) { pubClock = 0; pubSell(); } } else pubClock = 0;
-    if (autoPitch()) { pitchSellClock += dt; if (pitchSellClock >= PUB_PERIOD[1]) { pitchSellClock = 0; pitchSell(); } } else pitchSellClock = 0;
+    if (!(chal('patientpress') || masteryActive()) && S.pub.tier && S.pub.on) { pubClock += dt; const per = pubPeriod(); if (pubClock >= per) { const n = Math.min(SALE_PASS_MAX, Math.floor(pubClock / per)); pubClock = n > 1 ? pubClock - n * per : 0; pubSell(n); } } else pubClock = 0;
+    if (autoPitch()) { pitchSellClock += dt; const per = pitchSellPeriod(); if (pitchSellClock >= per) { const n = Math.min(SALE_PASS_MAX, Math.floor(pitchSellClock / per)); pitchSellClock = n > 1 ? pitchSellClock - n * per : 0; pitchSell(n); } } else pitchSellClock = 0;
+    if (agencyOn()) { agencyClock += dt; if (agencyClock >= .25) { agencyClock = 0; agencyCommission(); } }
+    if (S.divAuto) { remasterClock += dt; if (remasterClock >= 20) { remasterClock = 0; remasterAuto(); } } else remasterClock = 0;
     if (lgb && !S.meta.automation?.print?.pending) { if (foreman) foremanTick(dt); houseTick(dt); campusTick(dt); }
     if (frame && !progressing()) return;
     }

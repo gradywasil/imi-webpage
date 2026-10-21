@@ -18,7 +18,13 @@ test('enabled only with the flag; tracks give the documented multipliers', () =>
   assert.equal(b.enabled(), true);
   assert.deepEqual([1, 2, 3, 4].map(b.pressMult), [2, 4, 8, 16]);
   assert.deepEqual([1, 2, 3].map(r => b.keeperBonus(r) + 1), [2, 4, 8]);
-  assert.equal(b.pressMult(99), 16, 'rank is capped at the track');
+  assert.equal(b.pressMult(5), 24, 'past the listed ranks every rank is a smaller step: x1.5');
+  assert.equal(b.pressMult(99), b.pressMult(60), 'rank is capped at the end of the tail (60 ranks)');
+  assert.equal(load({ press: { max: 1, costs: [5], mult: 3 } }).pressMult(9), 3, 'a tuned track without a tail still stops at its own cap');
+  const tail = b.shop([{ id: 'speed' }, { id: 'keeper' }]).find(u => u.id === 'speed');
+  assert.equal(tail.max, 60);
+  assert.ok(tail.costs.every((c, i) => i < 4 || c > tail.costs[i - 1]), 'every tail rank costs more than the one before');
+  assert.ok(Math.abs(tail.costs[5] / tail.costs[4] - 2.2) < .05);
   assert.ok(Math.abs(b.powerMult(4) - 5.0625) < 1e-9);
   assert.equal(b.locked('power', {}), '', 'Publishing Power is open from the first star by default');
   const gated = load({ powerNeeds: true });
@@ -32,9 +38,9 @@ test('the shop swaps the tracks, hides the paid crew and adds Publishing Power a
   const base = [{ id: 'seed' }, { id: 'crew' }, { id: 'speed', max: 10 }, { id: 'keeper', max: 8 }, { id: 'sales' }, { id: 'golden' }];
   const shop = b.shop(base);
   assert.deepEqual(shop.map(u => u.id), ['seed', 'speed', 'keeper', 'power', 'sales', 'golden', 'ledger', 'buyer', 'blueprint', 'foreman']);
-  assert.deepEqual(plain(shop.find(u => u.id === 'speed').costs), [5, 15, 40, 100]);
-  assert.deepEqual(plain(shop.find(u => u.id === 'keeper').costs), [5, 15, 40]);
-  assert.deepEqual(plain(shop.find(u => u.id === 'power').costs), [10, 25, 60, 150]);
+  assert.deepEqual(plain(shop.find(u => u.id === 'speed').costs.slice(0, 4)), [5, 15, 40, 100]);
+  assert.deepEqual(plain(shop.find(u => u.id === 'keeper').costs.slice(0, 3)), [5, 15, 40]);
+  assert.deepEqual(plain(shop.find(u => u.id === 'power').costs.slice(0, 4)), [10, 25, 60, 150]);
   assert.equal(shop.find(u => u.id === 'power').now(4), '×5.06');
   assert.equal(shop.find(u => u.id === 'speed').now(3), '×8');
   assert.equal(base.length, 6, 'the base list is untouched');
