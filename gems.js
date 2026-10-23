@@ -53,7 +53,8 @@ window.Gems = (() => {
       if (!S) return;
       set('dbn', (S.prem?.earned || 0) + (S.prem?.bought || 0));
       set('star', S.legacy?.stars || 0);
-      set('insp', S.meta?.minigames?.wallet || 0);
+      const mg = S.meta?.minigames, pool = mg?.pool || {};
+      set('insp', (mg?.wallet || 0) + (pool.speed || 0) + (pool.keeper || 0) + (pool.sales || 0) + (pool.luck || 0));
       set('part', S.meta?.workshop?.parts || 0);
       set('seal', S.meta?.layers?.seals || 0);
       const any = Object.values(cells).some(c => !c.hidden); if (row.hidden === any) row.hidden = !any;

@@ -194,6 +194,50 @@ Numbers added in the late-game pass. None were run through the balance bot (it n
 | Shared training `factors` | `[1, 8, 28, 90, 280, 900]` (was `[1, 4, 8, 16, 32, 64]`) | About 1.5x the PAW_BASE ratio of each machine. A full set of upgrades on desk 3 is about 98k letters x 90, so an 8-hour stockpile (a few million) funds the first levels at once but not the last |
 | Break Room games | 15 games, 5k to 64M base bananas, bought in order | Each game pays more per par run than the one before (see the Break Room section below) |
 
+## Flat band pay and Auto aim (Oct 23 2026)
+
+`AUTH_PAY`, `KID_PAY`, `LIB_PAY` and `PITCH_PAY` (the rows above) are gone. One knob, `BAND_PAY`, is the rights for **any** title in a word band, whether it is authored, kids', library or commissioned, and it does not change as you work through the band (the pitch ramp of +2% per pitch sold and the pay-by-word-count are gone too). The pay baked into `readers*.js` is no longer read. A pitch offer now shows the price it will actually sell for (it used to show the pre-`AUTH_PAY` figure, 2.5x to 7x too high).
+
+| Band | Words | `BAND_PAY` | Was |
+| --- | --- | --- | --- |
+| 0 | 2-3 letters | 120 | kids ~134, authored ~117, pitches ~15 |
+| 1 | 4-5 | 520 | library ~527, pitches ~200, authored 2,200-3,800 |
+| 2 | 6-7 | 4,400 | library ~4,345, pitches ~1,750, authored 21,700-37,100 |
+| 3 | 8-9 | 28,000 | library ~27,700, pitches ~7,800, authored 80,000-120,000 |
+| 4 | 10-11 | 97,700 | pitches only, unchanged |
+| 5 | 12+ | 1.224M | pitches only, unchanged |
+
+Library and kids' titles anchor the table (they are the body of the game), so the four-title authored sets come down and commissions go up 2.6x to 3.6x in bands 1-3. Royalties still differ (`LIB_ROY`, `KID_ROY`).
+
+**Auto aim.** Auto focus used to take the best `effort / pay`, which sent the keepers back to 3-letter titles whenever a new machine had few typists. It now picks the highest band that has a title the crews could finish in `AUTO_BUDGET` (1,200 s of crew time, letters counted twice for the untailored mix), then the lowest effort per pay inside that band. A band you cannot reach yet is skipped until the crews grow into it. Words stay banked when the goal changes, so the check runs every second and moves an auto goal up a band when one opens (never down, and never a goal you picked by hand). Commissions are taken highest band first. The away queue (`planAway`) still ranks by effort per pay so a stretch sells the most titles.
+
+## Break Room v3: families, typists and floor problems (Oct 23 2026)
+
+Everything below replaces the Shop games and the single Inspiration wallet of the section after it.
+
+| What | Rule |
+| --- | --- |
+| Games | All 15 are open when the Break Room opens (3 titles written, or a Printing). Nothing is bought; the Shop's Break Room tab is gone. The old `meta.minigames.games` list is ignored |
+| Families | Speed: Key Whack, Peel Dash, Road Hop, Banana Slice, Typewriter Rhythm. Keepers: Library Tidy, Crate Packer, Banana Stack. Sales: Fruit Stall, Banana Heist, Banana Barrel. Luck: Coconut Shuffle, Banana Plinko, Coconut Bowling, Vine Swing |
+| Inspiration | A run pays into its game's family pool (`meta.minigames.pool`). Warm hands and Bright ideas cost Speed, Fresh eyes Keepers, Good stories Sales, Lucky streak Luck; Room for play, Quick breaks and Studio notes take any. A family's own pool pays first, then loose Inspiration (`wallet`, what an older save held, which pays for anything). The HUD shows the total |
+| Par pay | The same for every game: `180 x 1.3^(machines owned - 1) x 1.2^Printings` (180 on one machine, about 670 on six, about 4,100 on six at Printing 10), x`tune` for Rhythm modes, x1.25 Fresh. A game's difficulty is already in its `par`, so the game you are best at is the one to play. The old per-game ladder (100 to 4,330) went with the purchase order |
+| Ideas gate | The "games owned" requirement per level is gone; cost is the pace |
+| Fresh eyes | `keeperWorkBonus` was never read by `ops.js`; keeper speed now divides `keeperPeriod` by it |
+
+**Badges.** A rewarded run (a fixing run included, practice never) trains the typist who played: `100 x ratio^0.85` badge xp in the game's family (x1.25 if that typist has not played in the last 3 runs, shown as RESTED). Level = `floor(sqrt(xp / 60))`, so a par run is level 1 and there is no last level. A typist's badge is the family they have the highest level in. It lives on the typist (`t.bd`), so it goes with the typist through transfers and resets with the room, and is saved in the same write as the Inspiration (`commitMinigames(expected, next, badge)`).
+
+**Set bonuses** (one machine, read by `deskFactor(i, kind)` in the typing, keeper, sale and crit paths):
+
+| Part | Value |
+| --- | --- |
+| Each badge level | Speed +0.4%, Keepers +0.5%, Sales +0.3%, Luck +0.5% to that machine's typing, keeper speed, title pay, crit and lucky-sale odds |
+| Set tier, by typists with that family's badge | 3: +10%, 6: +25%, 12: +60%, 24: +150%, 48: +400% (Sales x0.6) |
+| Full house | +6% to all four per complete set (one badge of every family) |
+
+A full desk of 48 split 12 / 12 / 12 / 12 at level 3 reads about +60% tier, +72% full house and +7% levels on every stat. Typing and keepers multiply the desk's rate, Sales multiplies `saleContext.desks[band]`, Luck multiplies the crit and lucky-sale odds on that desk and band.
+
+**Floor problems** (runtime only, never saved, driven by the Break Room's `tick` hook with its own hash, never the game's `rand()`). The first arrives after 240 s of play, then every 300 to 540 s (divided by 1 + 0.1 per extra machine in use); one at a time, 4 minutes to live, only when progression runs and no modal, challenge, Folio or Works is open. Ink jam: that desk types x0.6 (Speed). Keeper nodded off: that keeper x0.5 (Keepers). Slump: that band's titles x0.85 (Sales). Jinx: no crits or lucky sales there (Luck). The old Spoiled snack and Bad review buffs show the same card and clear when fixed. Playing a game of the matching family as a typist from that desk is a free run (no break spent, full Inspiration, badge xp). At 40% of par or better it fixes the problem and tunes the machine up (+25% at par, up to +60%) for 2 to 4 minutes; below that it only halves the time left.
+
 ## Break Room: score-paid Inspiration and the Ideas (Oct 2026)
 
 Untested by the balance bot; the numbers are reasoned. Par scores come from the games' own autoplayers (`?bot=1&warp=N`), halved for a human.

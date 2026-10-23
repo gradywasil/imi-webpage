@@ -65,7 +65,7 @@ window.ProductionGoal = (() => {
   function status(c) {
     const p = raw(c), s = c.state();
     if (p !== undefined && !valid(p)) return 'Unsupported saved goal. Auto preserved.';
-    if (!active(c)) return 'Auto: best return for effort';
+    if (!active(c)) return 'Auto: the best-paying titles your crews can work';
     const excluded = c.recipes.filter(r => member(r,p) && !c.available(r)).length;
     const set = members(c, p), left = set.filter(r => !s.written[r.id]), r = c.byId[s.focus];
     let reason = !set.length ? excluded ? 'All titles archived' : 'No titles in this set' : !left.length ? 'Set complete' : 'Waiting for letters';

@@ -22,6 +22,10 @@
 .o-pips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
 .o-pips i { width: 12px; height: 12px; background: rgba(255,255,255,.18); }
 .o-pips i.on { background: var(--tw); }
+.o-pips.lapped { --lapc: var(--tw); align-items: center; }
+.o-pips.lapped[data-lap="2"] { --lapc: #ffd23a; } .o-pips.lapped[data-lap="3"] { --lapc: #ff9f43; } .o-pips.lapped[data-lap="4"] { --lapc: #ff5d73; } .o-pips.lapped[data-lap="5"] { --lapc: #c39bff; }
+.o-pips.lapped i.on { background: var(--lapc); }
+.o-pips .o-lap { margin-left: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--lapc, inherit); white-space: nowrap; }
 .o-chips, .o-letters, .o-words { display: flex; flex-wrap: wrap; gap: 6px; }
 .o-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 .o-lcell { width: 48px; text-align: center; padding: 3px 0; font-family: var(--tw-font); }
