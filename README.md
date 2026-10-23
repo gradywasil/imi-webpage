@@ -170,7 +170,7 @@ Use HTTP rather than opening the HTML as a `file://` URL, because the Library lo
 
 ### Development utilities
 
-`tools/make-icons.mjs` builds every icon from two masters in `icons/src/`: `app-icon-master.png` (the installed app's icon: 192/512, maskable and Apple versions) and `favicon-master.png` (the browser tab icon, a closer crop that reads at 16-48px; also `favicon.ico`). Replace a master and run the script to regenerate. The masters are not deployed (see `.assetsignore`).
+`tools/make-icons.mjs` builds installed-app icons from `icons/src/app-icon-master.png` (the first-book triumph artwork: 192/512, maskable and Apple versions) and browser fallback icons from `favicon.svg` (the supplied Infinite Monkey Industries vector: 16/32/48px PNGs and `favicon.ico`). Pages use the SVG favicon directly. Replace either source and run the script to regenerate. The PNG master is not deployed (see `.assetsignore`).
 
 The repository includes balance tools that use `puppeteer-core`, a separately running HTTP server, and a local Chrome executable. They run the real game logic under seeded randomness and a virtual clock. See [BALANCE.md](BALANCE.md) for their setup and scope.
 
