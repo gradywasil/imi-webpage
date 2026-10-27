@@ -41,7 +41,7 @@
   const DEMO = { apiKey: DEMO_ID, authDomain: DEMO_ID + '.firebaseapp.com', projectId: DEMO_ID, appId: DEMO_ID };
 
   // ---------- state ----------
-  let game = null, build = '', statsFn = null, mono = new Set(), accent = null, cfg = null;
+  let game = null, build = '', statsFn = null, mono = new Set(), accent = null, themeName = null, cfg = null;
   let status = 'off', user = null, net = 'ok';
   let fb = null, fbP = null, loader = null, gisP = null, pendingLink = null;
   let timer = null, timerAt = 0, busy = false, again = false, inflight = null;
@@ -363,6 +363,7 @@
     statsFn = typeof o.stats === 'function' ? o.stats : null;
     mono = new Set(Array.isArray(o.monotonic) ? o.monotonic : []);
     accent = typeof o.ui?.accent === 'string' ? o.ui.accent : null;
+    themeName = typeof o.ui?.theme === 'string' ? o.ui.theme : null;
     cfg = resolveConfig();
     const listen = (t, fn) => G.addEventListener?.(t, fn);
     listen('message', onMessage);
@@ -621,37 +622,48 @@
   // component rule (.mc-root .mc-x = 0,2,0) beat it, while still beating a game's bare `button {…}` /
   // `input {…}` styles. The Google button slot (.mc-gis) and the logo SVG are left alone.
   const CSS = [
-    '.mc-root{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(6,7,10,.66);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#eceef4;text-align:left;-webkit-text-size-adjust:100%}',
+    '.mc-root{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(4,10,7,.74);font:22px/1.1 var(--mc-body);color:var(--mc-text);text-align:left;-webkit-text-size-adjust:100%;-webkit-font-smoothing:none}',
     '.mc-root :where(*:not(.mc-gis *,svg,svg *)){box-sizing:border-box;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;font:inherit;color:inherit;line-height:inherit;letter-spacing:normal;text-transform:none;text-shadow:none;text-align:inherit;text-decoration:none;min-width:0;min-height:0;max-width:none;width:auto;height:auto;float:none;position:static;transform:none;filter:none;opacity:1;animation:none;transition:none;outline:0;cursor:inherit;-webkit-appearance:none;appearance:none}',
-    '.mc-root .mc-panel{position:relative;width:min(420px,100%);max-height:100%;overflow:auto;background:#17181f;border:2px solid #3b3e4d;border-radius:4px;box-shadow:0 0 0 2px #050608,6px 6px 0 #050608;padding:16px 18px 14px}',
+    '.mc-root .mc-panel{position:relative;width:min(420px,100%);max-height:100%;overflow:auto;background:var(--mc-panel);border:3px solid var(--mc-ink);box-shadow:var(--mc-bevel),0 6px 0 rgba(0,0,0,.4);padding:16px 18px 16px}',
     '.mc-root .mc-panel:focus{outline:0}',
     '@media (prefers-reduced-motion:no-preference){.mc-root .mc-panel{animation:mc-in .16s steps(4,end)}}@keyframes mc-in{from{transform:translateY(10px);opacity:0}}',
     '.mc-root .mc-head{display:flex;align-items:center;justify-content:space-between;gap:12px}',
-    '.mc-root .mc-title{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}',
-    '.mc-root .mc-x{flex:none;width:44px;height:44px;margin:-6px -10px 0 0;background:none;border:0;box-shadow:none;font-size:26px;line-height:1;text-align:center;color:#a9adbb;cursor:pointer}',
-    '.mc-root .mc-x:hover{color:#eceef4}',
-    '.mc-root .mc-status{display:flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:14px;color:#b7bbc9}',
-    '.mc-root .mc-dot{flex:none;width:10px;height:10px;background:#6b6f80;box-shadow:0 0 0 2px #050608}',
-    '.mc-root .mc-dot[data-s=synced]{background:#4fd67a}.mc-root .mc-dot[data-s=syncing]{background:var(--mc-accent)}.mc-root .mc-dot[data-s=error]{background:#ff6b5e}',
-    '.mc-root .mc-body>*+*{margin-top:12px}.mc-root .mc-lead{color:#d4d7e1}.mc-root strong{font-weight:700;color:#fff}',
-    '.mc-root .mc-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:10px 14px;border:2px solid #050608;border-radius:3px;background:#2b2d39;color:#eceef4;font-weight:700;text-align:center;cursor:pointer;box-shadow:0 3px 0 #050608}',
-    '.mc-root .mc-btn:hover{filter:brightness(1.08)}.mc-root .mc-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #050608}.mc-root .mc-btn:disabled{opacity:.55;cursor:default;filter:none}',
-    '.mc-root .mc-pri{background:var(--mc-accent);color:#17140a}.mc-root .mc-g{background:#fff;color:#1f1f1f}.mc-root .mc-bad{background:#ff6b5e;color:#1a0806}',
+    '.mc-root .mc-title{font:12px/1.4 var(--mc-title-font);letter-spacing:.04em;text-transform:uppercase;color:var(--mc-title);text-shadow:2px 2px 0 var(--mc-ink)}',
+    '.mc-root .mc-x{flex:none;width:44px;height:44px;margin:-6px -10px 0 0;background:none;border:0;box-shadow:none;font:16px/1 var(--mc-title-font);text-align:center;color:var(--mc-text);text-shadow:2px 2px 0 var(--mc-ink);cursor:pointer}',
+    '.mc-root .mc-x:hover{color:var(--mc-title)}',
+    '.mc-root .mc-status{display:flex;align-items:center;gap:9px;margin:4px 0 14px;font-size:22px;color:var(--mc-mute)}',
+    '.mc-root .mc-dot{flex:none;width:12px;height:12px;background:var(--mc-dim);border:3px solid var(--mc-ink);box-sizing:content-box}',
+    '.mc-root .mc-dot[data-s=synced]{background:var(--mc-ok)}.mc-root .mc-dot[data-s=syncing]{background:var(--mc-accent)}.mc-root .mc-dot[data-s=error]{background:var(--mc-bad)}',
+    '.mc-root .mc-body>*+*{margin-top:12px}.mc-root .mc-lead{color:var(--mc-text)}.mc-root strong{font-weight:400;color:var(--mc-title)}',
+    '.mc-root .mc-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:10px 14px;border:3px solid var(--mc-ink);background:var(--mc-btn);color:var(--mc-btn-text);font:10px/1.3 var(--mc-title-font);text-align:center;text-shadow:2px 2px 0 var(--mc-ink);cursor:pointer;box-shadow:var(--mc-bevel),0 3px 0 rgba(0,0,0,.45)}',
+    '.mc-root .mc-btn:hover{filter:brightness(1.1)}.mc-root .mc-btn:active{transform:translateY(2px);box-shadow:var(--mc-bevel),0 1px 0 rgba(0,0,0,.45)}.mc-root .mc-btn:disabled{opacity:.55;cursor:default;filter:none}',
+    '.mc-root .mc-pri{background:var(--mc-accent);color:var(--mc-ink);text-shadow:none}.mc-root .mc-g{background:var(--mc-cream);color:#1f1f1f;text-shadow:none}.mc-root .mc-bad{background:var(--mc-bad);color:var(--mc-text)}',
     '.mc-root svg{flex:none;width:18px;height:18px}',
-    '.mc-root :focus-visible{outline:3px solid var(--mc-accent);outline-offset:2px}',
-    '.mc-root .mc-lbl{display:block;margin-bottom:6px;font-size:13px;font-weight:700;color:#b7bbc9}',
-    '.mc-root .mc-in{display:block;width:100%;min-height:44px;margin-bottom:10px;padding:9px 12px;background:#0d0e13;border:2px solid #3b3e4d;border-radius:3px;font-size:16px;cursor:text}',
-    '.mc-root .mc-in::placeholder{color:#6b6f80;opacity:1}',
-    '.mc-root .mc-or{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7d8193}.mc-root .mc-or:before,.mc-root .mc-or:after{content:"";flex:1;height:2px;background:#2b2d39}',
+    '.mc-root :focus-visible{outline:3px solid var(--mc-text);outline-offset:2px}',
+    '.mc-root .mc-lbl{display:block;margin-bottom:6px;font-size:22px;color:var(--mc-mute)}',
+    '.mc-root .mc-in{display:block;width:100%;min-height:44px;margin-bottom:10px;padding:8px 12px;background:var(--mc-inset);border:3px solid var(--mc-ink);box-shadow:inset 0 3px 0 rgba(0,0,0,.35);font-size:24px;color:var(--mc-text);cursor:text}',
+    '.mc-root .mc-in::placeholder{color:var(--mc-dim);opacity:1}',
+    '.mc-root .mc-or{display:flex;align-items:center;gap:10px;font:9px/1 var(--mc-title-font);text-transform:uppercase;color:var(--mc-mute)}.mc-root .mc-or:before,.mc-root .mc-or:after{content:"";flex:1;height:3px;background:var(--mc-edge)}',
     '.mc-root .mc-row{display:flex;gap:10px}.mc-root .mc-row>*{flex:1}',
-    '.mc-root .mc-msg{margin-top:12px;font-size:14px;color:#c9ccd8}.mc-root .mc-msg[data-tone=bad]{color:#ffb4a8}.mc-root .mc-msg[data-tone=ok]{color:#8fe3a8}.mc-root .mc-msg:empty{display:none}',
-    '.mc-root .mc-who{padding:10px 12px;background:#0d0e13;border:2px solid #2b2d39;border-radius:3px;overflow-wrap:anywhere}',
-    '.mc-root .mc-tag{display:inline-block;margin-left:6px;padding:0 6px;border:2px solid #3b3e4d;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#b7bbc9;vertical-align:1px}',
-    '.mc-root .mc-link{display:inline-flex;align-items:center;min-height:44px;padding:0;background:none;border:0;box-shadow:none;font-size:14px;color:#ff8c80;text-decoration:underline;text-underline-offset:3px;cursor:pointer}',
-    '.mc-root .mc-alt{font-size:13px;color:#b7bbc9}',
+    '.mc-root .mc-msg{margin-top:12px;font-size:22px;color:var(--mc-text)}.mc-root .mc-msg[data-tone=bad]{color:var(--mc-bad-text)}.mc-root .mc-msg[data-tone=ok]{color:var(--mc-ok-text)}.mc-root .mc-msg:empty{display:none}',
+    '.mc-root .mc-who{padding:8px 12px;background:var(--mc-inset);border:3px solid var(--mc-ink);overflow-wrap:anywhere}',
+    '.mc-root .mc-tag{display:inline-block;margin-left:6px;padding:2px 6px;border:3px solid var(--mc-ink);font:8px/1.2 var(--mc-title-font);text-transform:uppercase;color:var(--mc-mute);vertical-align:2px}',
+    '.mc-root .mc-link{display:inline-flex;align-items:center;min-height:44px;padding:0;background:none;border:0;box-shadow:none;font-size:22px;color:var(--mc-bad-text);text-decoration:underline;text-underline-offset:3px;cursor:pointer}',
+    '.mc-root .mc-alt{font-size:20px;color:var(--mc-mute)}',
     '.mc-root .mc-gis{display:flex;justify-content:center;min-height:44px}.mc-root .mc-gis:empty{display:none}.mc-root .mc-gis:not(:empty)+.mc-btn{display:none}.mc-root .mc-gis:empty~.mc-alt{display:none}',
-    '.mc-root .mc-note{margin-top:16px;padding-top:12px;border-top:2px dashed #2b2d39;font-size:12.5px;color:#8f93a5}.mc-root .mc-note a{color:var(--mc-accent);text-decoration:underline;cursor:pointer}',
+    '.mc-root .mc-note{margin-top:16px;padding-top:12px;border-top:3px dashed var(--mc-edge);font-size:19px;line-height:1.15;color:var(--mc-mute)}.mc-root .mc-note a{color:var(--mc-title);text-decoration:underline;cursor:pointer}',
   ].join('');
+  // The panel borrows each game's look: pixel type (Press Start 2P / VT323, which every game already loads), hard ink borders and
+  // bevelled buttons. Two palettes: the jungle-and-wood family look (the default) and Night Shift Security's navy. The game's own
+  // accent colours the main button; init({ ui: { accent, theme } }) overrides either ('wood' | 'night').
+  const WOOD = { panel: '#8a5a2b', ink: '#1a0f14', edge: '#5a3517', inset: '#3a2210', text: '#fff6d6', mute: '#f2e6bf', dim: '#c9b88a', title: '#ffd23a',
+    btn: '#2f8a35', 'btn-text': '#fff6d6', accent: '#ffd23a', ok: '#9ccf3f', 'ok-text': '#d9f5a0', bad: '#b8322a', 'bad-text': '#ffd0c4', cream: '#fff6d6' };
+  const NIGHT = { panel: '#131a33', ink: '#080c18', edge: '#2e3b70', inset: '#0d1326', text: '#eef2ff', mute: '#b4c0e8', dim: '#7d8bbf', title: '#ffbf3f',
+    btn: '#222d58', 'btn-text': '#eef2ff', accent: '#ffbf3f', ok: '#4be0a0', 'ok-text': '#8ff0c4', bad: '#ff5a4a', 'bad-text': '#ffb4a8', cream: '#eef2ff' };
+  const THEMES = { wood: WOOD, night: NIGHT };
+  const THEME_OF = { imt: 'night' };
+  const theme = () => THEMES[themeName] || THEMES[THEME_OF[game]] || WOOD;
+  const BEVEL = 'inset 0 3px 0 rgba(255,255,255,.16),inset 0 -3px 0 rgba(0,0,0,.32)';
   const G_LOGO = '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.2C12.5 13.7 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C1 16.5 0 20.1 0 24s1 7.5 2.7 10.8l7.8-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.2C6.6 42.6 14.6 48 24 48z"/></svg>';
   const STATUS_TEXT = { off: 'Cloud sync is off in this build', local: 'Not signed in. Progress stays on this device.', syncing: 'Syncing\u2026',
     synced: 'Synced', offline: 'Offline. Will sync when you are back online.', error: 'Sync paused. Will try again later.' };
@@ -708,8 +720,13 @@
     const panel = h('div.mc-panel', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mc-title', tabIndex: -1 },
       h('div.mc-head', null, h('h2.mc-title', { id: 'mc-title' }, 'Monkey Cloud'), x),
       h('p.mc-status', { role: 'status' }, dot, stText), body, msgEl, note);
-    panel.style.setProperty('--mc-accent', accent || '#ffd23f');
     const root = h('div.mc-root', { onmousedown: (e) => e.target === root && closePanel() }, panel);
+    const T = theme(), vars = root.style;
+    for (const k of Object.keys(T)) vars.setProperty('--mc-' + k, T[k]);
+    vars.setProperty('--mc-accent', accent || T.accent);
+    vars.setProperty('--mc-bevel', BEVEL);
+    vars.setProperty('--mc-body', "'VT323','Courier New',monospace");
+    vars.setProperty('--mc-title-font', "'Press Start 2P','Courier New',monospace");
     // hold: opened to delete (openPanel('delete')), so signing in must not upload this device's stats first.
     P = { root, panel, body, msgEl, dot, stText, view: view || (blocked() ? 'reauth' : 'main'), hold: view === 'confirm-delete', msg, tone, email: '', busy: false, back: D.activeElement, offs: [] };
     // Keys are handled on the document while the panel is open, so Escape and the Tab trap still work
@@ -856,7 +873,14 @@
     } else if (u) {
       n = [who(u),
         h('div.mc-row', null,
-          btn('mc-btn.mc-pri', 'Sync now', () => { report(undefined, { now: true }); go('main', 'Sync requested.'); }),
+          btn('mc-btn.mc-pri', 'Sync now', () => act(async () => {
+            report(undefined, { now: true });
+            if (game === 'hub') {
+              const p = await profile();
+              if (p.error) return oops(p.error);
+            }
+            if (P) go('main', 'Sync requested.');
+          })),
           btn('mc-btn', 'Sign out', () => act(signOut))),
         btn('mc-link', 'Delete my cloud data\u2026', () => go('confirm-delete'))];
     } else {
