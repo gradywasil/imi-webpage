@@ -1,35 +1,18 @@
-/* The Break Room: games play inside the main wooden panel (the side menu stays live), Inspiration is shown as a picture and a number. */
+/* Repairs and Ideas: a repair plays over the Floor inside the main wooden panel (the side menu stays live); the Ideas tab spends the Inspiration. */
 .mg01-choices { display:grid; gap:12px; padding:4px 0; max-width:none; }
 .mg01-choices h2 { margin:0; font-size:18px; }
 .mg01-choices p { margin:0; }
-.mg01-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.mg01-actions { display:flex; gap:8px; flex-wrap:wrap; }               /* vault-play.js borrows this row */
 .mg01-actions > .o-btn { flex:1 1 90px; }
-
-/* wallet + rewarded breaks */
-.mg-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:6px 4px; }
-.mg-wallet .gem-amt { font-size:1.9em; }
-.mg-wallet .gem-amt .gem { --s:1.25em; }
-.mg-breaks { display:flex; align-items:center; gap:8px; }
-.mg-breaks small { opacity:.75; white-space:nowrap; }
-.mg-tk-row { display:inline-flex; gap:4px; flex-wrap:wrap; }
-.mg-tk { display:inline-block; opacity:.28; filter:grayscale(1); }
-.mg-tk-count { align-items:center; gap:6px; color:#ffe28a; flex-wrap:nowrap; }
-.mg-tk-count b { font-weight:400; }
-.mg-tk.on { opacity:1; filter:drop-shadow(0 0 4px rgba(255,210,58,.8)); }
-
-/* game cards */
 .mg01-choices .o-grid { align-items:stretch; margin:4px 0; }
-.mg-game { justify-content:space-between; }
-.mg-game .o-row { align-items:center; gap:8px; }
-.mg-game h3 { min-width:0; }
-.mg-game .gem-amt, .mg-bonus { color:#ffe28a; }
-.mg-bonus { display:inline-flex; align-items:center; gap:6px; }
-.mg-bonus b { font-weight:700; }
-.mg-meta { min-height:1.4em; }
-.mg-best { color:#ffe28a; font-size:.9em; }
-.mg-best.dim { opacity:.5; color:inherit; }
-.mg-fresh { display:inline-block; padding:1px 7px; font-size:.7em; letter-spacing:.5px; color:#10320d; background:#7be05a; border:2px solid #1a0f14; white-space:nowrap; text-shadow:none; animation:mg01-fresh 1.4s steps(2) infinite; }
-@keyframes mg01-fresh { 50% { filter:brightness(1.25); } }
+/* a phone: Ideas / Crew / Repairs share the strip instead of scrolling it, so Repairs and its ! stay in view (360 px and up; narrower, they wrap) */
+@media (max-width:480px) {
+  .mg01-choices > .o-subtabs { flex-wrap:wrap; gap:4px; padding:4px; overflow-x:visible; }
+  .mg01-choices > .o-subtabs button { flex:1 1 auto; min-width:0; padding:4px 6px; white-space:nowrap; }
+  .mg01-choices > .o-subtabs .o-subbadge { margin-left:4px; padding:0 5px; }
+  html[data-style="pixel"] .mg01-choices > .o-subtabs button { font-size:20px; }
+  html[data-style="classic"] .mg01-choices > .o-subtabs button { font-size:14px; }
+}
 
 /* the Inspiration ideas: one card per track, the next level on offer */
 .mg02-tree { display:grid; gap:10px; }
@@ -47,7 +30,7 @@
 .mg02-node.owned { border-color:#7be05a; }
 .mg02-node .o-lvl { color:#7be05a; }
 
-/* the game itself: it takes over the main panel; the side menu stays */
+/* the repair takes over the main panel; the side menu stays */
 .o-panel.mg01-on > .o-pane { visibility:hidden; }
 .mg01-overlay { position:absolute; inset:0; z-index:30; container-type:size; container-name:mg01; color:var(--cream,#fff6d6); }
 .mg01-layout { display:flex; gap:10px; width:100%; height:100%; padding:6px; }
@@ -57,30 +40,24 @@
 .mg01-run { flex:none; width:236px; align-self:flex-start; gap:8px; padding:10px; margin:0; max-height:100%; overflow:hidden; }
 .mg01-run button { cursor:pointer; font:inherit; color:inherit; -webkit-tap-highlight-color:transparent; }
 .mg01-run button:disabled { opacity:.5; cursor:default; }
-.mg01-name { display:flex; align-items:center; gap:8px; margin:0; min-width:0; font-weight:400; }
+.mg01-name { display:flex; align-items:center; gap:8px; margin:0; min-width:0; font-size:1.15em; font-weight:400; }
 .mg01-name span { min-width:0; overflow-wrap:anywhere; line-height:1.25; }
+.mg01-prob { margin:0; font-size:.85em; line-height:1.25; opacity:.8; }
 .mg01-pay { display:flex; align-items:center; gap:8px; color:#ffe28a; font-size:2.1em; line-height:1; font-weight:700; transition:opacity .2s; }
 .mg01-pay .gem { --s:1.1em; }
 .mg01-pay.off { opacity:.4; }
+.mg01-upto { font-size:.36em; font-weight:400; letter-spacing:1px; text-transform:uppercase; opacity:.75; }
+.mg01-upto[hidden] { display:none; }
 .mg01-pay[data-mode="live"] .gem { animation:mg01-pulse .9s steps(2) infinite; }
 .mg01-pay[data-mode="done"] { color:#fff6d6; text-shadow:0 0 12px rgba(255,210,58,.9), 2px 2px 0 var(--ink,#1a0f14); animation:mg01-pop .5s steps(5); }
 @keyframes mg01-pulse { 50% { transform:scale(1.18); } }
 @keyframes mg01-pop { 0% { transform:scale(.7); } 60% { transform:scale(1.18); } 100% { transform:none; } }
-.mg01-par { position:relative; height:14px; margin-top:2px; background:rgba(0,0,0,.55); border:2px solid #1a0f14; }
-.mg01-fill { position:absolute; left:0; top:0; bottom:0; width:0; background:#ffd23a; transition:width .25s steps(5); }
-.mg01-par.past .mg01-fill { background:#7be05a; }
-.mg01-par u { position:absolute; top:-2px; bottom:-2px; width:2px; margin-left:-1px; background:#1a0f14; text-decoration:none; }
-.mg01-ticks { position:relative; height:1.1em; margin:-2px 2px 0 0; font-size:.62em; letter-spacing:1px; opacity:.7; }
-.mg01-ticks span { position:absolute; top:0; transform:translateX(-100%); white-space:nowrap; }
-.mg01-score { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:.95em; }
-.mg01-score span { opacity:.65; }
-.mg01-score b { font-weight:400; color:#ffe28a; font-variant-numeric:tabular-nums; }
-.mg01-kind { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-.mg01-kind button { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:40px; padding:4px 4px; font-size:.8em; white-space:nowrap; background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.18); border-radius:0; }
-.mg01-kind button[aria-pressed="true"] { background:#ffd23a; color:#3a210d; border-color:#1a0f14; text-shadow:none; }
-.mg01-kind .gem { --s:1.1em; }
-.mg01-breaks { display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:24px; }
-.mg01-breaks .mg-tk { transform:scale(.8); transform-origin:left center; margin-right:-4px; }
+.mg01-verdict { margin:0; font-size:.85em; line-height:1.3; }
+.mg01-verdict:empty { display:none; }
+.mg01-verdict b { display:inline-block; margin-right:4px; padding:1px 7px; font-weight:400; font-size:.9em; letter-spacing:.5px; color:#14260f; background:#7be05a; border:2px solid #1a0f14; text-shadow:none; }
+.mg01-verdict b[data-v="perfect"] { background:#ffd23a; color:#3a210d; }
+.mg01-verdict b[data-v="patch"] { background:#ff9f43; color:#3a1a00; }
+.mg01-verdict b[data-v="no"] { background:#ff5d73; color:#3a0a12; }
 .mg01-ctl { display:flex; gap:6px; margin-top:2px; }
 .mg01-ctl button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; min-width:44px; padding:4px 10px; background:rgba(0,0,0,.4); border:2px solid #e8b878; border-radius:0; }
 .mg01-leave { flex:1; background:#2b5b35 !important; }
@@ -93,29 +70,26 @@
 html[data-style="pixel"] .mg01-name { font-family:var(--font-px); font-size:10px; line-height:1.5; color:var(--banana); }
 html[data-style="pixel"] .mg01-run button { text-shadow:none; }
 html[data-style="pixel"] .mg01-ctl button { box-shadow:inset 0 -4px 0 rgba(0,0,0,.35); }
+html[data-style="pixel"] .mg01-verdict b { font-family:var(--font-px); font-size:8px; line-height:1.6; }
 html[data-style="classic"] .mg01-well { border-radius:12px; }
-html[data-style="classic"] .mg01-par, html[data-style="classic"] .mg01-ctl button, html[data-style="classic"] .mg01-kind button { border-radius:10px; }
-html[data-style="classic"] .mg01-fill { border-radius:0 6px 6px 0; }
+html[data-style="classic"] .mg01-ctl button, html[data-style="classic"] .mg01-verdict b { border-radius:10px; }
 
 /* a small panel (a phone, or a short window): the controls become one slim strip above the game */
 @container mg01 (max-width:640px) or (max-height:520px) {
   .mg01-layout { flex-direction:column; gap:6px; padding:4px; }
-  .mg01-run { order:-1; width:auto; align-self:stretch; display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:8px; padding:4px 6px; border-width:6px; border-image-width:6px; }
-  .mg01-name, .mg01-ticks, .mg01-score, .mg01-kind, .mg01-breaks, .mg01-status:empty { display:none; }
-  .mg01-pay { order:1; font-size:1.5em; min-width:3.6em; }
-  .mg01-par { order:2; flex:1 1 40px; margin:0; }
+  .mg01-run { order:-1; width:auto; align-self:stretch; display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:6px; padding:3px 5px; border-width:6px; border-image-width:6px; }
+  .mg01-name, .mg01-prob, .mg01-verdict, .mg01-status:empty { display:none; }
+  .mg01-pay { order:1; flex:1 1 auto; font-size:1.5em; min-width:3.6em; }
   .mg01-ctl { display:contents; }
   .mg01-leave { order:0; flex:none; min-height:38px; padding:2px 8px; }
   .mg01-ico[data-mg01="pause"] { order:3; } .mg01-ico[data-mg01="sound"] { order:4; }
   .mg01-ctl button { min-height:38px; }
   .mg01-status { order:5; flex:none; max-width:30%; }
-  .mg01-run { gap:6px; padding:3px 5px; }
-  .mg01-par { min-width:24px; }
   .mg01-retry { order:6; }
 }
-@container mg01 (max-width:430px) { .mg01-lbl { display:none; } .mg01-leave { padding:2px 10px; } .mg01-pay { font-size:1.3em; min-width:2.6em; } .mg01-pay .gem { --s:.9em; } }
-@media(prefers-reduced-motion:reduce) { .mg01-overlay *, .mg-fresh { animation:none!important; transition:none!important; } }
-html[data-fx="low"] .mg01-overlay *, html[data-fx="low"] .mg-fresh { animation:none!important; transition:none!important; }
+@container mg01 (max-width:430px) { .mg01-lbl, .mg01-upto { display:none; } .mg01-leave { padding:2px 10px; } .mg01-pay { font-size:1.3em; min-width:2.6em; } .mg01-pay .gem { --s:.9em; } }
+@media(prefers-reduced-motion:reduce) { .mg01-overlay * { animation:none!important; transition:none!important; } }
+html[data-fx="low"] .mg01-overlay * { animation:none!important; transition:none!important; }
 
 /* ---- families: Speed, Keepers, Sales, Luck ---- */
 .mg01-choices [data-fam="speed"], .o-problems [data-fam="speed"], .mg01-who[data-fam="speed"], .mg-badge[data-fam="speed"] { --fam:#ffd23a; }
@@ -126,41 +100,14 @@ html[data-fx="low"] .mg01-overlay *, html[data-fx="low"] .mg-fresh { animation:n
 .mg-famamt[data-fam="sales"] .gem-art, .mg-pool[data-fam="sales"] .gem-art { filter:hue-rotate(155deg); }
 .mg-famamt[data-fam="luck"] .gem-art, .mg-pool[data-fam="luck"] .gem-art { filter:hue-rotate(225deg); }
 .mg-famico { display:inline-flex; align-items:center; }
-.mg-wallet { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; }
+.mg-wallet { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; padding:2px 4px; }
 .mg-wallet .gem-amt { font-size:1.25em; }
 .mg-pool { display:inline-flex; align-items:center; gap:6px; padding:2px 8px 2px 4px; background:rgba(0,0,0,.35); border:2px solid var(--fam, rgba(255,255,255,.2)); }
 .mg-pool .gem-amt .gem { --s:1em; }
-.mg-fam { margin-top:6px; }
-.mg-famhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 2px; border-bottom:3px solid var(--fam); padding-bottom:4px; }
-.mg-famhead small { flex:1 1 220px; opacity:.7; font-weight:400; font-size:.7em; letter-spacing:0; line-height:1.25; }
-.mg-game[data-fam], .mg02-node[data-fam] { border-top:4px solid var(--fam); }
+.mg02-node[data-fam] { border-top:4px solid var(--fam); }
 .mg02-node[data-fam="any"] { border-top-color:rgba(255,255,255,.3); }
-.mg-blurb { opacity:.8; font-size:.9em; line-height:1.3; }
-.mg-game.fix { box-shadow:0 0 0 3px #ff9f43, 0 0 16px rgba(255,159,67,.5); }
-.mg-fix { display:inline-block; padding:1px 7px; font-size:.7em; letter-spacing:.5px; color:#3a1a00; background:#ff9f43; border:2px solid #1a0f14; white-space:nowrap; text-shadow:none; }
-.mg-fixhint { font-size:.8em; color:#ffb870; }
-.mg-fresh[title^="Rested"] { background:#9fe8ff; color:#08344a; }
-
-/* the typist who plays */
-.mg-who { gap:8px; border-left:6px solid var(--c, #7be05a); }
-.mg-who-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.mg-who-row .o-lookpic { background:rgba(0,0,0,.3); }
-.mg-who-text { flex:1 1 200px; min-width:0; display:grid; gap:2px; }
-.mg-who-text b { font-weight:400; font-size:1.15em; }
-.mg-who-text small { opacity:.75; }
-.mg-who-badge { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .mg-badge { display:inline-block; padding:1px 8px; font-size:.85em; color:#14260f; background:var(--fam, #ffd23a); border:2px solid #1a0f14; text-shadow:none; white-space:nowrap; }
 html[data-style] .o-chip.mg-badge { color:#14260f; background:var(--fam, #ffd23a); border-color:#1a0f14; box-shadow:none; }
-.mg-picker { display:grid; gap:8px; padding-top:8px; border-top:2px dashed rgba(255,255,255,.18); }
-.mg-pickdesks { display:flex; flex-wrap:wrap; gap:6px; }
-.mg-pickdesks .o-btn[aria-pressed="true"] { outline:3px solid var(--c, #ffd23a); }
-.mg-pickgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); gap:6px; max-height:260px; overflow:auto; padding:2px; }
-.mg-pick { display:grid; justify-items:center; gap:2px; padding:6px 4px; background:rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.14); color:inherit; font:inherit; cursor:pointer; min-width:0; }
-.mg-pick .o-lookpic { width:48px; height:52px; }
-.mg-pick .o-lookpic > img, .mg-pick .o-lookpic > svg { width:80px; height:80px; left:-16px; top:-9px; }
-.mg-pick b { font-weight:400; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.9em; }
-.mg-pick small { opacity:.7; font-size:.75em; }
-.mg-pick.on, .mg-pick:hover { border-color:#ffd23a; background:rgba(255,210,58,.14); }
 
 /* crew sets */
 .mg-crewnote { margin:0 0 6px; }
@@ -172,26 +119,89 @@ html[data-style] .o-chip.mg-badge { color:#14260f; background:var(--fam, #ffd23a
 .mg-setfx { color:var(--fam); font-weight:700; font-size:1.2em; }
 .mg-set > small { opacity:.65; text-align:right; }
 .mg-roster { display:flex; flex-wrap:wrap; gap:4px; }
-.mg-chip { display:inline-flex; align-items:center; gap:5px; padding:1px 7px; font:inherit; font-size:.85em; color:inherit; background:rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.14); cursor:pointer; }
+.mg-chip { display:inline-flex; align-items:center; gap:5px; padding:1px 7px; font-size:.85em; background:rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.14); }
 .mg-chip[data-fam] { border-color:var(--fam); }
 .mg-chip i { font-style:normal; font-weight:700; color:#14260f; background:var(--fam); padding:0 5px; }
-.mg-chip:hover { background:rgba(255,210,58,.16); }
+
+/* the repair manual: one card a repair, ??? (a silhouette) until it has been tried */
+.mg-reps { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap:8px; }
+.mg-rep { display:grid; grid-template-columns:40px minmax(0, 1fr) auto; grid-template-areas:'ico name stars' 'ico tag tag' 'how how how' 'log log log'; align-items:center; align-content:start; gap:2px 10px; padding:8px 10px; margin:0 !important; border-left:6px solid var(--fam); line-height:1.2; }
+.mg-rep-ico { grid-area:ico; display:grid; place-items:center; width:40px; height:40px; background:rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.12); }
+.mg-rep-emo { font-size:24px; line-height:1; }
+.mg-rep-name { grid-area:name; min-width:0; font-weight:400; }
+.mg-rep-tag { grid-area:tag; min-width:0; opacity:.75; font-size:.78em; }
+.mg-rep-tag em { font-style:normal; color:var(--fam); letter-spacing:.5px; }
+.mg-rep-how { grid-area:how; margin-top:4px; opacity:.85; font-size:.82em; }
+.mg-rep-log { grid-area:log; opacity:.7; font-size:.72em; }
+.mg-rep-log:empty { display:none; }
+.mg-stars { grid-area:stars; display:inline-flex; gap:1px; font-size:1.05em; line-height:1; }
+.mg-stars i { font-style:normal; color:rgba(255,255,255,.18); }
+.mg-stars i.on { color:#ffd23a; text-shadow:2px 2px 0 #1a0f14; }
+.mg-rep.unseen { border-left-color:rgba(255,255,255,.18); }
+.mg-rep.unseen .mg-rep-ico > * { filter:brightness(0) opacity(.55); }
+.mg-rep.unseen .mg-rep-name { letter-spacing:3px; opacity:.6; }
+.mg-rep.unseen .mg-rep-how { font-style:italic; opacity:.6; }
+html[data-style="pixel"] .mg-rep-tag em { font-family:var(--font-px); font-size:8px; }
+html[data-style="classic"] .mg-rep-ico { border-radius:10px; }
 
 /* floor problems and tune-ups */
-.o-problems { flex:none; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; width:100%; max-width:880px; margin:0 auto; min-width:0; position:relative; z-index:8; }
+.o-problems { flex:none; display:flex; flex-wrap:wrap; align-items:center; gap:6px; justify-content:center; width:100%; max-width:880px; margin:0 auto; min-width:0; position:relative; z-index:8; container:mgfloor / inline-size; }
 .o-problems:empty { display:none; }
 .o-problems:not(:empty) { margin-top:30px; }           /* clears the Goals pill that sits at the top of the Floor */
-.mg-prob { flex:1 1 260px; flex-direction:row; align-items:center; gap:10px; padding:5px 10px; margin:0 !important; border-left:6px solid var(--fam, #ff9f43); animation:mg-prob-in .4s steps(4); }
+.mg-prob { flex:1 1 260px; flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:5px 10px; margin:0 !important; border-left:6px solid var(--fam, #ff9f43); animation:mg-prob-in .4s steps(4); }
 .mg-prob:not(.good) { box-shadow:0 0 0 2px #ff9f43; }
 .mg-prob.good { border-left-color:#7be05a; }
-.mg-prob-main { flex:1 1 auto; min-width:0; display:grid; gap:1px; line-height:1.2; }
+.mg-prob.patched:not(.good) { box-shadow:0 0 0 2px #ffd23a; }
+.mg-prob-main { flex:1 1 200px; min-width:0; display:grid; gap:1px; line-height:1.2; }
 .mg-prob-main b { font-weight:400; display:flex; align-items:center; gap:6px; }
-.mg-prob-main span { opacity:.8; font-size:.85em; }
-.mg-prob-time { flex:none; font-variant-numeric:tabular-nums; opacity:.85; }
+.mg-prob-ttl { min-width:0; }
+.mg-prob-fx { opacity:.8; font-size:.85em; }
+.mg-prob-who { display:block; font-size:.92em; color:#ffe28a; }
+.mg-prob-time { flex:none; margin-left:auto; display:grid; justify-items:end; font-variant-numeric:tabular-nums; opacity:.85; }
+.mg-prob-time i { font-style:normal; font-size:.65em; letter-spacing:1px; color:#ffd23a; }
 @keyframes mg-prob-in { from { transform:translateY(-8px); opacity:0; } }
-.mg01-choices .mg-prob { box-shadow:none; }
+.mg01-choices .mg-prob { box-shadow:none; flex:none; }
+.mg01-choices .mg-prob:not(.good) { box-shadow:0 0 0 2px #ff9f43; }
+.mg-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+/* on the Floor the cards stay short so the machine (and the problem drawn on it) stays in view: the problem is its title over the effect and fixer (two lines
+   at most), beside its time and Fix it (the full text is the tooltip, and the Repairs page has it whole); each tune-up is a chip, in the same row when there is room */
+.o-problems .mg-prob:not(.good) { flex:1 1 480px; display:grid; grid-template-columns:auto minmax(0, 1fr) auto auto; grid-template-areas:'ico ttl time btn' 'ico fx time btn'; align-items:center; gap:0 10px; }
+.o-problems .mg-prob-main, .o-problems .mg-prob-main > b { display:contents; }
+.o-problems .mg-prob-main .mg-famico { grid-area:ico; }
+.o-problems .mg-prob-ttl { grid-area:ttl; line-height:1.1; }
+.o-problems .mg-prob-fx { grid-area:fx; line-height:1.15; }
+.o-problems .mg-prob-ttl, .o-problems .mg-prob-fx { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.o-problems .mg-prob-fx { white-space:normal; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
+.o-problems .mg-prob-who { display:inline; }
+.o-problems .mg-prob-who::before { content:' · '; color:var(--cream, #fff6d6); }
+.o-problems .mg-prob-time { grid-area:time; margin:0; }
+.o-problems .mg-prob > .o-btn { grid-area:btn; align-self:center; }
+html[data-style="pixel"] .o-problems .mg-prob:not(.good) { border-width:8px; border-image-width:8px; padding-bottom:2px; }
+html[data-style="classic"] .o-problems .mg-prob:not(.good) { padding:6px 12px; }
+/* a narrow Floor (a phone): icon, title (up to two lines) and time, then the effect (up to two lines) beside Fix it */
+@container mgfloor (max-width:560px) {
+  .o-problems .mg-prob:not(.good) { grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:'ico ttl time' 'fx fx btn'; gap:2px 6px; }
+  .o-problems .mg-prob-ttl, .o-problems .mg-prob-fx { white-space:normal; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
+  html[data-style="pixel"] .o-problems .mg-prob:not(.good) { padding-left:2px; padding-right:2px; }
+  html[data-style="pixel"] .o-problems .mg-prob .mg-famico .o-cart { width:24px !important; height:24px !important; }
+  html[data-style="classic"] .o-problems .mg-prob:not(.good) { padding:5px 8px; }
+  html[data-style="classic"] .o-problems .mg-prob .mg-famico .o-cart { width:30px; height:30px; font-size:16px; }
+}
+.o-problems .mg-tune { flex:none; display:inline-flex; flex-wrap:nowrap; align-items:center; gap:5px; min-height:32px; padding:1px 8px 1px 4px; font-size:18px; line-height:1; white-space:nowrap; background:rgba(26,15,20,.9);
+  border:3px solid #1a0f14; border-left:6px solid var(--fam); box-shadow:inset 0 -3px 0 rgba(0,0,0,.35), 0 3px 0 rgba(0,0,0,.3); }
+.o-problems .mg-tune b { font-weight:400; }
+.o-problems .mg-tune .mg-famico .o-ico { width:20px !important; height:20px !important; }
+.mg-tune-fx { color:var(--fam); }
+.o-problems .mg-tune .mg-prob-time { display:inline; margin:0; opacity:.8; }
+html[data-style="classic"] .o-problems .mg-tune { min-height:30px; padding:2px 12px 2px 4px; font-size:14px; background:rgba(8,24,12,.78); border:2px solid var(--wood-dark, #3a210d); border-left:6px solid var(--fam); border-radius:99px; box-shadow:inset 0 0 10px rgba(0,0,0,.35); }
+html[data-style="classic"] .o-problems .mg-tune .mg-famico .o-ico { display:inline-grid; place-items:center; font-size:15px; line-height:1; }
+@container mgfloor (max-width:560px) {
+  .o-problems .mg-tune { gap:2px; padding:0 5px 0 2px; font-size:16px; border-width:2px; border-left-width:5px; }
+  .o-problems .mg-tune .mg-famico .o-ico { width:18px !important; height:18px !important; }
+  html[data-style="classic"] .o-problems .mg-tune { padding:1px 9px 1px 3px; font-size:13px; border-left-width:5px; }
+}
 
-/* the typist in the game's side card */
+/* the fixer in the repair's side card */
 .mg01-who { display:flex; align-items:center; gap:8px; min-height:40px; padding:4px 6px; background:rgba(0,0,0,.3); border-left:4px solid var(--fam, #ffd23a); min-width:0; }
 .mg01-who:empty { display:none; }
 .mg01-who .o-lookpic { width:38px; height:42px; }
@@ -202,3 +212,52 @@ html[data-style] .o-chip.mg-badge { color:#14260f; background:var(--fam, #ffd23a
 @container mg01 (max-width:640px) or (max-height:520px) { .mg01-who { display:none; } }
 @media(prefers-reduced-motion:reduce) { .mg-prob { animation:none; } }
 html[data-fx="low"] .mg-prob { animation:none; }
+
+/* ---- the problem on the Floor: #opsRoot[data-problem] is set while the machine on screen is hit (minigame-progression.js stageHook) ---- */
+#opsRoot[data-problem] .o-stage::before { content:''; position:absolute; z-index:5; pointer-events:none; }
+/* leak: the roof drips whatever the weather, and a puddle spreads on the desk */
+#opsRoot[data-problem="leak"] .o-drips { opacity:1; }
+#opsRoot[data-problem="leak"] .o-scene::before { content:''; position:absolute; z-index:1; left:6%; bottom:26px; width:24%; height:14px; background:#5fa8f0; box-shadow:0 0 0 3px #1a0f14, inset 0 3px 0 #bfe0ff; border-radius:50%; opacity:.85; animation:mg-puddle 3s steps(3) infinite alternate; }
+@keyframes mg-puddle { to { transform:scaleX(1.2); } }
+/* jam: ink on every typebar head, a blot in the type basket and a splat on the page */
+#opsRoot[data-problem="jam"] .o-bar::after { background:#1a0f14 !important; box-shadow:0 0 0 2px #3b2a6a, 2px 7px 0 -2px #1a0f14; }
+#opsRoot[data-problem="jam"] .o-sheet { position:relative; }
+#opsRoot[data-problem="jam"] .o-sheet::after { content:''; position:absolute; z-index:2; right:12%; top:4px; width:54px; height:38px; pointer-events:none;
+  background:radial-gradient(circle at 40% 40%, #1a0f14 0 12px, transparent 13px), radial-gradient(circle at 74% 26%, #2a1a4a 0 7px, transparent 8px), radial-gradient(circle at 16% 72%, #1a0f14 0 5px, transparent 6px), radial-gradient(circle at 82% 70%, #2a1a4a 0 4px, transparent 5px), linear-gradient(#1a0f14, #1a0f14) 46% 100% / 5px 50% no-repeat; }
+#opsRoot[data-problem="jam"] .o-bars::after { content:''; position:absolute; z-index:2; left:50%; bottom:-4px; width:44px; height:16px; margin-left:-22px; background:radial-gradient(circle at 30% 50%, #1a0f14 0 7px, transparent 8px), radial-gradient(circle at 62% 40%, #2a1a4a 0 9px, transparent 10px), radial-gradient(circle at 85% 70%, #1a0f14 0 4px, transparent 5px); }
+/* keys: banana mush, and the mushy keys are stuck down */
+#opsRoot[data-problem="keys"] .o-krow:nth-child(odd) .o-key:nth-child(3n+2), #opsRoot[data-problem="keys"] .o-krow:nth-child(2) .o-key:nth-child(4n+1) { background:#f2d36b !important; color:#8a6a12 !important; box-shadow:0 1px 0 #1a0f14 !important; transform:translateY(3px); }
+/* nap: the keeper's light is out and it snores */
+#opsRoot[data-problem="nap"] .o-led { display:block; z-index:3; left:10px; top:-15px; width:10px; height:10px; background:#5a1a1a; border:2px solid #1a0f14; box-shadow:none; animation:none; }
+#opsRoot[data-problem="nap"] .o-led::after { content:'z Z'; position:absolute; left:12px; bottom:6px; white-space:nowrap; font:14px/1 var(--font-px, monospace); color:#bfe0ff; text-shadow:2px 2px 0 #1a0f14; animation:mg-zzz 2.4s steps(6) infinite; }
+@keyframes mg-zzz { from { transform:translate(0, 6px); opacity:0; } 30% { opacity:1; } to { transform:translate(14px, -18px); opacity:0; } }
+/* jinx: a little black cloud over the machine, raining on it */
+#opsRoot[data-problem="jinx"] .o-stage::before { left:50%; top:4%; width:140px; height:74px; margin-left:-70px;
+  background:radial-gradient(circle at 28% 42%, #3a3a4c 0 20px, transparent 21px), radial-gradient(circle at 52% 30%, #4a4a60 0 25px, transparent 26px), radial-gradient(circle at 76% 44%, #3a3a4c 0 19px, transparent 20px),
+    linear-gradient(#34344a, #34344a) 22% 42% / 58% 20px no-repeat, repeating-linear-gradient(100deg, transparent 0 9px, #9fd4ff 9px 11px, transparent 11px 20px) 30% 100% / 48% 20px no-repeat;
+  filter:drop-shadow(2px 0 0 #1a0f14) drop-shadow(-2px 0 0 #1a0f14) drop-shadow(0 2px 0 #1a0f14) drop-shadow(0 -2px 0 #1a0f14); animation:mg-bob 1.6s steps(2) infinite alternate; }
+@keyframes mg-bob { to { transform:translateY(-4px); } }
+/* raven: a pixel raven perched on the carriage rail, by the bell */
+#opsRoot[data-problem="raven"] .o-stage::before { right:calc(50% - min(50% - 64px, 300px) + 14px); bottom:calc(76cqh - 13px); width:48px; height:42px; image-rendering:pixelated;
+  background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14' shape-rendering='crispEdges'><path fill='%231a0f14' d='M5 0h5v1h-5zM4 1h1v1h-1zM10 1h1v1h-1zM1 2h3v1h-3zM10 2h1v1h-1zM0 3h1v1h-1zM11 3h1v1h-1zM1 4h3v1h-3zM11 4h2v1h-2zM3 5h1v1h-1zM13 5h1v1h-1zM2 6h1v1h-1zM14 6h1v1h-1zM2 7h1v1h-1zM15 7h1v1h-1zM3 8h1v1h-1zM15 8h1v1h-1zM4 9h1v1h-1zM15 9h1v1h-1zM5 10h6v1h-6zM13 10h2v1h-2z'/><path fill='%232a2238' d='M5 1h5v1h-5zM4 2h1v1h-1zM6 2h4v1h-4zM4 3h7v1h-7zM4 4h1v1h-1zM7 4h4v1h-4zM4 5h9v1h-9zM3 6h3v1h-3zM11 6h3v1h-3zM3 7h12v1h-12zM4 8h4v1h-4zM13 8h2v1h-2zM5 9h10v1h-10zM11 10h1v1h-1zM12 10h1v1h-1z'/><path fill='%23ffd23a' d='M5 2h1v1h-1z'/><path fill='%237a7a8e' d='M1 3h3v1h-3z'/><path fill='%234f416b' d='M5 4h2v1h-2zM6 6h5v1h-5zM8 8h5v1h-5z'/><path fill='%23f2b23a' d='M6 11h1v1h-1zM9 11h1v1h-1zM5 12h3v1h-3zM8 12h3v1h-3z'/></svg>") center / 100% 100% no-repeat; animation:mg-bob 2.4s steps(2) infinite alternate; }
+/* overheat: the body glows and steam rises off it */
+#opsRoot[data-problem="overheat"] .o-body { filter:sepia(.45) saturate(1.8) hue-rotate(-25deg); }
+#opsRoot[data-problem="overheat"] .o-stage::before { left:30%; right:30%; top:6%; height:90px;
+  background:radial-gradient(circle at 25% 75%, rgba(255,255,255,.6) 0 11px, transparent 12px), radial-gradient(circle at 52% 45%, rgba(255,255,255,.5) 0 15px, transparent 16px), radial-gradient(circle at 78% 70%, rgba(255,255,255,.55) 0 10px, transparent 11px), radial-gradient(circle at 60% 12%, rgba(255,255,255,.35) 0 9px, transparent 10px);
+  animation:mg-steam 1.8s steps(6) infinite; }
+@keyframes mg-steam { from { transform:translateY(16px); opacity:.2; } 40% { opacity:1; } to { transform:translateY(-14px); opacity:0; } }
+/* fuses: lights out across the Floor */
+#opsRoot[data-problem="fuses"] .o-scene { filter:brightness(.28) saturate(.5); }
+#opsRoot[data-problem="fuses"] .o-tw { filter:brightness(.5) saturate(.7); }
+/* tangle: ribbons strung across every machine */
+#opsRoot[data-problem="tangle"] .o-stage::before { inset:8% 6% 18%;
+  background:linear-gradient(18deg, transparent calc(50% - 2px), #c0283a calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)), linear-gradient(-24deg, transparent calc(46% - 2px), #5fa8f0 calc(46% - 2px) calc(46% + 2px), transparent calc(46% + 2px)),
+    linear-gradient(72deg, transparent calc(55% - 2px), #78d9a0 calc(55% - 2px) calc(55% + 2px), transparent calc(55% + 2px)), linear-gradient(-60deg, transparent calc(40% - 2px), #f2b23a calc(40% - 2px) calc(40% + 2px), transparent calc(40% + 2px));
+  filter:drop-shadow(0 2px 0 #1a0f14); opacity:.9; }
+/* snack: the typists turn a little green */
+#opsRoot[data-problem="snack"] .o-crewlayer { filter:hue-rotate(70deg) saturate(.75); }
+/* flood: the water line rises over the desk and stays */
+#opsRoot[data-problem="flood"] .o-stage::before { left:0; right:0; bottom:0; height:24%; background:linear-gradient(rgba(95,168,240,.5), rgba(44,98,168,.7)); box-shadow:inset 0 4px 0 #bfe0ff, inset 0 7px 0 #1a0f14; animation:mg-flood 24s steps(12) backwards; }
+@keyframes mg-flood { from { height:12%; } }
+@media(prefers-reduced-motion:reduce) { #opsRoot[data-problem] .o-stage::before, #opsRoot[data-problem] .o-scene::before, #opsRoot[data-problem] .o-led::after { animation:none !important; } }
+html[data-fx="low"] #opsRoot[data-problem] .o-stage::before, html[data-fx="low"] #opsRoot[data-problem] .o-scene::before, html[data-fx="low"] #opsRoot[data-problem] .o-led::after { animation:none !important; }

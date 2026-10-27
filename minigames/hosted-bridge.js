@@ -2,11 +2,13 @@
    name, reward, pause, sound and the way out. Inside the frame there is only the game itself, on the main game's panel. */
 (() => {
   'use strict';
-  const q = new URLSearchParams(location.search), game = q.get('game'), session = Number(q.get('session'));
+  const q = new URLSearchParams(location.search), game = q.get('game'), session = Number(q.get('session')), origin = q.get('origin');
   if (parent === window || q.get('hosted') !== 'mg01' || !/^[a-z]{3,10}$/.test(game || '') || !Number.isSafeInteger(session) || session < 1) return;
+  if (origin != null && origin !== location.origin) return;                     /* same origin only: a foreign ?origin= leaves the game standalone */
   let bests = {}; try { bests = JSON.parse(q.get('bests') || '{}') || {}; } catch (e) { /* no bests */ }
   let shell, phase = 'title', mode, input = false, elapsed = 0, sent = 0, sequence = 0, ready;
   const score = () => { const n = Math.floor(Number(shell?.score?.())); return Number.isFinite(n) && n > 0 ? Math.min(n, 1e9) : 0; };
+  const text = (v, n) => typeof v === 'string' && v.trim() ? v.trim().slice(0, n) : undefined;
   const send = (type, extra = {}) => parent.postMessage({ bridge:'mg01', game, session, sequence:++sequence, type, mode, elapsed, score:score(), ...extra }, location.origin);
   window.MGHosted = {
     skipTitle: q.get('skip') === '1',
@@ -20,8 +22,12 @@
       elapsed += dt;
       if (elapsed - sent >= .5) { sent = elapsed; send('progress'); }
     },
-    finish(final) { send('finish', { reason:'natural', score:Math.max(0, Math.min(1e9, Math.floor(Number(final)) || 0)) }); },
-    quit() { send('quit', { reason:'quit' }); }
+    /* grade (0..1, 3 decimals) only when the game is graded (repairs) */
+    finish(final, grade) {
+      const g = grade == null || grade === '' ? NaN : Number(grade);
+      send('finish', { reason:'natural', score:Math.max(0, Math.min(1e9, Math.floor(Number(final)) || 0)), ...(Number.isFinite(g) ? { grade:Math.round(Math.max(0, Math.min(1, g)) * 1000) / 1000 } : {}) });
+    },
+    quit(reason) { send('quit', { reason:reason === 'done' ? 'done' : 'quit' }); }
   };
   addEventListener('message', e => {
     const d = e.data;
@@ -31,7 +37,7 @@
     if (d.type === 'resume') shell?.resume();
     if (d.type === 'pause') { if (shell?.phase === 'play') shell.pause(); else if (shell?.phase === 'pause') shell.resume(); }
     if (d.type === 'mute') window.MG?.sfx.set(!!d.on);
-    if (d.type === 'reward') shell?.reward?.(d);
+    if (d.type === 'reward') shell?.reward?.({ total:Number(d.total) || 0, best:Number(d.best) || 0, label:text(d.label, 24), verdict:text(d.verdict, 16), note:text(d.note, 90) });
     if (d.type === 'quit-request') send('quit', { reason:'quit' });
     if (d.type === 'bank-request') send('bank', { reason:'bank' });
   });
@@ -40,7 +46,7 @@
   document.documentElement.dataset.hosted = 'mg01';
   if (q.get('low') === '1' || q.get('reduce') === '1') {
     const style = document.createElement('style');
-    style.textContent = '*{animation:none!important;transition:none!important}.drifters,.mg-confetti,.mg-float{display:none!important}.mg-legend div,.mg-stats>*{opacity:1!important;transform:none!important}@keyframes mg01-banner{0%,90%{opacity:1}100%{opacity:0}}.mg-banner.show{animation:mg01-banner 2s linear!important;transform:none!important}';
+    style.textContent = '*{animation:none!important;transition:none!important}.drifters,.mg-confetti,.mg-float{display:none!important}.mg-legend div,.mg-stats>*,.mg-stars>*,.mg-verdict{opacity:1!important;transform:none!important}@keyframes mg01-banner{0%,90%{opacity:1}100%{opacity:0}}.mg-banner.show{animation:mg01-banner 2s linear!important;transform:none!important}';
     document.head.appendChild(style);
   }
   /* the game sits straight on the main game's wooden panel: no jungle, no back arrow, no sound button, a lighter frame, and a reward line on the game-over card */
@@ -58,6 +64,8 @@
     .mg-reward b{font-weight:400;font-size:max(18px,calc(var(--u)*30px));color:#ffe28a;text-shadow:3px 3px 0 var(--wood-dark)}
     .mg-reward span{font-size:max(8px,calc(var(--u)*9px));color:#fff6d6;letter-spacing:1px}
     .mg-reward em{font-style:normal;font-size:max(8px,calc(var(--u)*10px));color:#7be05a}
+    .mg-reward i{font-style:normal;font-size:max(9px,calc(var(--u)*12px));color:#7be05a;text-shadow:2px 2px 0 var(--ink)}
+    .mg-reward small{max-width:100%;font-family:var(--font-body);font-size:max(15px,calc(var(--u)*17px));line-height:1.05;color:#bff4ff;text-wrap:balance}
   `;
   document.head.appendChild(style);
 })();

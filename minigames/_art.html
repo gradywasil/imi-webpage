@@ -1,7 +1,0 @@
-<!doctype html><meta charset="utf-8"><body style="background:#3a7a3a;margin:0;color:#fff;font:10px monospace">
-<div id="o" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;width:1000px;align-items:flex-end"></div>
-<script src="../pixel.js"></script><script src="mg-art.js"></script><script src="mg-art3.js"></script>
-<script>
-const S = MGArt3.build(), o = document.getElementById('o');
-for (const k in S) { if (Array.isArray(S[k])) continue; const d = document.createElement('div'); const c = S[k]; c.style.cssText = 'width:' + c.width * 3 + 'px;height:' + c.height * 3 + 'px;image-rendering:pixelated;display:block'; d.append(c, k); o.append(d); }
-</script>

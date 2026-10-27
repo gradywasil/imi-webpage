@@ -36,6 +36,7 @@ This is an incremental production game, not a free-text typing test. Clicking th
 | **Media** | Develop passive production divisions. |
 | **Muses** | Purchase and seat patrons that modify production. |
 | **Awards** | Review statistics, awards, prestige, and challenge progress. |
+| **Ideas** | Spend Inspiration earned from repairs on permanent ideas, see each machine's crew badges, and browse the repair manual. |
 
 Departments appear in the side rail as progression unlocks them. On narrow screens, the menu expands the rail into labelled controls. The menu button returns to the title screen; Escape also returns from gameplay when a modal is not taking precedence.
 
@@ -57,6 +58,23 @@ Machines are purchased in order, and later machines start with a typist. They al
 Typists produce letters automatically and develop through traits, training, and levels. After their introduction, free keepers chase the shared title goal. Pause a keeper to save letters for training, or use Words to set additional stock targets. Upgrade cards show the active effect and the next purchase result; How it works expands the conditions and modifiers.
 
 The toys in the side menu also interact with the game. A banana snack can accelerate typists and a coconut can grant letters. The weather and day/night toys are read-only **gauges**: the sky follows the game clock (`world.js`, a day is 14 real minutes: 9 day, 1 dusk, 3 night, 1 dawn; weather changes every 2.5 minutes), the same for everyone and computed from the wall clock, so nothing is saved and time away counts. Each gauge shows a countdown to the next change and tapping it reads the forecast; the Shop barometer (two tiers) extends the forecast and names the titles each change lifts. The sky drives the rights market, some typists (Night Owl, Rain Lover, storms) and the Floor's sky chip. The sound toggle controls synthesized effects. The menu's “banana” typing hint is an Easter egg, separate from the main typewriter controls.
+
+### Repairs
+
+Things break on the Floor once you have written three titles (or after a Printing). A leak drips over a machine, ink jams the typebars, a keeper nods off, a raven perches on the carriage. Each problem slows one machine, or all of them for the rare big ones (a storm flood, blown fuses, the Great Ribbon Tangle), until it is repaired or runs out.
+
+**Fix it** on the problem card opens that problem's own repair right over the Floor. A repair is a tiny game with one verb, such as CATCH, SCRUB, WAKE or SHOO. Most take 8-15 seconds; the big ones take 40-45. One of the desk's typists plays it.
+
+The grade sets the verdict:
+- **Patched** halves the time left.
+- **Fixed** clears the problem and tunes the machine up for a few minutes.
+- **Perfect** tunes it up harder.
+
+A repaired problem pays Inspiration once, in its family (Speed, Keepers, Sales or Luck), and trains the fixer's badge. Badges become set bonuses on their own machine. A rotten banana's Spoiled snack or Bad review turns into a Floor-wide problem of its own. Rain, storms and night bring their own problems.
+
+Inspiration buys permanent **Ideas** (warmer hands, fresher keeper eyes, better stories, a bigger Toolbox for tune-ups, Steady hands for extra repair seconds). The Ideas tab also has the crew's badges and a repair manual that fills in as you meet each problem.
+
+The numbers are in [BALANCE.md](BALANCE.md), under Repairs. The catalogue is [minigames/CONCEPTS.md](minigames/CONCEPTS.md), and [minigames/REPAIRS.md](minigames/REPAIRS.md) covers writing a repair. The 15 old Break Room games are now arcade cabinets in monkey-hub.
 
 ## Publishing, pitches, and the Library
 
@@ -131,6 +149,8 @@ Offline progress simulates a bounded absence. Initially it covers up to two hour
 
 There is currently no account, cloud sync, or save import/export interface. Clearing site data can erase progress. A localhost copy and the hosted demo have different storage origins and do not automatically share a save.
 
+When the game runs inside the Monkey Hub, it passes five lifetime numbers to the hub page: words, letters, Legacy stars earned, Diamond Bananas earned and minutes played (`cloud-sync.js`, through the Monkey Cloud SDK in `vendor/monkey-cloud/`). It sends them when the hub asks, on the first tick after the save loads, about every five minutes after that, at each Printing or reset, and when the page is hidden. Only the tab that holds the save reports. The save itself never leaves the browser. A **Cloud sync** row appears in Settings only once a Monkey Cloud config ships; the shipped config keeps it off, so nothing is sent anywhere outside the hub.
+
 ## Install it as an app
 
 The site is a progressive web app. Open the hosted game in Chrome on Android and choose **Install app** (or **Add to Home screen**): it installs with its own icon, opens full-screen without the browser's address bar, and keeps working offline. On iPhone use Share, then **Add to Home Screen**. A service worker (`sw.js`) stores the game after the first visit and always prefers the network, so a new deploy appears as soon as you are online. Installing needs https (or localhost).
@@ -195,6 +215,9 @@ These simulations are not a complete regression suite. They do not cover every l
 | Short-edition texts | `readers.js`, `readers-kids.js`, `readers-w5.js`, `readers-w7.js`, `readers-w9.js` (the last four are generated) |
 | Standalone Library | `library.html`, `library.js`, `library.css`, `library/` |
 | Presentation switching | `style-swap.js` |
+| Monkey Hub stats and Monkey Cloud | `cloud-sync.js`; `vendor/monkey-cloud/` is copied from `monkey-cloud/sdk` by its `sync-sdk` script, so do not edit it here |
+| Repairs, Inspiration and the Ideas tab | `minigame-progression.js`, `minigame-progression.css` |
+| Repair games (runner, kit, one file per repair) | `minigames/repair.html`, `minigames/repair-kit.js`, `minigames/repairs/`, `minigames/index.html` (dev index), `tools/repairs/check-repair.mjs` |
 | Balance tools | `tools/`, `BALANCE.md` |
 
 

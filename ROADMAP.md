@@ -17,7 +17,9 @@ Implemented batch: [Brother playtest roadmap](docs/plan/14-playtest-roadmap.md).
 
 - [x] **Balance pass**: a headless simulation harness and bot (`tools/`, see `BALANCE.md`); typist speed and cost scale by machine, pitched title pay and royalties reduced, divisions and the garden retuned.
 
-Dev hooks: `IMI.news(text)` pushes a headline to the ticker; `IMI.ops.spawnGold(true|false)` spawns a rotten or golden banana; `IMI.ops.royRate()` returns royalties per second; `IMI.ops.genPitch(band)` returns a generated pitch for a band (0-5); `IMI.ops.simulateAway(seconds)` runs the offline simulation (it mutates the save).
+- [x] **Repairs replace the Break Room** (Oct 25 2026): floor problems get their own 8-45 s repair games (`minigames/repairs/`), played over the Floor and paid once by grade in Inspiration and badge xp; the Ideas move to their own tab; the 15 Break Room games move to monkey-hub's arcade. See BALANCE.md, Repairs.
+
+Dev hooks: `IMI.news(text)` pushes a headline to the ticker; `IMI.ops.spawnProblem(id)` puts a floor problem (any repair id, e.g. `'leak'`) on the Floor now; `IMI.ops.spawnGold(true|false)` spawns a rotten or golden banana; `IMI.ops.royRate()` returns royalties per second; `IMI.ops.genPitch(band)` returns a generated pitch for a band (0-5); `IMI.ops.simulateAway(seconds)` runs the offline simulation (it mutates the save).
 
 ## Long game rollout
 

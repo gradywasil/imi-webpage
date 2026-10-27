@@ -450,11 +450,11 @@
   let skyOv = null, skyC = null, skyT = 0;
   const sky = () => { if (skyOv) return skyOv; const t = Date.now(); if (!skyC || t - skyT > 400) { skyC = World.at(t); skyT = t; } return skyC; };
   const isNight = () => sky().night;
-  const mgPerk = k => extensions.get('minigames')?.perk?.(k) || 0;   // Break Room ideas: flashFreq, flashSecs, luck
+  const mgPerk = k => extensions.get('minigames')?.perk?.(k) || 0;   // Ideas (minigame-progression.js): flashFreq, flashSecs, luck
   const FAM_IDS = ['speed', 'keeper', 'sales', 'luck'];
-  const mgDesk = (i, k) => i >= 0 ? extensions.get('minigames')?.deskFactor?.(i, k) ?? 1 : 1;      // Break Room badges, set bonuses and floor problems on one machine: typing, keeper, sales, luck
+  const mgDesk = (i, k) => i >= 0 ? extensions.get('minigames')?.deskFactor?.(i, k) ?? 1 : 1;      // repair badges, set bonuses, tune-ups and floor problems on one machine: typing, keeper, sales, luck
   const inspired = new WeakMap();                                  // typist -> until (runtime only: a good idea is not worth a save)
-  /* What is the same for every typist (perks, drive, the sky, Break Room and Works bonuses) is read once. During a tick that one reading serves every typist and every desk;
+  /* What is the same for every typist (perks, drive, the sky, Ideas and Works bonuses) is read once. During a tick that one reading serves every typist and every desk;
      outside a tick each call reads it fresh, so nothing can be stale after a purchase or in a test. */
   let inTick = false, speedCtx = null;
   const speedContext = () => ({ perk: speedPerks(), drive: lgb ? lgb.driveMult(sbRank('drive')) : 1, night: isNight(), poe: museOn('poe') && isNight(), wx: sky().wx, storm: stormy(), now: performance.now(),
@@ -2519,7 +2519,7 @@
     S.legacy = { ...S.legacy, fm: next }; if ('enabled' in patch) { if (patch.enabled) { IMI.sfx.levelup && IMI.sfx.levelup(); window.LGFX?.float('Room control on', innerWidth * .5, innerHeight * .3, '#7be05a', true); } else IMI.sfx.tick(); } else IMI.sfx.tick(); mark(); save();
   }
   const keeperAt = (i, lv) => Math.max(KEEPER_MIN_PERIOD, KEEPER_PERIOD[i] * Math.pow(KEEPER_UP_STEP, Math.min(lv, KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_STEP, Math.max(0, lv - KEEPER_UP_MAX)) * Math.pow(KEEPER_MILE_STEP, Math.floor(Math.max(0, lv - KEEPER_UP_MAX) / KEEPER_MILE)) / (1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0) + (lgb ? lgb.keeperMult(S.legacy) - 1 : .1 * legLvl('keeper'))));      // seconds per banked word at a keeper level (the Muse multiplier is applied to the clock, not here)
-  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, keeperAt(i, keeperLv(i)) / ((1 + (extensions.get('minigames')?.keeperWorkBonus?.() || 0)) * mgDesk(i, 'keeper')));
+  const keeperPeriod = i => Math.max(KEEPER_MIN_PERIOD, keeperAt(i, keeperLv(i)) / mgDesk(i, 'keeper'));      // Fresh eyes is already in keeperAt; this adds only the desk's badges, tune-ups and problems
   const perFmt = p => p >= .1 ? p.toFixed(2) : p >= .01 ? p.toFixed(3) : p.toFixed(4);
   const keeperUpCost = i => roundMoney(KEEPER_UP_BASE[i] * Math.pow(KEEPER_UP_GROW, Math.min(keeperLv(i), KEEPER_UP_MAX)) * Math.pow(KEEPER_LATE_GROW, Math.max(0, keeperLv(i) - KEEPER_UP_MAX)));
   function keeperCard(i, have) {
@@ -3909,11 +3909,12 @@
   }
   const extensionAPI = {
     state: () => S, save, mark, morph, setTab, hydrate, subTabs: (dept, items) => subTabs(dept, items), sub: dept => ui.sub[dept], setSub: (dept, id) => { ui.sub[dept] = id; mark(); },
-    /* Break Room: who plays, which machine, and what is wrong on the Floor */
+    /* Repairs (minigame-progression.js): who fixes it, which machine, what is wrong on the Floor, and the sky its spawn gates read */
     esc, note: text => newsPush(text),
     typist: t => ({ art: lookArt(t.look, t.hat || 0), look: lookById(t.look).name, trait: TRAITS[t.trait]?.name || '', level: levelOf(t.xp) }),
     deskInfo: i => ({ name: DESKS[i].name.split(' ')[0], full: DESKS[i].name, color: DESKS[i].color }),
     buffLeft: k => Math.max(0, ((buffs[k] || 0) - productiveMono()) / 1000), clearBuff: k => { buffs[k] = 0; mark(); },
+    sky: () => { const k = sky(); return { wx: k.wx, night: !!k.night }; },
     problemsAllowed: () => progressing() && S.intro.done && !S.challenge && !challengeActive() && !masteryActive() && !workPaused() && !document.querySelector('.o-modal, .o-celebrate'),
     /* Workshop: expeditions are funded only from bananas this room has earned, never seed grants or refunds */
     workshopContext: () => ({ printing: S.printing, ref: bundleRef(), fundable: Math.max(0, Math.min(bananas.get(), (S.run.earned || 0) - (S.xFund || 0))), fundWords: fundable('words'), fundLetters: fundable('letters'), challenge: !!S.challenge || !!challengeActive() || masteryActive(),
@@ -4358,7 +4359,7 @@
       commitMinigames(expected, next, badge) {
         if (window.VaultSaveGate?.blocked || !progressing() || writer && (writer.localDisposition() || !writer.guard(S))) return { ok:false, error:'Save owner is unavailable' };
         const current = S.meta.minigames;
-        if ((current === undefined ? null : JSON.stringify(current)) !== expected || current && current.version !== 1 || !next || next.version !== 1) return { ok:false, error:'Break Room save changed or is unsupported' };
+        if ((current === undefined ? null : JSON.stringify(current)) !== expected || current && current.version !== 1 || !next || next.version !== 1) return { ok:false, error:'Ideas save changed or is unsupported' };
         const minigames = JSON.parse(JSON.stringify(next)), lastSeen = S.rewards.awayCheckpoint ? S.lastSeen : Date.now();
         /* a typist's badge xp rides in the same write as the Inspiration it came with: the save sees a copy of that desk's crew, and the live typist is changed only once it is stored */
         let desks = S.desks, target = null, bd = null;
@@ -5506,7 +5507,7 @@
       item(cart('s-contracts') + 'Writing contracts', fxc('+25%', 'title rights income'), SHOP.contracts, S.contracts, '', 'contracts', null, blue),
       item(cart('s-carbon') + 'Carbon paper', fxc('0', 'letters spent banking words'), SHOP.carbon, S.carbon, '', 'carbon', null, S.desks[3].owned),
       lampCard(have)]);
-    /* the shop is split by what you are buying with and for: your room, your sales, Break Room games, Diamond Bananas.
+    /* the shop is split by what you are buying with and for: your room, your sales, Diamond Bananas.
        Each tab's badge counts the bananas buys you can afford there right now, so nothing affordable hides behind a tab. */
     const upgrades = `${section('Typewriters', machines)}
       ${section('Restorations', `<div class="o-grid">${DESKS.map((D, i) => S.desks[i].owned ? mkCard(i, have) : '').join('')}</div>`, '<div class="lg03-inline" data-own data-automation="restore"></div>')}

@@ -5,9 +5,18 @@
    ============================================================ */
 (() => {
   'use strict';
-  const rng = (a = 1, b) => b == null ? Math.random() * a : a + Math.random() * (b - a);
+  /* rng(a=1, b): [0,a) or [a,b). ?seed=N makes MG.rng repeatable (mulberry32); without it, Math.random as always. seeded(n) is a private stream. */
+  const mulberry32 = s => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const rngOf = src => (a = 1, b) => b == null ? src() * a : a + src() * (b - a);
+  const seeded = n => rngOf(mulberry32(n >>> 0));
+  const SEED = (s => s != null && s !== '' && Number.isFinite(+s) ? +s >>> 0 : null)(new URLSearchParams(location.search).get('seed'));
+  const rng = SEED == null ? (a = 1, b) => b == null ? Math.random() * a : a + Math.random() * (b - a) : seeded(SEED);
   const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
   const lerp = (a, b, t) => a + (b - a) * t;
+  /* repair grades (0..1): the verdict words and star cut-offs. VERDICT_AT is the single source of the thresholds. */
+  const VERDICT_AT = Object.freeze({ patched: 0, fixed: .4, perfect: .85 }), STARS_AT = Object.freeze([.4, .65, .85]);
+  const verdictOf = g => !(g > VERDICT_AT.patched) ? 'NOT FIXED' : g < VERDICT_AT.fixed ? 'PATCHED' : g < VERDICT_AT.perfect ? 'FIXED' : 'PERFECT';
+  const starsOf = g => STARS_AT.filter(t => g >= t).length;
 
   /* ---------- storage ---------- */
   const store = {
@@ -74,6 +83,24 @@
     st.fit = fit;
     st.toArt = ev => { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * W, (ev.clientY - r.top) / r.height * H]; };
     return st;
+  }
+
+  /* ---------- a countdown for timed games: tick(dt) returns true once, on the step the time runs out; sfx.tick (and onTick(n)) at 3, 2 and 1 s left ---------- */
+  function countdownTimer(seconds, onTick) {
+    const T = {
+      total: seconds, left: seconds,
+      get frac() { return T.total > 0 ? clamp(T.left / T.total, 0, 1) : 0; },
+      get done() { return T.left <= 0; },
+      tick(dt) {
+        if (T.left <= 0) return false;
+        const was = T.left; T.left = Math.max(0, T.left - dt);
+        if (T.left > 0 && T.left < 3 && Math.ceil(T.left) < Math.ceil(was)) { sfx.tick(); if (onTick) onTick(Math.ceil(T.left)); }
+        return T.left <= 0;
+      },
+      add(s) { T.left = Math.max(0, T.left + s); T.total = Math.max(T.total, T.left); },
+      reset(s = T.total) { T.total = T.left = s; },
+    };
+    return T;
   }
 
   /* ---------- the fixed-step loop: update at 60 Hz, render once per frame, pause when hidden ---------- */
@@ -147,6 +174,18 @@
     const banner = h('div', 'mg-banner'); host.appendChild(banner);
     const flash = h('div', 'mg-flash'); host.appendChild(flash);
     q.over = h('div', 'mg-over'); host.appendChild(q.over);
+    /* a card that would scroll (a short or wide stage) is made to fit: zoomed down while its text stays at least phone size (--u x zoom >= 1), past that it goes
+       compact first (.fit: no legend, tighter; .wide: buttons side by side, stats in pairs), then zooms (not below .5). Cards that fit are left exactly as they are. */
+    const fitOver = () => {
+      const o = q.over; if (o.hidden || !o.firstChild) return;
+      o.classList.remove('fit', 'wide'); if (o.style.zoom) o.style.zoom = '';
+      if (o.scrollHeight <= o.clientHeight + 1) return;
+      if ((parseFloat(host.style.getPropertyValue('--u')) || 1) * o.clientHeight / o.scrollHeight < 1) o.classList.add('fit', ...(o.clientWidth > o.clientHeight * 1.2 ? ['wide'] : []));
+      for (let i = 0, z = 1; i < 4 && z > .5 && o.scrollHeight > o.clientHeight + 1; i++) { z = Math.max(.5, Math.floor(z * o.clientHeight / o.scrollHeight * 100) / 100); o.style.zoom = z; }
+    };
+    new MutationObserver(fitOver).observe(q.over, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+    if (window.ResizeObserver) new ResizeObserver(fitOver).observe(host);
+    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitOver);
     const retrigger = (e, c) => { e.classList.remove(c); void e.offsetWidth; e.classList.add(c); };
     q.say = (html, cls = '') => { banner.className = 'mg-banner ' + cls; banner.innerHTML = html; void banner.offsetWidth; banner.classList.add('show'); };
     q.hideBanner = () => { banner.className = 'mg-banner'; };
@@ -169,6 +208,14 @@
     });
     q.setCombo = (n, m) => { q.combo.classList.toggle('on', n >= 3); q.combo.innerHTML = `${n} COMBO${m > 1 ? ` <i>x${m}</i>` : ''}`; };
     q.setMeter = (frac, ice) => { q.meter.classList.toggle('on', frac > 0); q.meter.classList.toggle('dia', !!ice); q.meterFill.style.transform = `scaleX(${frac})`; };
+    /* the time bar (timed games only, made on first use so other games keep their DOM): drains from the left, red under 25%, pulses in the last 3 s */
+    let tm = null;
+    const timerEl = () => { if (!tm) { tm = h('div', 'mg-timer', '<b></b>'); host.appendChild(tm); host.classList.add('has-timer'); } return tm; };
+    q.timer = on => { timerEl().classList.toggle('on', !!on); };
+    q.setTimer = (frac, left) => {
+      const e = timerEl(); frac = clamp(+frac || 0, 0, 1); e.style.setProperty('--f', frac.toFixed(4));
+      e.classList.toggle('low', frac < .25); e.classList.toggle('hurry', left != null && left > 0 && left <= 3);
+    };
     q.btn = (label, cls, fn) => {
       const b = h('a', 'mg-btn ' + (/green|alt/.test(cls || '') ? 'alt ' : '') + (/primary/.test(cls || '') ? 'primary' : ''), `<span>${label}</span>`); b.href = '#';
       b.addEventListener('click', e => { e.preventDefault(); sfx.unlock(); sfx.tick(); fn(); }); b.addEventListener('pointerenter', () => sfx.hover());
@@ -184,66 +231,112 @@
     for (let i = 0; i < n; i++) { const p = h('i'); p.style.left = rng(0, 100) + '%'; p.style.background = cols[i % cols.length]; p.style.animationDelay = rng(0, 1.2) + 's'; p.style.animationDuration = rng(1.5, 2.8) + 's'; p.style.setProperty('--cx', Math.round(rng(-60, 60)) + 'px'); box.appendChild(p); }
     el.prepend(box);
   }
+  /* shell(o): the flow every game shares. Options beyond the basics (all optional, all off by default so the arcade games are unchanged):
+       countdown 'full' | 'go' | 'none'   3-2-1-GO (default), a quick GO! (~.35 s), or straight into play
+       autoStart true                     skip the first title card (hosted or not) and start the first mode
+       grade true                         repair mode: finish(stats, { grade 0..1, verdict? }) shows a verdict + 0-3 stars instead of the rolling score
+       oneShot true                       hosted: the over card has one CONTINUE (quit with reason 'done'), no AGAIN / MENU, no Enter restart */
+  const VKEY = { 'NOT FIXED': 'none', PATCHED: 'patched', FIXED: 'fixed', PERFECT: 'perfect' };
   function shell(o) {
     const { host, ui } = o, over = ui.over, modes = o.modes || [{ k: 'main', label: 'START' }];
     const S = { phase: 'title', mode: modes[0].k, get playing() { return S.phase === 'play'; } };
     const bestKey = m => o.id + ':' + m, quick = /autostart/.test(location.search) && !/count=1/.test(location.search);
+    const oneShot = () => !!(o.oneShot && window.MGHosted);          /* standalone one-shot games keep AGAIN, so dev iteration stays easy */
     const applyPhase = ph => { S.phase = ph; document.body.classList.toggle('mg-playing', ph === 'play' || ph === 'pause'); syncPause(); window.MGHosted?.phase(ph, S.mode); };
     const setPhase = ph => {
       if (window.MGHosted && ph === 'play' && S.phase !== 'pause') {
         applyPhase('waiting'); window.MGHosted.start(S.mode, () => { if (S.phase === 'waiting') applyPhase('play'); });
       } else applyPhase(ph);
     };
-    S.score = o.score;
+    S.score = o.score || (() => Math.round(clamp(S.grade || 0, 0, 1) * 1000));
     window.MGHosted?.attach(S);
     S.best = m => window.MGHosted ? MGHosted.best(m || S.mode) : store.get(bestKey(m || S.mode), 0);          /* hosted games compare against the best saved with the factory */
     let firstTitle = true;
     S.title = () => {
-      const skip = firstTitle && modes.length === 1 && window.MGHosted?.skipTitle; firstTitle = false;
+      const skip = firstTitle && (o.autoStart || (modes.length === 1 && window.MGHosted?.skipTitle)); firstTitle = false;
       setPhase('title'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; ui.hideBanner();
       const leg = h('div', 'mg-legend');
       (o.legend || []).forEach(([cv, label], i) => { const d = h('div'); d.style.setProperty('--i', i); d.append(spriteImg(cv, cv.hi ? 2 : cv.width > 24 ? 1 : 2), h('span', '', label)); leg.appendChild(d); });
       const btns = h('div', 'mg-modes'); modes.forEach((m, i) => btns.appendChild(ui.btn(m.label, (m.cls || '') + (i === 0 ? ' primary' : ''), () => { S.start(m.k); })));
-      const best = modes.map(m => (modes.length > 1 ? m.label.split(' ')[0] + ' ' : '') + S.best(m.k)).join('  ·  ');
+      const best = modes.map(m => (modes.length > 1 ? m.label.split(' ')[0] + ' ' : '') + (o.grade ? Math.round(S.best(m.k) / 10) + '%' : S.best(m.k))).join('  ·  ');
       const ttl = h('h1', 'mg-title', o.title), longest = Math.max(...o.title.replace(/<[^>]+>/g, ' ').split(/\s+/).map(w => w.length));
       if (longest > 8) ttl.style.fontSize = `max(12px, calc(var(--u) * ${Math.round(27 * 8 / longest)}px))`;
       over.append(ttl, h('p', 'mg-sub', o.sub || ''), leg, btns, h('p', 'mg-hint', o.hint || ''), h('p', 'mg-best', 'BEST  ' + best));
       if (o.onTitle) o.onTitle();
       if (skip) S.start();
     };
-    /* 3-2-1-GO: the game is set up but frozen until the count ends (a tap skips it) */
+    /* 3-2-1-GO (or a quick GO!): the game is set up but frozen until the count ends (a tap skips it) */
     let countT = 0;
     S.start = m => {
       S.mode = m || S.mode; over.hidden = true; host.classList.remove('menu-open'); ui.hideBanner(); o.onStart(S.mode);
       host.querySelectorAll('.mg-count').forEach(e => e.remove());
-      if (quick) { setPhase('play'); sfx.start(); return; }
-      setPhase('count'); const box = h('div', 'mg-count'); host.appendChild(box); let i = 0; const steps = ['3', '2', '1', 'GO!'];
+      const cd = quick ? 'none' : o.countdown || 'full';
+      if (cd === 'none') { setPhase('play'); sfx.start(); return; }
+      setPhase('count'); const box = h('div', 'mg-count' + (cd === 'go' ? ' quick' : '')); host.appendChild(box); let i = 0;
+      const steps = cd === 'go' ? ['GO!'] : ['3', '2', '1', 'GO!'], last = steps.length - 1;
       const step = () => {
         if (S.phase !== 'count') { box.remove(); return; }
-        box.innerHTML = `<b class="${i === 3 ? 'go' : ''}">${steps[i]}</b>`; if (i < 3) sfx.count(i); else { sfx.start(); }
-        if (i === 3) { countT = setTimeout(() => { box.remove(); if (S.phase === 'count') setPhase('play'); }, 380); return; }
+        box.innerHTML = `<b class="${i === last ? 'go' : ''}">${steps[i]}</b>`; if (i < last) sfx.count(i); else { sfx.start(); }
+        if (i === last) { countT = setTimeout(() => { box.remove(); if (S.phase === 'count') setPhase('play'); }, cd === 'go' ? 350 : 380); return; }
         i++; countT = setTimeout(step, 430);
       };
       step();
       S.skipCount = () => { if (S.phase === 'count') { clearTimeout(countT); box.remove(); setPhase('play'); sfx.start(); } };
     };
     S.skipCount = () => {};
-    S.finish = stats => {
+    S.finish = (stats, res) => {
       setPhase('over'); host.classList.add('menu-open'); ui.hideBanner(); ui.setMeter(0); ui.combo.classList.remove('on'); host.querySelectorAll('.mg-float,.mg-count').forEach(e => e.remove());
-      window.MGHosted?.finish(o.score());
-      const score = o.score(), prev = S.best(), isNew = score > prev && score > 0; if (isNew) { store.set(bestKey(S.mode), score); window.MGHosted?.setBest(S.mode, score); }
+      const graded = !!o.grade;
+      if (graded) { S.grade = clamp(Number(res && res.grade) || 0, 0, 1); S.verdict = String((res && res.verdict) || verdictOf(S.grade)); }
+      window.MGHosted?.finish(S.score(), graded ? S.grade : undefined);
+      const score = S.score(), prev = S.best(), isNew = score > prev && score > 0; if (isNew) { store.set(bestKey(S.mode), score); window.MGHosted?.setBest(S.mode, score); }
       over.hidden = false; over.innerHTML = '';
       const grid = h('div', 'mg-stats'); (stats || []).forEach(([k, v], i) => { const a = h('span', '', k), b = h('b', '', v); a.style.setProperty('--i', i); b.style.setProperty('--i', i); grid.append(a, b); });
-      const big = h('h2', 'mg-big', '0');
-      over.append(h('p', 'mg-sub', o.overTitle || "THAT'S A WRAP"), big, isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', 'BEST ' + Math.max(prev, score)), grid,
-        ui.btn('AGAIN', 'primary', () => S.start()), ...(modes.length > 1 || !window.MGHosted ? [ui.btn(modes.length > 1 ? 'MODES' : 'MENU', 'alt', () => { if (o.onMenu) o.onMenu(); S.title(); })] : []), ...(window.MGHosted ? [ui.btn('DONE', 'alt', S.quit)] : []));
-      if (window.MGHosted) { const rw = h('div', 'mg-reward'); rw.hidden = true; big.after(rw); S.reward = d => { rw.hidden = false; rw.innerHTML = `<b>+${d.total.toLocaleString('en-US')}</b><span>INSPIRATION</span>${d.best ? `<em>NEW BEST +${d.best.toLocaleString('en-US')}</em>` : ''}`; sfx.golden(); }; }
+      const btns = oneShot() ? [ui.btn('CONTINUE', 'primary', S.quit)]
+        : [ui.btn('AGAIN', 'primary', () => S.start()), ...(modes.length > 1 || !window.MGHosted ? [ui.btn(modes.length > 1 ? 'MODES' : 'MENU', 'alt', () => { if (o.onMenu) o.onMenu(); S.title(); })] : []), ...(window.MGHosted ? [ui.btn('DONE', 'alt', S.quit)] : [])];
+      let anchor, verdict = null;
+      if (graded) {
+        /* the repair card: a stamped verdict, 0-3 stars that pop in with a ding each, the grade, then the stats */
+        verdict = h('h2', 'mg-verdict'); verdict.textContent = S.verdict; verdict.dataset.v = VKEY[verdictOf(S.grade)];
+        const n = starsOf(S.grade), STAR = window.MGArt3 ? MGArt3.build().star : null; anchor = h('div', 'mg-stars');
+        for (let i = 0; i < 3; i++) { const s = STAR ? spriteImg(STAR, 4, i < n ? 'on' : 'off') : h('i', i < n ? 'on' : 'off', '*'); s.style.setProperty('--i', i); anchor.appendChild(s); }
+        anchor.setAttribute('role', 'img'); anchor.setAttribute('aria-label', n + ' of 3 stars');
+        over.append(h('p', 'mg-sub', o.overTitle || 'REPAIR REPORT'), verdict, anchor, h('p', 'mg-best', 'GRADE ' + Math.round(S.grade * 100) + '%' + (isNew && !window.MGHosted ? '  ·  NEW BEST' : '')), grid, ...btns);
+        setTimeout(() => { if (S.phase === 'over') sfx.thud(); }, 120);
+        for (let i = 0; i < n; i++) setTimeout(() => { if (S.phase === 'over') sfx.ding(i * 4); }, 420 + i * 180);
+        if (n === 3) setTimeout(() => { if (S.phase === 'over') { sfx.golden(); confetti(over); } }, 420 + 3 * 180);
+      } else {
+        anchor = h('h2', 'mg-big', '0');
+        over.append(h('p', 'mg-sub', o.overTitle || "THAT'S A WRAP"), anchor, isNew ? h('p', 'mg-new', 'NEW BEST!') : h('p', 'mg-best', 'BEST ' + Math.max(prev, score)), grid, ...btns);
+      }
+      /* hosted: the host answers finish with reward { total, label?, verdict?, note?, best? }; the label defaults to INSPIRATION */
+      if (window.MGHosted) {
+        const rw = h('div', 'mg-reward'); rw.hidden = true; anchor.after(rw);
+        const add = (tag, txt) => { const e = h(tag); e.textContent = txt; rw.appendChild(e); };
+        S.reward = d => {
+          rw.hidden = false; rw.innerHTML = '';
+          add('b', '+' + (Number(d.total) || 0).toLocaleString('en-US')); add('span', d.label || 'INSPIRATION');
+          if (d.verdict) { const k = VKEY[String(d.verdict).toUpperCase()]; if (verdict) { verdict.textContent = d.verdict; if (k) verdict.dataset.v = k; } else add('i', d.verdict); }
+          if (d.note) add('small', d.note);
+          if (d.best) add('em', 'NEW BEST +' + Number(d.best).toLocaleString('en-US'));
+          sfx.golden();
+        };
+      }
+      if (graded) return;
       /* roll the final score up with ticks, then pop it; new bests get confetti */
-      let shown = 0; const t0 = performance.now(), dur = clamp(Math.sqrt(score) * 28, 350, 1100);
+      const big = anchor; let shown = 0; const t0 = performance.now(), dur = clamp(Math.sqrt(score) * 28, 350, 1100);
       const roll = () => { const k = clamp((performance.now() - t0) / dur, 0, 1), v = Math.round(score * (1 - Math.pow(1 - k, 3))); if (v !== shown) { shown = v; big.textContent = v; if (k < 1 && shown % 3 === 0) sfx.tick(); } if (k < 1) requestAnimationFrame(roll); else { big.textContent = score; big.classList.add('hit'); if (isNew) { sfx.golden(); confetti(over); } } };
       requestAnimationFrame(roll);
     };
-    S.quit = () => { window.MGHosted?.quit(); if (o.onMenu) o.onMenu(); S.title(); };
+    /* leaving: a hosted one-shot run tells the host 'done' (after the card) or 'quit' (abandoned), then goes inert until the host closes it */
+    S.quit = () => {
+      if (oneShot()) {
+        if (S.phase === 'closed') return;
+        window.MGHosted.quit(S.phase === 'over' ? 'done' : 'quit'); S.phase = 'closed'; document.body.classList.remove('mg-playing');
+        host.classList.add('menu-open'); over.hidden = false; over.innerHTML = ''; over.append(h('p', 'mg-sub', '…')); return;
+      }
+      window.MGHosted?.quit(); if (o.onMenu) o.onMenu(); S.title();
+    };
     S.pause = () => {
       if (S.phase !== 'play') return; setPhase('pause'); host.classList.add('menu-open'); over.hidden = false; over.innerHTML = '';
       over.append(h('h2', 'mg-big', 'PAUSED'), ui.btn('RESUME', 'primary', S.resume), ui.btn(window.MGHosted ? 'LEAVE' : 'QUIT TO MENU', 'alt', S.quit));
@@ -254,7 +347,7 @@
       if (S.phase === 'count' && !e.repeat) { S.skipCount(); }
       if (e.key === 'Escape') { if (window.MGHosted && (S.phase === 'title' || S.phase === 'over')) { S.quit(); return; } S.phase === 'play' ? S.pause() : S.resume(); return; }
       if ((e.key === 'Enter' || (e.key === ' ' && o.spaceStarts !== false)) && !e.repeat) {
-        if (S.phase === 'title' || S.phase === 'over') { sfx.unlock(); S.start(); e.preventDefault(); } else if (S.phase === 'pause') { S.resume(); e.preventDefault(); }
+        if (S.phase === 'title' || (S.phase === 'over' && !oneShot())) { sfx.unlock(); S.start(); e.preventDefault(); } else if (S.phase === 'pause') { S.resume(); e.preventDefault(); }
       }
     });
     document.addEventListener('visibilitychange', () => { if (document.hidden) S.pause(); });
@@ -302,5 +395,6 @@
     };
   }
 
-  window.MG = { fx, shell, ui, hitstop, confetti, icon, rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg };
+  window.MG = { fx, shell, ui, hitstop, confetti, icon, rng, clamp, lerp, store, sfx, stage, loop, boot, h, spriteImg,
+    seed: SEED, seeded, countdownTimer, verdictOf, starsOf, VERDICT_AT, STARS_AT };
 })();

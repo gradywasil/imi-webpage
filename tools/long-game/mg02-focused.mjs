@@ -1,3 +1,4 @@
+// RETIRED (Oct 25 2026): the Break Room tab is gone; the Ideas now live in the Ideas tab (tests/repairs*.test.cjs). Kept for the MG-02 record only.
 // Focused MG-02 checks on an isolated origin, using native acknowledged writes.
 import {readFile, writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';

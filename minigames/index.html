@@ -1,98 +1,42 @@
 <!doctype html>
-<html lang="en" data-style="pixel">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0a2a1c">
-  <title>Side Games · Infinite Monkey Industries</title>
-  <link rel="icon" href="../favicon.ico" sizes="any">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Repairs (dev index) · Infinite Monkey Industries</title>
   <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css">
-  <link rel="stylesheet" href="mg.css">
   <style>
-    body.mg { place-items: start center; overflow-y: auto; overflow-x: hidden; touch-action: pan-y; grid-template-columns: minmax(0, 1fr); padding-top: 0; }
-    .hub { position: relative; z-index: 2; justify-self: stretch; max-width: 100vw; box-sizing: border-box; width: min(920px, 100%); min-width: 0; padding: 62px 14px 40px; text-align: center; }
-    .hub h1 { margin: 0 0 6px; font: 400 clamp(18px, 4vw, 30px)/1.3 var(--font-px); color: var(--banana); text-shadow: 4px 4px 0 var(--wood-dark); }
-    .hub .lede { margin: 0 0 26px; font-size: 26px; color: var(--cream); text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink); }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 18px; text-align: left; }
-    .card { position: relative; min-width: 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; padding: 14px; color: var(--cream); text-decoration: none; background: rgba(10, 42, 28, .82); border: 4px solid var(--ink); box-shadow: inset 0 0 0 3px var(--wood), 0 6px 0 rgba(0, 0, 0, .4); transition: transform .12s steps(2); }
-    a.card:hover { transform: translateY(-6px); box-shadow: inset 0 0 0 3px var(--banana), 0 12px 0 rgba(0, 0, 0, .4); }
-    .card h2 { margin: 0; font: 400 13px/1.4 var(--font-px); color: var(--banana); }
-    .card p { margin: 0; font-size: 22px; line-height: 1.1; }
-    .card .tag { align-self: flex-start; font: 400 9px/1 var(--font-px); padding: 5px 6px; background: var(--leaf); color: #fff; text-shadow: 1px 1px 0 var(--ink); }
-    .card.concept { opacity: .78; } .card.concept .tag { background: var(--wood-dark); color: var(--cream); }
-    .card .how { font-size: 18px; color: rgba(255, 246, 214, .7); }
-    .card .art { min-height: 66px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-    .card p, .card h2 { overflow-wrap: anywhere; }
+    body { margin:0; padding:16px; background:#0a2a1c; color:#fff6d6; font:16px/1.4 system-ui, sans-serif; }
+    h1 { margin:0 0 4px; font-size:20px; color:#ffd23a; } p { margin:0 0 12px; opacity:.8; max-width:70ch; }
+    table { border-collapse:collapse; width:100%; max-width:960px; } th, td { padding:5px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,.12); }
+    th { font-weight:600; color:#ffe28a; } td small { opacity:.65; } a { color:#9fd4ff; } tr.missing td:not(:first-child) { opacity:.45; }
+    .k { display:inline-block; padding:0 6px; border:2px solid #1a0f14; color:#1a0f14; font-size:12px; }
+    .speed { background:#ffd23a; } .keeper { background:#7be05a; } .sales { background:#5fc8ff; } .luck { background:#c39bff; }
+    label { margin-right:12px; } input[type=number] { width:4.5em; }
   </style>
 </head>
-<body class="mg">
-  <nav class="mg-nav"><a href="../index.html" title="Back to the game" aria-label="Back to the game">&lt;</a></nav>
-  <main class="hub">
-    <h1>SIDE GAMES</h1>
-    <p class="lede">Quick breaks from the typewriter floor. Standalone for now.</p>
-    <div class="cards" id="cards"></div>
-  </main>
-  <script src="../pixel.js"></script>
-  <script src="mg-art.js"></script>
-  <script src="mg-core.js"></script>
+<body>
+  <h1>Repairs: dev index</h1>
+  <p>Every floor-problem repair, opened standalone in <code>repair.html</code> (AGAIN works there). In the game they open over the Floor from a problem's Fix it. How to write one: <code>REPAIRS.md</code>; check one: <code>node tools/repairs/check-repair.mjs &lt;id&gt;</code>. The 15 old Break Room games now live in monkey-hub's arcade.</p>
+  <p><label>level <input id="level" type="number" min="0" max="1" step=".1" value=".3"></label><label>desk <input id="desk" type="number" min="0" max="5" value="0"></label><label>seed <input id="seed" type="number" value="7"></label><label><input id="bot" type="checkbox"> bot</label><label>extra <input id="extra" type="number" min="0" max="30" value="0"></label></p>
+  <table><thead><tr><th>Repair</th><th>Verb</th><th>Family</th><th>Scope</th><th>Time</th><th>File</th></tr></thead><tbody id="list"></tbody></table>
   <script>
-    MG.boot();
-    const A = MGArt.build();
-    const tile = MGArt.tile, bun = MGArt.bundle;
-    const games = [
-      { href: 'barrel-catch.html', name: 'BANANA BARREL', tag: 'PLAYABLE', art: [A.barrelFront, A.banana, bun('K', 'E', 'Y'), A.diamond],
-        text: 'Hold the barrel overhead and scamper to catch bananas and letter bundles. Dodge coconuts. Watch for the rare Diamond Banana. Has a Fruit Fall mode too.', how: '← → / A D · drag · mouse follows' },
-      { href: 'key-whack.html', name: 'KEY WHACK', tag: 'PLAYABLE', art: [tile('K'), tile('E'), tile('Y')],
-        text: 'Typewriter keys light up; press or tap the matching key before it snaps back. Avoid ink blots, grab the banana space bar, and hunt the Diamond key for a full-keyboard mash.', how: 'type letters · space · tap keys' },
-      { href: 'coconut-shuffle.html', name: 'COCONUT SHUFFLE', tag: 'PLAYABLE', art: [A.coconut, A.coconut, A.coconut],
-        text: 'Watch the banana, then follow the shells as they swap faster, in pairs, with fake-outs, and with a pick timer later on. Golden rounds pay x5. Blink and you miss the Diamond banana (x10).', how: 'tap a shell · 1-5 / ← → + Space' },
-      { href: 'banana-stack.html', name: 'BANANA STACK', tag: 'PLAYABLE', art: [A.banana, A.golden, A.diamond],
-        text: 'Drop swinging crates onto a tower. Overhang gets sliced off; perfect drops chain a combo and grow the crate back. Golden and Diamond crates give bonuses.', how: 'tap / click / Space' },
-      { href: 'banana-slice.html', name: 'BANANA SLICE', tag: 'PLAYABLE', art: [A.banana, A.golden, A.coconut],
-        text: 'Bananas are tossed up in arcs; drag a blade through them. Spare the coconuts, slice 3+ in one swipe for a bonus. Golden = frenzy, Diamond = slow-mo.', how: 'press and drag' },
-      { href: 'banana-plinko.html', name: 'BANANA PLINKO', tag: 'PLAYABLE', art: [A.banana, A.diamond, A.golden],
-        text: 'Drop a real spinning banana through a board of wooden pegs: it hooks, pivots and tumbles. Coconut bumpers fire it away, a worker monkey shoves it, and monkeys swing across on vines. Edge bins refund a banana.', how: 'move to aim · click / Space to drop' },
-      { href: 'vine-swing.html', name: 'VINE SWING', tag: 'PLAYABLE', art: [A.banana, A.golden],
-        text: 'One button. Hold to grab and swing, release to fly, hold to catch the next vine. A dotted preview shows where you will land, so let go when the dots touch the next vine. Three hearts: the river spits you back on a vine.', how: 'hold mouse / finger / Space' },
-      { href: 'peel-dash.html', name: 'PEEL DASH', tag: 'PLAYABLE', art: [A.rotten, A.banana, A.golden],
-        text: 'Sprint down a three-lane jungle path. Switch lanes, jump logs and peels, dodge rocks. Golden = invincible dash, Diamond = banana river.', how: 'swipe / ← → ↑ / Space' },
-      { href: 'road-hop.html', name: 'ROAD HOP', tag: 'PLAYABLE', art: [A.fruits[0], A.fruits[2], A.diamond],
-        text: 'A monkey in the big city. Hop across roads packed with cars, trucks and buses, grab fruit, avoid garbage, and keep ahead of the garbage truck.', how: 'arrows / WASD / swipe · tap = forward' },
-      { href: 'coconut-bowling.html', name: 'COCONUT BOWLING', tag: 'PLAYABLE', art: [tile('B'), A.coconut],
-        text: 'A full ten-frame game with real scoring. Three taps a throw: slide, aim, power. Steer a little as it rolls. Golden pins give bonus points; the Diamond pin gives you a coconut that crushes everything.', how: 'tap / click / Space · steer ← →' },
-      { href: 'crate-packer.html', name: 'CRATE PACKER', tag: 'PLAYABLE', art: [A.banana, A.golden, A.diamond],
-        text: 'Tetris with a spin: each job is a truck with its own loading bay. Stacks of banana crates ride in on a conveyor; rotate them and pack the bay full before the belt backs up. A perfect pack pays double.', how: 'drag · R / tap / right-click rotates · Z undo' },
-      { href: 'banana-heist.html', name: 'BANANA HEIST', tag: 'PLAYABLE', art: [A.monkeyS[0], A.banana, A.diamond],
-        text: 'Creep up to the banana stall, grab the bunch and slip back out. Hold to move, let go to freeze, hide behind crates. Sweeper guards swing their lights, watchmen see across the whole yard, and patrols walk their beat.', how: 'hold mouse / finger / Space' },
-      { href: 'typewriter-rhythm.html', name: 'TYPEWRITER RHYTHM', tag: 'PLAYABLE', art: [tile('D'), tile('F'), tile('J'), tile('K')],
-        text: 'Four lanes of falling typewriter keys to a jungle beat. Every hit plays a note of the tune. Three tunes. Golden ink doubles points; the Diamond key plays itself.', how: 'D F J K / arrows / tap lanes' },
-      { href: 'fruit-stall.html', name: 'FRUIT STALL', tag: 'PLAYABLE', art: [A.fruits[0], A.fruits[1], A.fruits[2], A.fruits[3]],
-        text: 'Customers order up to four fruit; tap the bins to serve them before they lose patience. Bins run out and need a restock tap. Rush hours, golden VIPs and the Diamond customer keep it frantic.', how: 'tap bins · keys 1-5' },
-      { href: 'library-tidy.html', name: 'LIBRARY TIDY', tag: 'PLAYABLE', art: [tile('B'), tile('O'), tile('O'), tile('K')],
-        text: 'Real titles from the monkeys\' Library fall in quick succession; tap the shelf each belongs on (spines are colour coded). It speeds up fast, so keep up. Fill a shelf for a bonus.', how: 'tap a shelf · keys 1-5' },
-      { name: 'PAPER PLANE', tag: 'IDEA', art: [tile('P'), tile('L')],
-        text: 'Drag to steer a paper plane through jungle gaps on the updraft, scooping letters. Flappy-style, but one finger and forgiving.', how: 'drag up / down' },
-      { name: 'DRUM CIRCLE', tag: 'IDEA', art: [A.coconut, A.coconut],
-        text: 'Rhythm lanes: coconuts drop onto four bongos in time to a jungle beat. Perfect hits glow.', how: 'D F J K / tap lanes' },
-      { name: 'SIMON SAYS MONKEY', tag: 'IDEA', art: [tile('A'), tile('S'), tile('D')],
-        text: 'Three monkeys on typewriter keys play back a growing sequence of notes. Repeat it. Gets long fast.', how: 'tap / A S D' },
-      { name: 'WORD MATCH', tag: 'IDEA', art: [tile('W'), tile('O'), tile('R'), tile('D')],
-        text: 'Match-3 on letter tiles from the garden: bonus when a run spells a real word. Ties straight into the word economy.', how: 'tap / drag tiles' },
-      { name: 'RAIN LEAF', tag: 'IDEA', art: [PXA.spr.leaf.cv, PXA.spr.drop.cv],
-        text: 'Hold a big leaf umbrella and catch rain for the letter garden, dodge the lightning. Reads the live weather.', how: 'drag / ← →' },
-    ];
-    const root = document.getElementById('cards');
-    games.forEach(gm => {
-      const el = MG.h(gm.href ? 'a' : 'div', 'card' + (gm.href ? '' : ' concept'));
-      if (gm.href) el.href = gm.href;
-      const art = MG.h('div', 'art'); gm.art.forEach(c => art.appendChild(MG.spriteImg(c, c.width > 24 ? 2 : 3)));
-      el.append(art, MG.h('span', 'tag', gm.tag), MG.h('h2', '', gm.name), MG.h('p', '', gm.text), MG.h('p', 'how', gm.how));
-      root.appendChild(el);
-    });
+    /* the same ids as MGRepair.LIST (repair-kit.js) and REPAIRS (minigame-progression.js) */
+    const L = [['leak', 'Leak in the ceiling', 'CATCH', 'keeper', 'desk', 14], ['jam', 'Ink jam', 'SCRUB', 'speed', 'desk', 10], ['keys', 'Banana mush in the keys', 'POP', 'speed', 'desk', 10],
+      ['carriage', "Carriage won't return", 'SLAM', 'speed', 'desk', 8], ['ribbon', 'Tangled ribbon', 'REEL', 'speed', 'desk', 12], ['overheat', 'Overheating', 'FAN', 'speed', 'desk', 10],
+      ['nap', 'Keeper nodded off', 'WAKE', 'keeper', 'desk', 9], ['termites', 'Termites in the word drawer', 'SQUISH', 'keeper', 'desk', 12], ['cards', 'Spilled card tray', 'SORT', 'keeper', 'desk', 15],
+      ['slump', 'Titles in a slump', 'SERVE', 'sales', 'desk', 15], ['typos', 'Typos in the proofs', 'SPOT', 'sales', 'desk', 14], ['shelf', 'Collapsed shelf', 'SHELVE', 'sales', 'desk', 14],
+      ['jinx', 'A black cloud', 'BLOW', 'luck', 'desk', 9], ['raven', 'A raven perched', 'SHOO', 'luck', 'desk', 9], ['coconut', 'Cracked lucky coconut', 'GLUE', 'luck', 'desk', 10],
+      ['snack', 'Spoiled snack', 'SORT', 'speed', 'global', 12], ['critic', 'Bad review', 'STAMP', 'sales', 'global', 10],
+      ['flood', 'Storm flood on the Floor', 'BAIL & PATCH', 'keeper', 'all', 45], ['fuses', 'Lightning blew the fuses', 'LIGHT', 'speed', 'all', 40], ['tangle', 'The Great Ribbon Tangle', 'UNTANGLE', 'speed', 'all', 40]];
+    const $ = id => document.getElementById(id), body = $('list');
+    const href = id => `repair.html?game=${id}&level=${$('level').value}&desk=${$('desk').value}&seed=${$('seed').value}${$('bot').checked ? '&bot=1' : ''}${+$('extra').value ? '&extra=' + $('extra').value : ''}`;
+    body.innerHTML = L.map(([id, t, v, f, s, sec]) => `<tr data-id="${id}"><td><a data-id="${id}" href="repair.html?game=${id}">${t}</a> <small>${id}</small></td><td>${v}</td><td><span class="k ${f}">${f}</span></td><td>${s}</td><td>${sec} s</td><td><small class="f">repairs/${id}.js</small></td></tr>`).join('');
+    const links = () => body.querySelectorAll('a[data-id]').forEach(a => { a.href = href(a.dataset.id); });
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', links)); links();
+    /* dev only: mark the repairs that are not built yet */
+    for (const [id] of L) fetch(`repairs/${id}.js`, { method:'HEAD' }).then(r => { if (!r.ok) { body.querySelector(`tr[data-id="${id}"]`).classList.add('missing'); body.querySelector(`tr[data-id="${id}"] .f`).textContent += ' (not built)'; } }).catch(() => {});
   </script>
 </body>
 </html>

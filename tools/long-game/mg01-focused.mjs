@@ -1,3 +1,4 @@
+// RETIRED (Oct 25 2026): the Break Room and its rewarded breaks are gone; floor problems are fixed by repairs (tests/repairs*.test.cjs). Kept for the MG-01 record only.
 // Focused actual-browser/storage checks. Only the dedicated MG01 clock is advanced.
 import {readFile, writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';

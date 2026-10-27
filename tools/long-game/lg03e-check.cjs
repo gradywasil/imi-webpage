@@ -118,7 +118,7 @@ const identities = () => Object.fromEntries(['automation.js','pickups.js','ops.j
         s.run.earned=Economy.cash(5e8);cfg().net.golden=0;reset();const modalGold=spawn('golden');tick();IMI.ops.dev.action('printask');ok(!!document.querySelector('.o-modal'),'actual Printing modal exists');await Promise.resolve();
         document.querySelector('.o-modal [data-cancel]').click();
         ok(!document.querySelector('.o-modal'),'actual modal closed');tick(2000);ok(modalGold.isConnected,'modal close never replays cancelled catch');modalGold.click();
-        cfg().net.golden=0;reset();const hostedGold=spawn('golden');tick();api.setTab('breakroom');document.querySelector('[data-mg01="practice"]').click();
+        cfg().net.golden=0;reset();const hostedGold=spawn('golden');tick();IMI.ops.spawnProblem('leak');document.querySelector('[data-mg01="fix"]').click();
         ok(!!document.querySelector('.mg01-overlay iframe')&&hostedGold.inert,'actual hosted iframe makes gold inert');await Promise.resolve();
         ok(!IMI.pickups.spawn(),'ordinary actual eligibility refuses behind hosted minigame');
         document.querySelector('[data-mg01="close"]').click();await Promise.resolve();api.setTab('floor');tick(2000);ok(hostedGold.isConnected,'hosted close never catches old item');hostedGold.click();

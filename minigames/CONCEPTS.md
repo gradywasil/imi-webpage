@@ -1,87 +1,84 @@
-# Side games: concepts
+# Repairs: the catalogue
 
-Standalone mini-games in the main game's pixel style. They reuse `pixel.js` art (monkey, banana, coconut, leaf), the jungle backdrop and `styles.css`, but share no state with the main game yet. Each game is one HTML page plus one JS file, built on `mg-art.js` (sprite kit), `mg-core.js` (stage, loop, sound, storage) and `mg.css`.
+Things break on IMI's Floor, and every problem has its own repair: a WarioWare-style microgame with one verb, 8-15 s long (the three big ones 40-45 s), graded 0 to 1. A typist from the problem's desk plays it over the Floor (`.mg01-overlay`, hosted through `hosted-bridge.js`).
 
-Open `minigames/index.html` (any static server, e.g. `python -m http.server`) to see the hub.
+- **Writing one:** [REPAIRS.md](REPAIRS.md). The reference is `repairs/leak.js`.
+- **Checking one:** `node tools/repairs/check-repair.mjs <id> --level 0,.5,1`. It saves screenshots outside the repo in `.plan/shots/<id>/`.
+- **Trying one by hand:** `minigames/index.html`, the dev index, links `repair.html?game=<id>` for every id.
+- **Where things live:**
+  - The economy (family, scope, penalty, spawn weight and gate, pay, tune-ups, copy) is `REPAIRS` in `../minigame-progression.js`.
+  - The runner's list (title, verb, seconds, size, stage) is `MGRepair.LIST` in `repair-kit.js`.
+  - The numbers are in `../BALANCE.md`, under Repairs.
 
-## Built
+The 15 Break Room games (Banana Barrel, Key Whack, Coconut Shuffle and the rest) moved to monkey-hub as arcade cabinets (`monkey-hub/public/arcade/`). Their notes are in git history (`minigames/CONCEPTS.md` before this change).
 
-### Banana Barrel (`barrel-catch.html`)
-Monkey holds a barrel overhead; move left/right to catch what falls.
-- **Controls:** ← → / A D, or drag / move the mouse (the monkey chases the cursor and leans into the run). Esc / P pauses.
-- **Falls:** banana (10), letter bundle (25, +3 letters), coconut (-1 heart, stuns), rotten banana (-15, breaks combo).
-- **Rare:** Golden Banana (100, +heart, 7s *Golden Hour*: wider barrel, banana rain). Diamond Banana (500, slow-mo, 8s *jackpot* rain). Diamond weight creeps up the longer you go without one.
-- **Combo:** every 6 catches in a row adds +0.5x (max 3x). Misses and rotten bananas reset it. Three hearts.
-- **Modes:** *Banana Run* (bananas + letters) and *Fruit Fall* (apple, orange, grapes, pineapple, banana).
-- Dev flags: `?autostart=1&mode=fruit&rare=1&bot=1&warp=30` (autostart, force rares, autoplayer, fast-forward seconds).
+## The verdict
+Grades are mapped by `MG.verdictOf`, using the thresholds in `MG.VERDICT_AT`:
 
-### Key Whack (`key-whack.html`)
-A typewriter keyboard (QWERTY rows plus space bar); keys pop up lit and you press or tap the matching key before it snaps back. Every hit stamps its letter on a paper sheet, with a bell at the end of each line.
-- **Controls:** type the letters / space, or tap the keys. Esc pauses.
-- **Keys:** lit key (10-20, faster = more), ink blot (decoy: touching it costs a heart), banana space bar (50 + heart), Golden key (100, 6s frenzy: more keys, more time), Diamond key (100, lights the whole keyboard for a 5s mash at 30 per key).
-- **Rules:** a lit key that expires costs a heart; pressing an unlit key is a typo (breaks combo only). 3 hearts, same combo scale as Banana Barrel. Concurrent lit keys grow from 1 to 4, and lifetimes shrink.
-- Dev flags: `?autostart=1&bot=1&rare=1&warp=30`.
-
-### Coconut Shuffle (`coconut-shuffle.html`)
-Banana under a coconut shell. 3 shells in round 1, 4 from round 2, 5 from round 4. Swaps get faster (down to 0.085s), from round 3 two swaps happen at once, from round 4 some are fake-outs (the shells slide halfway and snap back), and from round 5 you have a pick timer. The banana is shown for less time each round. Golden round x5 (+heart), Diamond round x10 (the banana only flashes). A wrong pick or a timeout costs a heart.
-
-### Banana Stack (`banana-stack.html`)
-Monkey rides a swinging crate; tap to drop. Overhang is sliced off; perfect drops (within about 1.5px) keep full width and chain, and 3 in a row grow the crate back. Every 10th crate is Golden (+50, +6 width); a rare Diamond crate gives +200 and restores full width. A complete miss ends the run. The camera climbs and the tower sways.
-
-### Banana Slice (`banana-slice.html`)
-Drag to slice tossed bananas. Slicing a coconut or dropping a banana costs a heart. 3+ in one swipe is a bonus. Golden = 6s frenzy (no miss penalty, x2); Diamond = 3.5s slow-mo (25 per banana).
-
-### Banana Plinko (`banana-plinko.html`)
-The chip is a banana: a rigid crescent body with spin, friction and five collision circles along its curve, so it hooks on wooden pegs, pivots and flips. Three coconut bumpers fire it away pinball-style (scoring on the first three bumps per banana), a worker monkey paces a ledge with a crate and shoves it, and two monkeys swing on vines across the middle. 10 bananas; edge bins (100) refund one. Golden banana x3; the Diamond banana bursts into five on its first peg.
-
-### Vine Swing (`vine-swing.html`)
-Hold = grab/swing (staying on builds the swing), release = fly, hold again near a vine to catch it (a gentle magnet helps, and a catch always keeps at least a decent speed). A dotted preview shows where a release right now would take you; it turns gold and highlights the vine when it would catch one. Three hearts: falling in the river costs one and puts you back on the nearest vine. Bats knock you off. Golden banana = wider grab, Diamond = banana magnet. Landscape stage.
-
-### Peel Dash (`peel-dash.html`)
-Three lanes, speed ramps up. Swipe/arrows to change lane, swipe up/Space to jump. Rocks must be dodged; logs and peels can be jumped. A hit costs a heart and slows you. Golden = 5s invincible dash that smashes obstacles; Diamond = 5s banana river (x3).
-
-### Road Hop (`road-hop.html`)
-Crossy-Road-style hopper in the city: sidewalks, grass and roads with cars, trucks and buses. Fruit scores, garbage costs points and stuns you, trees/bushes/bins block hops. A garbage truck creeps up from behind (the camera floor rises), so you have to keep moving. Golden = traffic crawls; Diamond = traffic stops and all garbage becomes bananas.
-
-### Coconut Bowling (`coconut-bowling.html`)
-Real ten-frame bowling scoring (strikes, spares, tenth-frame bonus balls). A throw is three taps: the coconut slides along the foul line, the aim arrow swings, the power bar fills. Steer a little while it rolls (arrows or the pointer). Pins are simulated as circles with simple collisions. A Golden pin is +50; the rare Diamond pin is +200 and makes your next coconut heavier and faster. Scores shown are bowling score plus bonus.
-
-### Crate Packer (`crate-packer.html`)
-Tetris with a spin: every job is a truck (box truck, pickup, van with wheel wells, flatbed, dump truck, semi) seen from behind with its own loading bay mask. Stacks of 3-5 crates are cut from the real bay shape, so a perfect pack always exists, and arrive on a conveyor (up to 4 waiting; if it backs up the oldest falls off). Rotate with R / Q / tapping the selected stack / right-click / scroll / the on-screen button; Z undoes; N or the send button advances the belt. 85% full and the truck leaves; 100% is a perfect pack (x2, +heart); less loses a heart. Golden crate fits any single gap (+50); Diamond crate fills whatever is left (+300).
-
-### Banana Heist (`banana-heist.html`)
-Top-down stealth. Hold to creep (steer toward your finger / arrows); release to freeze. Three kinds of guard: sweepers swing a short beam, watchmen on the walls see across the entire yard with a wide cone and barely move, and patrols walk a beat (horizontal or vertical) and pause to look around. Crates block every beam. Moving in a beam fills the alert bar fast, standing still slowly. Rounds add guards (round 2 a watchman, round 3 a patrol, and so on). Under 30% alert is a GHOST run (x2). Golden bunch x3, Diamond bunch x10.
-
-### Typewriter Rhythm (`typewriter-rhythm.html`)
-Four lanes (D F J K or arrow keys, or tap a lane). Three tunes: Jungle Groove (96 BPM), Carriage Return (118), Banana Rush (146). The backing track is synthesised and scheduled just ahead of the playhead; each hit plays a pentatonic note. Misses drain the ink bar; empty = out. Golden key = x2 for 8s, Diamond key = auto-play for 6s. Ends with a rank (S/A/B/C).
-
-### Fruit Stall (`fruit-stall.html`)
-Customers order up to four fruits; tap a bin (or 1-5) and the fruit goes to the most impatient customer who needs it. Each bin holds 5 and must be restocked with a tap when empty. Difficulty ramps over about 50 seconds (shorter patience, faster arrivals, bigger orders); rush hour every 22s. Fast service earns tips; leaving costs a heart. Golden VIP and Diamond customer as before.
-
-### Library Tidy (`library-tidy.html`)
-Real Library titles (a 70-title-per-shelf snapshot in `library-titles.js`, rebuilt with `python minigames/tools/make-titles.py`) fall in quick succession (up to 7 at once, faster over about 55s); tap the shelf each belongs on. Spines are always colour-coded to their shelf. A run uses 5 of the 7 shelves, starting with 3 (4th at 14s, 5th at 34s). Full shelf = bonus. Golden Edition x3 and slows the room; Diamond First Edition tidies everything on screen.
-
-## Shared look and feel (mg-core.js / mg.css)
-- **One shell for every game:** title, 3-2-1-GO countdown (any tap skips it), pause (Esc, the on-screen pause button, or losing focus) with RESUME and QUIT TO MENU, game over with a rolling final score, staggered stats, confetti on a new best, and per-mode best scores.
-- **Responsive UI:** text and buttons scale with `--u` (stage width / 360, clamped), so nothing overflows on a phone or a big monitor. Overlays scroll instead of clipping, and long titles shrink to fit. The stage fit accounts for the wooden frame and the nav buttons.
-- **HUD:** always one row, score | combo | hearts. The score rolls up to its new value, hearts pop when lost or regained, floating text pops in with an overshoot and drifts.
-- **Pixel icon nav:** back, sound and pause buttons are drawn as pixel icons (no font glyphs).
-- **Juice toolkit:** `MG.hitstop(sec)` freezes the sim for a few frames on big hits (not used in the rhythm game, where timing matters); `fx.shock`, `fx.confetti`, `fx.puff`, `fx.trail` join `burst`, `spark` and `ring`.
-- Dev flag: add `&count=1` to an `autostart` URL to see the countdown.
-
-## Remaining ideas
-
-| Game | Loop | Input |
+| Grade | Verdict | What happens |
 | --- | --- | --- |
-| **Paper Plane** | Steer a paper plane through jungle gaps on updrafts, scooping letters. | drag |
-| **Drum Circle** | Four-lane rhythm game on coconut bongos, perfect hits glow. | D F J K / tap |
-| **Simon Says Monkey** | Growing sequence of notes played on three typewriter keys; repeat it. | tap / A S D |
-| **Word Match** | Match-3 on letter tiles, bonus for runs that spell real words (ties into the word economy). | tap / drag |
-| **Rain Leaf** | Barrel-catch cousin: catch rain with a leaf, dodge lightning; could read `weather.js`. | drag / arrows |
-| **Fishing for Letters** | Lower a banana hook through the pond, reel in letter tiles, avoid piranhas. | hold / release |
-| **Arm Wrestle** | Mash a button to out-pull a rival monkey; stamina meter. | tap / mash |
+| 0, or the repair was never touched | NOT FIXED | Nothing changes. |
+| Under .4 | PATCHED | The problem's time left is halved. |
+| .4 to under .85 | FIXED | The problem clears and the machine is tuned up. |
+| .85 or more | PERFECT | The problem clears with a bigger tune-up. |
 
-## Open questions for integration (later)
-- Reward model: separate "side game tokens", cosmetic only, or a small capped boost to existing currencies?
-- Entry point: a toy in the rail, a menu button, or a random "banana crate" pickup (see `pickups.js`)?
-- Cooldown/limits so they stay a break, not the main loop.
+A problem pays once, and the first repair that scores above 0 is paid. A patched problem can be repaired again without pay to clear it. Quitting part-way pays nothing and leaves the problem.
+
+## The twenty repairs
+
+Scope is *desk* (one machine), *all* (every machine) or *global* (from a rotten banana). The weight is the spawn weight. Long repairs are about 1 spawn in 9 and never come twice in a row.
+
+| id | Family | Scope | Verb | The repair | Weight / gate |
+| --- | --- | --- | --- | --- | --- |
+| leak | Keepers | desk | CATCH | Slide a bucket under the drips (they speed up and split); a full bucket must be flicked out of the window; puddles that land cost grade | 2, ×4 in rain |
+| jam | Speed | desk | SCRUB | Rub blotted typebar heads clean with a rag before the ink sets | 3 |
+| keys | Speed | desk | POP | Tap the stuck-down keys back up; clean keys are decoys | 2 |
+| carriage | Speed | desk | SLAM | Yank the return lever when the swinging needle is in the green zone, three times; the zone shrinks | 2 |
+| ribbon | Speed | desk | REEL | Circle-drag the spool to wind the slack; too fast redlines the tension and snaps a loop back out (keyboard: alternate ←/→) | 2 |
+| overheat | Speed | desk | FAN | Mash or tap to wave a palm leaf; keep the needle out of the red as heat spikes come in | 2 |
+| nap | Keepers | desk | WAKE | Drop a banana on the snoozing keeper's nose at the bottom of each snore; three good bonks wake it | 3 |
+| termites | Keepers | desk | SQUISH | Whack termites crawling toward the word cards; protected cards set the grade | 2 |
+| cards | Keepers | desk | SORT | Drag letter cards into the slot for their word length, using real words | 2 |
+| slump | Sales | desk | SERVE | Readers queue with a wish bubble; hand each the right book before their patience runs out | 3 |
+| typos | Sales | desk | SPOT | A proof line scrolls past; tap the one misspelt word in each line | 2 |
+| shelf | Sales | desk | SHELVE | Spines tumble; drop each on the shelf of its colour band while the shelf sways | 2 |
+| jinx | Luck | desk | BLOW | Hold to blow the little storm cloud to the window; it drifts back and zaps the keys if it reaches them | 3 |
+| raven | Luck | desk | SHOO | Clap only while it looks away; clapping while it watches makes it settle in | 2, ×2 at night |
+| coconut | Luck | desk | GLUE | Hold the halves together and keep the drifting crack inside the band while the glue sets | 2 |
+| snack | Speed | global | SORT | Bananas roll down the snack belt; flick rotten ones off and let good ones through | rotten banana only |
+| critic | Sales | global | STAMP | Clippings slide by; slam RAVE on the bad reviews only | rotten banana only |
+| flood | Keepers | all | BAIL & PATCH | Patch 3 roof holes, bail the water under the line, then fish the floating word cards back (long, 45 s) | heavy rain only: 1, ×2 in storm |
+| fuses | Speed | all | LIGHT | A dark room and a headlamp cone; find and flip 4-6 breakers, avoid the sparking wires (long, 40 s) | storm or night: 1 |
+| tangle | Speed | all | UNTANGLE | 5-7 spools in the six desk colours; drag them until no ribbons cross (long, 40 s) | 1 |
+
+## The penalties
+These are applied through `deskFactor` while a problem is up:
+
+| Family | Effect |
+| --- | --- |
+| Speed | Typing ×.6 |
+| Keepers | Keeper ×.5 |
+| Sales | Sales ×.85 |
+| Luck | No crits or lucky sales |
+
+The exceptions:
+- fuses: typing ×.5
+- snack: typing ×.75 on every machine
+- critic: sales ×.8 on every machine
+
+## On the Floor
+`#opsRoot[data-problem="<id>"]` is set while the machine on screen is hit, and always for a problem that hits every machine. `../minigame-progression.css` uses it to draw the problem on the stage:
+
+| Problem | On the stage |
+| --- | --- |
+| leak | Drips and a puddle |
+| jam | Inked typebars |
+| keys | Mushy stuck keys |
+| nap | The keeper's light goes out, with Zzz |
+| jinx | A black cloud |
+| raven | A raven on the carriage |
+| overheat | Steam and a glowing body |
+| fuses | Lights out |
+| tangle | Ribbons across the room |
+| snack | Green typists |
+| flood | Rising water |

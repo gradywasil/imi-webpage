@@ -44,8 +44,8 @@ const identities = () => Object.fromEntries(['automation.js','ops.js','sw.js','t
       const seed=await page.evaluateOnNewDocument(s=>{s.lastSeen=Date.now();localStorage.setItem('imi-ops-v1',JSON.stringify(s));localStorage.setItem('imi-score',JSON.stringify({economyVersion:1,score:1e12}));localStorage.setItem('imi-tour',JSON.stringify({version:2,done:true,tipsOff:true,tips:{}}));},fixture);
       await page.goto(`${origin}/classic.html?lg03=1&mg01=1#play`);await page.removeScriptToEvaluateOnNewDocument(seed.identifier);
       await page.waitForFunction(()=>!!window.IMI?.ops?.extensions?.quoteAutomationRestore);
-      await page.evaluate(()=>IMI.ops.extensions.setTab('breakroom'));
-      await page.click('[data-mg01="practice"]');await page.waitForSelector('.mg01-frame');
+      await page.evaluate(()=>IMI.ops.spawnProblem('leak'));
+      await page.click('[data-mg01="fix"]');await page.waitForSelector('.mg01-frame');
       const before=await page.evaluate(()=>({mk:IMI.ops.dev.S().desks[0].mk,at:performance.now(),screen:IMI.screen()}));
       await page.waitForFunction(()=>IMI.ops.dev.S().desks[0].mk===1,{timeout:25000});
       const after=await page.evaluate(()=>({mk:IMI.ops.dev.S().desks[0].mk,at:performance.now(),hosted:!!document.querySelector('.mg01-frame'),screen:IMI.screen()}));

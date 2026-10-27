@@ -66,6 +66,7 @@ test('actual Floor drawer, authored completion sales and compact timed buffs', a
             rootZ:getComputedStyle(document.querySelector('#opsRoot')).zIndex,
             compact:[...document.querySelectorAll('.o-buff:not(.chal)')].every(el => !el.querySelector('details,.o-buff-desc') && el.children.length === 2),
             buffs:document.querySelectorAll('.o-buff:not(.chal)').length,
+            cleared:Object.keys(IMI.ops.dev.buffs).filter(k => IMI.ops.dev.buffs[k] === 0), problem:document.querySelector('#opsRoot').dataset.problem || '',
             pageScroll:document.documentElement.scrollHeight > innerHeight};
         },{edition,width}));
       }
@@ -106,8 +107,12 @@ test('actual Floor drawer, authored completion sales and compact timed buffs', a
     await controlContext.close();
     fs.writeFileSync(path.join(evidence, `${phase}-results.json`), JSON.stringify({results,errors},null,2));
     assert.deepEqual(errors, []);
+    /* once repairs unlock (the classic page loads the titles the index page sold), a Spoiled snack or Bad review buff becomes a Floor-wide
+       repair problem and the buff is cleared (minigame-progression.js): every other timed buff still shows */
+    const rotten = { sluggish:'snack', critic:'critic' };
     for (const row of results) {
-      if (row.width) { assert.equal(row.drawerOnTop,true,JSON.stringify(row)); assert.equal(row.compact,true,JSON.stringify(row)); assert.equal(row.buffs,6); assert.equal(row.pageScroll,false); }
+      if (row.width) { assert.equal(row.drawerOnTop,true,JSON.stringify(row)); assert.equal(row.compact,true,JSON.stringify(row)); assert.equal(row.buffs + row.cleared.length,6,JSON.stringify(row)); assert.equal(row.pageScroll,false); }
+      if (row.width && row.cleared.length) { assert.equal(row.cleared.length,1,JSON.stringify(row)); assert.equal(row.problem,rotten[row.cleared[0]],JSON.stringify(row)); }
       if (row.sales) { assert.equal(row.sales.first,1); assert.equal(row.sales.total,1,'collection celebration repeats on extra catalogue sales'); assert.equal(row.sales.generatedUntouched,true); }
       if (row.reloadedSold) assert.equal(row.reloadedSold,18);
     }

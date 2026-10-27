@@ -265,7 +265,7 @@ window.Core = (() => {
       return `${head} Next: ${list.join(', ')}.`;
     }
     ['weather', 'night'].forEach(id => toys[id].el.addEventListener('click', () => { sfx.tick(); restart(toys[id].el, 'hit'); say(forecastText(id)); emit('toy', { id }); }));
-    /* ---------- settings popover (game header): art style, sound, reset, tutorial replay ---------- */
+    /* ---------- settings popover (game header): art style, sound, reset, tutorial replay, cloud sync ---------- */
     let vaultSettings = null, paintVaultSettings = () => {};
     const settings = {registerVault:row => {if(vaultSettings)throw Error('Vault Settings already registered');vaultSettings=row;paintVaultSettings();}};
     const setBtn = $('#settingsBtn');
@@ -278,6 +278,7 @@ window.Core = (() => {
         + row('Sound', '<button type="button" class="set-btn" data-set="sound"></button>')
         + row('Tutorial', '<button type="button" class="set-btn" data-set="tour">Replay</button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
         + row('Tips', '<button type="button" class="set-btn" data-set="tips"></button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
+        + row('Cloud sync', '<button type="button" class="set-btn" data-set="cloud"></button>').replace('class="set-row"', 'class="set-row" data-cloud hidden')
         + row('Game', '<button type="button" class="set-btn" data-set="reset">Reset</button>');
       const vaultHost=document.createElement('div');pop.appendChild(vaultHost);
       paintVaultSettings=()=>{vaultHost.innerHTML=vaultSettings?.render() || '';};
@@ -288,7 +289,9 @@ window.Core = (() => {
       const close = () => { pop.hidden = true; setBtn.setAttribute('aria-expanded', 'false'); };
       const tipsOpt = $('[data-set="tips"]', pop);
       const paintTour = () => { const t = window.IMI && IMI.tour; pop.querySelectorAll('[data-tour]').forEach(r => { r.hidden = !t; }); if (t) { tipsOpt.textContent = t.tipsOn() ? 'On' : 'Off'; tipsOpt.setAttribute('aria-pressed', String(t.tipsOn())); } };   // tour.js loads after this, so look it up when the popover opens
-      setBtn.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); paintTour(); paintFx(); paintVaultSettings(); pop.hidden = !pop.hidden; setBtn.setAttribute('aria-expanded', String(!pop.hidden)); });
+      const cloudRow = $('[data-cloud]', pop), cloudOpt = $('[data-set="cloud"]', pop), CLOUD = { local: 'Sign in', syncing: 'Syncing', synced: 'Synced', offline: 'Offline', error: 'Retry' };
+      const paintCloud = () => { const s = window.MonkeyCloud ? MonkeyCloud.status() : 'off'; cloudRow.hidden = s === 'off'; cloudOpt.textContent = CLOUD[s] || 'Open'; };   // Monkey Cloud (cloud-sync.js): the row only shows once a cloud config ships
+      setBtn.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); paintTour(); paintCloud(); paintFx(); paintVaultSettings(); pop.hidden = !pop.hidden; setBtn.setAttribute('aria-expanded', String(!pop.hidden)); });
       pop.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.fx) { setFx(b.dataset.fx); return; }
@@ -300,6 +303,7 @@ window.Core = (() => {
         close();
         if (act === 'reset') IMI.ops && IMI.ops.reset();
         else if (act === 'tour') IMI.tour.replay();
+        else if (act === 'cloud') { (setBtn.getClientRects().length ? setBtn : $('#railToggle') || setBtn).focus(); window.MonkeyCloud?.openPanel(); }   // the panel hands focus back to whatever had it when it opened: on phones the gear sits in the closed rail, so its toggle
       });
       document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target)) close(); });
       addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { e.stopImmediatePropagation(); close(); setBtn.focus(); } }, true);

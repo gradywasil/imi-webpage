@@ -82,7 +82,7 @@ window.Layers = (() => {
     window.Archive?.retained(s);
     window.WorksDemo?.retained(s);
     window.WorksPlay?.retained(s);
-    if (window.IMI.ops.extensions.layerSettled && !window.IMI.ops.extensions.layerSettled()) throw Error('Finish the waiting production, training, helper or Break Room choice first.');
+    if (window.IMI.ops.extensions.layerSettled && !window.IMI.ops.extensions.layerSettled()) throw Error('Finish the waiting production, training, helper or repair choice first.');
     if (s.challenge || s.meta.minigames?.active || s.meta.folio?.pending || !shelfEdit && s.meta.folio?.working ||
         s.rewards.awayCheckpoint || s.prem.vault?.transition || s.meta.layers?.pending ||
         Object.values(s.rewards.claims || {}).some(c => c.status === 'prepared')) throw Error('Finish the challenge, break, Folio work and waiting saves first.');

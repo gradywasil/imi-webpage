@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "minigame-progression.css"
+        ],
+        "createdAt": "2026-10-27T13:52:57.488Z",
+        "reason": "orchestrator: established IMI convention predating this session (HEAD minigame-progression.css .mg-desk/.mg-prob/.mg01-who use a 6px left edge in the desk/skill-family colour); new repair cards and tune-up chips follow the same colour coding"
+      }
+    ]
+  }
+}

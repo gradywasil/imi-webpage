@@ -33,6 +33,14 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-meter b { display: block; height: 100%; width: 100%; background: var(--banana); transform-origin: left; background-image: linear-gradient(90deg, transparent 0 80%, rgba(255, 255, 255, .6) 80% 100%); background-size: calc(var(--sc) * 3) 100%; animation: mg-meter-run .5s steps(4) infinite; }
 @keyframes mg-meter-run { to { background-position: calc(var(--sc) * -3) 0; } }
 .mg-meter.dia b { background-color: #9be8ff; }
+/* the time bar (timed games, made by ui.setTimer): a fuse along the top edge that burns from the left, red under 25%, pulsing in the last 3 s */
+.mg-timer { position: absolute; left: calc(var(--sc) * 2); right: calc(var(--sc) * 2); top: calc(var(--sc) * 1.67); height: calc(var(--sc) * 2.33); z-index: 3; pointer-events: none; background: rgba(0, 0, 0, .55); box-shadow: 0 0 0 calc(var(--sc) * .67) var(--ink); opacity: 0; transition: opacity .15s steps(2); }
+.mg-timer.on { opacity: 1; }
+.mg-timer b { position: absolute; inset: 0; background: #7be05a; transform-origin: right; transform: scaleX(var(--f, 1)); box-shadow: inset 0 calc(var(--sc) * .67) 0 rgba(255, 255, 255, .45), inset 0 calc(var(--sc) * -.67) 0 rgba(0, 0, 0, .25); }
+.mg-timer.low b { background-color: #ff5a3c; }
+.mg-timer.hurry { animation: mg-hurry .25s steps(2) infinite; }
+@keyframes mg-hurry { 50% { transform: scaleY(1.5); filter: brightness(1.5); } }
+.mg-stage.has-timer .mg-hud { padding-top: calc(var(--sc) * 6); }
 
 /* ---------- floating text + banner ---------- */
 .mg-float { position: absolute; z-index: 4; pointer-events: none; transform: translate(-50%, -50%); font-family: var(--font-px); font-size: max(9px, calc(var(--u) * 11px)); color: #fff; text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink); white-space: nowrap; animation: mg-float .95s steps(12) forwards; }
@@ -42,6 +50,7 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-banner small { display: block; font-size: .45em; color: #fff; margin-top: .3em; line-height: 1.5; }
 .mg-banner.show { animation: mg-banner 2s steps(20) forwards; }
 .mg-banner.ice { color: #9be8ff; }
+.mg-banner.good { color: #7be05a; } .mg-banner.warn { color: #ffb347; } .mg-banner.bad { color: #ff7a6a; }
 @keyframes mg-banner { 0% { opacity: 0; transform: scale(2.6) rotate(-5deg); } 10% { opacity: 1; transform: scale(.9) rotate(1deg); } 16% { transform: scale(1.08); } 22% { transform: scale(1) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(calc(var(--sc) * -6)); } }
 .mg-flash { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; background: #fff; }
 .mg-flash.go { animation: mg-flash .6s steps(6) forwards; }
@@ -51,6 +60,7 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-count { position: absolute; inset: 0; z-index: 7; display: grid; place-items: center; pointer-events: none; font-family: var(--font-px); font-size: max(36px, calc(var(--u) * 84px)); color: #fff; text-shadow: 5px 5px 0 var(--wood-dark), -3px -3px 0 var(--ink), 3px -3px 0 var(--ink), -3px 3px 0 var(--ink), 0 0 0 var(--ink); background: rgba(8, 28, 18, .35); }
 .mg-count b { font-weight: 400; animation: mg-count .45s steps(8) both; }
 .mg-count b.go { color: var(--banana); }
+.mg-count.quick { background: rgba(8, 28, 18, .2); } .mg-count.quick b { animation-duration: .35s; }
 @keyframes mg-count { 0% { transform: scale(2.6); opacity: 0; } 25% { transform: scale(.9); opacity: 1; } 40% { transform: scale(1.12); } 55% { transform: scale(1); } 100% { transform: scale(.82); opacity: .2; } }
 
 /* ---------- overlays: title / pause / game over (scroll rather than overflow) ---------- */
@@ -64,6 +74,7 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-title span { display: block; color: #fff; font-size: .62em; text-shadow: 3px 3px 0 var(--leaf); overflow-wrap: anywhere; }
 @keyframes mg-title-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--u) * -3px)); } }
 .mg-sub { margin: 0; font-family: var(--font-body); font-size: max(17px, calc(var(--u) * 21px)); color: var(--cream); line-height: 1.1; text-wrap: balance; }
+.mg-sub em { font-style: normal; color: var(--banana); }
 .mg-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(var(--u) * 132px), 1fr)); gap: calc(var(--u) * 6px) calc(var(--u) * 10px); width: 100%; font-family: var(--font-body); font-size: max(15px, calc(var(--u) * 18px)); color: var(--cream); text-align: left; line-height: 1.05; }
 .mg-legend div { display: flex; align-items: center; gap: calc(var(--u) * 6px); min-width: 0; opacity: 0; animation: mg-pop-in .3s steps(4) forwards; animation-delay: calc(var(--i, 0) * .06s + .12s); }
 .mg-legend span { min-width: 0; overflow-wrap: anywhere; }
@@ -83,6 +94,34 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-confetti i { position: absolute; top: -8%; width: calc(var(--sc) * 1.6); height: calc(var(--sc) * 1.6); animation: mg-confetti 2s linear infinite; }
 @keyframes mg-confetti { 0% { transform: translate(0, 0) rotate(0); } 100% { transform: translate(var(--cx, 0px), 112vh) rotate(540deg); } }
 .mg-over > :not(.mg-confetti) { position: relative; z-index: 2; }
+/* graded (repair) card: a stamped verdict and 0-3 stars in place of the rolling score */
+.mg-verdict { margin: 0; font-weight: 400; font-size: max(20px, calc(var(--u) * 34px)); line-height: 1.15; letter-spacing: 1px; color: #7be05a; text-shadow: 4px 4px 0 var(--wood-dark), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink); overflow-wrap: anywhere; animation: mg-stamp .45s steps(6) both; }
+.mg-verdict[data-v="none"] { color: #ff7a6a; } .mg-verdict[data-v="patched"] { color: #ffb347; } .mg-verdict[data-v="perfect"] { color: #ffe28a; animation: mg-stamp .45s steps(6) both, mg-shine .9s steps(2) .8s infinite; }
+@keyframes mg-stamp { 0% { opacity: 0; transform: scale(2.6) rotate(-9deg); } 45% { opacity: 1; transform: scale(.9) rotate(2deg); } 70% { transform: scale(1.06) rotate(-1deg); } 100% { opacity: 1; transform: rotate(-2deg); } }
+@keyframes mg-shine { 50% { color: #fffbe0; } }
+.mg-stars { display: flex; justify-content: center; gap: calc(var(--u) * 8px); }
+.mg-stars > * { opacity: 0; animation: mg-star .3s steps(4) forwards; animation-delay: calc(var(--i, 0) * .18s + .42s); }
+.mg-stars .off { filter: grayscale(1) brightness(.42); }
+@keyframes mg-star { 0% { opacity: 0; transform: scale(2.4) rotate(-30deg); } 60% { opacity: 1; transform: scale(.85); } 100% { opacity: 1; transform: none; } }
+/* a card that would scroll on a short or wide stage (mg-core adds .fit, .wide and a zoom): no legend, tighter; on a wide stage buttons side by side and stats in pairs */
+.mg-over.fit { gap: calc(var(--u) * 5px); padding: calc(var(--u) * 7px) calc(var(--u) * 10px); }
+.mg-over.fit .mg-legend { display: none; }
+.mg-over.fit.wide { flex-flow: row wrap; justify-content: center; align-content: center; align-content: safe center; column-gap: calc(var(--u) * 8px); }
+.mg-over.fit.wide::before, .mg-over.fit.wide::after { display: none; }
+.mg-over.fit.wide > :not(.mg-btn) { flex-basis: 100%; }
+.mg-over.fit.wide .mg-modes { flex-flow: row wrap; justify-content: center; }
+.mg-over.fit.wide .mg-btn { min-width: min(100%, calc(var(--u) * 120px)); }
+.mg-over.fit.wide .mg-stats { grid-template-columns: 1fr auto 1fr auto; }
+.mg-over.fit.wide .mg-stats > :nth-child(4n+2) { margin-right: calc(var(--u) * 10px); }
+
+/* ---------- repairs (repair-kit.js): the VERB slam at the start, the one-line how, the fixer's hint ---------- */
+.mg-verb { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; pointer-events: none; visibility: hidden; padding: 0 calc(var(--sc) * 2); text-align: center; font-family: var(--font-px); font-size: max(16px, calc(var(--u) * min(44px, calc(330px / var(--len, 6))))); line-height: 1.2; color: var(--banana); text-shadow: 4px 4px 0 var(--wood-dark), -3px -3px 0 var(--ink), 3px -3px 0 var(--ink), -3px 3px 0 var(--ink), 3px 3px 0 var(--ink); }
+.mg-verb.show { visibility: visible; }
+.mg-verb b { font-weight: 400; animation: mg-verb .6s steps(9) both; }
+@keyframes mg-verb { 0% { opacity: 0; transform: scale(3) rotate(-10deg); } 20% { opacity: 1; transform: scale(.85) rotate(3deg); } 34% { transform: scale(1.12) rotate(-2deg); } 48% { transform: none; } 82% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(1.5); } }
+.mg-how { position: absolute; left: calc(var(--sc) * 3); right: calc(var(--sc) * 3); bottom: calc(var(--sc) * 3); z-index: 5; pointer-events: none; padding: calc(var(--u) * 4px) calc(var(--u) * 8px) calc(var(--u) * 5px); font-family: var(--font-body); font-size: max(16px, calc(var(--u) * 19px)); line-height: 1.05; color: var(--cream); text-align: center; text-wrap: balance; background: rgba(8, 28, 18, .84); box-shadow: 0 0 0 calc(var(--sc) * .67) var(--ink); opacity: 0; transition: opacity .25s steps(3); }
+.mg-how.show { opacity: 1; }
+.mg-how em { font-style: normal; color: var(--banana); }
 
 /* ---------- buttons ---------- */
 .mg-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--u) * 6px); min-width: min(100%, calc(var(--u) * 200px)); max-width: 100%; min-height: calc(var(--u) * 46px); padding: calc(var(--u) * 10px) calc(var(--u) * 18px) calc(var(--u) * 12px); box-sizing: border-box;
@@ -107,4 +146,4 @@ body.mg { display: grid; place-items: center; min-height: 100vh; min-height: 100
 .mg-nav #pauseBtn { display: none; } body.mg-playing .mg-nav #pauseBtn { display: block; }
 
 @media (max-height: 520px) { .mg-over { gap: calc(var(--u) * 6px); padding: calc(var(--u) * 8px); } .mg-legend { display: none; } }
-@media (prefers-reduced-motion: reduce) { .mg-banner.show, .mg-float, .mg-flash.go, .mg-over, .mg-wrap, .mg-title, .mg-btn.primary, .mg-confetti i, .mg-legend div, .mg-stats > * { animation-duration: .01s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; } }
+@media (prefers-reduced-motion: reduce) { .mg-banner.show, .mg-float, .mg-flash.go, .mg-over, .mg-wrap, .mg-title, .mg-btn.primary, .mg-confetti i, .mg-legend div, .mg-stats > *, .mg-verdict, .mg-stars > *, .mg-timer.hurry { animation-duration: .01s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; } .mg-verb b { animation: none; } }

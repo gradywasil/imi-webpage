@@ -192,7 +192,7 @@ Numbers added in the late-game pass. None were run through the balance bot (it n
 | Pitch assistants (`S.pitchteam`) | 250,000 base bananas, needs 3 sold titles | A second crew per desk banks words for the best commissioned pitch that is not the goal, at `SUB_SLOW` = 2 keeper periods per word. Pitch words are banked on top of what the goal needs. Also runs while away. The Auto-pitch helper adds one more such crew (two crews halve the period), keeps title auto focus off commissions, and sells a ready commission every 6 s when the sale leaves the goal's words alone |
 | Carbon paper (`S.carbon`) | 1,500,000 base bananas, needs Honeycomb Ledger | Banking a word no longer takes its letters. Training keeps back only one copy of each letter the goal needs |
 | Shared training `factors` | `[1, 8, 28, 90, 280, 900]` (was `[1, 4, 8, 16, 32, 64]`) | About 1.5x the PAW_BASE ratio of each machine. A full set of upgrades on desk 3 is about 98k letters x 90, so an 8-hour stockpile (a few million) funds the first levels at once but not the last |
-| Break Room games | 15 games, 5k to 64M base bananas, bought in order | Each game pays more per par run than the one before (see the Break Room section below) |
+| Break Room games | Superseded: the 15 games moved to monkey-hub's arcade; floor-problem repairs earn Inspiration (see Repairs below) | |
 
 ## Flat band pay and Auto aim (Oct 23 2026)
 
@@ -211,22 +211,72 @@ Library and kids' titles anchor the table (they are the body of the game), so th
 
 **Auto aim.** Auto focus used to take the best `effort / pay`, which sent the keepers back to 3-letter titles whenever a new machine had few typists. It now picks the highest band that has a title the crews could finish in `AUTO_BUDGET` (1,200 s of crew time, letters counted twice for the untailored mix), then the lowest effort per pay inside that band. A band you cannot reach yet is skipped until the crews grow into it. Words stay banked when the goal changes, so the check runs every second and moves an auto goal up a band when one opens (never down, and never a goal you picked by hand). Commissions are taken highest band first. The away queue (`planAway`) still ranks by effort per pay so a stretch sells the most titles.
 
-## Break Room v3: families, typists and floor problems (Oct 23 2026)
+## Repairs: floor problems, typists and the Ideas (Oct 25 2026)
 
-Everything below replaces the Shop games and the single Inspiration wallet of the section after it.
+This replaces the Break Room (v3 and the score-paid section that came before it; both are in git history). The 15 Break Room games and their rewarded breaks are gone from IMI: the games are arcade cabinets in monkey-hub now. Floor problems are the only way to earn Inspiration and badge xp. Each problem has its own themed repair, a WarioWare-style microgame of 8-15 s (`minigames/repairs/<id>.js`, run by `minigames/repair.html`). Three rare big problems get 40-45 s repairs. A repair returns a grade `g` from 0 to 1. The catalogue is `minigames/CONCEPTS.md`, and every number below is in `minigame-progression.js`.
 
 | What | Rule |
 | --- | --- |
-| Games | All 15 are open when the Break Room opens (3 titles written, or a Printing). Nothing is bought; the Shop's Break Room tab is gone. The old `meta.minigames.games` list is ignored |
-| Families | Speed: Key Whack, Peel Dash, Road Hop, Banana Slice, Typewriter Rhythm. Keepers: Library Tidy, Crate Packer, Banana Stack. Sales: Fruit Stall, Banana Heist, Banana Barrel. Luck: Coconut Shuffle, Banana Plinko, Coconut Bowling, Vine Swing |
-| Inspiration | A run pays into its game's family pool (`meta.minigames.pool`). Warm hands and Bright ideas cost Speed, Fresh eyes Keepers, Good stories Sales, Lucky streak Luck; Room for play, Quick breaks and Studio notes take any. A family's own pool pays first, then loose Inspiration (`wallet`, what an older save held, which pays for anything). The HUD shows the total |
-| Par pay | The same for every game: `180 x 1.3^(machines owned - 1) x 1.2^Printings` (180 on one machine, about 670 on six, about 4,100 on six at Printing 10), x`tune` for Rhythm modes, x1.25 Fresh. A game's difficulty is already in its `par`, so the game you are best at is the one to play. The old per-game ladder (100 to 4,330) went with the purchase order |
-| Ideas gate | The "games owned" requirement per level is gone; cost is the pace |
-| Fresh eyes | `keeperWorkBonus` was never read by `ops.js`; keeper speed now divides `keeperPeriod` by it |
+| Unlock | Same as the Break Room: intro done, and 3 titles written or a Printing. The Ideas tab opens with it |
+| First problem | 180 s of play after unlock (was 240) |
+| Next problem | `(270 + 210 x h) / (1 + 0.1 x (machines typing - 1))` s after the last one spawned, `h` a hash in [0, 1) (was 300 + 240 h). That is 4.5 to 8 minutes on one machine and 3 to 5.3 on six. One problem at a time, only while progression runs and no modal, challenge, mastery, Folio or Works is open |
+| Lifetime | Micro problems 240 s, long ones 300 s, rotten-banana ones 120 s. A problem being repaired waits for the verdict |
+| Choice | Long or micro first: a long problem with odds 1/8 (never right after another long one), so about 1 spawn in 9 is long. Then weighted inside the size, after the sky gates (table below). Desk problems pick a machine with typists by hash; `all` problems hit every owned machine. Problems use their own hash, never the game's `rand()` |
+| Sky gates | leak x4 when it rains (wx >= 1); raven x2 at night; flood only in rain or storm (wx >= 2), x2 in a storm; fuses in rain, storm or at night. Read through `api.sky()` (`World.at`) |
+| Rotten bananas | While no problem is up, a Spoiled snack (`sluggish`) or Bad review (`critic`) buff becomes a Floor-wide problem (`snack` or `critic`, 120 s) and the 20 s buff is cleared so it cannot hit twice. With repairs inactive (flag off, unsupported save, a problem already up) the buffs work as before |
+| Penalties (through `deskFactor`) | Speed: typing x0.6. Keepers: keeper x0.5. Sales: title pay x0.85. Luck: no crits or lucky sales. Flood: keeper x0.5 on every machine. Fuses: typing x0.5 on every machine. Tangle: typing x0.6 on every machine. Snack: typing x0.75 everywhere. Critic: title pay x0.8 everywhere |
 
-**Badges.** A rewarded run (a fixing run included, practice never) trains the typist who played: `100 x ratio^0.85` badge xp in the game's family (x1.25 if that typist has not played in the last 3 runs, shown as RESTED). Level = `floor(sqrt(xp / 60))`, so a par run is level 1 and there is no last level. A typist's badge is the family they have the highest level in. It lives on the typist (`t.bd`), so it goes with the typist through transfers and resets with the room, and is saved in the same write as the Inspiration (`commitMinigames(expected, next, badge)`).
+| Weight | Problems |
+| --- | --- |
+| 3 | jam, nap, slump, jinx |
+| 2 | leak (x4 in rain), keys, carriage, ribbon, overheat, termites, cards, typos, shelf, raven (x2 at night), coconut |
+| 1 (long) | flood (rain/storm, x2 in storm), fuses (rain/storm or night), tangle (any time) |
+| 0 | snack, critic: they only come from rotten bananas |
 
-**Set bonuses** (one machine, read by `deskFactor(i, kind)` in the typing, keeper, sale and crit paths):
+**The repair.** The Floor card shows the problem, its countdown, who will fix it ("Pip grabs a bucket") and **Fix it**. The repair opens over the Floor in the same `.mg01-overlay` the Break Room used, so every guard that pauses for it still works. The overlay has no tab switch and no breaks.
+- **Fixer:** among the problem desk's crew (all crew for a Floor-wide problem), the typist whose last repair (`bd.at`) is oldest; ties go to the least xp in that family. This spreads badges across the crew, which is what grows the set tiers.
+- **Frame URL:** `minigames/repair.html?hosted=mg01&game=<id>&session&skip=1&level&desk&look&hat&seed&extra&low&reduce`.
+- **Level:** `clamp((owned machines - 1) / 5 x 0.55 + min(Printings, 4) x 0.1, 0, 1)`.
+- **One shot:** the first `start` of a session charges it, writing `active` to the save. Any later `start` in that session gets `hold`. This fixes the old free-fix replay, where in-game AGAIN gave unlimited paid runs and stacked tune-ups.
+- **Saves:** the run is committed twice, at charge and at the verdict. There is no per-second checkpoint.
+- **Leaving early:** quitting before the verdict (close, Esc outside play, any tab switch, leaving the game screen) abandons the run with no pay. The problem stays and can be tried again while it lasts.
+- **Interrupted runs:** a repair interrupted by a reload is cleared unpaid by `settleStale`, since problems are runtime only.
+
+| Grade | Verdict | Floor | Pay factor `p(g)` |
+| --- | --- | --- | --- |
+| 0, or the repair saw no real input | NOT FIXED | nothing changes | 0 (nothing paid, the problem can still pay later) |
+| 0 < g < 0.4 | PATCHED | time left halved; can be repaired again unpaid to clear it | `0.25 + 0.5 g` (0.25 to 0.45) |
+| 0.4 <= g < 0.85 | FIXED | cleared, plus a tune-up | `0.5 + 0.7 g` (0.78 to 1.09) |
+| g >= 0.85 | PERFECT | cleared, plus a bigger tune-up | `(0.5 + 0.7 g) x 1.15` (1.26 to 1.38) |
+
+**Pay.**
+- A problem pays once, into its family pool (`meta.minigames.pool`): `max(1, floor(basePay() x size x p(g) x (1 + Studio notes)))`, with size 1 for micro and 3 for long.
+- `basePay() = round(225 x 1.3^(machines owned - 1) x 1.2^Printings / 10) x 10`. That is 230 on one machine, about 840 on six, and about 5,200 on six at Printing 10.
+  - The base went from 180 to 225 (x1.25) because repairs are now the only source of Inspiration.
+  - Fixed promptly, problems come about 10 times an hour on one machine and about 14 on six. Before, there were 6 breaks per 2 hours plus a few problems.
+- A FIXED repair at g = 0.6 on one machine pays 211. A PERFECT one at g = 0.9 pays 298. A long FIXED repair at g = 0.6 pays 634.
+- The Fresh (x1.25) and New best (+25%) bonuses are gone.
+- **Badge xp** goes to the fixer: `round(100 x p(g) x (2.5 if long) x (1.25 if rested))`. A typist is rested when it is more than 3 sessions since their last repair. The xp is saved in the same write as the Inspiration.
+- The game-over card gets `reward { total, label:'INSPIRATION', verdict, note }`. The note is the Floor outcome, e.g. "Bamboo tuned up +33% for 3:12."
+
+**Tune-ups.**
+- A tune-up is `{ mult: 1 + min(0.6, 0.15 + 0.3 g) x (1 + Toolbox), until: now + (120 + 120 g) x (1 + Toolbox) }` on the problem's machine and family. At g = 0.6 that is +33% for 3:12; at g = 1, +45% for 4:00.
+- A Floor-wide problem tunes up every owned machine. Rotten-banana problems give no tune-up.
+- A new tune-up **replaces** any live one for that machine and family. Tune-ups never stack; before, they stacked x1.6^n.
+
+**Old saves.**
+- `meta.minigames` stays version 1.
+- `valid()` still accepts every save that validated before:
+  - The 15 old ids live on in a frozen `LEGACY` table (fam, par, modes, tune), used only to validate `best`, `recent`, `games` and `active.game`.
+  - `attempts` may be any integer 0..999. `fresh()` still writes `attempts` and `refillAt` as inert fields.
+- New optional field: `rep: { [repairId]: { n, best } }`. It records times fixed and the best grade in %, and it fills the Repairs manual. Unknown ids fail validation.
+- An old save with an unfinished Break Room run is paid once on the old scale: `180 x 1.3^(machines - 1) x 1.2^Printings`, x`(score/par)^0.85` above par (`^1.15` below), x1.25 Fresh. It also earns the old badge xp.
+
+**Badges.**
+- A typist's badge is the family they have the most xp in. Level = `floor(sqrt(xp / 60))`, so there is no last level.
+- The badge lives on the typist (`t.bd`), so it goes with them through transfers and resets with the room.
+
+**Set bonuses** (one machine, read by `deskFactor(i, kind)` in the typing, keeper, sale and crit paths; unchanged):
 
 | Part | Value |
 | --- | --- |
@@ -234,39 +284,37 @@ Everything below replaces the Shop games and the single Inspiration wallet of th
 | Set tier, by typists with that family's badge | 3: +10%, 6: +25%, 12: +60%, 24: +150%, 48: +400% (Sales x0.6) |
 | Full house | +6% to all four per complete set (one badge of every family) |
 
-A full desk of 48 split 12 / 12 / 12 / 12 at level 3 reads about +60% tier, +72% full house and +7% levels on every stat. Typing and keepers multiply the desk's rate, Sales multiplies `saleContext.desks[band]`, Luck multiplies the crit and lucky-sale odds on that desk and band.
+**Fresh eyes fix.**
+- Before: `keeperWorkBonus` was applied twice, in `keeperAt` and again in `keeperPeriod`, so Fresh eyes 1 (+15%) was really +32%. The old note here said it "was never read", which was wrong.
+- Now `keeperPeriod = keeperAt / deskFactor(i, 'keeper')`, and Fresh eyes is applied once, in `keeperAt`.
+- Effect on saves: keepers with Fresh eyes run slower than before. At Fresh eyes 5 (+230%), the period is x3.3 longer than the double-applied value.
 
-**Floor problems** (runtime only, never saved, driven by the Break Room's `tick` hook with its own hash, never the game's `rand()`). The first arrives after 240 s of play, then every 300 to 540 s (divided by 1 + 0.1 per extra machine in use); one at a time, 4 minutes to live, only when progression runs and no modal, challenge, Folio or Works is open. Ink jam: that desk types x0.6 (Speed). Keeper nodded off: that keeper x0.5 (Keepers). Slump: that band's titles x0.85 (Sales). Jinx: no crits or lucky sales there (Luck). The old Spoiled snack and Bad review buffs show the same card and clear when fixed. Playing a game of the matching family as a typist from that desk is a free run (no break spent, full Inspiration, badge xp). At 40% of par or better it fixes the problem and tunes the machine up (+25% at par, up to +60%) for 2 to 4 minutes; below that it only halves the time left.
+**The Ideas** (the Ideas tab: Ideas, Crew and Repairs sub-tabs).
+- Each idea is a track bought a level at a time; its card shows the next level (`+35% > +70%`).
+- Tracks marked "tail" never end. Past the listed levels they add the stated amount per level, and the cost grows x1.5 to x1.6.
+- A family's own pool pays first, then loose Inspiration (`wallet`). "Any" tracks take loose Inspiration first, then the biggest pools.
+- Track ids and level counts are unchanged, so old purchases carry over: Room for play is now Toolbox, Quick breaks is now Steady hands, and Studio notes counts per repair.
 
-## Break Room: score-paid Inspiration and the Ideas (Oct 2026)
-
-Untested by the balance bot; the numbers are reasoned. Par scores come from the games' own autoplayers (`?bot=1&warp=N`), halved for a human.
-
-| Knob | Value | Why |
+| Track | Effect (cumulative per level) | Cost per level (Inspiration) |
 | --- | --- | --- |
-| A rewarded break | one run, paid when it ends (or when you leave, for the score so far) | The old reward was play time (10 to 24 Inspiration per minute); it ignored how well you played |
-| Run value | `pay x (score / par)^0.85` at or above par, `^1.15` below; score is capped at 60x par | Doubling a score pays about 1.8x, so skill matters but an outlier cannot run away; a token score earns a token reward |
-| `pay` (a par run) | 100 for Banana Barrel, x1.31 per game bought: 130, 170, 220, 290, 380, 500, 650, 850, 1,120, 1,470, 1,920, 2,520, 3,300, 4,330 | Later games cost far more bananas and are harder, so a modest score on them beats a good score on the first game |
-| `par` | Barrel 1,500 / Shuffle 2,500 / Road Hop 120 / Key Whack 3,500 / Fruit Stall 1,000 / Vine Swing 450 / Peel Dash 2,000 / Stack 2,500 / Slice 3,000 / Rhythm 3,500 / Tidy 3,000 / Bowling 150 / Packer 130 / Heist 300 / Plinko 1,200 | Normalises scores that differ by orders of magnitude. Rhythm modes: easy par x0.7 pays x0.6, hard par x1.3 pays x1.6 |
-| Fresh | x1.25 when the game is not one of your last two rewarded breaks (needs 3+ games) | Nudges play across the whole Break Room |
-| New best | +25% of the run's Inspiration when it beats a saved best | Bests are saved with the factory (`best`) and survive a reload; practice counts toward them but never pays |
-| Breaks | 6 held, one back every 2 hours; a break that never got played comes back | Ideas below raise the cap to 20 and shorten the wait to 20 minutes |
-| A closed tab | An interrupted break is banked for the score it had reached the next time the game loads | Checkpoints save the score every second of play |
+| Warm hands (Speed) | automatic typing +15, +35, +70, +130, +230%, then +100% a level | 150, 600, 2.4K, 9.5K, 38K, then x1.6 |
+| Fresh eyes (Keepers) | keeper speed, same steps | 170, 680, 2.7K, 10.5K, 42K, then x1.6 |
+| Good stories (Sales) | title income +10, +25, +50, +90, +150%, then +75% a level | 220, 900, 3.6K, 14K, 56K, then x1.6 |
+| Bright ideas (Speed) | inspired typists come x1.3, x1.6, x2, x2.5 as often and last +4, +8, +12, +18 s | 400, 1.8K, 7K, 28K |
+| Lucky streak (Luck) | crit-tap odds, lucky-sale odds and Golden Hour frequency +20, +45, +80, +130, +200% | 350, 1.6K, 6.5K, 26K, 100K |
+| Toolbox (any; was Room for play) | tune-ups +10, +20, +30, +45, +60% stronger and longer (both multiply by 1 + value) | 120, 500, 2K, 8K, 30K |
+| Steady hands (any; was Quick breaks) | +1, +2, +3, +4, +5 s on every repair's timer (`&extra=N`) | 250, 1.2K, 5K, 20K, 75K |
+| Studio notes (any) | Inspiration per repair +20, +45, +80, +130%, then +50% a level | 300, 1.5K, 6K, 24K, then x1.5 |
 
-The Ideas replace the nine one-off nodes. Each is a track bought a level at a time; a card shows the next level (`+35% > +70%`). Tracks marked "tail" never end: past the listed levels they add the stated amount per level and the cost grows x1.5 to x1.6. Levels past the first need more Break Room games owned.
+The nine one-off nodes of the first Break Room still map onto these levels on load:
 
-| Track | Effect (cumulative per level) | Cost per level (Inspiration) | Games needed |
-| --- | --- | --- | --- |
-| Warm hands | automatic typing +15, +35, +70, +130, +230%, then +100% a level | 150, 600, 2.4K, 9.5K, 38K, then x1.6 | 0, 2, 4, 7, 10 |
-| Fresh eyes | keeper speed, same steps | 170, 680, 2.7K, 10.5K, 42K, then x1.6 | 2, 3, 5, 8, 11 |
-| Good stories | title income +10, +25, +50, +90, +150%, then +75% a level | 220, 900, 3.6K, 14K, 56K, then x1.6 | 3, 4, 6, 9, 12 |
-| Bright ideas | inspired typists come x1.3, x1.6, x2, x2.5 as often and last +4, +8, +12, +18 s | 400, 1.8K, 7K, 28K | 4, 6, 8, 11 |
-| Lucky streak | crit-tap odds, lucky-sale odds and Golden Hour frequency +20, +45, +80, +130, +200% | 350, 1.6K, 6.5K, 26K, 100K | 5, 6, 8, 10, 13 |
-| Room for play | breaks held 8, 10, 12, 15, 20 | 120, 500, 2K, 8K, 30K | 2, 3, 5, 7, 10 |
-| Quick breaks | a break returns every 90, 60, 45, 30, 20 minutes | 250, 1.2K, 5K, 20K, 75K | 3, 5, 7, 9, 12 |
-| Studio notes | Inspiration per run +20, +45, +80, +130%, then +50% a level | 300, 1.5K, 6K, 24K, then x1.5 | 3, 5, 7, 10 |
-
-The old ideas map onto the new levels on first load (Warm-up, Nimble paws and Steady hands are Warm hands 1 to 3; Fresh eyes and Quick keepers are Fresh eyes 1 to 2; Good stories and Bestsellers are Good stories 1 to 2; Room for play and Big break are Room for play 1 and Studio notes 1). Everything is additive inside a track and multiplicative with every other source, so a fully bought set is a large multiplier on typing, keepers and sales: the tail is the intended long-term sink for Inspiration.
+| Old nodes | Now |
+| --- | --- |
+| Warm-up, Nimble paws, Steady hands | Warm hands 1 to 3 |
+| Fresh eyes, Quick keepers | Fresh eyes 1 to 2 |
+| Good stories, Bestsellers | Good stories 1 to 2 |
+| Room for play | Toolbox 1 |
+| Big break | Studio notes 1 |
 
 ## Letter garden rework (Oct 2026)
 Untested by the bot; reasoned from the formulas.
@@ -310,7 +358,7 @@ Variable rewards and ceremonies on top of the existing juice. Only the first fou
 | Buy chain | A purchase within 3.2s of the last one climbs the chime a note; stamps at x5, x10, x20 | none |
 | Sale chain | CHAIN x(n) pops on hand-sales in a row | none (odds only) |
 | Awards | Bronze chime, silver confetti + fanfare, gold full-screen burst; +1% income flies into the counter. Diamond Bananas from awards fly into their chip | none |
-| Press, Break Room | Stars and Inspiration fly into their chips | none |
+| Press, repairs | Stars and Inspiration fly into their chips | none |
 | Near-complete | Bars and the Goals tag throb at 90% | none |
 
 ## Muses added Oct 2026
