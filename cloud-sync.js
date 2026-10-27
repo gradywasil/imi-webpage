@@ -6,7 +6,7 @@
 (() => {
   'use strict';
   if (!window.MonkeyCloud) return;
-  const BUILD = 'imi-v100';                      // keep in step with VERSION in sw.js
+  const BUILD = 'imi-v101';                      // keep in step with VERSION in sw.js
   const EVERY = 5 * 60 * 1000;                   // the tick reports at most this often; a printing or a reset reports at once
   const whole = v => Math.max(0, Math.floor(Number(v) || 0));
   let api = null, next = 0;

@@ -1,16 +1,12 @@
-// Monkey Cloud config: the shipped "off" stub. Load it BEFORE monkey-cloud.js, like a real config.
-//
-// It deliberately sets nothing, so MonkeyCloud.status() is 'off' in every game: the game plays exactly
-// as before, nothing is sent anywhere, Firebase is never loaded, and stats still reach the hub through
-// postMessage when the game runs inside it. The file exists so that every game can load it
-// unconditionally: a classic <script src> must not 404, monkey-sled's test/pwa.js wants every script
-// precached, and a Vite import of a missing file fails the build.
-//
-// It also leaves an existing window.MONKEY_CLOUD_CONFIG alone, so a test harness can inject an emulator
-// config before the page's scripts run (README "Test a game against the emulators").
-//
-// Once the Firebase project exists (README steps 1-5):
-//   1. Replace this whole file with monkey-cloud.config.example.js and fill it in (README step 6).
-//   2. node scripts/sync-sdk.mjs --write   copies it into every game.
-//   3. In each classic game bump the service-worker cache name (the file is precached), rebuild the
-//      Vite apps, and deploy.
+// Public web identifiers; Firestore rules and authorized domains protect the data.
+window.MONKEY_CLOUD_CONFIG ||= {
+  firebase: {
+    apiKey: 'AIzaSyCZ3bn7OxhtOZpDJvynIHXvcQ3qjcbDQP4',
+    authDomain: 'monkey-cloud-5289d.firebaseapp.com',
+    projectId: 'monkey-cloud-5289d',
+    appId: '1:508515331116:web:dd9e3c2192beb7f968b589',
+  },
+  googleClientId: '508515331116-uhkjpqqig5pomdupmil7bcqgni2bof6f.apps.googleusercontent.com',
+  privacyUrl: 'https://monkey.arrangedgodly.com/privacy',
+  emailLink: false,
+};
