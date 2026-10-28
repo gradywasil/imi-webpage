@@ -15,7 +15,7 @@ export async function fixture(browser,{edition='pixel',flags='lg01a=1&lg02=1',ti
   if(startupHold){const set=Storage.prototype.setItem;window.__r3StartupReject=1;Storage.prototype.setItem=function(k,v){if(k==='imi-ops-v1'&&__r3StartupReject-->0)throw new DOMException('Actual startup migration failure','QuotaExceededError');return set.call(this,k,v);};}
   if(track){const Observer=MutationObserver; /* tracks only the tour recovery observers; other modules keep page-lifetime observers */ window.__r3Observers=[];window.MutationObserver=class extends Observer{constructor(fn){super(fn);this.targets=[];this.disconnected=false;if(String(fn).includes("recoveryObserver"))__r3Observers.push(this);}observe(node,options){this.targets.push({className:node.className,tag:node.tagName,options});return super.observe(node,options);}disconnect(){this.disconnected=true;return super.disconnect();}};}
  },{tip,track,startupHold});
- await page.goto('http://127.0.0.1:8313/'+(edition==='pixel'?'index':'classic')+'.html?featureProfile=legacy&s='+edition+'&'+flags+'&r3=functional#play');
+ await page.goto('http://127.0.0.1:8313/'+'index'+'.html?featureProfile=legacy&s='+edition+'&'+flags+'&r3=functional#play');
  await page.waitForFunction(()=>!!window.IMI?.tour&&!!window.IMI?.ops);
  await page.waitForFunction(()=>!document.querySelector('.tour-bub').hidden||!IMI.ops.introActive()||window.Rewards?.held?.());
  return {page,errors,close:()=>context.close()};

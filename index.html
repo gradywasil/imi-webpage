@@ -26,7 +26,6 @@
 <script src="vault-save-gate.js"></script>
   <script src="rewards.js"></script>
   
-  <script>if (!VaultSaveGate.blocked && !Rewards.enabled) document.write('<script src="style-swap.js"><\/script>');</script>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="ops.css">
   <link rel="stylesheet" href="gems.css">
@@ -40,6 +39,7 @@
 <link rel="stylesheet" href="production-goal.css">
   <link rel="stylesheet" href="pickups.css">
   <link rel="stylesheet" href="pixel-fx.css">
+  <link rel="stylesheet" href="story.css">
 </head>
 <body>
   <!-- Pixel jungle backdrop (all art generated in pixel.js) -->
@@ -56,32 +56,42 @@
     </div>
   </div>
 
-  <!-- MENU: the title screen. PLAY drops you into the game. -->
-  <main class="screen menu" id="menu">
-    <div class="hero-rays" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    <div class="hero-motes" id="heroMotes" aria-hidden="true"></div>
-    <div class="hero-monkey" id="heroMonkey" aria-hidden="true">
-      <div class="hm-vine"></div>
-      <canvas class="hm-cv" id="heroCv"></canvas>
-      <div class="hm-hit" id="hmHit"></div>
-      <div class="hm-bubble" id="hmBubble">OOH OOH!</div>
+  <!-- MENU: the title screen. A living StoryKit diorama of the player's building (app.js); PLAY dives into the founder's typewriter. -->
+  <main class="screen menu intro" id="menu">
+    <canvas class="ti-cv" id="titleCv" aria-hidden="true"></canvas>
+    <div class="ti-shade" aria-hidden="true"></div>
+    <div class="ti-top" id="tiTop">
+      <h1 class="title" id="title" aria-label="Infinite Monkey Industries">
+        <span class="tl-row"><span class="word" data-text="INFINITE"></span><span class="word" data-text="MONKEY"></span></span>
+        <span class="tl-row"><span class="word" data-text="INDUSTRIES"></span></span>
+      </h1>
+      <p class="tagline">Typing Shakespeare since before it was cool.</p>
     </div>
-    <h1 class="title" id="title" aria-label="Infinite Monkey Industries">
-      <span class="word" data-text="INFINITE"></span>
-      <span class="word" data-text="MONKEY"></span>
-      <span class="word" data-text="INDUSTRIES"></span>
-    </h1>
-    <p class="tagline">Typing Shakespeare since before it was cool.</p>
-    <div class="hero-live" id="heroLive" hidden></div>
-    <div class="menu-actions">
-      <a class="banana-btn" id="playBtn" href="#play"><span id="playLabel" data-new="PLAY" data-cont="CONTINUE">PLAY</span></a>
+    <div class="hm-bubble" id="hmBubble" aria-hidden="true">OOH OOH!</div>
+    <div class="ti-bot" id="tiBot">
+      <div class="ti-panel" id="storyPanel" role="dialog" aria-labelledby="storyHead" hidden>
+        <div class="ti-phead"><b id="storyHead">The story so far</b><button class="ti-px" type="button" aria-label="Close">X</button></div>
+        <ol class="ti-plist"></ol>
+      </div>
+      <nav class="ti-nav" aria-label="Main menu">
+        <a class="banana-btn ti-play" id="playBtn" href="#play"><span class="ti-plab" id="playLabel" data-new="PLAY" data-cont="CONTINUE">PLAY</span><small class="ti-chap" id="playChapter">Prologue: The Clearing</small></a>
+        <button class="ti-btn" id="storyBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="storyPanel" hidden>STORY</button>
+      </nav>
+      <div class="hero-live" id="heroLive" hidden></div>
+      <p class="secret">psst... try typing "banana".</p>
     </div>
+    <p class="ti-skip" aria-hidden="true"><span class="ti-fine">CLICK OR PRESS ANY KEY TO SKIP</span><span class="ti-coarse">TAP TO SKIP</span></p>
     <div class="menu-corner">
-      <button class="toy" data-sound type="button" aria-label="Toggle sound effects" title="Sound on/off"><span class="toy-art"></span></button>
-      <button class="leaf-link style-swap" id="styleSwap" type="button" title="Switch to the classic smooth style">CLASSIC</button>
+      <button class="toy" id="menuSettings" type="button" aria-label="Settings" title="Settings" aria-haspopup="dialog" aria-expanded="false"><span class="toy-art"><i class="gear-bars"><b></b><b></b><b></b></i></span></button>
     </div>
-    <p class="secret">psst... try typing "banana".</p>
   </main>
+
+  <!-- GATE: press any key before the opening (the press is the gesture that lets the audio start). Shown by app.js on the first title visit of a page load. -->
+  <button class="gate" id="gate" type="button" hidden aria-label="Press any key to start. Infinite Monkey Industries presents.">
+    <canvas class="gate-cv" id="gateCv" aria-hidden="true"></canvas>
+    <span class="gate-pre" aria-hidden="true">INFINITE MONKEY INDUSTRIES<br>PRESENTS</span>
+    <span class="gate-cta" aria-hidden="true"><span class="gate-fine">PRESS ANY KEY</span><span class="gate-coarse">TAP TO START</span></span>
+  </button>
 
   <!-- GAME: Typewriter Ops. Everything inside #opsRoot is built by ops.js -->
   <div class="screen game" id="game">
@@ -105,13 +115,13 @@
 
   <script>
     if (!VaultSaveGate.blocked && Rewards.enabled) Rewards.start(() => {
-      localStorage.setItem('imi-style', 'pixel');
-      document.getElementById('styleSwap').addEventListener('click', () => { if (Rewards.owns()) location.href = 'classic.html' + location.search + location.hash; });
+      try { localStorage.removeItem('imi-style'); } catch (e) { /* the retired art-style preference: nothing reads it any more */ }
     });
   </script>
   <script src="pixel.js"></script>
   <script src="crew-art.js"></script>
   <script src="muse-art.js"></script>
+  <script src="story-kit.js"></script>
   <script src="weather.js"></script>
   <script src="world.js"></script>
   <script src="mood.js"></script>
@@ -156,6 +166,10 @@
 <script src="cloud-sync.js"></script>
 <script src="ops.js"></script>
   <script src="tour.js"></script>
+  <script src="story-scenes-early.js"></script>
+  <script src="story-scenes-build.js"></script>
+  <script src="story-scenes-empire.js"></script>
+  <script src="story.js"></script>
   <script src="pickups.js"></script>
   <script src="pixel-fx.js"></script>
   <script src="pwa.js" defer></script>

@@ -23,7 +23,7 @@ test('acknowledged helper purchases, frozen admission and both edition layouts',
  const record=(name,value=true)=>results.checks.push({name,value});
  try{
   browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,userDataDir:profile});
-  for(const edition of ['index','classic']){
+  for(const edition of ['index']){
    const page=await browser.newPage();page.setDefaultTimeout(8000);page.on('pageerror',e=>results.errors.push(e.message));
    await page.setViewport({width:360,height:560,isMobile:true,hasTouch:true});
    await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);

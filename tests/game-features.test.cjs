@@ -32,12 +32,12 @@ test('legacy profile and absent helper retain explicit flag behavior', () => {
   }
 });
 test('both editions and harness load configuration before cold predicates; SW caches it', () => {
-  for (const file of ['index.html','classic.html','tools/balance.html']) {
+  for (const file of ['index.html','tools/balance.html']) {
     const html = source(file);
     assert(html.indexOf('game-features.js') < html.indexOf('awards-catalogue.js'), file);
     assert(html.indexOf('game-features.js') < html.indexOf('vault-save-gate.js'), file);
   }
-  assert(source('sw.js').includes("const VERSION = 'imi-v100'"));
+  assert(source('sw.js').includes("const VERSION = 'imi-v103'"));
   assert(source('sw.js').includes("'game-features.js'"));
 });
 function ownedSpeed(c) {

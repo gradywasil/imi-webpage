@@ -9,15 +9,6 @@
   const state = { shelf: 'all', q: '', sort: 'title', page: 0 };
   let items = [], shown = [], lastFocus = null;
 
-  /* ---- style toggle (same preference the main site uses) ---- */
-  const swap = $('#styleSwap');
-  const paintSwap = () => { swap.textContent = document.documentElement.dataset.style === 'pixel' ? 'CLASSIC' : 'PIXEL'; };
-  swap.addEventListener('click', () => {
-    const next = document.documentElement.dataset.style === 'pixel' ? 'classic' : 'pixel';
-    document.documentElement.dataset.style = next; localStorage.setItem('imi-style', next); paintSwap();
-  });
-  paintSwap();
-
   /* ---- catalog ---- */
   Promise.all(['library/books.json', 'library/archives.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })))
     .then(([books, archives]) => {

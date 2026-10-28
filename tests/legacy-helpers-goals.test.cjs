@@ -18,7 +18,7 @@ test('Legacy helper purchases and compact acknowledged goals in both editions',a
  const origin=`http://127.0.0.1:${server.address().port}`,results={origin,checks:[],layouts:[],errors:[]};let browser;
  try{
   browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
-  for(const edition of ['index','classic']){
+  for(const edition of ['index']){
    const context=await browser.createBrowserContext(),page=await context.newPage();page.setDefaultTimeout(8000);page.on('pageerror',e=>results.errors.push(e.message));
    await page.setViewport({width:360,height:560,isMobile:true,hasTouch:true});await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
    await page.evaluateOnNewDocument(()=>{localStorage.setItem('imi-tour','done');localStorage.setItem('imi-sound','off');localStorage.setItem('imi-fx','low');});

@@ -1,7 +1,7 @@
-/* CORE: everything the pixel and classic editions share.
-   Synth sound, the banana counter, the menu/game screens, the header toys (snack banana, coconut, weather, night)
-   and the window.IMI bridge that ops.js (the game) talks to. Each edition passes in an `art` object with its own
-   particles, icons and toy visuals; this file never touches sprites or SVG itself. */
+/* CORE: the pixel edition's shell.
+   Synth sound and music (the mixer), the banana counter, the menu/game screens, the header toys (snack banana, coconut, weather, night)
+   and the window.IMI bridge that ops.js (the game) talks to. The edition passes in an `art` object with its own
+   particles, icons and toy visuals (app.js); this file never touches sprites itself. */
 window.Core = (() => {
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
@@ -14,20 +14,81 @@ window.Core = (() => {
   const { fmt, exact, rate: fmtRate } = Economy;
   const fmtHud = fmt;
 
-  /* =====================  SOUND (synthesized, no assets)  ===================== */
-  const audio = { ctx: null, on: !window.VaultSaveGate?.blocked && localStorage.getItem('imi-sound') !== 'off' };
+  /* =====================  AUDIO (synthesized, no assets)  =====================
+     Four buses on one AudioContext:  sfx / music / ambient -> master -> compressor -> speakers.  Each is a GainNode.
+     Levels are 0..1 (what the sliders show), persisted as JSON in localStorage `imi-mix`; the gain applied is the level squared so the
+     slider feels even. The old on/off flag (`imi-sound`=off) migrates to master 0, and the mute button remembers the level it muted from.
+     Nothing makes sound before the first user gesture (the browser would refuse it anyway), and no context exists until then. */
+  const BUSES = ['master', 'music', 'sfx', 'ambient'];
+  const MIX_DEFAULT = { master: 1, music: .35, sfx: 1, ambient: 1 };
+  const MIX_KEY = 'imi-mix';
+  const lvl = (v, d) => { v = Number(v); return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : d; };
+  const audio = { ctx: null, nodes: null, activated: false, blocked: !!window.VaultSaveGate?.blocked, duck: false, migrated: false, hear: [] };
+  const mix = (() => {
+    let saved = {}; try { if (!audio.blocked) saved = JSON.parse(localStorage.getItem(MIX_KEY) || '{}') || {}; } catch { /* corrupt or blocked storage: defaults */ }   // a Vault-blocked page reads nothing but the save (tests/vault-startup-gate)
+    const m = {}; for (const b of BUSES) m[b] = lvl(saved[b], MIX_DEFAULT[b]);
+    m.prev = lvl(saved.prev, 1) || 1;                                    // the master level to come back to when un-muting
+    let legacy = null; try { if (!audio.blocked) legacy = localStorage.getItem('imi-sound'); } catch { /* storage blocked */ }
+    if (legacy === 'off' || legacy === 'on') {                           // the retired single switch
+      if (legacy === 'off') { if (m.master > 0) m.prev = m.master; m.master = 0; }
+      audio.migrated = true;
+    }
+    return m;
+  })();
+  const audible = bus => !audio.blocked && mix.master > 0 && mix[bus] > 0;
+  const activated = () => audio.activated || !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  const taper = v => v * v;
+  function applyMix() {
+    const n = audio.nodes; if (!n) return;
+    const t = audio.ctx.currentTime;
+    for (const b of BUSES) n[b].gain.setTargetAtTime(audio.blocked ? 0 : taper(mix[b]), t, .03);
+    n.duck.gain.setTargetAtTime(audio.duck ? .3 : 1, t, .12);
+  }
+  function buildGraph(c) {
+    const comp = c.createDynamicsCompressor();
+    comp.threshold.value = -10; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = .004; comp.release.value = .2; comp.connect(c.destination);
+    const n = { comp };
+    for (const b of BUSES) n[b] = c.createGain();
+    n.duck = c.createGain();                                             // music tracks plug in here, so a cutscene line can dip the music without touching its slider
+    n.master.connect(comp); n.sfx.connect(n.master); n.ambient.connect(n.master); n.music.connect(n.master); n.duck.connect(n.music);
+    audio.nodes = n;
+    for (const b of BUSES) n[b].gain.value = audio.blocked ? 0 : taper(mix[b]);
+    n.duck.gain.value = audio.duck ? .3 : 1;
+  }
   function ac() {
-    if (!audio.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) audio.ctx = new C(); }
-    if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
+    if (!audio.ctx) {
+      if (!activated()) return null;
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+      try { audio.ctx = new C(); } catch { return null; }
+      buildGraph(audio.ctx);
+    }
+    if (audio.ctx.state === 'suspended') audio.ctx.resume();
     return audio.ctx;
   }
+  /* the node a sound plugs into for a given bus (null until the first gesture) */
+  const outOf = bus => { if (!ac()) return null; return bus === 'music' ? audio.nodes.duck : audio.nodes[bus] || audio.nodes.sfx; };
+  const mixTell = () => audio.hear.slice().forEach(f => { try { f(); } catch (e) { console.error(e); } });
+  let mixSaveable = false;                                             // Core.boot turns this on: only the save owner writes preferences
+  function saveMix() { if (!mixSaveable) return; try { localStorage.setItem(MIX_KEY, JSON.stringify(mix)); localStorage.removeItem('imi-sound'); } catch { /* storage blocked */ } }
+  function setLevel(bus, v) {
+    if (!BUSES.includes(bus)) return;
+    mix[bus] = lvl(v, mix[bus]);
+    if (bus === 'master' && mix.master > 0) mix.prev = mix.master;
+    applyMix(); saveMix(); mixTell(); music.reconcile();
+  }
+  function setMuted(on) {
+    if (on === (mix.master === 0)) return;
+    if (on) { mix.prev = mix.master || mix.prev; mix.master = 0; } else mix.master = mix.prev || 1;
+    applyMix(); saveMix(); mixTell(); music.reconcile();
+  }
+
   function tone(f0, dur, { type = 'sine', vol = 0.16, f1 = f0, delay = 0, vibrato = 0 } = {}) {
-    if (!audio.on) return; const c = ac(); if (!c) return;
+    if (!audible('sfx')) return; const c = ac(); if (!c) return;
     const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
     o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
     if (vibrato) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 28; lg.gain.value = vibrato; l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + dur); }
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+    o.connect(g).connect(audio.nodes.sfx); o.start(t); o.stop(t + dur + 0.02);
   }
   const noiseBufs = new Map();                              // a decaying burst of noise is the same every time, so each length is built once and replayed
   function noiseBuf(c, dur) {
@@ -40,12 +101,12 @@ window.Core = (() => {
     return buf;
   }
   function noise(dur, { vol = 0.2, freq = 1800, delay = 0 } = {}) {
-    if (!audio.on) return; const c = ac(); if (!c) return;
+    if (!audible('sfx')) return; const c = ac(); if (!c) return;
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + delay;
     s.buffer = noiseBuf(c, dur); f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol;
-    s.connect(f).connect(g).connect(c.destination); s.start(t);
+    s.connect(f).connect(g).connect(audio.nodes.sfx); s.start(t);
   }
-  /* pixel gets chiptune squares, classic gets rounder triangles */
+  /* pixel gets chiptune squares */
   let lastKey = 0;                                          // a big crew types dozens of times a second: no more than one clack per 35ms
   function makeSfx(px) {
     const lead = px ? 'square' : 'triangle';
@@ -83,6 +144,150 @@ window.Core = (() => {
     };
   }
 
+  /* =====================  MUSIC (procedural chiptune loops)  =====================
+     The look-ahead scheduler pattern from monkey-assets/audio/music.js: a setInterval wakes ~11x a second and schedules every note that
+     falls in the next 0.4 s on the audio clock, so the loop never drifts or stutters when the main thread is busy.
+     Tracks:  title (warm, jaunty, typewriter percussion, a bell), floor (sparse and gentle, for hours: it leans on the sky), story (a cutscene underscore).
+     Each track plays through its own gain into the music bus, so changing track is a crossfade. */
+  const mf = n => 440 * Math.pow(2, (n - 69) / 12);
+  const XFADE = 1.6;
+  function mv(out, t, n, dur, { type = 'triangle', vol = .08, a = .01 } = {}) {         // one note at absolute time t; n is a MIDI number
+    const c = audio.ctx, o = c.createOscillator(), g = c.createGain(), f = mf(n);
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(out); o.start(t); o.stop(t + dur + .05);
+  }
+  function mn(out, t, dur, { vol = .06, freq = 2600, q = 1.2 } = {}) {                  // a short filtered burst of noise: the typewriter's clack
+    const c = audio.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noiseBuf(c, dur); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; g.gain.value = vol;
+    s.connect(f).connect(g).connect(out); s.start(t);
+  }
+  const bell = (out, t, n, vol = .05) => { mv(out, t, n, 1.1, { vol, a: .004 }); mv(out, t, n + 12.4, .6, { type: 'sine', vol: vol * .35, a: .004 }); };
+
+  const CH = { C: { r: 0, t: [0, 4, 7, 11] }, Am: { r: -3, t: [-3, 0, 4, 7] }, F: { r: -7, t: [-7, -3, 0, 4] }, G: { r: -5, t: [-5, -1, 2, 5] }, Em: { r: -8, t: [-8, -5, -1, 2] } };
+  /* melody lines in semitones above C5, eight eighth-notes a bar, null = rest */
+  const TITLE_PROG = ['C', 'Am', 'F', 'G', 'C', 'F', 'G', 'C'];
+  const TITLE_MEL = [
+    [[4, null, 7, null, 12, null, 7, 4], [9, null, 7, null, 4, null, 0, null], [5, null, 9, null, 12, null, 9, 5], [7, null, 2, null, 7, null, null, null],
+     [4, 7, 12, null, 11, null, 7, null], [9, null, 12, null, 9, 5, null, null], [7, null, 11, null, 14, null, 11, 7], [12, null, null, null, null, null, null, null]],
+    [[12, null, 11, 12, 14, null, 12, null], [9, null, 12, 9, 7, null, 4, null], [5, 9, 12, null, 17, null, 12, 9], [14, null, 11, null, 7, null, 2, null],
+     [4, null, 7, 12, null, 7, 4, null], [5, null, 9, null, 12, null, 9, null], [7, 11, 14, null, 17, null, 14, 11], [12, null, 7, null, 4, null, 0, null]]
+  ];
+  const TRACKS = {
+    /* warm and jaunty: oom-pah bass and chords, a square-wave tune with a triangle shadow, typewriter clacks for drums, a bell at the carriage return. 108 bpm, 16 bars */
+    title: {
+      level: 3.2, sp: 60 / 108 / 2,
+      step(i, t, out) {
+        const sp = this.sp, bar = Math.floor(i / 8) % 16, s = i % 8, ch = CH[TITLE_PROG[bar % 8]];
+        if (s === 0) mv(out, t, 48 + ch.r, sp * 3.2, { vol: .24 });
+        if (s === 4) mv(out, t, 48 + ch.r + 7, sp * 2.4, { vol: .16 });
+        if (s === 2 || s === 6) for (const k of ch.t.slice(0, 3)) mv(out, t, 60 + k, sp * .8, { type: 'square', vol: .028, a: .006 });
+        const m = TITLE_MEL[bar < 8 ? 0 : 1][bar % 8][s];
+        if (m != null) { mv(out, t, 72 + m, sp * 1.7, { type: 'square', vol: .05, a: .006 }); mv(out, t, 60 + m, sp * 1.7, { vol: .06, a: .01 }); }
+        if (s === 2 || s === 6) mn(out, t, .035, { vol: .09, freq: 2600 });                // the clack on the backbeat
+        else if (s % 2 && Math.random() < .75) mn(out, t, .02, { vol: .022, freq: 3400 + Math.random() * 900 });   // fingers on the keys in between
+        if (s === 0 || s === 4) mn(out, t, .06, { vol: .08, freq: 700, q: .8 });          // the space-bar thunk on the downbeat
+        if (bar % 8 === 7 && s === 5) mn(out, t, .28, { vol: .05, freq: 1500, q: .6 });   // the carriage slides back...
+        if (bar % 8 === 7 && s === 7) bell(out, t, 91, bar === 15 ? .07 : .05);           // ...ding
+        if (bar % 4 === 1 && s === 7) bell(out, t, 98, .03);
+        return sp;
+      }
+    },
+    /* the Floor: a pad and a root note under sparse random plucks that echo. Every fourth bar has no plucks at all, and the key drifts every 16 bars so it never
+       becomes wallpaper. Night: slower, a darker chord cycle and lower notes. Rain: shorter, higher drips. */
+    floor: {
+      level: 3, sp: 60 / 72 / 2,
+      step(i, t, out, st) {
+        const bar = Math.floor(i / 8), s = i % 8;
+        if (s === 0 || !st.sky) { try { const a = window.World ? World.at(Date.now()) : null; st.sky = { night: !!(a && a.night), wx: a ? a.wx : 0 }; } catch { st.sky = { night: false, wx: 0 }; } }
+        const { night, wx } = st.sky, rain = wx >= 1, sp = night ? 60 / 58 / 2 : rain ? 60 / 66 / 2 : this.sp;
+        const prog = night ? ['Am', 'F', 'C', 'Em'] : ['C', 'Am', 'F', 'G'], ch = CH[prog[bar % 4]];
+        const key = [0, 5, 7, 0][Math.floor(bar / 16) % 4], root = key + ch.r;
+        if (s === 0) {
+          for (const k of ch.t.slice(0, 3)) mv(out, t, 60 + key + k, sp * 8.6, { type: 'sine', vol: night ? .045 : .05, a: sp * 2.4 });   // the pad
+          if (bar % 2 === 0) mv(out, t, 48 + root, sp * 5, { vol: .17, a: .03 });                                                       // a low root every other bar
+        }
+        if (bar % 4 !== 3 && s !== 0) {
+          const p = night ? .13 : rain ? .26 : .2;
+          if (Math.random() < p) {
+            const pool = [...ch.t, ch.t[0] + 14], oct = night ? 60 : rain ? 84 : 72;
+            const n = oct + key + pool[Math.floor(Math.random() * pool.length)], d = rain ? sp * 1.4 : sp * 3;
+            mv(out, t, n, d, { vol: rain ? .05 : .06, a: .005 });
+            mv(out, t + sp * .75, n, d * .8, { vol: .028, a: .005 }); mv(out, t + sp * 1.5, n, d * .6, { vol: .014, a: .005 });         // the echo
+          }
+          if (Math.random() < .05) mn(out, t, .02, { vol: .012, freq: 3000 });                                                             // a far-off key
+        }
+        return sp;
+      }
+    },
+    /* a cutscene underscore: held chords, a music-box arpeggio, two bells. 80 bpm, 8 bars. */
+    story: {
+      level: 3, sp: 60 / 80 / 2,
+      step(i, t, out) {
+        const sp = this.sp, bar = Math.floor(i / 8) % 8, s = i % 8, ch = CH[['C', 'Am', 'F', 'C', 'F', 'Am', 'G', 'G'][bar]];
+        if (s === 0) { for (const k of ch.t.slice(0, 3)) mv(out, t, 60 + k, sp * 8.4, { type: 'sine', vol: .05, a: sp * 1.6 }); mv(out, t, 48 + ch.r, sp * 4, { vol: .17 }); }
+        if (s === 4) mv(out, t, 48 + ch.r + 7, sp * 3, { vol: .09 });
+        if (s % 2 === 0) { const n = 72 + ch.t[[0, 1, 2, 1][s / 2]]; mv(out, t, n, sp * 3, { vol: .05, a: .005 }); mv(out, t, n + 12, sp * 1.2, { type: 'sine', vol: .018, a: .005 }); }
+        if (s === 4) mn(out, t, .02, { vol: .02, freq: 3000 });
+        if ((bar === 3 || bar === 7) && s === 6) bell(out, t, 91, .04);
+        return sp;
+      }
+    }
+  };
+
+  const music = (() => {
+    let want = null, cur = null, screenTrack = null, held = false;
+    function startTrack(id) {
+      const c = ac(), def = TRACKS[id]; if (!c || !def) return null;
+      const out = c.createGain(), now = c.currentTime;
+      out.gain.setValueAtTime(0, now); out.gain.linearRampToValueAtTime(def.level, now + XFADE); out.connect(audio.nodes.duck);
+      const inst = { id, out, i: 0, next: 0, st: {}, timer: 0 };
+      const pump = () => {
+        if (document.hidden) { inst.next = 0; return; }                                // timers crawl in a background tab: stop scheduling, restart cleanly on return
+        const nowT = c.currentTime;
+        if (!inst.next || inst.next < nowT - .25) inst.next = nowT + .06;
+        while (inst.next < nowT + .4) inst.next += def.step(inst.i++, inst.next, out, inst.st);
+      };
+      inst.timer = setInterval(pump, 90); pump();
+      return inst;
+    }
+    function stopTrack(inst, fade = XFADE) {
+      clearInterval(inst.timer);
+      const c = audio.ctx; if (!c) return;
+      try { inst.out.gain.cancelScheduledValues(c.currentTime); inst.out.gain.setValueAtTime(inst.out.gain.value, c.currentTime); inst.out.gain.linearRampToValueAtTime(0, c.currentTime + fade); } catch { /* already gone */ }
+      setTimeout(() => { try { inst.out.disconnect(); } catch { /* already gone */ } }, (fade + 1.2) * 1000);   // the last scheduled notes ring out silently
+    }
+    /* make the world match what was asked for: the wanted track plays if the music can be heard and a gesture has unlocked the speakers */
+    function reconcile() {
+      const go = !held && want && TRACKS[want] && audible('music') && ac();
+      if (go) { if (!cur || cur.id !== want) { if (cur) stopTrack(cur); cur = startTrack(want); } }
+      else if (cur) { stopTrack(cur, .4); cur = null; }
+    }
+    const api = {
+      reconcile,
+      play(id) { if (!TRACKS[id]) return; want = id; reconcile(); },
+      stop() { if (want === 'story' && screenTrack) { api.play(screenTrack); return; } want = null; reconcile(); },      // ending a cutscene hands the screen's tune back
+      duck(on) { audio.duck = !!on; applyMix(); },
+      hold(on) { held = !!on; reconcile(); },                                              // the title's press-any-key gate: the tune is wanted but waits for the press
+      current: () => (cur ? cur.id : null),
+      wanted: () => want,
+      tracks: Object.keys(TRACKS),
+      /* the screens set the background track; a cutscene borrows it with play('story') and calls restore() to hand it back */
+      setScreen(id) { screenTrack = id; if (want !== 'story') api.play(id); },
+      restore() { if (screenTrack) api.play(screenTrack); else api.stop(); },
+    };
+    return api;
+  })();
+  /* the first gesture unlocks the speakers: create the context and start whatever the screen asked for */
+  const unlockEvents = ['pointerdown', 'keydown', 'touchend', 'click'];
+  function unlockAudio() {
+    audio.activated = true;
+    if (!ac()) return;
+    music.reconcile();
+    if (audio.ctx.state === 'running') unlockEvents.forEach(e => removeEventListener(e, unlockAudio, true));
+  }
+  unlockEvents.forEach(e => addEventListener(e, unlockAudio, true));
+
   /* =====================  BOOT  ===================== */
   function boot(art) {
     if (window.VaultSaveGate?.blocked) throw new Error('Vault save blocked');
@@ -92,14 +297,14 @@ window.Core = (() => {
     const canWrite = () => !writer || writer.owns();
     const px = art.edition === 'pixel', sfx = makeSfx(px);
 
-    /* ---------- sound buttons (the menu and the game header each have one) ---------- */
+    /* ---------- the mixer: preferences are saved from here on, and any [data-sound] toy is a quick mute ---------- */
+    mixSaveable = true; if (audio.migrated) saveMix();
+    try { localStorage.removeItem('imi-style'); } catch { /* the retired art-style preference; storage blocked */ }
     const soundBtns = [...document.querySelectorAll('[data-sound]')];
-    let paintOpt = () => {};
-    const paintSound = () => { soundBtns.forEach(b => { b.setAttribute('aria-pressed', String(audio.on)); art.paintSound(b, audio.on); }); paintOpt(); };
-    paintSound();
+    const paintSound = () => soundBtns.forEach(b => { const on = mix.master > 0; b.setAttribute('aria-pressed', String(on)); art.paintSound(b, on); });
+    audio.hear.push(paintSound); paintSound();
     soundBtns.forEach(b => b.addEventListener('click', () => {
-      audio.on = !audio.on; localStorage.setItem('imi-sound', audio.on ? 'on' : 'off'); paintSound();
-      restart(b, 'hit'); if (audio.on) sfx.drum();
+      setMuted(mix.master > 0); restart(b, 'hit'); if (mix.master > 0) sfx.drum();
     }));
 
     /* ---------- the banana counter ---------- */
@@ -179,6 +384,7 @@ window.Core = (() => {
       screenFns.forEach(f => f(next));
       if (next === 'game') while (queued.length) queued.shift()();
     };
+    screenFns.push(next => music.setScreen(next === 'game' ? 'floor' : 'title'));          // the title tune on the menu, the Floor tune in the game (nothing sounds before the first tap)
     const play = () => { location.hash = 'play'; };
     const leave = () => { history.pushState(null, '', location.pathname + location.search); apply(); };
     addEventListener('hashchange', () => apply());
@@ -265,49 +471,110 @@ window.Core = (() => {
       return `${head} Next: ${list.join(', ')}.`;
     }
     ['weather', 'night'].forEach(id => toys[id].el.addEventListener('click', () => { sfx.tick(); restart(toys[id].el, 'hit'); say(forecastText(id)); emit('toy', { id }); }));
-    /* ---------- settings popover (game header): art style, sound, reset, tutorial replay, cloud sync ---------- */
+    /* ---------- settings panel ----------
+       One panel, opened by the gear on the game rail or the gear on the title screen (or IMI.settings.open()). Four groups: Audio (the mixer),
+       Display & effects, Help & story, Account & data. It scrolls inside itself, closes on Esc or a click outside, and hands focus back to whatever opened it. */
     let vaultSettings = null, paintVaultSettings = () => {};
-    const settings = {registerVault:row => {if(vaultSettings)throw Error('Vault Settings already registered');vaultSettings=row;paintVaultSettings();}};
-    const setBtn = $('#settingsBtn');
-    if (setBtn) {
-      const pop = document.createElement('div'); pop.className = 'set-pop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Settings');
-      const cur = (window.StyleSwap && StyleSwap.current) || art.edition;
-      const row = (label, body) => `<div class="set-row"><span class="set-lab">${label}</span>${body}</div>`;
-      pop.innerHTML = row('Style', `<span class="set-seg"><button type="button" data-style="pixel" aria-pressed="${cur === 'pixel'}">Pixel</button><button type="button" data-style="classic" aria-pressed="${cur === 'classic'}">Classic</button></span>`)
-        + row('Effects', '<span class="set-seg" title="Max adds glow, extra particles, trails and screen shake for fast machines. Low turns off looping decoration and trims particles so the game runs smoother. Auto switches to Low on weak phones or when the game cannot hold its frame rate; it never picks Max.">' + ['auto', 'max', 'high', 'low'].map(m => `<button type="button" data-fx="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join('') + '</span>')
-        + row('Sound', '<button type="button" class="set-btn" data-set="sound"></button>')
-        + row('Tutorial', '<button type="button" class="set-btn" data-set="tour">Replay</button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
-        + row('Tips', '<button type="button" class="set-btn" data-set="tips"></button>').replace('class="set-row"', 'class="set-row" data-tour hidden')
-        + row('Cloud sync', '<button type="button" class="set-btn" data-set="cloud"></button>').replace('class="set-row"', 'class="set-row" data-cloud hidden')
-        + row('Game', '<button type="button" class="set-btn" data-set="reset">Reset</button>');
-      const vaultHost=document.createElement('div');pop.appendChild(vaultHost);
-      paintVaultSettings=()=>{vaultHost.innerHTML=vaultSettings?.render() || '';};
+    const settings = { registerVault: row => { if (vaultSettings) throw Error('Vault Settings already registered'); vaultSettings = row; paintVaultSettings(); }, open() {}, close() {}, isOpen: () => false };
+    const setBtn = $('#settingsBtn'), menuGear = $('#menuSettings');
+    if (setBtn || menuGear) {
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const pop = document.createElement('div'); pop.className = 'set-pop'; pop.hidden = true; pop.id = 'settingsPop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Settings'); pop.tabIndex = -1;
+      const row = (label, body, attrs = '') => `<div class="set-row"${attrs}><span class="set-lab">${label}</span>${body}</div>`;
+      const BUS_NAME = { master: 'Master', music: 'Music', sfx: 'Effects', ambient: 'Ambience' };
+      const BUS_TIP = { master: 'Everything', music: 'The title and Floor tunes', sfx: 'Typing, coins and dings', ambient: 'Rain and thunder' };
+      const slider = b => `<label class="set-slide" title="${BUS_TIP[b]}"><span class="set-lab">${BUS_NAME[b]}</span><output class="set-val" data-val="${b}">0%</output><input type="range" min="0" max="100" step="1" data-bus="${b}" aria-label="${BUS_NAME[b]} volume"></label>`;
+      const FX_TIP = 'Max adds glow, extra particles, trails and screen shake for fast machines. Low turns off looping decoration and trims particles so the game runs smoother. Auto switches to Low on weak phones or when the game cannot hold its frame rate; it never picks Max.';
+      pop.innerHTML = `<div class="set-head"><b class="set-title">Settings</b><button type="button" class="set-x" data-set="close" aria-label="Close settings">X</button></div>`
+        + `<div class="set-body">`
+        + `<section class="set-grp" aria-labelledby="setH1"><h3 class="set-h" id="setH1">Audio</h3>${BUSES.map(slider).join('')}`
+        +   `<div class="set-row"><span class="set-lab">Mute all</span><button type="button" class="set-btn" data-set="mute" aria-pressed="false">Mute</button></div></section>`
+        + `<section class="set-grp" aria-labelledby="setH2"><h3 class="set-h" id="setH2">Display &amp; effects</h3>`
+        +   `<div class="set-row stack" title="${FX_TIP}"><span class="set-lab">Effects</span><span class="set-seg">${['auto', 'max', 'high', 'low'].map(m => `<button type="button" data-fx="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join('')}</span></div></section>`
+        + `<section class="set-grp" aria-labelledby="setH3"><h3 class="set-h" id="setH3">Help &amp; story</h3>`
+        +   row('Tutorial', '<button type="button" class="set-btn" data-set="tour">Replay</button>', ' data-tour hidden')
+        +   row('Tips', '<button type="button" class="set-btn" data-set="tips"></button>', ' data-tour hidden')
+        +   row('Story auto-play', '<button type="button" class="set-btn" data-set="story-auto"></button>', ' data-story hidden')
+        +   '<div class="set-scenes" data-story hidden></div></section>'
+        + `<section class="set-grp" aria-labelledby="setH4"><h3 class="set-h" id="setH4">Account &amp; data</h3>`
+        +   row('Cloud sync', '<button type="button" class="set-btn" data-set="cloud"></button>', ' data-cloud hidden')
+        +   '<div data-vault></div>'
+        +   row('Game', '<button type="button" class="set-btn" data-set="reset">Reset</button>') + '</section>'
+        + `</div>`;
       document.body.appendChild(pop);
-      const soundOpt = $('[data-set="sound"]', pop);
-      paintOpt = () => { soundOpt.textContent = audio.on ? 'On' : 'Off'; soundOpt.setAttribute('aria-pressed', String(audio.on)); };
-      paintOpt();
-      const close = () => { pop.hidden = true; setBtn.setAttribute('aria-expanded', 'false'); };
+      const vaultHost = $('[data-vault]', pop);
+      paintVaultSettings = () => { vaultHost.innerHTML = vaultSettings?.render() || ''; };
+      const sliders = [...pop.querySelectorAll('input[data-bus]')], muteBtn = $('[data-set="mute"]', pop);
+      const paintAudio = () => {
+        for (const inp of sliders) {
+          const v = Math.round(mix[inp.dataset.bus] * 100); inp.value = v; inp.style.setProperty('--v', v + '%'); inp.setAttribute('aria-valuetext', v + ' percent');
+          $(`[data-val="${inp.dataset.bus}"]`, pop).textContent = v + '%';
+        }
+        const muted = mix.master === 0; muteBtn.textContent = muted ? 'Muted' : 'Mute'; muteBtn.setAttribute('aria-pressed', String(muted));
+      };
+      audio.hear.push(paintAudio); paintAudio();
       const tipsOpt = $('[data-set="tips"]', pop);
-      const paintTour = () => { const t = window.IMI && IMI.tour; pop.querySelectorAll('[data-tour]').forEach(r => { r.hidden = !t; }); if (t) { tipsOpt.textContent = t.tipsOn() ? 'On' : 'Off'; tipsOpt.setAttribute('aria-pressed', String(t.tipsOn())); } };   // tour.js loads after this, so look it up when the popover opens
+      const paintTour = () => { const t = window.IMI && IMI.tour; pop.querySelectorAll('[data-tour]').forEach(r => { r.hidden = !t; }); if (t) { tipsOpt.textContent = t.tipsOn() ? 'On' : 'Off'; tipsOpt.setAttribute('aria-pressed', String(t.tipsOn())); } };   // tour.js loads after this, so look it up when the panel opens
+      const storyAuto = $('[data-set="story-auto"]', pop), sceneBox = $('.set-scenes', pop);
+      const paintStory = () => {                                // story.js loads after this too: the rows only show once IMI.story exists
+        const st = window.IMI && IMI.story; pop.querySelectorAll('[data-story]').forEach(r => { r.hidden = !st; });
+        if (!st) return;
+        storyAuto.textContent = st.isOn() ? 'On' : 'Off'; storyAuto.setAttribute('aria-pressed', String(st.isOn()));
+        const seen = (st.list() || []).filter(x => x.seen && x.ready), chap = x => (x.chapter === 0 ? 'Prologue' : 'Ch. ' + x.chapter) + ': ' + x.title;   // the same list, in the same words, as the title screen's STORY panel (app.js)
+        sceneBox.innerHTML = seen.length ? '<p class="set-note">Scenes you have seen. Replay any of them.</p>' + seen.map(x => row(esc(chap(x)), `<button type="button" class="set-btn" data-replay="${esc(x.id)}" aria-label="Replay ${esc(chap(x))}">Replay</button>`)).join('') : '<p class="set-note">Scenes you have seen will wait here to be replayed.</p>';
+      };
       const cloudRow = $('[data-cloud]', pop), cloudOpt = $('[data-set="cloud"]', pop), CLOUD = { local: 'Sign in', syncing: 'Syncing', synced: 'Synced', offline: 'Offline', error: 'Retry' };
       const paintCloud = () => { const s = window.MonkeyCloud ? MonkeyCloud.status() : 'off'; cloudRow.hidden = s === 'off'; cloudOpt.textContent = CLOUD[s] || 'Open'; };   // Monkey Cloud (cloud-sync.js): the row only shows once a cloud config ships
-      setBtn.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); paintTour(); paintCloud(); paintFx(); paintVaultSettings(); pop.hidden = !pop.hidden; setBtn.setAttribute('aria-expanded', String(!pop.hidden)); });
+
+      let openFrom = null;
+      const gears = [setBtn, menuGear].filter(Boolean);
+      const isOpen = () => !pop.hidden;
+      const focusable = el => el && el.isConnected && el.getClientRects().length ? el : null;
+      function open(from) {
+        const onTitle = html.dataset.screen === 'menu';
+        openFrom = from || (onTitle ? menuGear : setBtn) || document.activeElement;
+        pop.classList.toggle('on-title', onTitle);
+        paintAudio(); paintTour(); paintStory(); paintCloud(); paintFx(); paintVaultSettings();
+        pop.hidden = false; pop.scrollTop = 0; pop.querySelector('.set-body').scrollTop = 0;
+        gears.forEach(g => g.setAttribute('aria-expanded', 'true'));
+        (sliders[0] || pop).focus({ preventScroll: true });
+      }
+      function close(refocus) {
+        if (pop.hidden) return;
+        pop.hidden = true; gears.forEach(g => g.setAttribute('aria-expanded', 'false'));
+        if (refocus) (focusable(openFrom) || focusable($('#railToggle')) || document.body).focus?.();
+        openFrom = null;
+      }
+      Object.assign(settings, { open: from => { if (!isOpen()) open(from && from.nodeType === 1 ? from : null); }, close: () => close(true), isOpen });
+      gears.forEach(g => g.addEventListener('click', e => { e.stopPropagation(); sfx.tick(); if (isOpen()) close(true); else open(g); }));
+
+      pop.addEventListener('input', e => {
+        const inp = e.target.closest('input[data-bus]'); if (!inp) return;
+        const v = +inp.value; inp.style.setProperty('--v', v + '%'); setLevel(inp.dataset.bus, v / 100);
+        $(`[data-val="${inp.dataset.bus}"]`, pop).textContent = v + '%'; inp.setAttribute('aria-valuetext', v + ' percent'); paintSound();
+      });
+      pop.addEventListener('change', e => {                                  // let go of a slider: a blip so you can judge the level
+        const b = e.target.closest('input[data-bus]')?.dataset.bus;
+        if (b === 'sfx' || b === 'master') sfx.coin();
+      });
       pop.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.fx) { setFx(b.dataset.fx); return; }
-        if (b.dataset.style) { if (b.dataset.style !== cur && window.StyleSwap) { close(); StyleSwap.swap(); } return; }
+        if (b.dataset.replay) { close(true); window.IMI?.story?.play(b.dataset.replay, { replay: true }); return; }   // focus goes back to the gear first, so the scene hands it back there
         const act = b.dataset.set;
-        if (act?.startsWith('lamp-') && vaultSettings) {close();vaultSettings.action(act);paintVaultSettings();return;}
-        if (act === 'sound') { audio.on = !audio.on; localStorage.setItem('imi-sound', audio.on ? 'on' : 'off'); paintSound(); if (audio.on) sfx.drum(); return; }
+        if (act === 'close') { close(true); return; }
+        if (act?.startsWith('lamp-') && vaultSettings) { close(); vaultSettings.action(act); paintVaultSettings(); return; }
+        if (act === 'mute') { setMuted(mix.master > 0); if (mix.master > 0) sfx.drum(); return; }
         if (act === 'tips') { IMI.tour.tipsOn(!IMI.tour.tipsOn()); paintTour(); return; }
-        close();
+        if (act === 'story-auto') { IMI.story.on(!IMI.story.isOn()); paintStory(); return; }
+        close(act === 'cloud');
         if (act === 'reset') IMI.ops && IMI.ops.reset();
         else if (act === 'tour') IMI.tour.replay();
-        else if (act === 'cloud') { (setBtn.getClientRects().length ? setBtn : $('#railToggle') || setBtn).focus(); window.MonkeyCloud?.openPanel(); }   // the panel hands focus back to whatever had it when it opened: on phones the gear sits in the closed rail, so its toggle
+        else if (act === 'cloud') { (focusable(setBtn) || focusable($('#railToggle')) || setBtn || menuGear).focus(); window.MonkeyCloud?.openPanel(); }   // the panel hands focus back to whatever had it when it opened: on phones the gear sits in the closed rail, so its toggle
       });
-      document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target)) close(); });
-      addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { e.stopImmediatePropagation(); close(); setBtn.focus(); } }, true);
-      screenFns.push(() => close());
+      document.addEventListener('click', e => { if (isOpen() && !pop.contains(e.target)) close(false); });
+      addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen()) { e.stopImmediatePropagation(); e.preventDefault(); close(true); } }, true);
+      screenFns.push(() => close(false));
     }
 
     /* typing "banana" anywhere makes it rain bananas */
@@ -371,6 +638,8 @@ window.Core = (() => {
     /* ---------- the bridge ops.js plays through ---------- */
     window.IMI = {
       on, off, emit, settings,
+      audio: { buses: BUSES.slice(), get: b => (BUSES.includes(b) ? mix[b] : 0), set: setLevel, muted: () => mix.master === 0, mute: on => setMuted(on === undefined ? mix.master > 0 : !!on), ctx: ac, out: outOf, hear: f => { audio.hear.push(f); } },
+      music: { play: id => music.play(id), stop: () => music.stop(), duck: on => music.duck(on), hold: on => music.hold(on), restore: () => music.restore(), current: music.current, wanted: music.wanted, tracks: music.tracks },
       edition: art.edition, reduceMotion, sfx, centerOf, fmt, fmtRate, exact, say, banner, heroSay: art.heroSay,
       fx, setFx, bananaEl: art.bananaEl, forecastText,
       burst: (x, y, names, n = 12) => art.burst(x, y, names, fx.low ? Math.max(2, Math.ceil(n / 3)) : fx.max ? Math.round(n * 1.6) : n),     // Low: a third of the particles, Max: more

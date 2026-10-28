@@ -40,7 +40,7 @@
       },
       hint: [60, 'You can return to Floor and tap while the keeper works.'] },
     { id: 'shop', tab: 'shop', target: '.o-btn[data-act="buy"][data-what="desk"][data-i="1"]', text: 'Shop is open! Bananas buy machines and boosts. Save for your second typewriter; you can finish this introduction now.', next: true },
-    { id: 'end', tab: null, target: '#railToggle', text: 'Keep typing and selling. More departments open as you grow. Floor has a Key guide. The menu holds Settings, the edition switch and tutorial Replay.', next: true, last: true }
+    { id: 'end', tab: null, target: '#railToggle', text: 'Keep typing and selling. More departments open as you grow. Floor has a Key guide. The menu holds Settings, where you can replay the tutorial and the story.', next: true, last: true }
   ];
 
   /* ---- one-shot tips (after the tour). when(s): condition; ev: an event that raises it ---- */

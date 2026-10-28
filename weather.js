@@ -25,8 +25,9 @@
 
   /* ---------- sound ---------- */
   const A = { ctx: null, src: null, gain: null, unlocked: false };
-  const soundOn = () => localStorage.getItem('imi-sound') !== 'off';
-  function audioCtx() { if (!A.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) A.ctx = new C(); } if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume(); return A.ctx; }
+  /* the rain and the thunder are the ambience bus of the mixer (core.js: IMI.audio); their volume, the master level and mute all live there */
+  const mixer = () => window.IMI && IMI.audio;
+  function audioCtx() { const m = mixer(), c = m && m.ctx(); if (c && A.ctx !== c) { A.ctx = c; A.src = A.gain = null; } return c || null; }
   function startRainLoop() {
     const c = audioCtx(); if (!c || A.src) return;
     const len = c.sampleRate * 3, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
@@ -35,18 +36,18 @@
     const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
     const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
     A.gain = c.createGain(); A.gain.gain.value = 0;
-    A.src.connect(hp).connect(lp).connect(A.gain).connect(c.destination); A.src.start();
+    A.src.connect(hp).connect(lp).connect(A.gain).connect(mixer().out('ambient')); A.src.start();
   }
   function applyVolume() {
     if (!A.unlocked) return; startRainLoop(); if (!A.gain) return;
-    A.gain.gain.setTargetAtTime(soundOn() ? LV[Weather.state].vol : 0, A.ctx.currentTime, .4);
+    A.gain.gain.setTargetAtTime(LV[Weather.state].vol, A.ctx.currentTime, .4);
   }
   function thunder() {
-    if (!soundOn()) return; const c = audioCtx(); if (!c) return;
+    const c = audioCtx(); if (!c || !mixer().get('ambient') || !mixer().get('master')) return;
     const dur = 2.2, len = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.6) * (1 + .6 * Math.sin(i / c.sampleRate * 38));
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
-    s.buffer = buf; f.type = 'lowpass'; f.frequency.value = 220; g.gain.value = .9; s.connect(f).connect(g).connect(c.destination); s.start();
+    s.buffer = buf; f.type = 'lowpass'; f.frequency.value = 220; g.gain.value = .9; s.connect(f).connect(g).connect(mixer().out('ambient')); s.start();
   }
   addEventListener('pointerdown', () => { if (!A.unlocked) { A.unlocked = true; applyVolume(); } }, { once: true });
   setInterval(() => applyVolume(), 700);

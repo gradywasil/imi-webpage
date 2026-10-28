@@ -1,0 +1,78 @@
+/* STORY: the cutscene overlay (story.js). A full-screen pixel diorama (story-kit.js draws it on .st-cv), cinema bars,
+   a wood-framed caption box with the speaker's portrait, a SKIP button, the chapter card at the end, and a stepped fade. */
+.story:focus { outline: none; }
+/* above everything the game keeps drawing under a scene (particles 405, floating words, achievements 420, modals 500, Juice stamps 940), below the save-ownership notice (10000) */
+.story { position: fixed; inset: 0; z-index: 1000; overflow: hidden; background: #1a0f14; cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.story[hidden] { display: none; }
+html.story-on .tour-bub, html.story-on .tour-ring, html.story-on .toast { visibility: hidden; }
+.st-cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* cinema bars: they slide in, stepped */
+.st-bar { position: absolute; left: 0; right: 0; height: 7vh; background: #1a0f14; pointer-events: none; animation: st-bar .5s steps(5) both; }
+.st-top { top: 0; transform-origin: top; }
+.st-bot { bottom: 0; transform-origin: bottom; }
+.story.preview .st-bar { display: none; }
+@keyframes st-bar { from { transform: scaleY(0); } to { transform: none; } }
+
+/* the caption: a wood frame on the bottom bar, portrait on the left, the line typed out in VT323 */
+.st-cap {
+  position: absolute; left: 50%; bottom: max(14px, calc(7vh - 26px)); transform: translateX(-50%); width: min(760px, calc(100vw - 24px));
+  display: flex; align-items: center; gap: 12px; padding: 4px 34px 6px 8px; min-height: 104px;
+  border: 21px solid transparent; border-image: var(--frame-wood) 7 / 21px stretch; background: #7a5838 var(--plank) padding-box; background-size: 72px; background-blend-mode: multiply;
+  box-shadow: 0 9px 0 rgba(26,15,20,.45); color: var(--cream, #fff6d6); text-shadow: 2px 2px 0 #1a0f14; cursor: pointer;
+  animation: st-cap-in .3s steps(3) both;
+}
+.st-cap[hidden] { display: none; }
+@keyframes st-cap-in { from { transform: translate(-50%, 18px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+.st-port { flex: none; width: 96px; height: 96px; image-rendering: crisp-edges; image-rendering: pixelated; border: 3px solid #1a0f14; box-shadow: inset 0 0 0 3px rgba(255,255,255,.15), 0 3px 0 rgba(26,15,20,.5); background: #1d5a36; }
+.st-port[hidden] { display: none; }
+.st-capbody { flex: 1; min-width: 0; }
+.st-who { display: block; margin: 0 0 6px; font: 11px/1.2 var(--font-px, "Press Start 2P", monospace); color: #ffd23a; letter-spacing: 1px; }
+.st-who[hidden] { display: none; }
+.st-txt { margin: 0; font: 28px/1.05 var(--font-body, "VT323", monospace); min-height: 2.1em; overflow-wrap: anywhere; }
+.st-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.st-cap.narr { padding-left: 16px; }
+.st-cap.narr .st-txt { font-style: normal; color: #fff08c; }
+/* the "next" arrow: a pixel triangle that blinks once the line is complete */
+.st-next { position: absolute; right: 6px; bottom: 4px; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid #ffd23a; filter: drop-shadow(2px 2px 0 #1a0f14); opacity: 0; }
+.st-cap.done .st-next { opacity: 1; animation: st-next .8s steps(2) infinite; }
+@keyframes st-next { 50% { transform: translateY(4px); } }
+
+/* SKIP */
+.st-skip {
+  position: absolute; top: max(10px, calc(7vh - 30px)); right: 12px; z-index: 2; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 6px;
+  font: 11px/1 var(--font-px, "Press Start 2P", monospace); color: #fff6d6; text-shadow: 2px 2px 0 #1a0f14; cursor: pointer;
+  border: 12px solid transparent; border-image: var(--frame-dark-s) 4 / 12px stretch; background: rgba(26,15,20,.9) padding-box;
+}
+.st-skip i { display: inline-block; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 7px solid #ffd23a; box-shadow: 0 0 0 0 transparent; position: relative; }
+.st-skip i::after { content: ""; position: absolute; left: -1px; top: -6px; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 7px solid #ffd23a; }
+.st-skip:active { transform: translateY(2px); }
+.st-skip:focus-visible { outline: 3px dashed #fff6d6; outline-offset: 3px; }
+.st-skip[hidden] { display: none; }
+
+/* the chapter card at the end: a stamped title */
+.st-title { position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 24px);
+  padding: 10px 18px 12px; border: 12px solid transparent; border-image: var(--frame-dark-s) 4 / 12px stretch; background: rgba(26,15,20,.92) padding-box; box-shadow: 0 6px 0 rgba(26,15,20,.45); }
+.st-title[hidden] { display: none; }
+.st-title small { display: block; margin-bottom: 12px; text-transform: uppercase; font: 12px/1 var(--font-px, "Press Start 2P", monospace); color: #74c648; text-shadow: 3px 3px 0 #1a0f14; letter-spacing: 2px; }
+.st-title b { display: block; text-transform: uppercase; white-space: normal; font: 24px/1.3 var(--font-px, "Press Start 2P", monospace); color: #ffd23a; -webkit-text-stroke: 6px #1a0f14; paint-order: stroke fill; text-shadow: 4px 4px 0 #1a0f14; }
+.st-title.in { animation: st-stamp .42s steps(6) both; }
+@keyframes st-stamp { 0% { transform: translate(-50%, -50%) scale(2.4) rotate(-6deg); opacity: 0; } 60% { transform: translate(-50%, -50%) scale(.92) rotate(1deg); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+.st-fade { position: absolute; inset: 0; background: #1a0f14; pointer-events: none; opacity: 1; }
+
+@media (max-width: 720px) {
+  .st-bar { height: 5vh; }
+  .st-cap { bottom: 10px; width: calc(100vw - 16px); min-height: 92px; gap: 8px; padding: 2px 26px 4px 4px; border-width: 15px; border-image-width: 15px; }
+  .st-port { width: 72px; height: 72px; }
+  .st-txt { font-size: 24px; }
+  .st-who { font-size: 11px; margin-bottom: 4px; }
+  .st-skip { top: 8px; right: 8px; }
+  .st-title b { font-size: 16px; -webkit-text-stroke-width: 5px; }
+  .st-title { top: 26%; padding: 8px 10px 10px; }
+  .st-title small { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-bar, .st-cap, .st-title.in { animation: none; }
+  .st-cap.done .st-next { animation: none; }
+}

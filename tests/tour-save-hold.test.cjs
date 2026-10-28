@@ -4,7 +4,7 @@ let h,browser;
 before(async()=>{h=await import('../tools/long-game/lg02-b2-r3-fixture.mjs');browser=await h.browser();});
 after(async()=>{await browser?.close();});
 
-for(const edition of ['pixel','classic'])test(edition+' actual inserted/moved recovery hides immediately and repeated Retry restores the same mandatory step once',async()=>{
+for(const edition of ['pixel'])test(edition+' actual inserted/moved recovery hides immediately and repeated Retry restores the same mandatory step once',async()=>{
  const f=await h.fixture(browser,{edition,track:true});
  try{
   const before=await f.page.evaluate(()=>({tour:localStorage.getItem('imi-tour'),text:document.querySelector('.tour-txt').textContent,barHost:document.querySelector('.o-buffbar').parentNode===document.body}));

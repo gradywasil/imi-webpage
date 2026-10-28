@@ -15,7 +15,7 @@ test('inline settings, acknowledged recovery and Legacy tiers in both editions',
  let browser; const results=[],errors=[];
  try{
   browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
-  for(const edition of ['index','classic']){
+  for(const edition of ['index']){
    const context=await browser.createBrowserContext(); const page=await context.newPage(); page.setDefaultTimeout(6000); page.on('pageerror',e=>errors.push(e.message));
    await page.setViewport({width:360,height:560,isMobile:true,hasTouch:true});
    await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);

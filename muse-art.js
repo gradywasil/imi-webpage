@@ -1,9 +1,7 @@
 /* MUSE ART: animated portraits for the Muses (ops.js renderMuses).
-   Every muse is a typist monkey (crew-art.js / crew-svg.js) dressed as their namesake, standing in a little scene with props that move.
+   Every muse is a typist monkey (crew-art.js) dressed as their namesake, standing in a little scene with props that move.
    Pixel: six 34x39 frames are drawn once per muse onto one strip and played by CSS steps() (ops.css .ma-strip).
-   Classic: one inline SVG on top of CrewSvg, with parts animated by CSS classes (ops.css .ma-*).
    Coordinates are in the typists' 64x64 sprite space. Pixel: head centre about 32,28, paws about 20,43 and 44,43, crop x 15-49, y 10-49.
-   Classic (a bigger vector monkey): head centre 32,22, paws 20.5,46.6 and 43.5,46.6, crop x 10-54, y 0-50.
    MuseArt.html(id, veiled) returns the portrait's inner markup for the running edition. */
 (() => {
   const SX = 15, SY = 10, FW = 34, FH = 39, N = 6, K = '#1a0f14';
@@ -27,24 +25,6 @@
     carroll:  { base: 'v28', fur: 'golden_tamarin', set: { headgear: 'none', eyewear: 'cheerful_gourmet', facial: 'confectioner_smile', prop: 'none' }, colors: { tuxBase: '#2f5e34', capeLining: '#d8a840', capeHi: '#f0c860' } },
     homer:    { base: 'v24', fur: 'silverback_gray', set: { headgear: 'none', eyewear: 'squinting_focus', facial: 'clean', prop: 'none' }, colors: { robeDark: '#c8c4b8', robeBase: '#f4f2ea', robeLight: '#ffffff', robeHi: '#ffffff', runeGold: '#d8a830', vialGreen: '#f4f2ea', vialCyan: '#f4f2ea', vialMagenta: '#f4f2ea', vaporBubble: '#f4f2ea', bandolier: '#d8a830', shoeBase: '#c89a50' } }
   };
-  /* the same outfits as CrewSvg looks (classic) */
-  const CLASSIC = {
-    seuss:    { top: ['jacket', '#2b4fa8', '#ffffff', '#e23a3a'], sleeves: '#2b4fa8', bottom: '#2b3a6a', shoes: '#1a1a22', head: [] },
-    poe:      { top: ['vest', '#f4f2ee', '#1c1a22', '#2a2632'], sleeves: '#1c1a22', bottom: '#1c1a22', shoes: '#0c0c10', head: [] },
-    dick:     { top: ['chef', '#ffffff', '#c8b8c8'], sleeves: '#ffffff', bottom: '#ffffff', robe: 1, shoes: '#5a3a2a', head: [] },
-    hemi:     { top: ['stripes', '#ffffff', '#162c4a'], sleeves: '#ffffff', bottom: '#b8a47a', shoes: '#5a3a1e', head: [] },
-    christie: { top: ['vest', '#f4f6f4', '#4b6136', '#871632'], sleeves: '#f4f6f4', bottom: '#16191d', shoes: '#5a3a1e', head: ['temples', '#c8d0d8'], eyes: 'monocle', stache: 1, prop: ['magnifier'] },
-    woolf:    { top: ['jacket', '#6d7f5a', '#f8f2e4'], sleeves: '#6d7f5a', bottom: '#4a5a40', robe: 1, shoes: '#3a2a1a', head: [] },
-    austen:   { top: ['chef', '#cfe2f6', '#5a8ad8'], sleeves: '#cfe2f6', bottom: '#cfe2f6', robe: 1, shoes: '#e8d8c8', head: [], scarf: '#5a8ad8' },
-    tolken:   { top: ['jacket', '#6a5a3a', '#f8f2e4', '#3a5a2a'], sleeves: '#6a5a3a', bottom: '#8e7454', shoes: '#462412', head: [] },
-    twain:    { top: ['jacket', '#f0f0e8', '#ffffff', '#1a1a1a'], sleeves: '#f0f0e8', bottom: '#e8e8e0', shoes: '#3a2a1a', head: [] },
-    chimpens: { top: ['jacket', '#3a2a3a', '#f8f2e4', '#c8a040'], sleeves: '#3a2a3a', bottom: '#4a4a52', shoes: '#141418', head: [] },
-    potter:   { top: ['overalls', '#e6dcbe', '#3a6aa8'], sleeves: '#e6dcbe', bottom: '#3a6aa8', shoes: '#5a3a1e', head: [] },
-    fitz:     { top: ['tux', '#12141a', '#ffffff', '#12141a'], sleeves: '#12141a', bottom: '#12141a', shoes: '#0c0c10', head: [], hands: '#ffffff' },
-    shakes:   { top: ['jacket', '#1a1a22', '#2a2a34'], sleeves: '#1a1a22', bottom: '#2a2a34', shoes: '#141418', head: [] },
-    carroll:  { top: ['tux', '#2f5e34', '#ffffff', '#d8a840'], sleeves: '#2f5e34', bottom: '#d8a840', shoes: '#1a1a22', head: [], hands: '#ffffff' },
-    homer:    { top: ['robe', '#f4f2ea', '#d8a830'], sleeves: '#f4f2ea', bottom: '#f4f2ea', robe: 1, shoes: '#c89a50', head: [] }
-  };
   const vid = id => 'muse_' + id;
   function register() {
     if (!CA) return;
@@ -52,7 +32,6 @@
       const B = CA.getVariant(o.base), key = vid(id);
       CA.VARIANTS[key] = { ...B, ...o.set, id: key, slug: key, fur: CA.FUR_PALETTES[o.fur] || B.fur, skin: CA.SKIN_PALETTES[o.fur] || B.skin, colors: { ...B.colors, ...o.colors } };
     }
-    if (window.CrewSvg?.define) for (const [id, spec] of Object.entries(CLASSIC)) CrewSvg.define(vid(id), spec);
   }
   register();
 
@@ -318,98 +297,12 @@
   }
   const stillURL = id => stills[id] || (stills[id] = frame(id, 0, true).toDataURL());
 
-  /* ---------- classic: SVG scene around the CrewSvg monkey ---------- */
-  const O = '#3d2410';
-  const st = (c, w = 1.2) => `fill="${c}" stroke="${O}" stroke-width="${w}" stroke-linejoin="round"`;
-  const ln = (c, w = 1.4) => `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
-  const sky = c => `<rect x="0" y="0" width="64" height="64" fill="${c}"/>`;
-  const anim = (cls, ox, oy, extra = '') => `class="${cls}"${extra ? ` style="${extra}"` : ''}`;   // pivots live in ops.css (fill-box), so the crop never moves them
-  const fishSvg = (x, y, c, flip) => `<g transform="translate(${x} ${y})${flip ? ' scale(-1 1)' : ''}"><path d="M-3 0 C-1 -2.6 3 -2.6 4.5 0 C3 2.6 -1 2.6 -3 0 Z M4 0 L7 -2.4 L7 2.4 Z" ${st(c, .8)}/><circle cx="-1.2" cy="-.4" r=".6" fill="#fff"/></g>`;
-  const beard = (long) => `<path d="M24.5 27 C25 34 28 ${long ? 42 : 37} 32 ${long ? 43 : 38} C36 ${long ? 42 : 37} 39 34 39.5 27 C37 31 35 32 32 32 C29 32 27 31 24.5 27 Z" ${st('#f4f4f0', .9)}/><path d="M29.4 30.2 q2.6 1.4 5.2 0" ${ln(O, 1)}/>`;
-  const SV = {
-    seuss: {
-      bg: `${sky('#86d8cf')}<g ${anim('ma-bob', 18, 42)}>${fishSvg(18, 42, '#e23a3a')}</g><g ${anim('ma-bob', 45, 18, 'animation-delay:-1s')}>${fishSvg(45, 18, '#3a6ad8', true)}</g>`,
-      wear: `<g ${anim('ma-sway', 32, 13)}><path d="M26 13 L27 1 L37 1 L38 13 Z" ${st('#fdf6ea')}/>${[0, 4, 8].map(y => `<path d="M26.6 ${9 - y} L37.4 ${9 - y} L37.6 ${12.4 - y} L26.4 ${12.4 - y} Z" fill="#e23a3a"/>`).join('')}<path d="M20 13 C22 11 42 11 44 13 C42 15.5 22 15.5 20 13 Z" ${st('#e23a3a')}/></g>`
-    },
-    poe: {
-      bg: `${sky('#2b2046')}<path d="M17 12 a5 5 0 1 0 5 7 a4 4 0 1 1 -5 -7 Z" fill="#f4ecc8"/>${[[44, 13], [24, 12], [47, 22], [38, 11]].map(([x, y], k) => `<circle cx="${x}" cy="${y}" r=".7" fill="#e8e0ff" class="ma-twinkle" style="animation-delay:${-k * .4}s"/>`).join('')}`,
-      wear: `<path d="M28.4 27.4 q1.8 -1.6 3.6 0 q1.8 -1.6 3.6 0" ${ln('#120c0c', 1.6)}/><path d="M20 15 C22 9 42 9 44 15 C40 12.6 24 12.6 20 15 Z" fill="#1c1418"/>`,
-      fg: `<g transform="translate(43 30)"><path d="M-4 1 C-4 -4 3 -5 4 0 L6 6 L-1 7 Z" ${st('#1a1622', .8)}/><path d="M-4 -1 L-7 0 L-4 1 Z" fill="#6a6a74"/><circle cx="-2" cy="-1.4" r=".8" fill="#ffd84a"/><path ${anim('ma-flap', 1, 1)} d="M0 1 C3 -4 7 -4 8 -1 C6 0 3 2 1 4 Z" ${st('#2a2634', .8)}/></g>`
-    },
-    dick: {
-      bg: `${sky('#f6cad8')}${[[18, 0], [46, -1], [26, -2], [41, -.5]].map(([x, d]) => `<ellipse cx="${x}" cy="10" rx="1.2" ry=".8" fill="#ff8fb1" class="ma-fall" style="animation-delay:${d}s"/>`).join('')}`,
-      wear: `<path d="M20.5 24 C19 12 45 12 43.5 24 C42 20 38 16 32 16.5 C26 16 22 20 20.5 24 Z" fill="#3a2216"/><path d="M32 13.6 v4" ${ln('#24140c', 1)}/>`,
-      fg: `<path d="M21 46 L21 37" ${ln('#4a9a3a', 1.2)}/>${[0, 60, 120, 180, 240, 300].map(r => `<ellipse cx="21" cy="33.6" rx=".9" ry="1.7" transform="rotate(${r} 21 35.3)" fill="#fff" stroke="${O}" stroke-width=".4"/>`).join('')}<circle cx="21" cy="35.3" r="1.1" fill="#ffd23a"/><g class="ma-buzz"><ellipse cx="44" cy="16" rx="1.8" ry="1.3" ${st('#ffd23a', .6)}/><path d="M43.4 14.8 v2.4 M44.6 14.8 v2.4" ${ln('#1a0f14', .6)}/><ellipse cx="43.6" cy="14.2" rx="1.1" ry=".7" fill="#fff" opacity=".85"/></g>`
-    },
-    hemi: {
-      bg: `${sky('#8ecbf0')}<circle cx="46" cy="15" r="3.4" fill="#ffe27a"/><rect x="0" y="40" width="64" height="24" fill="#2a6fb8"/><g class="ma-drift"><path d="M0 40.6 q2 -1.2 4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0" ${ln('#ffffff', .8)}/></g><g class="ma-leap"><path d="M11 41 C13 39 17 39 19 41 C17 43 13 43 11 41 Z M19 41 l3 -2 v4 Z M11 41 l-3 -.6" ${st('#5a8aba', .7)}/></g>`,
-      wear: beard(false)
-    },
-    christie: {
-      bg: `${sky('#6a4c9c')}${Array.from({ length: 30 }, (_, k) => `<path d="M${15 + (k % 6) * 6 + (Math.floor(k / 6) % 2) * 3} ${12 + Math.floor(k / 6) * 7} l1 1 -1 1 -1 -1 Z" fill="#7d62b2"/>`).join('')}`,
-      fg: `<path d="M41 49 C46 49 49 46 49 42 C47 45 44 46 41 46 Z" ${st('#ffd23a', .8)}/><circle cx="46" cy="45.5" r=".9" fill="#fff" class="ma-twinkle"/><text x="17" y="26" font-size="6" font-weight="900" fill="#ffe680" class="ma-rise">?</text><circle cx="48.8" cy="38.4" r=".8" fill="#fff" class="ma-twinkle" style="animation-delay:-.6s"/>`
-    },
-    woolf: {
-      bg: `${sky('#86c2b4')}<path ${anim('ma-beam', 13.5, 19)} d="M13.5 19 L50 11 L50 27 Z" fill="#fff4b8" opacity=".45"/><rect x="0" y="41" width="64" height="23" fill="#3d7f9a"/><path d="M11 41 L12 21 L15 21 L16 41 Z" ${st('#f4f4ee', .8)}/><path d="M11.8 27h3.4M11.6 33h3.8M11.4 39h4.2" ${ln('#d04040', 1.6)}/><rect x="11" y="17.5" width="5" height="3.5" ${st('#2a2a34', .8)}/><circle cx="13.5" cy="19.2" r="1.1" fill="#ffe27a"/><path d="M11 17.5 L13.5 15 L16 17.5 Z" fill="#d04040"/><g class="ma-drift"><path d="M0 41.6 q2 -1 4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0" ${ln('#d8f0f0', .7)}/></g>`,
-      wear: `<path d="M20.5 24 C19 12 45 12 43.5 24 C42 20 38 16.5 32 17 C26 16.5 22 20 20.5 24 Z" fill="#7a5032"/><circle cx="42" cy="15" r="3" fill="#7a5032" stroke="${O}" stroke-width=".8"/>`
-    },
-    austen: {
-      bg: `${sky('#f2d79a')}${[17, 21, 25, 29, 33, 37, 41, 45].map(x => `<path d="M${x} 0 v64" ${ln('#e8c87e', 1)}/>`).join('')}`,
-      wear: `<path d="M18 30 C15 12 49 12 46 30 L42 30 C43 18 21 18 22 30 Z" ${st('#e8c070')}/><path d="M23 13.6 C26 7 38 7 41 13.6 Z" ${st('#e8c070')}/><path d="M21 17 C27 14 37 14 43 17" ${ln('#5a8ad8', 1.8)}/><path d="M29.5 37 l2.5 -1.4 2.5 1.4 -2.5 1.4 Z" fill="#5a8ad8"/>`,
-      fg: `<path d="M41 41 h7 l-1 4 h-5 Z" ${st('#ffffff', .8)}/><path d="M41 41 h7" ${ln('#5a8ad8', 1)}/><path d="M48 42 q2 0 1.4 2 l-1.6 .4" ${ln(O, .7)}/><ellipse cx="44.5" cy="45.6" rx="4.6" ry="1" ${st('#ffffff', .6)}/>${[0, 1].map(k => `<path d="M${43 + k * 2.4} 39 q1.2 -1.6 0 -3.2 q-1.2 -1.6 0 -3.2" ${ln('#ffffff', .8)} class="ma-steam" style="animation-delay:${-k * .8}s"/>`).join('')}`
-    },
-    tolken: {
-      bg: `${sky('#a8d8f0')}<ellipse cx="32" cy="66" rx="40" ry="31" fill="#6fb04a"/><circle cx="14" cy="41" r="4.2" ${st('#7a5030', .8)}/><circle cx="14" cy="41" r="3" fill="#2f7a3a"/><circle cx="15.7" cy="41.4" r=".7" fill="#ffd23a"/>`,
-      wear: `<path d="M34 30.4 L38.4 31.6" ${ln('#5a3418', 1.2)}/><path d="M37.4 27.6 h3.4 v3.4 q-1.7 1.4 -3.4 0 Z" ${st('#7a4a24', .7)}/><ellipse cx="39.1" cy="27.6" rx="1.5" ry=".5" fill="#ff8a3a" class="ma-twinkle"/>`,
-      fg: `${[0, 1].map(k => `<circle cx="40" cy="25" r="1.3" ${ln('#eef0f6', .7)} class="ma-ring" style="animation-delay:${-k * 1.2}s"/>`).join('')}<g ${anim('ma-bob', 13.5, 9)}><circle cx="13.5" cy="9" r="1.8" ${ln('#ffd23a', 1)}/><circle cx="12.6" cy="7.8" r=".5" fill="#fff" class="ma-twinkle"/></g>`
-    },
-    twain: {
-      bg: `<rect width="64" height="26" fill="#f4c58a"/><rect y="26" width="64" height="8" fill="#f0a878"/><rect y="34" width="64" height="6" fill="#e88a70"/><rect y="40" width="64" height="24" fill="#4f8fc0"/><g class="ma-drift"><path d="M0 42 h3 M8 44 h3 M16 42 h3 M24 44 h3 M32 42 h3 M40 44 h3 M48 42 h3 M56 44 h3 M64 42 h3 M72 44 h3" ${ln('#9ccbf0', .8)}/></g><path d="M10 36 h8 l-1 2 h-6 Z" ${st('#f4f4ee', .6)}/><rect x="11" y="33.6" width="5" height="2.4" ${st('#f4f4ee', .6)}/><path d="M12 33.6 v-3 M14.3 33.6 v-3" ${ln('#1a1a22', 1)}/><g ${anim('ma-spin', 18, 36)}><circle cx="18" cy="36" r="1.6" ${st('#c83a3a', .5)}/><path d="M16.4 36 h3.2 M18 34.4 v3.2" ${ln('#ffd0c0', .5)}/></g>${[0, 1].map(k => `<circle cx="${12 + k * 2.3}" cy="29.4" r="1" fill="#d8d8d8" class="ma-puff" style="animation-delay:${-k * .9}s"/>`).join('')}`,
-      wear: `${[[21, 13, -1], [43, 13, 1]].map(([x, y, d]) => `<path d="M${x} ${y + 6} c${-3 * d} -1 ${-4 * d} -5 ${-1 * d} -6 c0 -3 ${4 * d} -4 ${6 * d} -2 c2 -2 ${5 * d} 0 ${4 * d} 2" ${st('#f4f4f0', .8)}/>`).join('')}<path d="M26 11.6 c2 -3 10 -3 12 0" ${st('#f4f4f0', .8)}/><path d="M26.6 28.6 C28 26.6 31 26.8 32 28 C33 26.8 36 26.6 37.4 28.6 C37.6 30.6 36.4 31.6 35 30.4 C34 29.6 33 29.4 32 29.6 C31 29.4 30 29.6 29 30.4 C27.6 31.6 26.4 30.6 26.6 28.6 Z" ${st('#f4f4f0', .7)}/>`
-    },
-    chimpens: {
-      bg: `${sky('#55657e')}<rect y="40" width="64" height="24" fill="#6a7a92"/><circle cx="13" cy="15" r="5" fill="#ffe9a8" opacity=".3" class="ma-glow"/><path d="M13 18 v32" ${ln('#2a2a34', 1.2)}/><rect x="11" y="13" width="4" height="4.4" ${st('#ffe9a8', .8)}/>${[[22, 0], [45, -1], [28, -2], [40, -.6], [47, -1.6], [35, -2.4]].map(([x, d]) => `<circle cx="${x}" cy="10" r=".6" fill="#fff" class="ma-snow" style="animation-delay:${d}s"/>`).join('')}`,
-      fg: `<rect x="38" y="43" width="10" height="6" ${st('#f8f0d8', .6)}/><path d="M39.4 45 h5 M39.4 47 h3" ${ln('#3a2a2a', .5)} class="ma-write"/><g ${anim('ma-scribble', 44, 44)}><path d="M44 44 L49 34 C51 35 50 39 46 41 Z" ${st('#ffffff', .6)}/><path d="M44 44 L48 36" ${ln('#c8c8c8', .5)}/></g>`
-    },
-    potter: {
-      bg: `${sky('#a8dc84')}${[[44, 14], [19, 18], [46, 26]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#ff8fb1"/><circle cx="${x}" cy="${y}" r=".4" fill="#ffd23a"/>`).join('')}<rect y="45" width="64" height="19" fill="#7a5030"/>${[47, 51].map((x, k) => `<g ${anim('ma-wiggle', x, 45, `animation-delay:${-k * .3}s`)}><path d="M${x} 45 l-1 -3 M${x} 45 l1 -3 M${x} 45 v-3.4" ${ln('#4aa03a', .9)}/></g>`).join('')}`,
-      wear: `<path d="M24 14 C25 6 39 6 40 14 Z" ${st('#e9c46a')}/><path d="M25 12.6 h14" ${ln('#d06a8a', 1.6)}/><path d="M14 15 C20 11 44 11 50 15 C44 18 20 18 14 15 Z" ${st('#e9c46a')}/>`,
-      fg: `<g class="ma-hop"><ellipse cx="15" cy="46" rx="3.6" ry="3" ${st('#b08058', .7)}/><path d="M13 45 h4 v2.6 h-4 Z" fill="#4a7ad0"/><circle cx="15.6" cy="41.4" r="2.4" ${st('#b08058', .7)}/><path d="M14.4 39.4 l-.8 -4.2 M16.6 39.4 l.6 -4.2" ${ln('#b08058', 1.4)}/><circle cx="16.4" cy="41" r=".5" fill="${O}"/></g>`
-    },
-    fitz: {
-      bg: `${sky('#14323a')}<g opacity=".45">${[-3, -2, -1, 0, 1, 2, 3].map(a => `<path d="M32 64 L${32 + a * 10} 20" ${ln('#c8a040', .6)}/>`).join('')}</g><path d="M0 31 h64" ${ln('#0e2a30', 1)}/><circle cx="17" cy="28" r="1" fill="#4cff7a" class="ma-blink"/><circle cx="17" cy="28" r="2.6" fill="#4cff7a" opacity=".3" class="ma-blink"/>`,
-      wear: `<path d="M21 21 C20 11 44 11 43 21 C40 16 26 15 21 21 Z" fill="#1a1410"/><path d="M26 15.6 q3 -1.4 6 -.4" ${ln('#5a4a3a', .8)}/>`,
-      fg: `<path d="M41.6 35 h7.4 C48.6 38 46 39 45.3 39 C44.6 39 42 38 41.6 35 Z" ${st('#e8f4f8', .6)}/><path d="M42.4 35.8 h5.8 C47.6 37.4 46 38 45.3 38 C44.6 38 43 37.4 42.4 35.8 Z" fill="#f8d860"/><path d="M45.3 39 v4 M43 43 h4.6" ${ln('#e8f4f8', .8)}/>${[0, 1, 2].map(k => `<circle cx="${44 + k * 1.2}" cy="34" r=".45" fill="#fff8d0" class="ma-bubble" style="animation-delay:${-k * .4}s"/>`).join('')}`
-    },
-    shakes: {
-      bg: `${sky('#3a0c16')}<path d="M26 0 L38 0 L52 50 L12 50 Z" fill="#ffe8b0" opacity=".18" class="ma-glow"/><path d="M15 0 q3 25 0 50 h-6 v-50 Z M49 0 q-3 25 0 50 h6 v-50 Z" fill="#b0182a"/><path d="M12 0 v50 M52 0 v50" ${ln('#7a0e1c', 1)}/><path d="M9 0 h46 v4 q-23 4 -46 0 Z" fill="#b0182a"/><path d="M9 4 q23 4 46 0" ${ln('#d8a840', .8)}/>`,
-      wear: `<path d="M23 35 C24 32 40 32 41 35 C40 38 24 38 23 35 Z" ${st('#fbfaf4', .8)}/><path d="M25 34 l1.4 2 1.4 -2 1.4 2 1.4 -2 1.4 2 1.4 -2 1.4 2 1.4 -2 1.4 2 1.4 -2" ${ln('#cfcfc8', .5)}/><circle cx="19.5" cy="26" r=".8" fill="#ffd23a"/>`,
-      fg: `<g ${anim('ma-bob', 18, 37)}><path d="M15 36 C15 32.4 21 32.4 21 36 C21 38 20 38.6 19.4 39.6 h-2.8 C16 38.6 15 38 15 36 Z" ${st('#efe8d4', .7)}/><circle cx="16.8" cy="36" r=".9" fill="${O}"/><circle cx="19.2" cy="36" r=".9" fill="${O}"/></g>`
-    },
-    carroll: {
-      bg: `${sky('#82c8b8')}${Array.from({ length: 36 }, (_, k) => { const x = 14 + (k % 12) * 3, y = 44 + Math.floor(k / 12) * 2; return `<rect x="${x}" y="${y}" width="3" height="2" fill="${(k % 12 + Math.floor(k / 12)) % 2 ? '#2a2a34' : '#f4f4ee'}"/>`; }).join('')}`,
-      wear: `<g ${anim('ma-bob', 32, 13)}><path d="M26 13.4 L24.8 1 L40.2 1.8 L38 13.4 Z" ${st('#7a4a2a')}/><path d="M25.6 10 L38.4 10.4 L38.2 12.6 L25.8 12.4 Z" fill="#d84a4a"/><rect x="34" y="5" width="4.4" height="3.4" transform="rotate(6 36 6.7)" ${st('#fdfaf0', .5)}/><text x="34.4" y="7.8" font-size="2.4" font-weight="700" fill="${O}" transform="rotate(6 36 6.7)">10/6</text><path d="M19.6 13.4 C22 11.6 42 11.6 44.4 13.4 C42 15.4 22 15.4 19.6 13.4 Z" ${st('#7a4a2a')}/></g>`,
-      fg: `<g ${anim('ma-swing', 27, 40)}><path d="M27 40 V45" ${ln('#d8b040', .7)}/><circle cx="27" cy="46.4" r="2" ${st('#ffd23a', .6)}/><circle cx="27" cy="46.4" r="1.2" fill="#fff"/></g><g transform="translate(46 44)"><path ${anim('ma-twitch', 0, 0)} d="M-1.6 0 C-2.4 -4 -2.2 -6 -1.2 -6.4 C-.4 -6 -.4 -3 -.4 0 Z" ${st('#f8f8f8', .5)}/><path d="M1.6 0 C2.4 -4 2.2 -6 1.2 -6.4 C.4 -6 .4 -3 .4 0 Z" ${st('#f8f8f8', .5)}/><circle cx="0" cy="2.4" r="3.2" ${st('#f8f8f8', .6)}/><circle cx="-1.1" cy="2" r=".5" fill="#d83a4a"/><circle cx="1.1" cy="2" r=".5" fill="#d83a4a"/></g>`
-    },
-    homer: {
-      bg: `${sky('#5aa0e0')}<rect y="40" width="64" height="24" fill="#2a68b0"/><g class="ma-drift"><path d="M0 41 q2 -1 4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0 t4 0" ${ln('#d8ecff', .7)}/></g><rect x="10.6" y="12" width="5" height="38" ${st('#f2f0e8', .6)}/><path d="M12.2 13 v36 M14 13 v36" ${ln('#cfccc0', .5)}/><rect x="9.6" y="9.4" width="7" height="2.8" ${st('#f2f0e8', .6)}/>`,
-      wear: `${beard(true)}<path d="M21 17 C25 11.6 39 11.6 43 17" ${ln('#5f9a3a', 2.4)}/>${[22.6, 25.6, 28.8, 32, 35.2, 38.4, 41.4].map((x, k) => `<ellipse cx="${x}" cy="${15.6 - (k > 1 && k < 5 ? 1.4 : 0)}" rx="1.4" ry=".7" transform="rotate(${(k - 3) * 14} ${x} 15)" fill="#8cc860"/>`).join('')}`,
-      fg: `<path d="M43 34 C42 38 43 41 45.5 42 C48 41 49 38 48 34 M43 34 h5" ${ln('#d8a830', 1.2)}/><path d="M44.8 35 v6 M46.2 35 v6" ${ln('#fff4d0', .4)}/>${[0, 1].map(k => `<text x="${45 + k * 2}" y="32" font-size="4" fill="#fff" class="ma-rise" style="animation-delay:${-k * 1}s">♪</text>`).join('')}`
-    }
-  };
-  function svgHTML(id, veiled) {
-    const sc = SV[id] || {}, o = OUTFIT[id] || {};
-    const monkey = window.CrewSvg ? CrewSvg.svg(vid(id), o.hat || 0).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : '';
-    return `<svg class="ma-svg" viewBox="10 0 44 50" aria-hidden="true">${veiled ? '' : sc.bg || ''}<g class="ma-fig">${monkey}${sc.wear || ''}</g>${veiled ? '' : sc.fg || ''}</svg>`;
-  }
-
   const ids = Object.keys(OUTFIT);
   window.MuseArt = {
     ids,
     has: id => ids.includes(id),
     html(id, veiled = false) {
       if (!ids.includes(id)) return '';
-      if (window.IMI?.edition !== 'pixel') return svgHTML(id, veiled);
       if (veiled) return `<img alt="" src="${stillURL(id)}" class="ma-still">`;
       return `<i class="ma-strip" style="background-image:url(${stripURL(id)})"></i>`;
     }

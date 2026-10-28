@@ -1401,7 +1401,7 @@ html[data-style="classic"] .rail #settingsBtn { border-radius: 14px; }
 html[data-style="classic"] .rail .back-btn { border-radius: 14px; font-size: 24px; }
 html[data-style="pixel"] .rail .back-btn { font-size: 14px; }
 /* the settings popover opens beside the rail, not under a header */
-.set-pop { top: max(8px, env(safe-area-inset-top)); left: calc(var(--rail-w) + 8px); right: auto; max-width: calc(100vw - var(--rail-w) - 16px); }
+.set-pop:not(.on-title) { top: max(8px, env(safe-area-inset-top)); left: calc(var(--rail-w) + 8px); right: auto; max-width: calc(100vw - var(--rail-w) - 16px); }
 
 .o-achs { top: max(10px, env(safe-area-inset-top)); }
 /* badges ride the corner of a rail icon instead of covering it */
@@ -1465,16 +1465,8 @@ html[data-fx="low"] :is(.stars, .fireflies span, .drifters > *, .layer-mid, .lay
 .o-seg button.o-cap-locked { opacity: .6; }
 @media (max-width: 720px) { .o-flab { min-width: 0; } .o-lfilters .o-seg button { min-height: 38px; padding: 4px 8px; } }
 
-/* ---- settings popover: stays inside the screen and its frame, rows wrap instead of overflowing ---- */
-.set-pop { width: min(330px, calc(100vw - var(--rail-w) - 16px)); max-height: calc(100dvh - 16px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
-.set-pop * { box-sizing: border-box; }
-.set-row { flex-wrap: wrap; row-gap: 6px; }
-.set-seg { flex-wrap: wrap; max-width: 100%; }
-@media (max-width: 720px) {
-  html[data-style="pixel"] .set-pop { padding: 2px 4px; gap: 8px; }
-  html[data-style="pixel"] .set-lab { font-size: 9px; }
-  html[data-style="pixel"] .set-seg button, html[data-style="pixel"] .set-btn { font-size: 9px; padding: 6px 6px; }
-}
+/* ---- settings popover: lives in styles.css; beside the rail it is as wide as the room allows and scrolls inside itself ---- */
+.set-pop:not(.on-title) { width: min(340px, calc(100vw - var(--rail-w) - 16px)); max-height: calc(100dvh - 16px); }
 /* ---- drawer rows: the department's name, with what it does underneath ---- */
 .o-long b { display: block; font-weight: 400; }
 .o-long small { display: block; font-size: .78em; opacity: .7; font-family: inherit; letter-spacing: 0; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

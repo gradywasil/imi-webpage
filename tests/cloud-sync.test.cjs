@@ -3,9 +3,9 @@ const fs = require('node:fs'), vm = require('node:vm'), path = require('node:pat
 const source = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const plain = v => JSON.parse(JSON.stringify(v));   // values built in the vm have the vm's prototypes
 
-/* cloud-sync.js with the shipped "off" config and the real SDK, in a stub page that the hub embeds: what reaches the parent, and when.
+/* cloud-sync.js with the shipped config (or none: bare) and the real SDK, in a stub page that the hub embeds: what reaches the parent, and when.
    Ops is played by hand: register the 'cloud' extension with a fake save, then call its hooks the way ops.js does. */
-function page({ embedded = true, rewards = true, config } = {}) {
+function page({ embedded = true, rewards = true, config, bare = false } = {}) {
   const store = new Map(), posted = [], listeners = {}, own = { v:true }, clock = { t:0 };
   let mcRoot = null, closed = 0;
   const parent = { postMessage:(m, origin) => posted.push({ m:plain(m), origin }) };
@@ -15,10 +15,10 @@ function page({ embedded = true, rewards = true, config } = {}) {
     addEventListener:(type, fn, capture) => { (listeners[type] ||= []).push({ fn, capture:!!capture }); },
     document:{ visibilityState:'visible', addEventListener() {}, querySelector:s => s === '.mc-root' ? mcRoot : null } };
   c.window = c; c.parent = embedded ? parent : c;
-  if (config) c.MONKEY_CLOUD_CONFIG = config;                         // what a test harness injects; the shipped config is the 'off' stub
+  if (config) c.MONKEY_CLOUD_CONFIG = config;                         // what a test harness injects; the shipped config only fills in an empty slot (||=)
   c.Rewards = rewards ? { enabled:true, owns:() => own.v } : { enabled:false };
   vm.createContext(c);
-  for (const file of ['vendor/monkey-cloud/monkey-cloud.config.js', 'vendor/monkey-cloud/monkey-cloud.js', 'cloud-sync.js']) vm.runInContext(source(file), c, { filename:file });
+  for (const file of [...(bare ? [] : ['vendor/monkey-cloud/monkey-cloud.config.js']), 'vendor/monkey-cloud/monkey-cloud.js', 'cloud-sync.js']) vm.runInContext(source(file), c, { filename:file });
   c.MonkeyCloud.closePanel = () => { closed++; };
   const S = { stats:{ words:1234.7, letters:98765.2, playSecs:3661.9 }, legacy:{ stars:3, total:12 }, prem:{ earnedTotal:40 } };
   const ext = c.__OPS_EXTENSIONS.filter(([id]) => id === 'cloud');
@@ -31,8 +31,9 @@ function page({ embedded = true, rewards = true, config } = {}) {
 const EXPECT = { words:1234, letters:98765, legacyStars:12, diamonds:40, playMins:61 };
 const MIN = 60 * 1000;
 
-test('off by default: the SDK starts with the imi id and registers one ops extension, and nothing is configured', () => {
-  const p = page();
+test('with no config (a fork, a self-host) the SDK stays off, still registers one ops extension, and posts nothing; the shipped config turns it on', () => {
+  assert.equal(page().c.MonkeyCloud.status(), 'local', 'the shipped Firebase config: on, signed out');
+  const p = page({ bare:true });
   assert.equal(p.c.MonkeyCloud.status(), 'off');
   assert.equal(p.c.MONKEY_CLOUD_CONFIG, undefined);
   assert.equal(p.ext.length, 1);
@@ -103,7 +104,7 @@ test('standalone (not in the hub) nothing is posted, but the queue still fills',
 });
 
 test('Escape closes an open cloud panel before the tour, the rail or the title-screen key can see it; off, the keys are untouched', () => {
-  const off = page();
+  const off = page({ bare:true });
   assert.deepEqual(off.key('Escape', {}), { stopped:0, prevented:0 }); assert.equal(off.closed(), 0, 'off: no key listener at all');
   const p = page({ config:{ emulator:{ auth:'http://127.0.0.1:1', firestore:['127.0.0.1', 2] }, emailLink:false } });
   assert.equal(p.c.MonkeyCloud.status(), 'local');
@@ -114,7 +115,7 @@ test('Escape closes an open cloud panel before the tour, the rail or the title-s
 
 test('both editions load the config, the SDK and the wiring before ops.js; the worker precaches them and caches Firebase', () => {
   const files = ['vendor/monkey-cloud/monkey-cloud.config.js', 'vendor/monkey-cloud/monkey-cloud.js', 'cloud-sync.js', 'ops.js'];
-  for (const file of ['index.html', 'classic.html']) {
+  for (const file of ['index.html']) {
     const at = files.map(f => source(file).indexOf(`<script src="${f}"></script>`));
     assert(at.every((x, i) => x > 0 && (i === 0 || x > at[i - 1])), file);
   }

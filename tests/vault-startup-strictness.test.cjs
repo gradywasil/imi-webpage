@@ -39,7 +39,7 @@ for (const path of ['ops.js', 'pickups.js', 'tour.js']) {
     assert.equal(probe(path, true), undefined, 'cold block returns before the probe');
   });
 }
-for (const path of ['app.js', 'classic.js', 'pixel-fx.js', 'classic-fx.js']) {
+for (const path of ['app.js', 'pixel-fx.js']) {
   test(path + ' retains original non-strict lexical mode and cold block', () => {
     for (const file of [old + path, path]) {
       const result = probe(file);

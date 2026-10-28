@@ -27,7 +27,7 @@
   /* ---------- the repairs (minigames/repairs/<id>.js; the runner's own list is MGRepair.LIST in repair-kit.js) ----------
      scope: desk (one machine), all (every machine) or global (a rotten banana). size: micro, or long (pays x3, 2.5x badge xp).
      pen: what the problem does to its family's stat through deskFactor. w: spawn weight; gate(sky) multiplies it (0 closes it); when: the gate in words.
-     title/news take the desk's short name. tool: what the fixer does on the card ("Pip grabs a bucket"). ico/emo: the manual's picture (pixel / classic). */
+     title/news take the desk's short name. tool: what the fixer does on the card ("Pip grabs a bucket"). ico: the manual's picture. */
   const PEN = { speed:.6, keeper:.5, sales:.85, luck:0 };
   const REPAIRS = {
     leak:     { fam:'keeper', verb:'CATCH',  secs:14, name:'Leak in the ceiling', title:d => `Leak in the ceiling over ${d}`, text:'Soggy word cards: it banks half as many words.', news:d => `Drip, drip. The ceiling over ${d} is leaking.`,
@@ -287,7 +287,6 @@
   const bonus = kind => { const m = api && saved(); return valid(m) ? derived(m)[kind] : 0; };
   let api, overlay, frame, host, pending, notice = '', returnFocus, launchSeq = 0, shown = 0, rollRaf = 0, soundOn = true;
   const copy = value => JSON.parse(JSON.stringify(value));
-  const classic = () => document.documentElement.dataset.style === 'classic';
   const saved = () => api.state().meta.minigames;
   const bounded = (n, max) => Number.isFinite(n) && n >= 0 && n <= max;
   const validWho = w => !!w && Number.isInteger(w.d) && w.d >= 0 && w.d < 6 && typeof w.name === 'string' && w.name.length > 0 && w.name.length <= 60;
@@ -410,7 +409,7 @@
   }
   /* the repair manual: every problem, ??? until you have tried its repair (or it is on the Floor now), with times fixed and the best grade as stars */
   function repairsPane(m, ok, p) {
-    const log = ok ? m.rep || {} : {}, icon = R => classic() ? `<span class="mg-rep-emo" aria-hidden="true">${R.emo}</span>` : api.shop.cart(R.ico);
+    const log = ok ? m.rep || {} : {}, icon = R => api.shop.cart(R.ico);
     const top = p ? probCard(p) : '<div class="o-card mg-prob good mg-calm"><div class="mg-prob-main"><b>Nothing is broken right now</b><span class="mg-prob-fx">Something on the Floor always breaks sooner or later.</span></div></div>';
     const intro = `<p class="o-dim mg-crewnote">Every problem has its own repair: one verb, a few seconds. A fix pays up to ${amt(repairWorth(ok ? m : {}, { pay:1 }, 1))} in its family's Inspiration (big ones three times that), trains the typist who fixed it, and tunes the machine up for a while.</p>`;
     const card = id => {
@@ -502,8 +501,8 @@
       if (total) window.Juice?.fly('insp', at, Math.min(14, Math.max(3, Math.ceil(Math.log10(total + 1) * 3))));
       toGame('reward', { total, label:'INSPIRATION', verdict, note:!payable && g > 0 ? `Already paid. ${note}` : note });
       if (total && window.Juice?.stamp) {
-        if (lvNow > lvWas) window.Juice.stamp(classic() ? `${FAM[R.fam].name} badge Lv ${lvNow}!` : `${FAM[R.fam].name.toUpperCase()} BADGE LV ${lvNow}!`, { tier:2, sub:who.t.name });
-        else if (g >= FIX_AT) window.Juice.stamp(classic() ? (g >= PERFECT_AT ? 'Perfect!' : 'Fixed!') : g >= PERFECT_AT ? 'PERFECT!' : 'FIXED!', { tier:g >= PERFECT_AT ? 3 : 2, sub:`+${fmt(total)}` });
+        if (lvNow > lvWas) window.Juice.stamp(`${FAM[R.fam].name.toUpperCase()} BADGE LV ${lvNow}!`, { tier:2, sub:who.t.name });
+        else if (g >= FIX_AT) window.Juice.stamp(g >= PERFECT_AT ? 'PERFECT!' : 'FIXED!', { tier:g >= PERFECT_AT ? 3 : 2, sub:`+${fmt(total)}` });
       }
     }, who && xp ? { d:who.d, name:who.t.name, fam:R.fam, xp, at:a.id } : null);
   }

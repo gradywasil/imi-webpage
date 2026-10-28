@@ -26,7 +26,7 @@ test('actual Floor drawer, authored completion sales and compact timed buffs', a
   const results = [], errors = [];
   try {
     browser = await puppeteer.launch({ executablePath: process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
-    for (const edition of ['index', 'classic']) {
+    for (const edition of ['index']) {
       const page = await browser.newPage();
       await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
       page.on('pageerror', err => errors.push(err.message));
